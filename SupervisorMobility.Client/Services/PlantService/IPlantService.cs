@@ -10,5 +10,15 @@
 
         // Get plant including areas
         Task<Plant> GetPlantIncludingAreas(int id);
+
+        // Create plant
+        Task<Plant> CreatePlant(Plant plant);
+
+        // Update plant
+        Task<Plant> UpdatePlant(Plant plant);
+
+        // Delete plant
+        Task DeletePlant(Plant plant);
+
     }
 }

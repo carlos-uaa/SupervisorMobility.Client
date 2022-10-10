@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.PlantService
+﻿using System.Net.Http.Json;
+
+namespace SupervisorMobility.Client.Services.PlantService
 {
     public class PlantService : IPlantService
     {
@@ -10,6 +12,19 @@
         {
             _http = http;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        }
+
+        public async Task<Plant> CreatePlant(Plant plant)
+        {
+            var response = await _http.PostAsJsonAsync("plants", plant);
+            var newPlant = (await response.Content.ReadFromJsonAsync<Plant>());
+
+            return newPlant;
+        }
+
+        public Task DeletePlant(Plant plant)
+        {
+            throw new NotImplementedException();
         }
 
         // Get plant by Id
@@ -58,6 +73,11 @@
             var plants = JsonSerializer.Deserialize<List<Plant>>(content, _options);
 
             return plants;
+        }
+
+        public Task<Plant> UpdatePlant(Plant plant)
+        {
+            throw new NotImplementedException();
         }
     }
 }

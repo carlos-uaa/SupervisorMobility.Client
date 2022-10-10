@@ -1,3 +1,4 @@
+global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
 global using SupervisorMobility.Client.Services.PlantService;
 global using System.Text.Json;

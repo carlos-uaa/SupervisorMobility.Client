@@ -8,5 +8,15 @@
         {
             _plants = await PlantService.GetPlants();
         }
+
+        void EditPlant(int plantId)
+        {
+            NavigationManager.NavigateTo($"plants/plant/{plantId}");
+        }
+
+        void CreatePlant()
+        {
+            NavigationManager.NavigateTo($"plants/plant");
+        }
     }
 }
