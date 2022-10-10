@@ -1,0 +1,21 @@
+﻿@inject IPlantService PlantService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="DeletePlant"></MudIconButton>
+
+@code {
+    [CascadingParameter]
+    public int Id { get; set; }
+
+    async void DeletePlant()
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this plant?");
+
+        if (confirm)
+        {
+            await PlantService.DeletePlant(Id);
+            NavigationManager.NavigateTo($"plants", forceLoad: true);
+        }
+    }
+}

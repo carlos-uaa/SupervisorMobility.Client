@@ -24,9 +24,9 @@ namespace SupervisorMobility.Client.Services.PlantService
         }
 
         // Delete plant
-        public async Task DeletePlant(Plant plant)
+        public async Task DeletePlant(int id)
         {
-            var response = await _http.DeleteAsync($"plants/{plant.PlantId}");
+            var response = await _http.DeleteAsync($"plants/{id}");
         }
 
         // Get plant by Id

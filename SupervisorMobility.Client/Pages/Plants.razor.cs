@@ -3,6 +3,7 @@
     public partial class Plants
     {
         public List<Plant> _plants { get; set; } = new();
+        Plant _plant = new();
 
         protected async override Task OnInitializedAsync()
         {

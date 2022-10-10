@@ -18,7 +18,7 @@
         Task UpdatePlant(Plant plant);
 
         // Delete plant
-        Task DeletePlant(Plant plant);
+        Task DeletePlant(int id);
 
     }
 }
