@@ -14,6 +14,7 @@ namespace SupervisorMobility.Client.Services.PlantService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        // Create plant
         public async Task<Plant> CreatePlant(Plant plant)
         {
             var response = await _http.PostAsJsonAsync("plants", plant);
@@ -22,9 +23,10 @@ namespace SupervisorMobility.Client.Services.PlantService
             return newPlant;
         }
 
-        public Task DeletePlant(Plant plant)
+        // Delete plant
+        public async Task DeletePlant(Plant plant)
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"plants/{plant.PlantId}");
         }
 
         // Get plant by Id
@@ -75,9 +77,10 @@ namespace SupervisorMobility.Client.Services.PlantService
             return plants;
         }
 
-        public Task<Plant> UpdatePlant(Plant plant)
+        // Update plant
+        public async Task UpdatePlant(Plant plant)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"plants/{plant.PlantId}", plant);
         }
     }
 }

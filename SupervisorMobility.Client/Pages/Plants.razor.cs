@@ -11,7 +11,7 @@
 
         void EditPlant(int plantId)
         {
-            NavigationManager.NavigateTo($"plants/plant/{plantId}");
+            NavigationManager.NavigateTo($"plants/plant/updateplant/{plantId}");
         }
 
         void CreatePlant()
