@@ -1,5 +1,6 @@
 global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
+global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.PlantService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
@@ -17,5 +18,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 // Services
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IAreaService, AreaService>();
 
 await builder.Build().RunAsync();

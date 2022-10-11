@@ -19,5 +19,9 @@
         {
             NavigationManager.NavigateTo($"plants/plant");
         }
+        void PlantDetails(int plantId)
+        {
+            NavigationManager.NavigateTo($"plants/plant/{plantId}");
+        }
     }
 }
