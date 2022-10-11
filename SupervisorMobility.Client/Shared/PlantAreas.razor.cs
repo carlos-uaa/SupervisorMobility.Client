@@ -16,5 +16,10 @@
         {
             NavigationManager.NavigateTo($"plants/plant/{PlantId}/createarea");
         }
+
+        void UpdateArea(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/plant/{plantId}/updatearea/{areaId}");
+        }
     }
 }

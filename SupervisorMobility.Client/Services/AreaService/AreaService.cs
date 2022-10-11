@@ -23,6 +23,28 @@ namespace SupervisorMobility.Client.Services.AreaService
             return newArea;
         }
 
+        // Delete area
+        public async Task DeleteArea(int plantId, int areaId)
+        {
+            var response = await _http.DeleteAsync($"plants/{plantId}/areas/{areaId}");
+        }
+
+        // Get area by Id
+        public async Task<Area> GetAreaById(int plantId, int areaId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var area = JsonSerializer.Deserialize<Area>(content, _options);
+
+            return area;
+        }
+
         // Get all areas by plant id
         public async Task<List<Area>> GetAreas(int plantId)
         {
@@ -37,6 +59,12 @@ namespace SupervisorMobility.Client.Services.AreaService
             var areas = JsonSerializer.Deserialize<List<Area>>(content, _options);
 
             return areas;
+        }
+
+        // Update area
+        public async Task UpdateArea(int plantId, Area area)
+        {
+            var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{area.AreaId}", area);
         }
     }
 }
