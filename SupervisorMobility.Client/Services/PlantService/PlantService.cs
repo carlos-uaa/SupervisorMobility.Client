@@ -18,7 +18,7 @@ namespace SupervisorMobility.Client.Services.PlantService
         public async Task<Plant> CreatePlant(Plant plant)
         {
             var response = await _http.PostAsJsonAsync("plants", plant);
-            var newPlant = (await response.Content.ReadFromJsonAsync<Plant>());
+            var newPlant = await response.Content.ReadFromJsonAsync<Plant>();
 
             return newPlant;
         }

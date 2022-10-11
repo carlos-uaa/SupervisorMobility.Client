@@ -11,5 +11,10 @@
         {
             _plant = await PlantService.GetPlantIncludingAreas(Id);
         }
+
+        void CreateArea(int PlantId)
+        {
+            NavigationManager.NavigateTo($"plants/plant/{PlantId}/createarea");
+        }
     }
 }

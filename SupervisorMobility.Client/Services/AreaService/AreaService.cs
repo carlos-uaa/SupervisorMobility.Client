@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.AreaService
+﻿using System.Net.Http.Json;
+
+namespace SupervisorMobility.Client.Services.AreaService
 {
     public class AreaService : IAreaService
     {
@@ -10,6 +12,15 @@
         {
             _http = http;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        }
+
+        // Create area
+        public async Task<Area> CreateArea(int plantId, Area area)
+        {
+            var response = await _http.PostAsJsonAsync($"plants/{plantId}/areas", area);
+            var newArea = await response.Content.ReadFromJsonAsync<Area>();
+
+            return newArea;
         }
 
         // Get all areas by plant id
