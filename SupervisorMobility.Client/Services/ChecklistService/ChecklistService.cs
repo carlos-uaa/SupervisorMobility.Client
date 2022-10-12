@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.ChecklistService
+﻿using System.Net.Http.Json;
+
+namespace SupervisorMobility.Client.Services.ChecklistService
 {
     public class ChecklistService : IChecklistService
     {
@@ -10,6 +12,15 @@
         {
             _http = http;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        }
+
+        // Create checklist category
+        public async Task<ChecklistCategory> CreateCategory(ChecklistCategory category)
+        {
+            var response = await _http.PostAsJsonAsync("checklistcategories", category);
+            var newCategory = await response.Content.ReadFromJsonAsync<ChecklistCategory>();
+
+            return newCategory;
         }
 
         // Get all checklist categories
