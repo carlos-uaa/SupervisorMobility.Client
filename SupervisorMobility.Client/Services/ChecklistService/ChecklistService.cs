@@ -23,6 +23,44 @@ namespace SupervisorMobility.Client.Services.ChecklistService
             return newCategory;
         }
 
+        // Delete checklist category
+        public async Task DeleteCategory(int id)
+        {
+            var response = await _http.DeleteAsync($"checklistcategories/{id}");
+        }
+
+        // Get checklist category by Id
+        public async Task<ChecklistCategory> GetCategoryById(int id)
+        {
+            var response = await _http.GetAsync($"checklistcategories/{id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var category = JsonSerializer.Deserialize<ChecklistCategory>(content, _options);
+
+            return category;
+        }
+
+        // Get checklist category including questions
+        public async Task<ChecklistCategory> GetCategoryIncludingQuestions(int id)
+        {
+            var response = await _http.GetAsync($"checklistcategories/{id}?includeChecklistQuestions=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var category = JsonSerializer.Deserialize<ChecklistCategory>(content, _options);
+
+            return category;
+        }
+
         // Get all checklist categories
         public async Task<List<ChecklistCategory>> GetChecklistCategories()
         {
@@ -37,6 +75,12 @@ namespace SupervisorMobility.Client.Services.ChecklistService
             var categories = JsonSerializer.Deserialize<List<ChecklistCategory>>(content, _options);
 
             return categories;
+        }
+
+        // Update checklist category
+        public async Task UpdateCategory(ChecklistCategory category)
+        {
+            var response = await _http.PutAsJsonAsync($"checklistcategories/{category.ChecklistCategoryId}", category);
         }
     }
 }

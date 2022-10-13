@@ -5,7 +5,19 @@
         // Get all checklist categories
         Task<List<ChecklistCategory>> GetChecklistCategories();
 
+        // Get checklist category by Id
+        Task<ChecklistCategory> GetCategoryById(int id);
+
+        // Get checklist category including questions
+        Task<ChecklistCategory> GetCategoryIncludingQuestions(int id);
+
         // Create checklist category
         Task<ChecklistCategory> CreateCategory(ChecklistCategory category);
+
+        // Update checklist category
+        Task UpdateCategory(ChecklistCategory category);
+
+        // Delete checklist category
+        Task DeleteCategory(int id);
     }
 }
