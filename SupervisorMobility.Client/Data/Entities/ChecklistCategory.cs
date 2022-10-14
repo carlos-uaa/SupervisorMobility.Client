@@ -8,6 +8,7 @@
         public int Sequence { get; set; }
         public bool? IsActive { get; set; }
 
+        public string Container { get; set; } = "CategoryContainer";
         public ICollection<ChecklistQuestion> ChecklistQuestions { get; set; } = new List<ChecklistQuestion>();
     }
 }

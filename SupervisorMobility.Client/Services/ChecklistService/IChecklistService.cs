@@ -19,5 +19,8 @@
 
         // Delete checklist category
         Task DeleteCategory(int id);
+
+        // Update checklist category sequence
+        Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory);
     }
 }

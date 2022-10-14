@@ -82,5 +82,20 @@ namespace SupervisorMobility.Client.Services.ChecklistService
         {
             var response = await _http.PutAsJsonAsync($"checklistcategories/{category.ChecklistCategoryId}", category);
         }
+
+        // Update checklist category sequence
+        public async Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory)
+        {
+            var response = await _http.PutAsJsonAsync($"checklistcategories/sequence/{categoryId}", checklistCategory);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Failed");
+            }
+            else
+            {
+                Console.WriteLine("Ok");
+            }
+        }
     }
 }

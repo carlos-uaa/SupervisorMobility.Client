@@ -1,0 +1,55 @@
+﻿@page "/checklistcategories/sequence"
+@using MudBlazor.Utilities
+@inject IChecklistService ChecklistService
+
+<MudIconButton Href="/checklistcategories" Icon="@Icons.Material.Filled.ArrowLeft" aria-label="back"></MudIconButton>
+
+<MudDropContainer T="ChecklistCategory" Items="_checklistCategories" ItemsSelector="@((item,dropzone) => item.Container == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+    <ChildContent>
+        <MudDropZone T="ChecklistCategory" Identifier="CategoryContainer" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1" AllowReorder="true">
+            <MudText Typo="Typo.h6" Class="mb-4">
+                Reorder categories
+            </MudText>
+        </MudDropZone>
+    </ChildContent>
+    <ItemRenderer>
+            <MudPaper Elevation="25" Class="pa-4 my-4">
+                @($"{context.Description}")
+            </MudPaper>
+    </ItemRenderer>
+</MudDropContainer>
+
+@code {
+    public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+    public ChecklistCategory _checklistCategory { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        _checklistCategories = await ChecklistService.GetChecklistCategories();
+    }
+
+    async void ItemUpdated(MudItemDropInfo<ChecklistCategory> dropItem)
+    {
+        dropItem.Item.Container = dropItem.DropzoneIdentifier;
+
+        var indexOffset = 0;
+        int currentCategory;
+        int newSequence;
+
+        _checklistCategories.UpdateOrder(dropItem, item => item.Sequence, indexOffset);
+
+        currentCategory = dropItem.Item.ChecklistCategoryId;
+        newSequence = dropItem.IndexInZone + 1;
+
+        ChecklistCategory dbCategory = await ChecklistService.GetCategoryById(currentCategory);
+        _checklistCategory = dbCategory;
+        _checklistCategory.Sequence = newSequence;
+
+        UpdateSequence(currentCategory, _checklistCategory);
+    }
+
+    void UpdateSequence(int currentCategory, ChecklistCategory checklistCategory)
+    {
+        ChecklistService.UpdateCategorySequence(currentCategory, checklistCategory);
+    }
+}
