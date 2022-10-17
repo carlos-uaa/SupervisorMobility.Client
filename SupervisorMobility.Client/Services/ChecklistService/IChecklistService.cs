@@ -22,5 +22,17 @@
 
         // Update checklist category sequence
         Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory);
+
+        // Get checklist question by Id
+        Task<ChecklistQuestion> GetQuestionById(int categoryId, int questionId);
+
+        // Create checklist question 
+        Task<ChecklistQuestion> CreateQuestion(int categoryId, ChecklistQuestion question);
+
+        // Update checklist question
+        Task UpdateQuestion(int categoryId, ChecklistQuestion question);
+
+        // Delete checklist question
+        Task DeleteQuestion(int categoryId, int questionId);
     }
 }

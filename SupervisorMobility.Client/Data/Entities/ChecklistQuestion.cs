@@ -8,7 +8,7 @@
         public string Prompt { get; set; } = string.Empty;
         public int CategorySequence { get; set; }
         public int? AnswerSetID { get; set; }
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; set; } = false;
         public int ChecklistCategoryId { get; set; }
         public int QuestionTypeId { get; set; }
     }

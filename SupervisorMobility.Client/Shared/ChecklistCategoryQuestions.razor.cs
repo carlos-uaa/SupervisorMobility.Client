@@ -10,8 +10,16 @@
         protected async override Task OnInitializedAsync()
         {
             _checklistCategory = await ChecklistService.GetCategoryIncludingQuestions(CategoryId);
+        }
 
-            Console.WriteLine(_checklistCategory.ChecklistQuestions.Count());
+        void CreateQuestion(int categoryId)
+        {
+            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/createquestion");
+        }
+
+        void UpdateQuestion(int categoryId, int questionId)
+        {
+            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/updatequestion/{questionId}");
         }
     }
 }

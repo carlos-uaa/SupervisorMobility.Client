@@ -1,0 +1,46 @@
+﻿@page "/checklistcategories/category/{categoryId:int}/createquestion"
+@inject IChecklistService ChecklistService
+@inject IQuestionTypeService QuestionTypeService
+@inject NavigationManager NavigationManager
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Create Question</PageTitle>
+
+@*Form*@
+<EditForm Model="_question" OnValidSubmit="CreateQuestionAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Question details</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Create question</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="Question description"
+                                  @bind-Value="_question.Description" For="@(() => _question.Description)" />
+                    <MudTextField Label="Question prompt"
+                                  @bind-Value="_question.Prompt" For="@(() => _question.Prompt)" />
+                    <MudTextField Label="Code" Class="mt-3"
+                                  @bind-Value="_question.Code" For="@(() => _question.Code)" />
+                    <MudSelect T="int" Placeholder="Select a question type" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_question.QuestionTypeId" For="@(() => _question.QuestionTypeId)">
+                        <MudSelectItem Disabled="true" Value="0">Select a question type</MudSelectItem>
+                        @foreach (var type in _questionTypes)
+                        {
+                            <MudSelectItem Value="type.QuestionTypeId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_question.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">Cancel</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>

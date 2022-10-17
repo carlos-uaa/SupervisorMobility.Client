@@ -97,5 +97,42 @@ namespace SupervisorMobility.Client.Services.ChecklistService
                 Console.WriteLine("Ok");
             }
         }
+
+        // Get checklist question by Id
+        public async Task<ChecklistQuestion> GetQuestionById(int categoryId, int questionId)
+        {
+            var response = await _http.GetAsync($"checklistcategories/{categoryId}/checklistquestions/{questionId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var question = JsonSerializer.Deserialize<ChecklistQuestion>(content, _options);
+
+            return question;
+        }
+
+        // Create checklist question 
+        public async Task<ChecklistQuestion> CreateQuestion(int categoryId, ChecklistQuestion question)
+        {
+            var response = await _http.PostAsJsonAsync($"checklistcategories/{categoryId}/checklistquestions", question);
+            var newQuestion = await response.Content.ReadFromJsonAsync<ChecklistQuestion>();
+
+            return newQuestion;
+        }
+
+        // Delete checklist question 
+        public async Task DeleteQuestion(int categoryId, int questionId)
+        {
+            var response = await _http.DeleteAsync($"checklistcategories/{categoryId}/checklistQuestions/{questionId}");
+        }
+
+        // Update checklist question 
+        public async Task UpdateQuestion(int categoryId, ChecklistQuestion question)
+        {
+            var response = await _http.PutAsJsonAsync($"checklistcategories/{categoryId}/checklistquestions/{question.QuestionID}", question);
+        }
     }
 }
