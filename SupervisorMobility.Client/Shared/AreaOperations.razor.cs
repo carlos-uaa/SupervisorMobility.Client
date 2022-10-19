@@ -19,5 +19,10 @@
         {
             NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/createoperation");
         }
+
+        void UpdateOperation(int plantId, int areaId, int operationId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/updateoperation/{operationId}");
+        }
     }
 }

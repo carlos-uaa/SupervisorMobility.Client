@@ -30,9 +30,19 @@ namespace SupervisorMobility.Client.Services.OperationService
         }
 
         // Get operation by Id
-        public Task<Operation> GetOperationById(int operationId)
+        public async Task<Operation> GetOperationById(int plantId, int areaId, int operationId)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/Operations/{operationId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var operation = JsonSerializer.Deserialize<Operation>(content, _options);
+
+            return operation;
         }
 
         // Get all operations
@@ -52,9 +62,9 @@ namespace SupervisorMobility.Client.Services.OperationService
         }
 
         // Update operation
-        public Task UpdateOperation(int plantId, int areaId, Operation operation)
+        public async Task UpdateOperation(int plantId, int areaId, Operation operation)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{areaId}/Operations/{operation.OperationId}", operation);
         }
     }
 }
