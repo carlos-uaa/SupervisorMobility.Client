@@ -14,5 +14,10 @@
         {
             _area = await AreaService.GetAreaIncludingOperations(plantId, areaId);
         }
+
+        void CreateOperation(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/createoperation");
+        }
     }
 }

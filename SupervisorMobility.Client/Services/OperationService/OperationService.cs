@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.OperationService
+﻿using System.Net.Http.Json;
+
+namespace SupervisorMobility.Client.Services.OperationService
 {
     public class OperationService : IOperationService
     {
@@ -13,9 +15,12 @@
         }
 
         // Create operation
-        public Task<Operation> CreateOperation(int plantId, int areaId, Operation operation)
+        public async Task<Operation> CreateOperation(int plantId, int areaId, Operation operation)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync($"plants/{plantId}/areas/{areaId}/Operations", operation);
+            var newOperation = await response.Content.ReadFromJsonAsync<Operation>();
+
+            return newOperation;
         }
 
         // Delete operation
