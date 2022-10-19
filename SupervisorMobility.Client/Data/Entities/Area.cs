@@ -7,6 +7,6 @@
         public string Description { get; set; } = string.Empty;
         public bool? IsActive { get; set; } = false;
         public int PlantId { get; set; }
-
+        public ICollection<Operation> Operations { get; set; } = new List<Operation>();
     }
 }

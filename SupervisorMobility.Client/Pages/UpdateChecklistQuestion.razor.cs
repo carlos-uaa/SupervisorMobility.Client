@@ -9,6 +9,12 @@
         public int questionId { get; set; }
 
         public ChecklistQuestion _question { get; set; } = new();
+        public List<QuestionType> _questionTypes { get; set; } = new();
+
+        protected async override Task OnInitializedAsync()
+        {
+            _questionTypes = await QuestionTypeService.GetQuestionTypes();
+        }
 
         protected override async Task OnParametersSetAsync()
         {

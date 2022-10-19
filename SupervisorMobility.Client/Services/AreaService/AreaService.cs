@@ -45,6 +45,22 @@ namespace SupervisorMobility.Client.Services.AreaService
             return area;
         }
 
+        // Get area including operations
+        public async Task<Area> GetAreaIncludingOperations(int plantId, int areaId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}?includeOperations=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var area = JsonSerializer.Deserialize<Area>(content, _options);
+
+            return area;
+        }
+
         // Get all areas by plant id
         public async Task<List<Area>> GetAreas(int plantId)
         {

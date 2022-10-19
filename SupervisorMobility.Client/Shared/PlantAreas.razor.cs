@@ -3,13 +3,13 @@
     public partial class PlantAreas
     {
         [CascadingParameter]
-        public int Id { get; set; }
+        public int PlantId { get; set; }
 
         public Plant _plant { get; set; } = new();
 
         protected async override Task OnInitializedAsync()
         {
-            _plant = await PlantService.GetPlantIncludingAreas(Id);
+            _plant = await PlantService.GetPlantIncludingAreas(PlantId);
         }
 
         void CreateArea(int PlantId)
@@ -20,6 +20,10 @@
         void UpdateArea(int plantId, int areaId)
         {
             NavigationManager.NavigateTo($"plants/plant/{plantId}/updatearea/{areaId}");
+        }
+        void AreaDetails(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/plant/{plantId}/areas/area/{areaId}");
         }
     }
 }

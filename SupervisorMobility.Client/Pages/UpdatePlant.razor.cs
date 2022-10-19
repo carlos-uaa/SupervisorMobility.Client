@@ -3,13 +3,13 @@
     public partial class UpdatePlant
     {
         [Parameter]
-        public int Id { get; set; }
+        public int PlantId { get; set; }
 
         public Plant _plant { get; set; } = new();
 
         protected override async Task OnParametersSetAsync()
         {
-            Plant dbPlant = await PlantService.GetPlantById(Id);
+            Plant dbPlant = await PlantService.GetPlantById(PlantId);
             _plant = dbPlant;
         }
 

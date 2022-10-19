@@ -11,6 +11,9 @@
         // Get area by Id
         Task<Area> GetAreaById(int plantId, int areaId);
 
+        // Get area including operations
+        Task<Area> GetAreaIncludingOperations(int plantId, int areaId);
+
         // Update area
         Task UpdateArea(int plantId, Area area);
 

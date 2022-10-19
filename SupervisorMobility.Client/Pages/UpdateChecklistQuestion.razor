@@ -1,5 +1,6 @@
 ﻿@page "/checklistcategories/category/{categoryId:int}/updatequestion/{questionId:int}"
 @inject IChecklistService ChecklistService
+@inject IQuestionTypeService QuestionTypeService
 @inject NavigationManager NavigationManager
 
 @*Title*@
@@ -26,8 +27,13 @@
                                   @bind-Value="_question.Prompt" For="@(() => _question.Prompt)" />
                     <MudTextField Label="Code" Class="mt-3"
                                   @bind-Value="_question.Code" For="@(() => _question.Code)" />
-                    <MudNumericField Label="Type"
-                                     @bind-Value="_question.QuestionTypeId" For="@(() => _question.QuestionTypeId)" />
+                    <MudSelect T="int" Placeholder="Select a question type" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_question.QuestionTypeId" For="@(() => _question.QuestionTypeId)">
+                        <MudSelectItem Disabled="true" Value="0">Select a question type</MudSelectItem>
+                        @foreach (var type in _questionTypes)
+                        {
+                            <MudSelectItem Value="type.QuestionTypeId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_question.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                 </MudCardContent>
                 <MudCardActions>
