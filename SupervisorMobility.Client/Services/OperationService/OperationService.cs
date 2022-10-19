@@ -24,9 +24,9 @@ namespace SupervisorMobility.Client.Services.OperationService
         }
 
         // Delete operation
-        public Task DeleteOperation(int plantId, int areaId, int operationId)
+        public async Task DeleteOperation(int plantId, int areaId, int operationId)
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"plants/{plantId}/areas/{areaId}/Operations/{operationId}");
         }
 
         // Get operation by Id
