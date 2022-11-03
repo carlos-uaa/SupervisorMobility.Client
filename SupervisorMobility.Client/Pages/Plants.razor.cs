@@ -1,7 +1,16 @@
-﻿namespace SupervisorMobility.Client.Pages
+﻿using MudBlazor;
+
+namespace SupervisorMobility.Client.Pages
 {
     public partial class Plants
     {
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Plants", href: "", disabled: true)
+        };
+
         public List<Plant> _plants { get; set; } = new();
         Plant _plant = new();
 
@@ -12,16 +21,16 @@
 
         void EditPlant(int plantId)
         {
-            NavigationManager.NavigateTo($"plants/plant/updateplant/{plantId}");
+            NavigationManager.NavigateTo($"plants/updateplant/{plantId}");
         }
 
         void CreatePlant()
         {
-            NavigationManager.NavigateTo($"plants/plant");
+            NavigationManager.NavigateTo($"plants/createplant");
         }
         void PlantDetails(int plantId)
         {
-            NavigationManager.NavigateTo($"plants/plant/{plantId}");
+            NavigationManager.NavigateTo($"plants/{plantId}");
         }
     }
 }

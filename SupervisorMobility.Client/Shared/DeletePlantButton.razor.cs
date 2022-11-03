@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Shared
             if (confirm)
             {
                 await PlantService.DeletePlant(PlantId);
-                NavigationManager.NavigateTo($"plants", forceLoad: true);
+                NavigationManager.NavigateTo($"plants");
             }
         }
     }

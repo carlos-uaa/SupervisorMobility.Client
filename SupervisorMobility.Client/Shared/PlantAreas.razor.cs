@@ -14,16 +14,16 @@
 
         void CreateArea(int PlantId)
         {
-            NavigationManager.NavigateTo($"plants/plant/{PlantId}/createarea");
+            NavigationManager.NavigateTo($"plants/{PlantId}/createarea");
         }
 
         void UpdateArea(int plantId, int areaId)
         {
-            NavigationManager.NavigateTo($"plants/plant/{plantId}/updatearea/{areaId}");
+            NavigationManager.NavigateTo($"plants/{plantId}/updatearea/{areaId}");
         }
         void AreaDetails(int plantId, int areaId)
         {
-            NavigationManager.NavigateTo($"plants/plant/{plantId}/areas/area/{areaId}");
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}");
         }
     }
 }

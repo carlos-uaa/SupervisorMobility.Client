@@ -1,9 +1,33 @@
 ﻿@page "/plants/{plantId:int}/areas/{areaId:int}/updateoperation/{operationId:int}"
 @inject IOperationService OperationService
+@inject IAreaService AreaService
+@inject IPlantService PlantService
 @inject NavigationManager NavigationManager
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Operation</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == "PlantDetail")
+        {
+            <MudButton @onclick="(() => GoToPlant())" Variant="Variant.Text" Color="Color.Info">@_plant.Description</MudButton>
+        }
+        else if (item.Text == "AreaDetail")
+        {
+            <MudButton @onclick="(() => CancelCreateOrUpdate())" Variant="Variant.Text" Color="Color.Info">@_area.Description</MudButton>
+        }
+        else if (item.Text == "UpdateOperation")
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">Update @_operation.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
 
 @*Form*@
 <EditForm Model="_operation" OnValidSubmit="UpdateOperationAsync">
@@ -16,11 +40,11 @@
                         <MudText Typo="Typo.h6">Operation details</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
-                        <MudChip Variant="Variant.Text" Color="Color.Success">Create operation</MudChip>
+                        <MudChip Variant="Variant.Text" Color="Color.Info">Update operation</MudChip>
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudTextField Label="Question description"
+                    <MudTextField Label="Operation description"
                                   @bind-Value="_operation.Description" For="@(() => _operation.Description)" />
                     <MudTextField Label="Code" Class="mt-3"
                                   @bind-Value="_operation.Code" For="@(() => _operation.Code)" />

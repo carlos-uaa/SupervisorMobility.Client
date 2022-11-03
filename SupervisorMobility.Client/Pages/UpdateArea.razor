@@ -1,9 +1,28 @@
-﻿@page "/plants/plant/{plantId:int}/updatearea/{areaId:int}"
+﻿@page "/plants/{plantId:int}/updatearea/{areaId:int}"
 @inject IAreaService AreaService
+@inject IPlantService PlantService
 @inject NavigationManager NavigationManager
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Area</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == "PlantDetail")
+        {
+            <MudButton @onclick="(() => CancelCreateOrUpdate())" Variant="Variant.Text" Color="Color.Info">@_plant.Description</MudButton>
+        }
+        else if (item.Text == "UpdateArea")
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">Update @_area.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
 
 @*Form*@
 <EditForm Model="_area" OnValidSubmit="UpdateAreaAsync">
@@ -28,7 +47,7 @@
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
-                    <MudButton Variant="Variant.Filled" Class="ml-4">Cancel</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">Cancel</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
