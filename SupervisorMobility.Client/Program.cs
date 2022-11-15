@@ -5,6 +5,7 @@ global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
 global using SupervisorMobility.Client.Services.QuestionTypeService;
+global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -25,5 +26,6 @@ builder.Services.AddScoped<IAreaService, AreaService>();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
 builder.Services.AddScoped<IQuestionTypeService, QuestionTypeService>();
 builder.Services.AddScoped<IOperationService, OperationService>();
+builder.Services.AddScoped<ISupportDocumentTypeService, SupportDocumentTypeService>();
 
 await builder.Build().RunAsync();

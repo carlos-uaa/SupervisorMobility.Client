@@ -8,22 +8,26 @@ namespace SupervisorMobility.Client.Pages
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Document Types", href: "", disabled: true)
+            new BreadcrumbItem("Support Document Types", href: "", disabled: true)
         };
 
-        List<DocumentType> _documentTypes = new List<DocumentType>
-        {
-            new DocumentType { DocTypeId = 1, Code = "HOE", Description = "Hoja de operación estándar" }
-        };
+        public List<SupportDocumentType> _supportDocumentTypes { get; set; } = new();
 
-        void CreateDocType()
+        SupportDocumentType _supportDocumentType = new();
+
+        protected async override Task OnInitializedAsync()
         {
-            NavigationManager.NavigateTo($"documenttypes/createdoctype");
+            _supportDocumentTypes = await SupportDocumentTypeService.GetSupportDocumentTypes();
         }
 
-        void EditDocType()
+        void CreateSupportDocType()
         {
-            NavigationManager.NavigateTo($"documenttypes/updatedoctype");
+            NavigationManager.NavigateTo($"documenttypes/createsupportdoctype");
+        }
+
+        void EditSupportDocType(int supportDocumentTypeId)
+        {
+            NavigationManager.NavigateTo($"documenttypes/updatesupportdoctype/{supportDocumentTypeId}");
         }
     }
 }
