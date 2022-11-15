@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Shared
             if (confirm)
             {
                 await ChecklistService.DeleteCategory(CategoryId);
-                NavigationManager.NavigateTo($"checklistcategories", forceLoad: true);
+                NavigationManager.NavigateTo($"checklistcategories");
             }
         }
     }

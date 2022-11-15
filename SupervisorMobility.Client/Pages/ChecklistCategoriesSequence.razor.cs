@@ -8,6 +8,14 @@ namespace SupervisorMobility.Client.Pages
         public List<ChecklistCategory> _checklistCategories { get; set; } = new();
         public ChecklistCategory _checklistCategory { get; set; } = new();
 
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("Sequence", href: "", disabled: true),
+        };
+
         protected async override Task OnInitializedAsync()
         {
             _checklistCategories = await ChecklistService.GetChecklistCategories();
