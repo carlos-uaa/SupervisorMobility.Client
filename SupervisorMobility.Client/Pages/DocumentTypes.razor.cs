@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages
 {
@@ -18,6 +19,12 @@ namespace SupervisorMobility.Client.Pages
         protected async override Task OnInitializedAsync()
         {
             _supportDocumentTypes = await SupportDocumentTypeService.GetSupportDocumentTypes();
+            SupportDocumentTypeService.OnChange += StateHasChanged;
+        }
+
+        public void Dispose()
+        {
+            SupportDocumentTypeService.OnChange -= StateHasChanged;
         }
 
         void CreateSupportDocType()
@@ -28,6 +35,17 @@ namespace SupervisorMobility.Client.Pages
         void EditSupportDocType(int supportDocumentTypeId)
         {
             NavigationManager.NavigateTo($"documenttypes/updatesupportdoctype/{supportDocumentTypeId}");
+        }
+
+        async Task DeleteSupportDocumentType(int supportDocumentTypeId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this support document type?");
+
+            if (confirm)
+            {
+                _supportDocumentTypes.RemoveAll(supportDocumentType => supportDocumentType.SupportDocumentTypeId == supportDocumentTypeId);
+                await SupportDocumentTypeService.DeleteSupportDocumentType(supportDocumentTypeId);
+            }
         }
     }
 }

@@ -14,6 +14,9 @@ namespace SupervisorMobility.Client.Services.SupportDocumentTypeService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        // Support document types changed
+        public event Action OnChange;
+
         // Create support document type
         public async Task<SupportDocumentType> CreateSupportDocumentType(SupportDocumentType supportDocumentType)
         {

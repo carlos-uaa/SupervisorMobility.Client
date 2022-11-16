@@ -2,6 +2,9 @@
 {
     public interface ISupportDocumentTypeService
     {
+        // Support document types changed
+        event Action OnChange;
+
         // Get all support document types
         Task<List<SupportDocumentType>> GetSupportDocumentTypes();
 
