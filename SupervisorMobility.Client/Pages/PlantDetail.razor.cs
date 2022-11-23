@@ -9,6 +9,8 @@ namespace SupervisorMobility.Client.Pages
 
         Plant _plant = new();
 
+        private List<Area> _areas = new();
+
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -20,6 +22,21 @@ namespace SupervisorMobility.Client.Pages
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
+            _areas = await AreaService.GetAreas(PlantId);
+        }
+
+        void CreateArea(int PlantId)
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/createarea");
+        }
+
+        void UpdateArea(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/updatearea/{areaId}");
+        }
+        void AreaDetails(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}");
         }
     }
 }

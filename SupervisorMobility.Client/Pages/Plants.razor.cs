@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages
 {
@@ -31,6 +32,17 @@ namespace SupervisorMobility.Client.Pages
         void PlantDetails(int plantId)
         {
             NavigationManager.NavigateTo($"plants/{plantId}");
+        }
+
+        async Task DeletePlant(int plantId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this plant?");
+
+            if (confirm)
+            {
+                _plants.RemoveAll(plant => plant.PlantId == plantId);
+                await PlantService.DeletePlant(plantId);
+            }
         }
     }
 }
