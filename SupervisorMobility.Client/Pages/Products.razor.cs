@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages
 {
@@ -11,21 +12,32 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Products", href: "", disabled: true)
         };
 
-        private List<Product> _products = new List<Product>
-        {
-            new Product { ProductId = 1, Code = "P71A", Description = "Infiniti P71A", IsActive = true },
-            new Product { ProductId = 2, Code = "V177", Description = "Mercedes V177", IsActive = false },
-            new Product { ProductId = 3, Code = "X247", Description = "Mercedes X247", IsActive = true },
-            new Product { ProductId = 4, Code = "N71A", Description = "Infiniti N71A", IsActive = true },
-        };
+        public List<Product> _products { get; set; } = new();
+        Product _product = new();
 
-        void EditProduct()
+        protected async override Task OnInitializedAsync()
         {
-            NavigationManager.NavigateTo($"products/updateproduct");
+            _products = await ProductService.GetProducts();
+        }
+
+        void EditProduct(int productId)
+        {
+            NavigationManager.NavigateTo($"products/updateproduct/{productId}");
         }
         void CreateProduct()
         {
             NavigationManager.NavigateTo($"products/createproduct");
+        }
+
+        async Task DeleteProduct(int productId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this operation?");
+
+            if (confirm)
+            {
+                _products.RemoveAll(product => product.ProductId == productId);
+                await ProductService.DeleteProduct(productId);
+            }
         }
     }
 }
