@@ -11,10 +11,14 @@ namespace SupervisorMobility.Client.Pages
         public int AreaId { get; set; }
 
         [Parameter]
+        public int DistributionId { get; set; }
+
+        [Parameter]
         public int OperationId { get; set; }
 
         Plant _plant = new();
         Area _area = new();
+        Distribution _distribution = new();
         public Operation _operation { get; set; } = new();
 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -24,31 +28,42 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Plants", href: "/plants"),
             new BreadcrumbItem("PlantDetail", href: ""),
             new BreadcrumbItem("AreaDetail", href: ""),
+            new BreadcrumbItem("DistributionDetail", href: ""),
             new BreadcrumbItem("UpdateOperation", href: "", disabled: true)
         };
 
-        protected override async Task OnParametersSetAsync()
+        async void UpdateOperationAsync()
         {
-            Operation dbOperation = await OperationService.GetOperationById(PlantId, AreaId, OperationId);
-            _plant = await PlantService.GetPlantById(PlantId);
-            _area = await AreaService.GetAreaById(PlantId, AreaId);
-            _operation = dbOperation;
-        }
-
-        void UpdateOperationAsync()
-        {
-            OperationService.UpdateOperation(PlantId, AreaId, _operation);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
 
         void CancelCreateOrUpdate()
         {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            _plant = await PlantService.GetPlantById(PlantId);
+            _area = await AreaService.GetAreaById(PlantId, AreaId);
+            _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
+            _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
         }
 
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
+        }
+
+        void GoToArea()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
+        }
+
+        void GoToDistribution()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
     }
 }

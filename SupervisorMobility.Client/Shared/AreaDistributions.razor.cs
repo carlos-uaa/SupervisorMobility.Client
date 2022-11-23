@@ -24,7 +24,7 @@ namespace SupervisorMobility.Client.Shared
 
         void EditDistribution(int distributionId)
         {
-            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}");
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/updatedistribution/{distributionId}");
         }
 
         async Task DeleteDistribution(int distributionId)
@@ -36,6 +36,11 @@ namespace SupervisorMobility.Client.Shared
                 _distributions.RemoveAll(distribution => distribution.DistributionId == distributionId);
                 await DistributionService.DeleteDistribution(plantId, areaId, distributionId);
             }
+        }
+
+        void DistributionDetails(int distributionId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}");
         }
     }
 }

@@ -10,8 +10,12 @@ namespace SupervisorMobility.Client.Pages
         [Parameter]
         public int AreaId { get; set; }
 
+        [Parameter]
+        public int DistributionId { get; set; }
+
         Plant _plant = new();
         Area _area = new();
+        Distribution _distribution = new();
         Operation _operation = new();
 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -21,13 +25,14 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Plants", href: "/plants"),
             new BreadcrumbItem("PlantDetail", href: ""),
             new BreadcrumbItem("AreaDetail", href: ""),
+            new BreadcrumbItem("DistributionDetail", href: ""),
             new BreadcrumbItem("New Operation", href: "", disabled: true)
         };
 
         async void CreateOperationAsync()
         {
-            var result = await OperationService.CreateOperation(PlantId, AreaId, _operation);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
 
         void CancelCreateOrUpdate()
@@ -39,11 +44,22 @@ namespace SupervisorMobility.Client.Pages
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
+            _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
         }
 
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
+        }
+
+        void GoToArea()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
+        }
+
+        void GoToDistribution()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
     }
 }

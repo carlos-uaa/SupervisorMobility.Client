@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Pages
 
         Product _product = new();
 
-        async void CreateProductAsync()
+        void CreateProductAsync()
         {
             NavigationManager.NavigateTo($"products");
         }

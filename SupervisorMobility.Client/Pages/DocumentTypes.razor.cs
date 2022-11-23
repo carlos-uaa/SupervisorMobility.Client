@@ -19,12 +19,6 @@ namespace SupervisorMobility.Client.Pages
         protected async override Task OnInitializedAsync()
         {
             _supportDocumentTypes = await SupportDocumentTypeService.GetSupportDocumentTypes();
-            SupportDocumentTypeService.OnChange += StateHasChanged;
-        }
-
-        public void Dispose()
-        {
-            SupportDocumentTypeService.OnChange -= StateHasChanged;
         }
 
         void CreateSupportDocType()
