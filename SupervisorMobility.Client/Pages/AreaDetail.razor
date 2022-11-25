@@ -2,7 +2,9 @@
 @inject IAreaService AreaService
 @inject IPlantService PlantService
 @inject IOperationService OperationService
+@inject IDistributionService DistributionService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @_area.Description</PageTitle>
@@ -29,18 +31,96 @@
 <MudGrid>
     @*Area info*@
     <MudItem xs="12" sm="6" md="3">
-        <CascadingValue Value="PlantId" Name="PlantId">
-            <CascadingValue Value="AreaId" Name="AreaId">
-                <AreaInfo />
-            </CascadingValue>
-        </CascadingValue>
+        <MudCard>
+            <MudCardContent Style="justify-content:center">
+                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+                <MudText Align="Align.Center">@_area.Code</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center">@_area.Description</MudText>
+                @if (_area.IsActive == true)
+                {
+                    <MudText Align="Align.Center" Class="pt-2">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Class="pa-4">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
     </MudItem>
     @*Related distributions*@
     <MudItem xs="12" sm="6" md="9">
-        <CascadingValue Value="PlantId" Name="PlantId">
-            <CascadingValue Value="AreaId" Name="AreaId">
-                <AreaDistributions />
-            </CascadingValue>
-        </CascadingValue>
+        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Distributions">
+                @if (_distributions.Count > 0)
+                {
+                    <MudTable Items="_distributions" Hover="true" T="Distribution">
+                        <ToolBarContent>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateDistribution())"></MudIconButton>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudText Align="Align.Center">Distribution Id</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Code</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Description</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Status</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="DistributionId">
+                                <MudText Align="Align.Center">@context.DistributionId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Code">
+                                <MudText Align="Align.Center">@context.Code</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Description">
+                                <MudText Align="Align.Center">@context.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => DistributionDetails(context.DistributionId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateDistribution(context.DistributionId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="edit" @onclick="(() => DeleteDistribution(context.DistributionId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no distributions created for this area.</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
+                        <MudButton Color="Color.Info" @onclick="(() => CreateDistribution())">Create a new distribution</MudButton>
+                    </MudText>
+                }
+            </MudTabPanel>
+        </MudTabs>
     </MudItem>
 </MudGrid>

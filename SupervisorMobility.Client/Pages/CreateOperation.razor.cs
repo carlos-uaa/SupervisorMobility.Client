@@ -4,6 +4,7 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class CreateOperation
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
@@ -13,11 +14,7 @@ namespace SupervisorMobility.Client.Pages
         [Parameter]
         public int DistributionId { get; set; }
 
-        Plant _plant = new();
-        Area _area = new();
-        Distribution _distribution = new();
-        Operation _operation = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -29,17 +26,13 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("New Operation", href: "", disabled: true)
         };
 
-        async void CreateOperationAsync()
-        {
-            var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
-        }
+        // Objects
+        Plant _plant = new();
+        Area _area = new();
+        Distribution _distribution = new();
+        Operation _operation = new();
 
-        void CancelCreateOrUpdate()
-        {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
-
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
@@ -47,6 +40,7 @@ namespace SupervisorMobility.Client.Pages
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
         }
 
+        // Links
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
@@ -60,6 +54,19 @@ namespace SupervisorMobility.Client.Pages
         void GoToDistribution()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
+        // Create operation
+        async void CreateOperationAsync()
+        {
+            var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
+        // Cancel submit form
+        void CancelCreateOrUpdate()
+        {
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
         }
     }
 }

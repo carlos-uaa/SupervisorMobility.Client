@@ -1,5 +1,7 @@
 ﻿@page "/checklistcategories/category/{categoryId:int}"
 @inject IChecklistService ChecklistService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @_checklistCategory.Description</PageTitle>
@@ -22,14 +24,101 @@
 <MudGrid>
     @*Plant info*@
     <MudItem xs="12" sm="6" md="3">
-        <CascadingValue Value="CategoryId">
-            <ChecklistCategoryInfo />
-        </CascadingValue>
+        <MudCard>
+            <MudCardContent Style="justify-content:center">
+                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.ViewList"></MudIcon></MudText>
+                <MudText Align="Align.Center">@_checklistCategory.Code</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center">@_checklistCategory.Description</MudText>
+                @if (_checklistCategory.IsActive == true)
+                {
+                    <MudText Align="Align.Center" Class="pt-2">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Class="pa-4">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
     </MudItem>
     @*Related questions*@
     <MudItem xs="12" sm="6" md="9">
-        <CascadingValue Value="CategoryId">
-            <ChecklistCategoryQuestions />
-        </CascadingValue>
+        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+            <MudTabPanel Icon="@Icons.Material.Filled.Checklist" Text="Questions">
+                @if (_checklistQuestions.Count() > 0)
+                {
+                    <MudTable Items="_checklistQuestions" Hover="true" T="ChecklistQuestion">
+                        <ToolBarContent>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateQuestion(CategoryId))"></MudIconButton>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudText Align="Align.Center">Question Id</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Code</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Description</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Sequence</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Status</MudText>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="QuestionId">
+                                <MudText Align="Align.Center">@context.QuestionID</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Code">
+                                <MudText Align="Align.Center">@context.Code</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Description">
+                                <MudText Align="Align.Center">@context.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                                <MudText Align="Align.Center">@context.CategorySequence</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateQuestion(CategoryId, context.QuestionID))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteQuestion(CategoryId, context.QuestionID))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no questions created for this category.</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
+                        <MudButton Color="Color.Info" @onclick="(() => CreateQuestion(CategoryId))">Create a new question</MudButton>
+                    </MudText>
+                }
+            </MudTabPanel>
+        </MudTabs>
     </MudItem>
 </MudGrid>

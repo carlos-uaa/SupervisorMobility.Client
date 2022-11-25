@@ -5,9 +5,7 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class ChecklistCategoriesSequence
     {
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
-        public ChecklistCategory _checklistCategory { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -16,11 +14,17 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Sequence", href: "", disabled: true),
         };
 
+        // Objects
+        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+        public ChecklistCategory _checklistCategory { get; set; } = new();
+
+        // Initialization
         protected async override Task OnInitializedAsync()
         {
             _checklistCategories = await ChecklistService.GetChecklistCategories();
         }
 
+        // Drag and drop category
         async void ItemUpdated(MudItemDropInfo<ChecklistCategory> dropItem)
         {
             dropItem.Item.Container = dropItem.DropzoneIdentifier;
@@ -41,6 +45,7 @@ namespace SupervisorMobility.Client.Pages
             UpdateSequence(currentCategory, _checklistCategory);
         }
 
+        // Update sequence
         void UpdateSequence(int currentCategory, ChecklistCategory checklistCategory)
         {
             ChecklistService.UpdateCategorySequence(currentCategory, checklistCategory);

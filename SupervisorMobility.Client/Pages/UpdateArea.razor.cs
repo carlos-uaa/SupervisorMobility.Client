@@ -4,15 +4,14 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class UpdateArea
     {
+        // Parameters
         [Parameter]
         public int plantId { get; set; }
 
         [Parameter]
         public int areaId { get; set; }
 
-        Plant _plant = new();
-        public Area _area { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -22,6 +21,11 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("UpdateArea", href: "", disabled: true)
         };
 
+        // Objects
+        Plant _plant = new();
+        public Area _area { get; set; } = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             Area dbArea = await AreaService.GetAreaById(plantId, areaId);
@@ -29,14 +33,16 @@ namespace SupervisorMobility.Client.Pages
             _area = dbArea;
         }
 
-        void UpdateAreaAsync()
+        // Cancel submit form
+        void CancelCreateOrUpdate()
         {
-            AreaService.UpdateArea(plantId, _area);
             NavigationManager.NavigateTo($"plants/{plantId}");
         }
 
-        void CancelCreateOrUpdate()
+        // Update area
+        void UpdateAreaAsync()
         {
+            AreaService.UpdateArea(plantId, _area);
             NavigationManager.NavigateTo($"plants/{plantId}");
         }
     }

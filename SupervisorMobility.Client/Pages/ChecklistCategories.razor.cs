@@ -1,11 +1,11 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages
 {
     public partial class ChecklistCategories
     {
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -13,17 +13,35 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Checklist categories", href: "", disabled: true),
         };
 
+        // Objects
+        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+
+        // Initialization
         protected async override Task OnInitializedAsync()
         {
             _checklistCategories = await ChecklistService.GetChecklistCategories();
         }
 
+        // Category details
         void CategoryDetails(int categoryId)
         {
             NavigationManager.NavigateTo($"/checklistcategories/category/{categoryId}");
         }
 
-        void EditCategory(int categoryId)
+        // Delete category
+        async Task DeleteCategory(int categoryId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this category?");
+
+            if (confirm)
+            {
+                _checklistCategories.RemoveAll(category => category.ChecklistCategoryId == categoryId);
+                await ChecklistService.DeleteCategory(categoryId);
+            }
+        }
+
+        // Update category
+        void UpdateCategory(int categoryId)
         {
             NavigationManager.NavigateTo($"checklistcategories/category/updatecategory/{categoryId}");
         }

@@ -134,5 +134,21 @@ namespace SupervisorMobility.Client.Services.ChecklistService
         {
             var response = await _http.PutAsJsonAsync($"checklistcategories/{categoryId}/checklistquestions/{question.QuestionID}", question);
         }
+
+        // Get all checklist questions by category Id
+        public async Task<List<ChecklistQuestion>> GetChecklistQuestionsByCategoryId(int categoryId)
+        {
+            var response = await _http.GetAsync($"checklistcategories/{categoryId}/checklistquestions");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var questions = JsonSerializer.Deserialize<List<ChecklistQuestion>>(content, _options);
+
+            return questions;
+        }
     }
 }

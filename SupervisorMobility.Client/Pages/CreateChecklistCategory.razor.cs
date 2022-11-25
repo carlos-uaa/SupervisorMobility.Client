@@ -4,8 +4,7 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class CreateChecklistCategory
     {
-        ChecklistCategory _checklistCategory = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -14,6 +13,10 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("New category", href: "", disabled: true),
         };
 
+        // Objects
+        ChecklistCategory _checklistCategory = new();
+
+        // Create checklist category
         async void CreateCategoryAsync()
         {
             var result = await ChecklistService.CreateCategory(_checklistCategory);

@@ -4,6 +4,7 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class UpdateDistribution
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
@@ -13,10 +14,7 @@ namespace SupervisorMobility.Client.Pages
         [Parameter]
         public int DistributionId { get; set; }
 
-        Plant _plant = new();
-        Area _area = new();
-        public Distribution _distribution { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -27,6 +25,12 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("UpdateDist", href: "", disabled: true)
         };
 
+        // Objects
+        Plant _plant = new();
+        Area _area = new();
+        public Distribution _distribution { get; set; } = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
@@ -34,17 +38,7 @@ namespace SupervisorMobility.Client.Pages
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
         }
 
-        void UpdateDistributionAsync()
-        {
-            DistributionService.UpdateDistribution(PlantId, AreaId, _distribution);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
-
-        void CancelCreateOrUpdate()
-        {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
-
+        // Links
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
@@ -53,6 +47,19 @@ namespace SupervisorMobility.Client.Pages
         void GoToArea()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
+        }
+
+        // Update distribution
+        void UpdateDistributionAsync()
+        {
+            DistributionService.UpdateDistribution(PlantId, AreaId, _distribution);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+        }
+
+        // Cancel submit form
+        void CancelCreateOrUpdate()
+        {
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
         }
     }
 }

@@ -4,11 +4,11 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class UpdatePlant
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
-        public Plant _plant { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -17,12 +17,17 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("UpdatePlant", href: "", disabled: true)
         };
 
+        // Objects
+        public Plant _plant { get; set; } = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             Plant dbPlant = await PlantService.GetPlantById(PlantId);
             _plant = dbPlant;
         }
 
+        // Update plant
         void UpdatePlantAsync()
         {
             PlantService.UpdatePlant(_plant);

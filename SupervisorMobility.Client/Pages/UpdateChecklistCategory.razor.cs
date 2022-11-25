@@ -4,11 +4,11 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class UpdateChecklistCategory
     {
+        // Parameters
         [Parameter]
         public int CategoryId { get; set; }
 
-        public ChecklistCategory _checklistCategory { get; set; } = new();
-
+        // Breadcrumb links 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -17,12 +17,17 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("UpdateCategory", href: "", disabled: true),
         };
 
+        // Objects
+        public ChecklistCategory _checklistCategory { get; set; } = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             ChecklistCategory dbCategory = await ChecklistService.GetCategoryById(CategoryId);
             _checklistCategory = dbCategory;
         }
 
+        // Update category
         void UpdateCategory()
         {
             ChecklistService.UpdateCategory(_checklistCategory);

@@ -5,6 +5,7 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class DistributionDetail
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
@@ -14,12 +15,7 @@ namespace SupervisorMobility.Client.Pages
         [Parameter]
         public int DistributionId { get; set; }
 
-        Plant _plant = new();
-        Area _area = new();
-        Distribution _distribution = new();
-
-        private List<Operation> _operations = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -30,6 +26,13 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("DistributionDetail", href: "", disabled: true)
         };
 
+        // Objects
+        Plant _plant = new();
+        Area _area = new();
+        Distribution _distribution = new();
+        private List<Operation> _operations = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
@@ -38,6 +41,7 @@ namespace SupervisorMobility.Client.Pages
             _operations = await OperationService.GetOperations(PlantId, AreaId, DistributionId);
         }
 
+        // Links
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
@@ -48,16 +52,13 @@ namespace SupervisorMobility.Client.Pages
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
         }
 
+        // Create operation
         void CreateOperation()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/createoperation");
         }
 
-        void EditOperation(int operationId)
-        {
-            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/updateoperation/{operationId}");
-        }
-
+        // Delete operation
         async Task DeleteOperation(int operationId)
         {
             bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this operation?");
@@ -68,5 +69,13 @@ namespace SupervisorMobility.Client.Pages
                 await OperationService.DeleteOperation(PlantId, AreaId, DistributionId, operationId);
             }
         }
+
+        // Update operation
+        void UpdateOperation(int operationId)
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/updateoperation/{operationId}");
+        }
+
+
     }
 }

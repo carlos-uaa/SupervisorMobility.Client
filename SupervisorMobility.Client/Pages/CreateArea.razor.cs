@@ -4,12 +4,11 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class CreateArea
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
-        Plant _plant = new();
-        Area _area = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -19,20 +18,27 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("New Area", href: "", disabled: true)
         };
 
-        async void CreateAreaAsync()
+        // Objects
+        Plant _plant = new();
+        Area _area = new();
+
+        // Initialization
+        protected override async Task OnParametersSetAsync()
         {
-            var result = await AreaService.CreateArea(PlantId, _area);
-            NavigationManager.NavigateTo($"plants/{PlantId}");
+            _plant = await PlantService.GetPlantById(PlantId);
         }
 
+        // Cancel form submit
         void CancelCreateOrUpdate()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
         }
 
-        protected override async Task OnParametersSetAsync()
+        // Create area
+        async void CreateAreaAsync()
         {
-            _plant = await PlantService.GetPlantById(PlantId);
+            var result = await AreaService.CreateArea(PlantId, _area);
+            NavigationManager.NavigateTo($"plants/{PlantId}");
         }
     }
 }

@@ -4,11 +4,11 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class UpdateSupportDocumentType
     {
+        // Parameters
         [Parameter]
         public int SupportDocumentTypeId { get; set; }
 
-        public SupportDocumentType _supportDocumentType { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -17,12 +17,17 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("UpdateDocType", href: "", disabled: true)
         };
 
+        // Objects
+        public SupportDocumentType _supportDocumentType { get; set; } = new();
+
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             SupportDocumentType dbSupportDocumentType = await SupportDocumentTypeService.GetSupportDocumentTypeById(SupportDocumentTypeId);
             _supportDocumentType = dbSupportDocumentType;
         }
 
+        // Update support document type
         void UpdateSupportDocumentTypeAsync()
         {
             SupportDocumentTypeService.UpdateSupportDocumentType(_supportDocumentType);

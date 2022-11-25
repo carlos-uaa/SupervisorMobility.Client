@@ -23,6 +23,9 @@
         // Update checklist category sequence
         Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory);
 
+        // Get all checklist questions by category Id
+        Task<List<ChecklistQuestion>> GetChecklistQuestionsByCategoryId(int categoryId);
+
         // Get checklist question by Id
         Task<ChecklistQuestion> GetQuestionById(int categoryId, int questionId);
 

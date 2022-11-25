@@ -4,13 +4,11 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class CreateChecklistQuestion
     {
+        // Parameters
         [Parameter]
         public int categoryId { get; set; }
 
-        ChecklistCategory _checklistCategory = new();
-        ChecklistQuestion _question = new();
-        public List<QuestionType> _questionTypes { get; set; } = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -20,17 +18,26 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("New question", href: "", disabled: true),
         };
 
+        // Objects
+        ChecklistCategory _checklistCategory = new();
+        ChecklistQuestion _question = new();
+        public List<QuestionType> _questionTypes { get; set; } = new();
+
+        // Initialization
         protected async override Task OnInitializedAsync()
         {
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
             _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
         }
 
+        // Create question
         async void CreateQuestionAsync()
         {
             var result = await ChecklistService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
+
+        // Cancel submit form
         void CancelCreateOrUpdate()
         {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");

@@ -4,16 +4,14 @@ namespace SupervisorMobility.Client.Pages
 {
     public partial class CreateDistribution
     {
+        // Parameters
         [Parameter]
         public int PlantId { get; set; }
 
         [Parameter]
         public int AreaId { get; set; }
 
-        Plant _plant = new();
-        Area _area = new();
-        Distribution _distribution = new();
-
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -24,23 +22,19 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("New Distribution", href: "", disabled: true)
         };
 
-        async void CreateDistributionAsync()
-        {
-            var result = await DistributionService.CreateDistribution(PlantId, AreaId, _distribution);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
+        // Objects
+        Plant _plant = new();
+        Area _area = new();
+        Distribution _distribution = new();
 
-        void CancelCreateOrUpdate()
-        {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
-
+        // Initialization
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
         }
 
+        // Links
         void GoToPlant()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}");
@@ -49,6 +43,19 @@ namespace SupervisorMobility.Client.Pages
         void GoToArea()
         {
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
+        }
+
+        // Cancel submit form
+        void CancelCreateOrUpdate()
+        {
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+        }
+
+        // Create distribution
+        async void CreateDistributionAsync()
+        {
+            var result = await DistributionService.CreateDistribution(PlantId, AreaId, _distribution);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
         }
     }
 }
