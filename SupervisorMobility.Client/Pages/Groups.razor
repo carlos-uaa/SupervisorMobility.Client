@@ -1,0 +1,72 @@
+﻿@page "/groups"
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Groups</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Groups table*@
+<MudTable Items="_groups" Hover="true" T="Group">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Groups</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateGroup())"></MudIconButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudText Align="Align.Center">Group Id</MudText>
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Code</MudText>
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Description</MudText>
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Status</MudText>
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Actions</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="GroupId">
+            <MudText Align="Align.Center">@context.GroupId</MudText>
+        </MudTd>
+        <MudTd DataLabel="Code">
+            <MudText Align="Align.Center">@context.Code</MudText>
+        </MudTd>
+        <MudTd DataLabel="Description">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+        <MudTd DataLabel="Status">
+            @if (context.IsActive == true)
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                </MudText>
+            }
+            else
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                </MudText>
+            }
+        </MudTd>
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateGroup(context.GroupId))"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteGroup(context.GroupId))"></MudIconButton>
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
