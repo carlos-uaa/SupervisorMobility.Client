@@ -4,6 +4,7 @@ global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.DistributionService;
 global using SupervisorMobility.Client.Services.GroupService;
+global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
 global using SupervisorMobility.Client.Services.ProductsService;
@@ -33,5 +34,6 @@ builder.Services.AddScoped<ISupportDocumentTypeService, SupportDocumentTypeServi
 builder.Services.AddScoped<IDistributionService, DistributionService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 
 await builder.Build().RunAsync();
