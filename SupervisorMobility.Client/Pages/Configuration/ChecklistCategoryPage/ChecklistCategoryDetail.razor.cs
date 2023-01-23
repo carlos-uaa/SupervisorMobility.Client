@@ -1,0 +1,56 @@
+﻿using Microsoft.JSInterop;
+using MudBlazor;
+
+namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+{
+    public partial class ChecklistCategoryDetail
+    {
+        // Parameters
+        [Parameter]
+        public int CategoryId { get; set; }
+
+        // Breadcrumb links
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("CategoryDetail", href: "", disabled: true),
+        };
+
+        // Objects
+        ChecklistCategory _checklistCategory = new();
+        public List<ChecklistQuestion> _checklistQuestions { get; set; } = new();
+
+        // Initialization
+        protected override async Task OnParametersSetAsync()
+        {
+            _checklistCategory = await ChecklistService.GetCategoryIncludingQuestions(CategoryId);
+            _checklistQuestions = await ChecklistService.GetChecklistQuestionsByCategoryId(CategoryId);
+        }
+
+        // Create question
+        void CreateQuestion(int categoryId)
+        {
+            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/createquestion");
+        }
+
+        // Delete question
+        async Task DeleteQuestion(int categoryId, int questionId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this question?");
+
+            if (confirm)
+            {
+                _checklistQuestions.RemoveAll(question => question.QuestionID == questionId);
+                await ChecklistService.DeleteQuestion(categoryId, questionId);
+            }
+        }
+
+        // Update question
+        void UpdateQuestion(int categoryId, int questionId)
+        {
+            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/updatequestion/{questionId}");
+        }
+    }
+}
