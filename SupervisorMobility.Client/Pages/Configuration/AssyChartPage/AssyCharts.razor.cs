@@ -1,12 +1,17 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
+using System.Text.RegularExpressions;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
     public partial class AssyCharts
     {
+        
+        //Boolean CompatibleFile = false; 
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -29,6 +34,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "COLOCACION DE CARNAZA LH", Model = "P71A" });
 
         }
+       
 
 
 

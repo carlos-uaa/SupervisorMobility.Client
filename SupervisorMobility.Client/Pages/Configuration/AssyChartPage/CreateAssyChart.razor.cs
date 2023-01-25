@@ -2,7 +2,8 @@
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
-    public partial class UpdateAssyChart
+    public partial class CreateAssyChart
     {
+        
     }
 }
