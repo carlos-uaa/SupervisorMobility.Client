@@ -15,6 +15,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             new BreadcrumbItem("Assy Chart", href: "", disabled: true),
         };
 
+
         // Objects
         public List<AssyChart> _assychart { get; set; } = new List<AssyChart>();
 
