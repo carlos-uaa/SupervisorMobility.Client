@@ -1,11 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
-using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
-using SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage;
-using System.Text.RegularExpressions;
-using static MudBlazor.CategoryTypes;
+﻿using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -19,16 +12,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             new BreadcrumbItem("Assy Chart", href: "", disabled: true),
         };
 
-<<<<<<< Updated upstream
 
-=======
         //Objects
         private bool dense = false;
         private bool hover = true;
         private bool ronly = false;
-        private bool canCancelEdit = false;
         private string searchString = "";
->>>>>>> Stashed changes
+
         // Objects
         public List<AssyChart> _assychart { get; set; } = new();
         public List<ChecklistCategory> _checklistCategories { get; set; } = new();
