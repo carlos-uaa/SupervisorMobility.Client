@@ -1,12 +1,14 @@
 ﻿@page "/assychart"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-@inject ILogger<IBrowserFile> Logger
+@inject IChecklistService ChecklistService
+@using System.Net.Http.Json
+@using MudBlazor
+@inject ISnackbar Snackbar
 
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Assy Chart</PageTitle>
-
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -14,101 +16,53 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
-@*Upload File*@
-<MudContainer>
-    <MudItem xs="12" sm="6" md="3">
-        <MudCard>
-            <MudCardContent Style="justify-content:center">
-                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
-                <MudText Align="Align.Center">@_distribution.Code</MudText>
-                <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
-                @if (_distribution.IsActive == true)
-                {
-                    <MudText Align="Align.Center" Class="pt-2">
-                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                    </MudText>
-                }
-                else
-                {
-                    <MudText Align="Align.Center" Class="pa-4">
-                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                    </MudText>
-                }
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-    @*Related operations*@
-    <MudItem xs="12" sm="6" md="9">
-        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Operations">
-                @if (_operations.Count > 0)
-                {
-                    <MudTable Items="_operations" Hover="true" T="Operation">
-                        <ToolBarContent>
-                            <MudSpacer />
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateOperation())"></MudIconButton>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>
-                                <MudText Align="Align.Center">Operation Id</MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">Code</MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">Description</MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">Status</MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">Actions</MudText>
-                            </MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="OperationId">
-                                <MudText Align="Align.Center">@context.OperationId</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Code">
-                                <MudText Align="Align.Center">@context.Code</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Description">
-                                <MudText Align="Align.Center">@context.Description</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Status">
-                                @if (context.IsActive == true)
-                                {
-                                    <MudText Align="Align.Center">
-                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                                    </MudText>
-                                }
-                                else
-                                {
-                                    <MudText Align="Align.Center">
-                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                                    </MudText>
-                                }
-                            </MudTd>
-                            <MudTd>
-                                <MudText Align="Align.Center">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateOperation(context.OperationId))"></MudIconButton>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="edit" @onclick="(() => DeleteOperation(context.OperationId))"></MudIconButton>
-                                </MudText>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-                else
-                {
-                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no operations created for this distribution.</MudText>
-                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-                        <MudButton Color="Color.Info" @onclick="(() => CreateOperation())">Create a new operation</MudButton>
+<MudTable Items="_assychart" T="AssyChart" Dense="@dense" Hover="@hover" ReadOnly="@ronly"  
+          SortLabel="Sort By">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Assy Chart</MudText>
+        
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudSpacer />
+        <MudIconButton Href="/assychart/createassychart" Icon="@Icons.Material.Filled.Add" aria-label="add"></MudIconButton>
 
-                    </MudText>
-                }
-            </MudTabPanel>
-        </MudTabs>
-    </MudItem>
-</MudContainer>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.Stage)">Etapa</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.Distribution)">Distribución</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.GOS)">GOS</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.OperationName)">Nombre de la operación</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.Model)">Model</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.Model)">Model</MudTableSortLabel></MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="CategoryId">
+            <MudText Align="Align.Center">@context.Stage</MudText>
+        </MudTd>
+        <MudTd DataLabel="Code">
+            <MudText Align="Align.Center">@context.Distribution</MudText>
+        </MudTd>
+        <MudTd DataLabel="Description">
+            <MudText Align="Align.Center">@context.GOS</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.OperationName</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.Model</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.Stage</MudText>
+        </MudTd>
+        <MudTd> 
+            <MudText Align="Align.Center">
+                <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete"></MudIconButton>
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 

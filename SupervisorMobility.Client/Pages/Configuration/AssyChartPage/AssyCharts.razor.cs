@@ -3,15 +3,14 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
+using SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage;
 using System.Text.RegularExpressions;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
     public partial class AssyCharts
     {
-        
-        //Boolean CompatibleFile = false; 
-
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -20,9 +19,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             new BreadcrumbItem("Assy Chart", href: "", disabled: true),
         };
 
+<<<<<<< Updated upstream
 
+=======
+        //Objects
+        private bool dense = false;
+        private bool hover = true;
+        private bool ronly = false;
+        private bool canCancelEdit = false;
+        private string searchString = "";
+>>>>>>> Stashed changes
         // Objects
-        public List<AssyChart> _assychart { get; set; } = new List<AssyChart>();
+        public List<AssyChart> _assychart { get; set; } = new();
+        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+
+
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -33,10 +44,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "SET FR DOOR PROTECTOR LH", Model = "P71A" });
             _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "COLOCACION DE CARNAZA LH", Model = "P71A" });
 
+
         }
-       
 
 
+        //Filtering
+
+        private bool FilterFunc(AssyChart element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            //if (element.Sign.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if ($"{element.Number} {element.Position} {element.Molar}".Contains(searchString))
+            //    return true;
+            return false;
+        }
 
     }
 }
