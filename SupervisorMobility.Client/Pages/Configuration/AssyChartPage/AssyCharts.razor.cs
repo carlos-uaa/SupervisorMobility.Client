@@ -25,17 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-        // Initialization
-        protected async override Task OnInitializedAsync()
-        {
-            _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "TX2300-5NA_1", OperationName = "SET-FR FDR PROTECTOR LH", Model = "P71A" });
-            _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "TX2400-5NA_1", OperationName = "SET FR DOOR PROTECTOR LH", Model = "P71A" });
-            _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "RETIRO DE JIG EN PUERTAS LH", Model = "P71A" });
-            _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "SET FR DOOR PROTECTOR LH", Model = "P71A" });
-            _assychart.Add(new AssyChart() { Stage = "T1", Distribution = "SET DOOR PROTECTOR LH", GOS = "NO GOS", OperationName = "COLOCACION DE CARNAZA LH", Model = "P71A" });
-
-
-        }
+      
 
 
         //Filtering
