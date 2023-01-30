@@ -37,9 +37,9 @@ namespace SupervisorMobility.Client.Services.AssyChartService
                 throw new ApplicationException(content);
             }
 
-            var assychart = JsonSerialized.Deserialize<AssyChart>(content, _options);
-            return assychart;
+            var assychart = JsonSerializer.Deserialize<AssyChart>(content, _options);
 
+            return assychart;
         }
 
         public Task<List<AssyChart>> GetAssyCharts()

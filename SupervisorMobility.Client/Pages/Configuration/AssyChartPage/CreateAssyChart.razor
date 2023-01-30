@@ -1,10 +1,10 @@
 ﻿@page "/assychart/createassychart"
 
-@*  Injects *@
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
 @inject IDistributionService DistributionServices
-@inject IAssyChartService AssyChartService
+@inject IAssyChartService AssyChartServices
+@inject IProductService ProductServices
 @inject NavigationManager NavigationManager
 
 @*Title*@
@@ -72,12 +72,22 @@
                     <MudCardContent>
                         <MudText Typo="Typo.h6">Operation Details</MudText>
                         <MudTextField Label="Operation description"
-                                      @bind-Value="_newassychart.Operation.Description" For="@(() => _newassychart.Operation.Description)" />
+                                      @bind-Value="_newassychart.DescriptionOperation" For="@(() => _newassychart.DescriptionOperation)" />
                         <MudTextField Label="Code" Class="mt-3"
-                                      @bind-Value="_newassychart.Operation.Code" For="@(() => _newassychart.Operation.Code)" />
-                        <MudSwitch Class="mt-3" Label="Operation Is active?" @bind-Checked="_newassychart.Operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                      @bind-Value="_newassychart.CodeOperation" For="@(() => _newassychart.CodeOperation)" />
+                        <MudSwitch Class="mt-3" Label="Operation Is active?" @bind-Checked="_newassychart.IsActiveOperation" Color="Color.Info" UnCheckedColor="Color.Dark" />
                     </MudCardContent>
 
+                    @*Mud select of Model/Product *@
+                    <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_newassychart.ProductId" For="@(() => _newassychart.ProductId)">
+                        <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                        @foreach (var type in _products)
+                        {
+                            <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                   
+                    
                     @* Is Active *@
                     <MudSwitch Class="mt-3" Label="Assy Chart Is active?" @bind-Checked="_newassychart.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                 </MudCardContent>

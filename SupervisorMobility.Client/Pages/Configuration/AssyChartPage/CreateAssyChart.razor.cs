@@ -8,6 +8,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         AssyChart _newassychart = new();
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
+        List<Product> _products = new();
         List<Distribution> _distributions { get; set; } = new();
 
 
@@ -23,6 +24,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         protected async override Task OnInitializedAsync()
         {
             _plants = await PlantServices.GetPlants();
+            _products = await ProductServices.GetProducts();
         }
 
 
@@ -41,7 +43,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void CreateNewAssyChartAsync()
         {
-            var result = await AssyChartService.CreateAssyChart(_newassychart);
+            _newassychart.CreationDate = new DateTime();
+            var result = await AssyChartServices.CreateAssyChart(_newassychart);
             NavigationManager.NavigateTo("/assychart");
         }
 

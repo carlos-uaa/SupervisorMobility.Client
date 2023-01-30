@@ -21,12 +21,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         // Objects
         public List<AssyChart> _assychart { get; set; } = new();
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
 
 
 
-      
-
+     
 
         //Filtering
 
