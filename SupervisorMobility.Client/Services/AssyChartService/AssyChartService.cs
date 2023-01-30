@@ -24,7 +24,6 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         public async Task DeleteAssyChart(int assychartId)
         {
             var response = await _http.DeleteAsync($"assycharts/{assychartId}");
-
         }
         //get assychart by id
         public async Task<AssyChart> GetAssyChart(int assyChartId)
@@ -42,9 +41,19 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             return assychart;
         }
 
-        public Task<List<AssyChart>> GetAssyCharts()
+        public async Task<List<AssyChart>> GetAssyCharts()
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync("assycharts");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var assycharts = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
+
+            return assycharts;
         }
 
         public Task<List<AssyChart>> GetAssyChartsByArea(int plantId, int areaId)
