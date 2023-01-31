@@ -10,6 +10,7 @@ global using SupervisorMobility.Client.Services.PlantService;
 global using SupervisorMobility.Client.Services.ProductsService;
 global using SupervisorMobility.Client.Services.QuestionTypeService;
 global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
+global using SupervisorMobility.Client.Services.AssyChartService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -27,6 +28,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
+builder.Services.AddScoped<IAssyChartService, AssyChartService>();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
 builder.Services.AddScoped<IQuestionTypeService, QuestionTypeService>();
 builder.Services.AddScoped<IOperationService, OperationService>();

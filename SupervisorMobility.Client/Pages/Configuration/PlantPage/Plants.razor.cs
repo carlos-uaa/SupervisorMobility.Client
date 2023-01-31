@@ -1,10 +1,12 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
 {
     public partial class Plants
     {
+
         //Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -12,6 +14,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Plants", href: "", disabled: true)
         };
+
+
+
+        //variables to table
+        private bool dense = false;
+        private bool hover = true;
+        private bool striped = false;
+        private bool bordered = false;
+        private string searchString1 = "";
 
         // Objects
         public List<Plant> _plants { get; set; } = new();
@@ -51,6 +62,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         void UpdatePlant(int plantId)
         {
             NavigationManager.NavigateTo($"plants/updateplant/{plantId}");
+        }
+
+        //filter function
+        private bool FilterFunc1(Plant element) => FilterFunc(element, searchString1);
+        private bool FilterFunc(Plant element, string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.PlantId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.PlantId} {element.Code} {element.Description}".Contains(searchString))
+                return true;
+            return false;
         }
     }
 }

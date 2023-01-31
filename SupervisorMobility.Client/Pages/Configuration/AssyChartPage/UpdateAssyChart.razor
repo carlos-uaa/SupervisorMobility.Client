@@ -2,4 +2,122 @@
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Assy Chart</PageTitle>
-}
+
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionServices
+@inject IAssyChartService AssyChartServices
+@inject IProductService ProductServices
+@inject NavigationManager NavigationManager
+
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+@*Form New Assy Chard*@
+<EditForm Model="_assychart" OnValidSubmit="UpdateAssyChartAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Update Assy Chart</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Update Assy Chart</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                @*Mud select of plants *@
+                <MudCardContent>
+                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.PlantId" For="@(() => _assychart.PlantId)" SelectedValuesChanged="UpdateAreas">
+                        <MudSelectItem Disabled="true" Value="@_assychart.PlantId">Select a Plant</MudSelectItem>
+                        @foreach (var type in _plants)
+                        {
+                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @*Mud select of Areas *@
+
+                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.AreaId" For="@(() => _assychart.AreaId)" SelectedValuesChanged="UpdateDistributions">
+                        <MudSelectItem Disabled="true" Value="@_assychart.AreaId">Select a Area</MudSelectItem>
+                        @foreach (var type in _areas)
+                        {
+                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @*Mud select of Distributions *@
+
+                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.DistributionId" For="@(() => _assychart.DistributionId)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.DistributionId">Select a Distribution</MudSelectItem>
+                        @foreach (var type in _distributions)
+                        {
+                            <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @*GOS*@
+                    <MudSelect Label="GOS" Variant="Variant.Text" Placeholder="Select a GOS" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.GOS" For="@(() => _assychart.GOS)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.GOS">Select a GOS</MudSelectItem>
+                        @foreach (string type in _gos)
+                        {
+                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
+
+                        }
+                    </MudSelect>
+                    @*CCP*@
+                    <MudSelect T="string" Label="CCP" Variant="Variant.Text" Placeholder="Select a CCP" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.CCP" For="@(() => _assychart.CCP)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.CCP">Select a CCP</MudSelectItem>
+                        @foreach (var type in _ccp)
+                        {
+                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    @*HOE*@
+                    <MudSelect Label="Hoe" Variant="Variant.Text" Placeholder="Select a HOE" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.HOE" For="@(() => _assychart.HOE)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.HOE">Select a Hoe</MudSelectItem>
+                        @foreach (var type in _hoe)
+                        {
+                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @*Operation*@
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Operation Details</MudText>
+                        <MudTextField Label="Operation description"
+                                      @bind-Value="_assychart.DescriptionOperation" For="@(() => _assychart.DescriptionOperation)" />
+                        <MudTextField Label="Code" Class="mt-3"
+                                      @bind-Value="_assychart.CodeOperation" For="@(() => _assychart.CodeOperation)" />
+                        <MudSwitch Class="mt-3" Label="Operation Is active?" @bind-Checked="_assychart.IsActiveOperation" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    </MudCardContent>
+
+                    @*Mud select of Model/Product *@
+                    <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="_assychart.ProductId" For="@(() => _assychart.ProductId)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.ProductId">Select a Product</MudSelectItem>
+                        @foreach (var type in _products)
+                        {
+                            <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+
+                    @* Is Active *@
+                    <MudSwitch Class="mt-3" Label="Assy Chart Is active?" @bind-Checked="_assychart.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                </MudCardContent>
+
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Update AssyChart</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateAssyChart())">Cancel</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>

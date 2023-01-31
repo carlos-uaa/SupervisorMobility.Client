@@ -2,9 +2,11 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject IChecklistService ChecklistService
+@inject IAssyChartService AssyChartServices
 @using System.Net.Http.Json
 @using MudBlazor
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 
 @*Title*@
@@ -17,9 +19,9 @@
 </MudBreadcrumbs>
 
 <MudTable Items="_assychart" T="AssyChart" Dense="@dense" Hover="@hover" ReadOnly="@ronly"  
-          SortLabel="Sort By">
+          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Assy Chart</MudText>
+        <MudText Typo="Typo.h6">Assy Chart</MudText> 
         
         <MudSpacer />
         <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
@@ -36,6 +38,8 @@
         <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x)">HOE</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x)">Nombre de la Operacion</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x)">Modelo</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CreationDate)">Fecha de Creacion</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.ModificationDate)">Fecha de Modificacion</MudTableSortLabel></MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
 
@@ -57,16 +61,22 @@
             <MudText Align="Align.Center">@context.HOE</MudText>
         </MudTd>
         <MudTd DataLabel="Sequence">
-            <MudText Align="Align.Center">@context.OperacionId</MudText>
+            <MudText Align="Align.Center">@context.DescriptionOperation</MudText>
         </MudTd>
         <MudTd DataLabel="Sequence">
-            <MudText Align="Align.Center">@context.Modelo</MudText>
+            <MudText Align="Align.Center">@context.OperationId</MudText>
+        </MudTd>
+         <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.CreationDate</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.ModificationDate</MudText>
         </MudTd>
         <MudTd> 
             <MudText Align="Align.Center">
                 <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info"></MudIconButton>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"></MudIconButton>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => GoToUpdateAssyChart(context.AssyChardId))"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete" @onclick="(() => DeleteAssyChart(context.AssyChardId))"></MudIconButton>
             </MudText>
         </MudTd>
     </RowTemplate>

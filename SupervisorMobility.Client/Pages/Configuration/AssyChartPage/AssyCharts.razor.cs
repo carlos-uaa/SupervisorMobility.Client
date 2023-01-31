@@ -1,4 +1,7 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -21,11 +24,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         // Objects
         public List<AssyChart> _assychart { get; set; } = new();
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
 
 
+        protected async override Task OnInitializedAsync()
+        {
 
-      
+            _assychart = await AssyChartServices.GetAssyCharts();
+        }
 
 
         //Filtering
@@ -34,14 +39,38 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            //if (element.Sign.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            //    return true;
-            //if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            //    return true;
-            //if ($"{element.Number} {element.Position} {element.Molar}".Contains(searchString))
-            //    return true;
+            if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.GOS} {element.CCP} {element.DescriptionOperation}".Contains(searchString))
+                return true;
             return false;
         }
+
+        void GoToUpdateAssyChart(int assychartid)
+        {
+            NavigationManager.NavigateTo($"assychart/updateassychart/{assychartid}");
+        }
+
+        async Task DeleteAssyChart(int assychartid)
+        {
+
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this AssyChart?");
+
+            if (confirm)
+            {
+
+                await AssyChartServices.DeleteAssyChart(assychartid);
+                NavigationManager.NavigateTo($"assychart");
+            }
+
+
+
+        }
+
+
+
 
     }
 }

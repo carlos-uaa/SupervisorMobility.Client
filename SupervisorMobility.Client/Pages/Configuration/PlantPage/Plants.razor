@@ -13,60 +13,148 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
-@*Plants table*@
-<MudTable Items="_plants" Hover="true" T="Plant">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Plants</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreatePlant())"></MudIconButton>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh>
-            <MudText Align="Align.Center">Plant Id</MudText>
-        </MudTh>
-        <MudTh>
-            <MudText Align="Align.Center">Code</MudText>
-        </MudTh>
-        <MudTh>
-            <MudText Align="Align.Center">Description</MudText>
-        </MudTh>
-        <MudTh>
-            <MudText Align="Align.Center">Status</MudText>
-        </MudTh>
-        <MudTh>
-            <MudText Align="Align.Center">Actions</MudText>
-        </MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="PlantId">
-            <MudText Align="Align.Center">@context.PlantId</MudText>
-        </MudTd>
-        <MudTd DataLabel="Code">
-            <MudText Align="Align.Center">@context.Code</MudText>
-        </MudTd>
-        <MudTd DataLabel="Description">
-            <MudText Align="Align.Center">@context.Description</MudText>
-        </MudTd>
-        <MudTd DataLabel="Status">
-            @if (context.IsActive == true)
-            {
-                <MudText Align="Align.Center">
-                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                </MudText>
-            }
-            else
-            {
-                <MudText Align="Align.Center">
-                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                </MudText>
-            }
-        </MudTd>
-        <MudTd>
+@if (_plants == null)
+{
+    <text>
+        Cargando . . .
+    </text>
+}
+else if (_plants.Count == 0)
+{
+  
+        <MudContainer>
+
             <MudText Align="Align.Center">
-                <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => PlantDetails(context.PlantId))"></MudIconButton>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdatePlant(context.PlantId))"></MudIconButton>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeletePlant(context.PlantId))"></MudIconButton>
+                <h4>Aun no existen plantas</h4>
+                <MudSpacer></MudSpacer>
+                <text>Crear Planta</text>
+                <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreatePlant())"></MudIconButton>
+
             </MudText>
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+
+        </MudContainer>
+    
+}
+else
+{
+    @if (_plant.PlantId != 0)
+    {
+
+        <div>
+            <div style="min-width:200px;">
+                <MudText Inline="true" Class="align-self-center">Planta Seleccionada: @_plant?.Code</MudText>
+            </div>
+            <div>
+                <MudSimpleTable>
+                    <MudTd DataLabel="PlantId">
+                        <MudText Align="Align.Center">@_plant.PlantId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Code">
+                        <MudText Align="Align.Center">@_plant.Code</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Description">
+                        <MudText Align="Align.Center">@_plant.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        @if (_plant.IsActive == true)
+                        {
+                            <MudText Align="Align.Center">
+                                <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Center">
+                                <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                            </MudText>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        <MudText Align="Align.Center">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => PlantDetails(_plant.PlantId))"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdatePlant(_plant.PlantId))"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeletePlant(_plant.PlantId))"></MudIconButton>
+                        </MudText>
+                    </MudTd>
+                </MudSimpleTable>
+            </div>
+        </div>
+    }
+
+
+    <MudTable Items="@_plants" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<Plant,bool>(FilterFunc1)" @bind-SelectedItem="@_plant">
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Plants</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="@searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreatePlant())"></MudIconButton>
+
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudText Align="Align.Center">Plant Id</MudText>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Code</MudText>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Description</MudText>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Status</MudText>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="PlantId">
+                <MudText Align="Align.Center">@context.PlantId</MudText>
+            </MudTd>
+            <MudTd DataLabel="Code">
+                <MudText Align="Align.Center">@context.Code</MudText>
+            </MudTd>
+            <MudTd DataLabel="Description">
+                <MudText Align="Align.Center">@context.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                @if (context.IsActive == true)
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => PlantDetails(context.PlantId))"></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdatePlant(context.PlantId))"></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeletePlant(context.PlantId))"></MudIconButton>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+    <div class="d-flex flex-wrap mt-4">
+        <MudText Typo="Typo.h6">Options Table</MudText>
+        <MudSpacer />
+        <MudSwitch @bind-Checked="@hover" Color="Color.Primary">Hover</MudSwitch>
+        <MudSwitch @bind-Checked="@dense" Color="Color.Secondary">Dense</MudSwitch>
+        <MudSwitch @bind-Checked="@striped" Color="Color.Tertiary">Striped</MudSwitch>
+        <MudSwitch @bind-Checked="@bordered" Color="Color.Warning">Bordered</MudSwitch>
+        <MudSpacer />
+    </div>
+
+}
