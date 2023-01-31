@@ -46,5 +46,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         {
             NavigationManager.NavigateTo($"products/updateproduct/{productId}");
         }
+
+        void ProductDetails(int productId)
+        {
+            NavigationManager.NavigateTo($"products/productdetail/{productId}");
+        }
     }
 }
