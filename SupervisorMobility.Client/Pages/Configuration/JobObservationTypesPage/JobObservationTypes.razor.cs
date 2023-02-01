@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
 {
     public partial class JobObservationTypes
     {

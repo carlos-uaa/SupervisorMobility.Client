@@ -1,8 +1,8 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.OperationPage
+namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
 {
-    public partial class CreateOperation
+    public partial class UpdateOperation
     {
         // Parameters
         [Parameter]
@@ -14,6 +14,9 @@ namespace SupervisorMobility.Client.Pages.OperationPage
         [Parameter]
         public int DistributionId { get; set; }
 
+        [Parameter]
+        public int OperationId { get; set; }
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -23,14 +26,14 @@ namespace SupervisorMobility.Client.Pages.OperationPage
             new BreadcrumbItem("PlantDetail", href: ""),
             new BreadcrumbItem("AreaDetail", href: ""),
             new BreadcrumbItem("DistributionDetail", href: ""),
-            new BreadcrumbItem("New Operation", href: "", disabled: true)
+            new BreadcrumbItem("UpdateOperation", href: "", disabled: true)
         };
 
         // Objects
         Plant _plant = new();
         Area _area = new();
         Distribution _distribution = new();
-        Operation _operation = new();
+        public Operation _operation { get; set; } = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
@@ -38,6 +41,7 @@ namespace SupervisorMobility.Client.Pages.OperationPage
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
+            _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
         }
 
         // Links
@@ -56,17 +60,17 @@ namespace SupervisorMobility.Client.Pages.OperationPage
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
 
-        // Create operation
-        async void CreateOperationAsync()
+        // Update operation
+        async void UpdateOperationAsync()
         {
-            var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
+            await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
 
         // Cancel submit form
         void CancelCreateOrUpdate()
         {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
     }
 }

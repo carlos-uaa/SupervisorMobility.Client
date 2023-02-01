@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.AreaPage
+namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 {
     public partial class AreaDetail
     {

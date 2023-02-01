@@ -1,8 +1,8 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.DistributionPage
+namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
 {
-    public partial class CreateDistribution
+    public partial class CreateOperation
     {
         // Parameters
         [Parameter]
@@ -10,6 +10,9 @@ namespace SupervisorMobility.Client.Pages.DistributionPage
 
         [Parameter]
         public int AreaId { get; set; }
+
+        [Parameter]
+        public int DistributionId { get; set; }
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -19,19 +22,22 @@ namespace SupervisorMobility.Client.Pages.DistributionPage
             new BreadcrumbItem("Plants", href: "/plants"),
             new BreadcrumbItem("PlantDetail", href: ""),
             new BreadcrumbItem("AreaDetail", href: ""),
-            new BreadcrumbItem("New Distribution", href: "", disabled: true)
+            new BreadcrumbItem("DistributionDetail", href: ""),
+            new BreadcrumbItem("New Operation", href: "", disabled: true)
         };
 
         // Objects
         Plant _plant = new();
         Area _area = new();
         Distribution _distribution = new();
+        Operation _operation = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
+            _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
         }
 
         // Links
@@ -45,16 +51,21 @@ namespace SupervisorMobility.Client.Pages.DistributionPage
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
         }
 
+        void GoToDistribution()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
+        // Create operation
+        async void CreateOperationAsync()
+        {
+            var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
         // Cancel submit form
         void CancelCreateOrUpdate()
         {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
-        }
-
-        // Create distribution
-        async void CreateDistributionAsync()
-        {
-            var result = await DistributionService.CreateDistribution(PlantId, AreaId, _distribution);
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
         }
     }

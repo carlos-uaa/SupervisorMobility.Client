@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.DistributionPage
+namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage
 {
     public partial class DistributionDetail
     {
