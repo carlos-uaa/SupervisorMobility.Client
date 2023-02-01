@@ -8,57 +8,52 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         [Parameter]
         public int ProductId { get; set; }
 
-
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Products", href: "", disabled: true),
-            new BreadcrumbItem("Products Detail", href: "", disabled: true),
+            new BreadcrumbItem("Products", href: "/products"),
+            new BreadcrumbItem("ProductsDetail", href: "", disabled: true),
         };
 
-        // Objects
-        Plant _plant = new();
-        private List<Area> _areas = new();
+        Product _product = new();
+        public List<ProductDistribution> _distributions { get; set; } = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _plant = await PlantService.GetPlantById(ProductId);
-            _areas = await AreaService.GetAreas(ProductId);
+            _product = await ProductService.GetProductById(ProductId);
+            _distributions = await ProductDistributionService.GetDistributions(ProductId);
         }
 
-        // Area details
-        void AreaDetails(int plantId, int areaId)
+        void CreateDistribution()
         {
-            NavigationManager.NavigateTo($"plants/{plantId}/areas/{areaId}");
+            NavigationManager.NavigateTo($"product/{ProductId}/distributions/createdistribution");
         }
 
-        // Create area
-        void CreateArea(int PlantId)
+        // Delete distribution
+        async Task DeleteDistribution(int distributionId)
         {
-            NavigationManager.NavigateTo($"plants/{PlantId}/createarea");
-        }
-
-        // Delete area
-        async Task DeleteArea(int areaId)
-        {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this area?");
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this distribution?");
 
             if (confirm)
             {
-                _areas.RemoveAll(area => area.AreaId == areaId);
-                await AreaService.DeleteArea(ProductId, areaId);
+                _distributions.RemoveAll(distribution => distribution.ProductDistributionId == distributionId);
+                await ProductDistributionService.DeleteDistribution(ProductId, distributionId);
             }
         }
 
-        // Update area
-        void UpdateArea(int plantId, int areaId)
+        // Distribution details
+        void DistributionDetails(int distributionId)
         {
-            NavigationManager.NavigateTo($"plants/{plantId}/updatearea/{areaId}");
+            NavigationManager.NavigateTo($"product/{ProductId}/distributions/{distributionId}");
         }
 
-
+        // Update distribution
+        void UpdateDistribution(int distributionId)
+        {
+            NavigationManager.NavigateTo($"product/{ProductId}/updatedistribution/{distributionId}");
+        }
     }
 }
