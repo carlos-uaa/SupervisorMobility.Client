@@ -38,7 +38,6 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             }
 
             var assychart = JsonSerializer.Deserialize<AssyChart>(content, _options);
-
             return assychart;
         }
 
