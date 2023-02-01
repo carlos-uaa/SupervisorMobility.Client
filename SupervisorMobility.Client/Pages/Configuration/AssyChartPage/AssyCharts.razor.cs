@@ -12,7 +12,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "", disabled: true),
+            new BreadcrumbItem("Assy Chart", href: "/assychart", disabled: true),
         };
 
 
@@ -30,6 +30,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
 
             _assychart = await AssyChartServices.GetAssyCharts();
+            Console.WriteLine(_assychart);
         }
 
 
@@ -37,13 +38,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         private bool FilterFunc(AssyChart element)
         {
+            //editar filtros aun falta informacion
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
             if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.GOS} {element.CCP} {element.DescriptionOperation}".Contains(searchString))
+            if ($"{element.GOS} {element.CCP} {element.OperationDescription}".Contains(searchString))
                 return true;
             return false;
         }

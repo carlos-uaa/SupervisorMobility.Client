@@ -19,7 +19,7 @@
         Task<List<AssyChart>> GetAssyChartsByDistribution(int plantId, int areaId, int distributionId);
 
         //UPDATE
-        Task UpdateAssyChart(int assychartId, AssyChart _newAssyChart);
+        Task<bool> UpdateAssyChart(int assychartId, AssyChart _newAssyChart);
 
         //DELETE
         Task DeleteAssyChart(int assychartId);

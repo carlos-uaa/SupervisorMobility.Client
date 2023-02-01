@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -13,7 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assycharts"),
+            new BreadcrumbItem("Assy Chart", href: "/assychart"),
             new BreadcrumbItem("Update Assy Chart", href: "", disabled: true)
         };
 
@@ -32,6 +33,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         protected async override Task OnInitializedAsync()
         {
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
+            _assychart.OperationDescription = _assychart.Operation.Description;
+            _assychart.OperationCode = _assychart.Operation.Code;
             _plants = await PlantServices.GetPlants();
             _areas = await AreaServices.GetAreas(_assychart.PlantId);
             _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
@@ -54,9 +57,20 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UpdateAssyChartAsync()
         {
-            _assychart.CreationDate = new DateTime();
-            var result = await AssyChartServices.CreateAssyChart(_assychart);
-            NavigationManager.NavigateTo("/assychart");
+            _assychart.Operation.Description = _assychart.OperationDescription;
+            _assychart.Operation.Code = _assychart.OperationCode;
+
+            _assychart.ModificationDate = DateTime.Now;
+            var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
+
+
+            if (result)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
+                NavigationManager.NavigateTo("/assychart");
+            }
+            else
+                await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
         }
 
         void CancelCreateAssyChart()

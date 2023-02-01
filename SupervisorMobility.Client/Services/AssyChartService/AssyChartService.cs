@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using SupervisorMobility.Client.Data.Entities;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.AssyChartService
 {
@@ -71,9 +72,15 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             throw new NotImplementedException();
         }
 
-        public Task UpdateAssyChart(int assychartId, AssyChart _newAssyChart)
+        public async Task<bool> UpdateAssyChart(int assychartId, AssyChart AssyChartToUpdate)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"assycharts/{assychartId}", AssyChartToUpdate);
+            if(response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
 
 

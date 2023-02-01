@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
@@ -34,12 +35,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-        //Function Update Selectd
+        //Function Update Area on change plant select
 
         async void UpdateAreas()
         {
             _areas = await AreaServices.GetAreas(_newassychart.PlantId);
         }
+        //Function Update Distributions on change Area select
 
         private async void UpdateDistributions()
         {
@@ -47,10 +49,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
         async void CreateNewAssyChartAsync()
-        {   
-            _newassychart.CreationDate = new DateTime();
+        {
             var result = await AssyChartServices.CreateAssyChart(_newassychart);
-            NavigationManager.NavigateTo("/assychart");
+            if(result != null)
+                NavigationManager.NavigateTo("/assychart");
+            else
+                await JsRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
         void CancelCreateAssyChart()
