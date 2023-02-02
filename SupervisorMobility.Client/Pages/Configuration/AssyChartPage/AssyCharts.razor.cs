@@ -2,6 +2,7 @@
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -38,17 +39,36 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         private bool FilterFunc(AssyChart element)
         {
-            //editar filtros aun falta informacion
             if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (element.HOE.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Product.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.CreationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.ModificationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
             if ($"{element.GOS} {element.CCP} {element.OperationDescription}".Contains(searchString))
                 return true;
             return false;
         }
+
+        private TableGroupDefinition<AssyChart> _groupDefinition = new()
+        {
+            GroupName = "Group",
+            Selector = (e) => e.Product.Description
+        };
 
         void GoToUpdateAssyChart(int assychartid)
         {
