@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 
         void ProductDetails(int productId)
         {
-            NavigationManager.NavigateTo($"products/productdetail/{productId}");
+            NavigationManager.NavigateTo($"products/{productId}");
         }
     }
 }

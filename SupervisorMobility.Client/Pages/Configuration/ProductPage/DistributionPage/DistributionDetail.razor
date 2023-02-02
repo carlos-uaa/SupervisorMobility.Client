@@ -1,4 +1,4 @@
-﻿@page "/products/{productId:int}"
+﻿@page "/product/{productId:int}/distributions/{distributionId:int}"
 @inject IProductService ProductService
 @inject IProductOperationService ProductOperationService
 @inject IProductDistributionService ProductDistributionService
@@ -6,14 +6,18 @@
 @inject IJSRuntime JSRuntime
 
 @*Title*@
-<PageTitle>Supervisor Mobility | @_product.Description</PageTitle>
+<PageTitle>Supervisor Mobility | @_distribution.Description</PageTitle>
 
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links" >
+<MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
-        @if (item.Text == "ProductsDetail")
+        @if (item.Text == "ProductDetail")
         {
-        <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_product.Description</MudButton>
+            <MudButton @onclick="(() => GoToProduct())" Variant="Variant.Text" Color="Color.Info">@_product.Description</MudButton>
+        }
+        else if (item.Text == "DistributionDetail")
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_distribution.Description</MudButton>
         }
         else
         {
@@ -29,9 +33,9 @@
         <MudCard>
             <MudCardContent Style="justify-content:center">
                 <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
-                <MudText Align="Align.Center">@_product.Code</MudText>
-                <MudText Typo="Typo.h5" Align="Align.Center">@_product.Description</MudText>
-                @if (_product.IsActive == true)
+                <MudText Align="Align.Center">@_distribution.Code</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                @if (_distribution.IsActive == true)
                 {
                     <MudText Align="Align.Center" Class="pt-2">
                         <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
@@ -46,20 +50,20 @@
             </MudCardContent>
         </MudCard>
     </MudItem>
-    @*Related distributions*@
+    @*Related operations*@
     <MudItem xs="12" sm="6" md="9">
         <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Distributions">
-                @if (_distributions.Count > 0)
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Operations">
+                @if (_operations.Count > 0)
                 {
-                    <MudTable Items="_distributions" Hover="true" T="ProductDistribution">
+                    <MudTable Items="_operations" Hover="true" T="ProductOperation">
                         <ToolBarContent>
                             <MudSpacer />
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateDistribution())"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateOperation())"></MudIconButton>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
-                                <MudText Align="Align.Center">Distribution Id</MudText>
+                                <MudText Align="Align.Center">Operation Id</MudText>
                             </MudTh>
                             <MudTh>
                                 <MudText Align="Align.Center">Code</MudText>
@@ -75,8 +79,8 @@
                             </MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="ProductDistributionId">
-                                <MudText Align="Align.Center">@context.ProductDistributionId</MudText>
+                            <MudTd DataLabel="ProductOperationId">
+                                <MudText Align="Align.Center">@context.ProductOperationId</MudText>
                             </MudTd>
                             <MudTd DataLabel="Code">
                                 <MudText Align="Align.Center">@context.Code</MudText>
@@ -100,9 +104,8 @@
                             </MudTd>
                             <MudTd>
                                 <MudText Align="Align.Center">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => DistributionDetails(context.ProductDistributionId))"></MudIconButton>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateDistribution(context.ProductDistributionId))"></MudIconButton>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="edit" @onclick="(() => DeleteDistribution(context.ProductDistributionId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => UpdateOperation(context.ProductOperationId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="edit" @onclick="(() => DeleteOperation(context.ProductOperationId))"></MudIconButton>
                                 </MudText>
                             </MudTd>
                         </RowTemplate>
@@ -110,9 +113,10 @@
                 }
                 else
                 {
-                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no distributions created for this area.</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no operations created for this distribution.</MudText>
                     <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-                        <MudButton Color="Color.Info" @onclick="(() => CreateDistribution())">Create a new distribution</MudButton>
+                        <MudButton Color="Color.Info" @onclick="(() => CreateOperation())">Create a new operation</MudButton>
+
                     </MudText>
                 }
             </MudTabPanel>
