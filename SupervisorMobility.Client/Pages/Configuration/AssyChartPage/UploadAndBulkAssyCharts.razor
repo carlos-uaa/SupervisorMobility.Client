@@ -1,5 +1,6 @@
 ﻿@page "/assychart/UploadAndBulkAssyCharts"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IFileUploadService FileUploadService
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Upload And Bulk Assy Chart</PageTitle>
@@ -11,101 +12,115 @@
 </MudBreadcrumbs>
 
 <MudGrid>
-    <MudItem xs="2" class="align-center justify-center mud-width-full">
+    <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
         <MudImage Src="Images/uploadcloud.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
     </MudItem>
-    <MudItem id="Upload" xs="10">
+    <MudItem id="Upload" xs="10" xl="10">
         <MudCard>
             <MudCardHeader Class="align-center justify-center mud-width-full">
-                <MudSpacer></MudSpacer>
+                <MudSpacer />
+                <MudText Typo="Typo.h6">Assy Chart</MudText>
+                <MudSpacer />
             </MudCardHeader>
-            <MudCardContent Class="align-center justify-center mud-width-full">
+            <MudCardContent Class="align-center justify-center">
                 @*File Upload*@
-                <MudElement Class="file-drop-zone">
-
-
+                <MudElement>
+                    <InputFile id="input" OnChange="@OnChange" hidden single></InputFile>
+                    @if (FileName is not null)
+                    {
+                        <MudText>Stored File Name: @GetStoredFileName(FileName)</MudText>
+                    }
                     <MudElement>
-                        <InputFile OnChange="@OnChange"></InputFile>
+                        <MudTextField @bind-Value="@FileName" Label="File Name" Variant="Variant.Outlined" Disabled="true" />
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="input">
+                            Upload Files
+                        </MudButton>
                     </MudElement>
 
-
                 </MudElement>
-                <MudSpacer></MudSpacer>
+
+
                 <MudElement>
 
                     <MudCard>
                         <MudCardContent>
-                            <MudText Typo="Typo.h6">Assy Chart</MudText>
 
-                            @foreach(string[] item in csv)
+
+                            @if (showTableToShow)
                             {
-                                foreach(string cont in item)
+
+                                foreach (string[] item in csv)
                                 {
-                                    <text>@cont ,</text>
+                                    <MudText>
+                                        @foreach (string element in item)
+                                        {
+                                            <text>&nbsp; @element &nbsp;</text>
+                                        }
+                                    </MudText>
                                 }
-                                <MudText></MudText>
-                            }
 
-                            @if (data.Count > 1)
-                            {
-                                <MudTable Items="@data" T="DtosBulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
-                                    <ToolBarContent>
-                                        <MudSpacer />
-                                        <MudText Typo="Typo.h6">Datos To Upload</MudText>
-                                        <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Filled.UploadFile" aria-label="edit" @onclick="(() => UploadFunction())"></MudIconButton>
-                                        <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" aria-label="edit" @onclick="(() => CancelFunction())"></MudIconButton>
-                                        <MudSpacer />
-                                    </ToolBarContent>
+                                @*<MudTable Items="@dataTableToShow" T="DtosBulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
+                            <ToolBarContent>
+                            <MudSpacer />
+                            <MudText Typo="Typo.h6">Datos To Upload</MudText>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.UploadFile" aria-label="edit" @onclick="(() => UploadFunction())"></MudIconButton>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" aria-label="edit" @onclick="(() => CancelFunction())"></MudIconButton>
+                            <MudSpacer />
+                            </ToolBarContent>
 
-                                    <HeaderContent>
-                                        <MudTh>Planta</MudTh>
-                                        <MudTh>Area</MudTh>
-                                        <MudTh>Distribucion</MudTh>
-                                        <MudTh>GOS</MudTh>
-                                        <MudTh>CCP</MudTh>
-                                        <MudTh>HOE</MudTh>
-                                        <MudTh>Nombre de la Operacion</MudTh>
-                                        <MudTh>Modelo</MudTh>
-                                        <MudTh>Fecha de Creacion</MudTh>
-                                        <MudTh>Fecha de Modificacion</MudTh>
-                                    </HeaderContent>
+                            <HeaderContent>
+                            <MudTh>Planta</MudTh>
+                            <MudTh>Area</MudTh>
+                            <MudTh>Distribucion</MudTh>
+                            <MudTh>GOS</MudTh>
+                            <MudTh>CCP</MudTh>
+                            <MudTh>HOE</MudTh>
+                            <MudTh>Nombre de la Operacion</MudTh>
+                            <MudTh>Modelo</MudTh>
+                            <MudTh>Fecha de Creacion</MudTh>
+                            <MudTh>Fecha de Modificacion</MudTh>
+                            </HeaderContent>
 
-                                    <RowTemplate>
-                                        <MudTd DataLabel="CategoryId">
-                                            <MudText Align="Align.Center">@context.PlantDescription</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Code">
-                                            <MudText Align="Align.Center">@context.AreaDescription</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Description">
-                                            <MudText Align="Align.Center">@context.DistributionDescription</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.AssyChartGos</MudText>
-                                        </MudTd> <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.AssyChartCcp</MudText>
-                                        </MudTd> <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.AssyChartHoe</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.OperationDescription</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.ProductDescription</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.AssyChartCreationDate.ToString()</MudText>
-                                        </MudTd>
-                                        <MudTd DataLabel="Sequence">
-                                            <MudText Align="Align.Center">@context.AssyChartModificationDate.ToString()</MudText>
-                                        </MudTd>
-                                    </RowTemplate>
-                                    <PagerContent>
-                                        <MudTablePager />
-                                    </PagerContent>
-                                </MudTable>
+                            <RowTemplate>
+                            <MudTd DataLabel="CategoryId">
+                            <MudText Align="Align.Center">@context.PlantDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Code">
+                            <MudText Align="Align.Center">@context.AreaDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Description">
+                            <MudText Align="Align.Center">@context.DistributionDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartGos</MudText>
+                            </MudTd> <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartCcp</MudText>
+                            </MudTd> <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartHoe</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.OperationDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.ProductDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartCreationDate.ToString()</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartModificationDate.ToString()</MudText>
+                            </MudTd>
+                            </RowTemplate>
+                            <PagerContent>
+                            <MudTablePager />
+                            </PagerContent>
+                            </MudTable>*@
                             }
                             else
                             {
@@ -134,7 +149,7 @@
             <MudSpacer />
         </MudItem>
         <MudItem class="my-2">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Download Bulk</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Download Bulk</MudButton>
 
         </MudItem>
 
