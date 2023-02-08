@@ -1,0 +1,163 @@
+﻿@page "/assychart/UploadAndBulkAssyCharts"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IFileUploadService FileUploadService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Upload And Bulk Assy Chart</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<MudGrid>
+    <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
+        <MudImage Src="Images/uploadcloud.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+    </MudItem>
+    <MudItem id="Upload" xs="10" xl="10">
+        <MudCard>
+            <MudCardHeader Class="align-center justify-center mud-width-full">
+                <MudSpacer />
+                <MudText Typo="Typo.h6">Assy Chart</MudText>
+                <MudSpacer />
+            </MudCardHeader>
+            <MudCardContent Class="align-center justify-center">
+                @*File Upload*@
+                <MudElement>
+                    <InputFile id="input" OnChange="@OnChange" hidden single></InputFile>
+                    @if (FileName is not null)
+                    {
+                        <MudText>Stored File Name: @GetStoredFileName(FileName)</MudText>
+                    }
+                    <MudElement>
+                        <MudTextField @bind-Value="@FileName" Label="File Name" Variant="Variant.Outlined" Disabled="true" />
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="input">
+                            Upload Files
+                        </MudButton>
+                    </MudElement>
+
+                </MudElement>
+
+
+                <MudElement>
+
+                    <MudCard>
+                        <MudCardContent>
+
+
+                            @if (showTableToShow)
+                            {
+
+                                foreach (string[] item in csv)
+                                {
+                                    <MudText>
+                                        @foreach (string element in item)
+                                        {
+                                            <text>&nbsp; @element &nbsp;</text>
+                                        }
+                                    </MudText>
+                                }
+
+                                @*<MudTable Items="@dataTableToShow" T="DtosBulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
+                            <ToolBarContent>
+                            <MudSpacer />
+                            <MudText Typo="Typo.h6">Datos To Upload</MudText>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.UploadFile" aria-label="edit" @onclick="(() => UploadFunction())"></MudIconButton>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" aria-label="edit" @onclick="(() => CancelFunction())"></MudIconButton>
+                            <MudSpacer />
+                            </ToolBarContent>
+
+                            <HeaderContent>
+                            <MudTh>Planta</MudTh>
+                            <MudTh>Area</MudTh>
+                            <MudTh>Distribucion</MudTh>
+                            <MudTh>GOS</MudTh>
+                            <MudTh>CCP</MudTh>
+                            <MudTh>HOE</MudTh>
+                            <MudTh>Nombre de la Operacion</MudTh>
+                            <MudTh>Modelo</MudTh>
+                            <MudTh>Fecha de Creacion</MudTh>
+                            <MudTh>Fecha de Modificacion</MudTh>
+                            </HeaderContent>
+
+                            <RowTemplate>
+                            <MudTd DataLabel="CategoryId">
+                            <MudText Align="Align.Center">@context.PlantDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Code">
+                            <MudText Align="Align.Center">@context.AreaDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Description">
+                            <MudText Align="Align.Center">@context.DistributionDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartGos</MudText>
+                            </MudTd> <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartCcp</MudText>
+                            </MudTd> <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartHoe</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.OperationDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.ProductDescription</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartCreationDate.ToString()</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                            <MudText Align="Align.Center">@context.AssyChartModificationDate.ToString()</MudText>
+                            </MudTd>
+                            </RowTemplate>
+                            <PagerContent>
+                            <MudTablePager />
+                            </PagerContent>
+                            </MudTable>*@
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h6">@ErrorMessage </MudText>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudElement>
+            </MudCardContent>
+        </MudCard>
+
+    </MudItem>
+</MudGrid>
+<MudSpacer></MudSpacer>
+<MudGrid id="Bulk">
+    <MudItem xl="10" xs="10">
+        <MudItem class="align-center justify-center mud-width-full">
+            <MudText Typo="Typo.h6">Assy Chart Bulk</MudText>
+        </MudItem>
+        <MudItem class="d-flex">
+            <MudSwitch class="flex-auto" @bind-Checked="@Label_Switch1" Label="All Assy Charts" Color="Color.Info" />
+            <MudSwitch class="flex-auto" @bind-Checked="@Label_Switch2" Label="By Plant" Color="Color.Success" />
+            <MudTextField class="flex-auto  pb-4" @bind-Value="@plant" Placeholder="Plant" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Business" IconSize="Size.Medium"></MudTextField>
+            <MudSwitch class="flex-auto" @bind-Checked="@Label_Switch3" Label="By Model" LabelPosition="LabelPosition.Start" Color="Color.Warning" />
+            <MudTextField class="flex-auto pb-4" @bind-Value="@model" Placeholder="Model" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.CarRepair" IconSize="Size.Medium"></MudTextField>
+            <MudSpacer />
+        </MudItem>
+        <MudItem class="my-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Download Bulk</MudButton>
+
+        </MudItem>
+
+
+    </MudItem>
+    <MudItem xl="2" xs="2" Class="align-center justify-center">
+        <MudImage Src="Images/bulk.png" Alt="Bulk image" Height="120" Width="120" Class="align-center justify-center"> </MudImage>
+    </MudItem>
+</MudGrid>
+
+
