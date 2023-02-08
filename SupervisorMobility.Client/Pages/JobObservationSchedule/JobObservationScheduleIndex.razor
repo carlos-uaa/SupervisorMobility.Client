@@ -1,0 +1,217 @@
+﻿@page "/jobobservationschedule"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+
+@inject IJSRuntime JSRuntime
+@inject IGroupService GroupService
+@inject IChecklistService ChecklistService
+@inject IDialogService DialogService
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+
+
+<style type="text/css">
+    #tblParent tbody tr td {
+        width: 200px;
+        height: 200px;
+    }
+
+    #divParent{
+        position: relative;
+    }
+
+    #divModal {
+        z-index: 10;
+        position: absolute;
+        border: 1px solid #000000;
+        border-radius: 3px;
+        background-color: #ffffff;
+        left: 40%;
+        top: 20%;
+        width: 400px;
+        min-height: 300px;
+    }
+
+    .modalHeading{
+        text-align: center;
+        font-size: 50px;
+        text-decoration: underline;
+        margin-bottom: 36px;
+    }
+    
+</style>
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Job Observation Index</PageTitle>
+@*Form*@
+<MudGrid Justify="Justify.Center">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">Programa de Observación de Operación</MudText>
+        </MudItem>
+        <MudPaper Class="d-flex align-center justify-center mud-width-full pa-4" Elevation="0">
+            <MudItem xs="12" sm="6" md="5" lg="5">
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true>
+                    <thead>
+                        <tr>
+                           <th colspan="2" style="text-align: center;">
+                               <MudDatePicker Label="Mes / Año" OpenTo="OpenTo.Year" FixDay="1" DateFormat="MM/yyyy" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
+                            </th>
+                         </tr>
+                        <tr>
+                            <th colspan="2" style="text-align: center;">Simbología a utilizar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0bservación Planeada</td>
+                            <td><MudIcon Icon="@Icons.Material.Filled.StopCircle" /></td>
+                         </tr>
+                         <tr>
+                            <td>Planeada con coaching de SSV</td>
+                            <td><MudIcon Icon="@Icons.Material.Filled.Block" /></td>
+                         </tr>
+                         <tr>
+                            <td>Observación terminada</td>
+                            <td><MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Info" /></td>
+                         </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem lg="1" md="1"></MudItem>
+            <MudItem xs="12" sm="6" md="5" lg="5" Class="ml-2">
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Class="pt-3 pb-3">
+                    <tbody>
+                        <tr>
+                            <td>
+                                @*Mud select of Plants *@
+                                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                    @foreach (var type in _plants)
+                                    {
+                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td>
+                                @*Mud select of Areas *@
+                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowGroups">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                    @foreach (var type in _areas)
+                                    {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                         </tr>
+                         <tr>
+                            <td>
+                                <MudSelect @bind-Value="grupo" Label="Grupo" Placeholder="Please Select">
+                                    <MudSelectItem Value="@("Grupo 1")">Grupo 1</MudSelectItem>
+                                    <MudSelectItem Value="@("Grupo 2")">Grupo 2</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                            <td>
+                                <MudSelect @bind-Value="ssv" Label="SSV" Placeholder="Please Select">
+                                    <MudSelectItem Value="@("SSV 1")">SSV 1</MudSelectItem>
+                                    <MudSelectItem Value="@("SSV 2")">SSV 2</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                         </tr>
+                         <tr>
+                            <td colspan="2">
+                                <MudTextField T="string" @bind-Value="supervisor" Label="Supervisor" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                            </td>
+                         </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+<MudGrid Justify="Justify.Center" Class="overflow-x-scroll">
+    <MudItem lg="10">
+        <MudSimpleTable Hover=true Striped=true>
+            <thead>
+                <tr>
+                    @for(var dayIndex = 0; dayIndex < days.Count(); dayIndex++)
+                    {
+                        <th style="text-align: center;">
+                            @days[dayIndex]
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for(var weekIndex = 0; weekIndex < weeks.Count(); weekIndex++)
+                {
+                    <tr>
+                        @for (var dayIndex = 0; dayIndex < weeks[weekIndex].Dates.Count(); dayIndex++)
+                        {
+                            var wIndex = weekIndex;
+                            var dIndex = dayIndex;
+                            <td style="text-align: center;" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
+                                @weeks[weekIndex].Dates[dayIndex].DateValue
+                                <br/><br/>
+                                @*<MudIcon Icon="@Icons.Material.Filled.Info" Title="Favorite" Color="Color.Info" />*@
+                                @*<label style="color:#c00; font-weight:bold">@weeks[weekIndex].Dates[dayIndex].Note</label>*@
+                                <br /><br />
+                                [@weekIndex, @dayIndex]
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudItem>
+</MudGrid>
+@if(displayModal){
+    <div id="divModal">
+        <div class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading modalHeading">Set Note</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>From Date:</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="date" style="width:100%"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>To Date:</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="date" style="width:100%" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Note:</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="date" style="width:100%" />
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 10px;">
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-6" style="text-align: right;">
+                        <button class="btn btn-success" style="float:left; margin-right:5px">Save</button>
+                        <button class="btn btn-danger" @onclick="CloseModal" style="float:left; margin-right:5px">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
