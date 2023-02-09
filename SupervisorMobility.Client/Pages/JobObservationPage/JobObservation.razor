@@ -1,0 +1,273 @@
+﻿@page "/jobobservation"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+
+@inject IJSRuntime JSRuntime
+@inject IGroupService GroupService
+@inject IChecklistService ChecklistService
+@inject IDialogService DialogService
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Job Observation</PageTitle>
+<MudGrid Justify="Justify.Center" Style="margin-bottom: 200px">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">
+                Tarjeta de Observación de Operación Cíclica
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+            </MudText>
+        </MudItem>
+        <MudPaper Class="" Elevation="0">
+            <MudItem Class="ml-2">
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Class="pt-3 pb-3">
+                    <tbody>
+                        <tr>
+                            <td>
+                                @*Mud select of Plants *@
+                                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                    @foreach (var type in _plants)
+                                    {
+                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td>
+                                <MudDatePicker @bind-Date="date" Label="Fecha" Color="Color.Info" AdornmentColor="Color.Info" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @*Mud select of Areas *@
+                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                    @foreach (var type in _areas)
+                                    {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="observador" Label="Observador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td >
+                                <MudTextField T="string" @bind-Value="operador" Label="Operador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                            </td>
+                            <td>
+                                <MudSelect @bind-Value="operacion" Label="Operacion" Placeholder="Please Select">
+                                    <MudSelectItem Value="@("OP1 1")">OP 1</MudSelectItem>
+                                    <MudSelectItem Value="@("OP2 2")">OP 2</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: center;">
+                        <MudRadioGroup @bind-SelectedOption="option" style="width:100%;">
+                                <MudRadio Option="1" Color="Color.Info" Size="Size.Small">Verificar la Capacitación</MudRadio>
+                                <MudRadio Option="2" Color="Color.Info" Size="Size.Small">Mantener y/o Mejorar el área de trabajo</MudRadio>
+                                <MudRadio Option="3" Color="Color.Info" Size="Size.Small">Manejo de anomalía</MudRadio>
+                                @if(option == 3)
+                                {
+                                        <MudTextField T="string" @bind-Value="anomaly" Label="Write the anomaly" Placeholder="Anomaly" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }
+                        </MudRadioGroup>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" >
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Tiempo de la HOE
+                                </MudText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @*<MudTimePicker Label="Minutes" Text="13:37" OpenTo="OpenTo.Minutes" />*@
+                                <MudTextField T="string" @bind-Value="time1" Label="Tiempo 1" Required="true" Variant="Variant.Outlined" RequiredError="Time is required!" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="time2" Label="Tiempo 2" Required="true" Variant="Variant.Outlined" RequiredError="Time is required!" Margin="Margin.Dense" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem Class="ml-2">
+                <MudSimpleTable Dense=true Style="overflow-x: auto;" Bordered=true Class="mt-6 mb-3">
+                    <tbody>
+                        <tr>
+                            <td colspan="5">
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Modelo
+                                </MudText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <MudTextField T="string" @bind-Value="models[0]" Label="Model 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="models[1]" Label="Model 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="models[2]" Label="Model 3" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="models[3]" Label="Model 4" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="models[4]" Label="Model 5" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Tiempo ciclo
+                                </MudText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <MudTextField T="string" @bind-Value="cicles[0]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="cicles[1]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="cicles[2]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="cicles[3]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="cicles[4]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem Class="ml-2">
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-3">
+                    <thead>
+                        <tr>
+                            <th>
+                                <MudText Style="font-weight:bold;">
+                                    Pilar
+                                </MudText>
+                            </th>
+                            <th>
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Área de oportunidad detectada
+                                </MudText>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                               S
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="sArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Q
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="qArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                D
+                            </td>
+                            <td>
+                                <MudTextField T="string" @bind-Value="dArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                C
+                            </td>
+                            <td colspan="9">
+                                <MudTextField T="string" @bind-Value="cArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Otros
+                            </td>
+                            <td colspan="9">
+                                <MudTextField T="string" @bind-Value="othersArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem Class="ml-2">
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-3">
+                    <thead>
+                        <tr>
+                            <th>
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Mejora / Actividad Identificada
+                                </MudText>
+                            </th>
+                            <th>
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Comentario de SSV
+                                </MudText>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <MudTextField T="string" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+                        <th>
+                            <MudText Style="text-align:center; font-weight:bold;">
+                            Ideas de mejora y/o comentarios del Operador
+                            </MudText>
+                        </th>
+                        <th>
+                            <MudText Style="text-align:center; font-weight:bold;">
+                            Firma del SSV
+                            </MudText>
+                        </th>
+                        <tr>
+                            <td>
+                                <MudTextField T="string" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    Firma del SSV
+                                </MudText>
+                                <MudTextField T="string" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+        </MudPaper>
+    </MudItem>
+</MudGrid>

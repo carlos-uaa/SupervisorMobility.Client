@@ -1,35 +1,40 @@
-﻿using Microsoft.JSInterop;
-using MudBlazor;
-using System;
-using static MudBlazor.CategoryTypes;
+﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.JobObservationSchedule
+namespace SupervisorMobility.Client.Pages.JobObservationPage
 {
-    public partial class JobObservationScheduleIndex
+    public partial class JobObservation
     {
 
         public DateTime? date = DateTime.Today;
         DateTime? _yearMonth = DateTime.Today;
         private string month;
         private string year;
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
-
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
         public List<Group> _groups { get; set; } = new();
 
-        public int plantId; 
+        public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+            "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
+            "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
+
+        public int plantId;
         public int areaId;
         public int groupId;
+        private string operacion { get; set; }
+        public string operador { get; set; } = "Pedro";
+        public string observador { get; set; } = "Juan";
+        public string time1 { get; set; } = "10 min";
+        public string anomaly { get; set; }
+        public string time2 { get; set; } = "20 min";
+        string[] models = new string[5] { "P71A", "X247", "P71A", "X247", "P71A" };
+        string[] cicles = new string[5] { "1 min", "2 min", "3 min", "4 min", "5 min" };
 
-        public string supervisor { get; set; } = "Pedro";
-
-        private string proceso { get; set; }
-        private string area { get; set; }
-        private string grupo { get; set; }
-        private string ssv { get; set; }
-
-
+        public string sArea;
+        public string qArea;
+        public string dArea;
+        public string cArea;
+        public string othersArea;
+        public int option { get; set; } = 1;
         bool displayModal = false;
         List<string> monthNames = new List<string>();
         List<string> days = new List<string>();
@@ -38,6 +43,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         DateTime startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         DateTime endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddDays(-1);
 
+        // Breadcrumb links
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Job Observation", href: "", disabled: true)
+        };
 
         DisplayNameLabelClass model = new();
 
@@ -47,46 +58,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             public bool Boolean { get; set; }
             public string String { get; set; }
         }
-
-        // Initialization
         protected async override Task OnInitializedAsync()
         {
             _plants = await PlantServices.GetPlants();
-            _groups = await GroupService.GetGroups();
-        }
-
-        // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Job Observation Schedule", href: "", disabled: true)
-        };
-
-        protected override void OnInitialized()
-        {
             monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
             GenerateCalendarHead();
             GenerateCalendarBody();
         }
         private void GenerateCalendarHead()
         {
-            if (startDate.DayOfWeek == DayOfWeek.Monday)
-            {
-                Console.Write("lunes");
-                startDate = startDate.AddDays(-1);
-            }
-            switch (startDate.DayOfWeek)
-            {
-                case DayOfWeek.Monday: startDate = startDate.AddDays(-1); break;
-                case DayOfWeek.Tuesday: startDate = startDate.AddDays(-2); break;
-                case DayOfWeek.Wednesday: startDate = startDate.AddDays(-3); break;
-                case DayOfWeek.Thursday: startDate = startDate.AddDays(-4); break;
-                case DayOfWeek.Friday: startDate = startDate.AddDays(-5); break;
-                case DayOfWeek.Saturday: startDate = startDate.AddDays(-6); break;
-
-
-            }
-                
             var day1 = new List<string>();
             for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
             {
@@ -100,8 +80,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             int flag = 0;
             Week week = new Week();
             List<DayEvent> dates = new List<DayEvent>();
-            int flag2 = 0;
-
             var totalDays = (int)(endDate - startDate).TotalDays;
             int countdays = 0;
 
@@ -147,7 +125,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         private void OpenDialog()
         {
             var options = new DialogOptions { CloseOnEscapeKey = true };
-            DialogService.Show<DialogExample>("Simple Dialog", options);
         }
 
         private async void ShowAreas()
@@ -172,6 +149,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             GenerateCalendarBody();
         }
 
-    }
+       
 
+
+    }
 }

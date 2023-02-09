@@ -17,6 +17,14 @@
 
 
 <style type="text/css">
+
+    @@ media (max-width: 400px) {
+        .d-flex {
+            display: flex !important;
+            flex-direction: column
+        }
+    }
+
     #tblParent tbody tr td {
         width: 200px;
         height: 200px;
@@ -44,6 +52,7 @@
         text-decoration: underline;
         margin-bottom: 36px;
     }
+
     
 </style>
 
@@ -61,26 +70,29 @@
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true>
                     <thead>
                         <tr>
-                           <th colspan="2" style="text-align: center;">
-                               <MudDatePicker Label="Mes / Año" OpenTo="OpenTo.Year" FixDay="1" DateFormat="MM/yyyy" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
+                            <th style="text-align: center;">
+                               <MudDatePicker Label="Month" OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
                             </th>
-                         </tr>
+                            <th style="text-align: center;">
+                                <MudDatePicker Label="Year" OpenTo="OpenTo.Year" FixDay="1" DateFormat="yyyy" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+                            </th>
+                        </tr>
                         <tr>
                             <th colspan="2" style="text-align: center;">Simbología a utilizar</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
+                    <tbody >
+                        <tr >
                             <td>0bservación Planeada</td>
-                            <td><MudIcon Icon="@Icons.Material.Filled.StopCircle" /></td>
+                            <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.StopCircle" /></td>
                          </tr>
                          <tr>
                             <td>Planeada con coaching de SSV</td>
-                            <td><MudIcon Icon="@Icons.Material.Filled.Block" /></td>
+                            <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.Block" /></td>
                          </tr>
                          <tr>
                             <td>Observación terminada</td>
-                            <td><MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Info" /></td>
+                            <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Info" /></td>
                          </tr>
                     </tbody>
                 </MudSimpleTable>
@@ -102,7 +114,7 @@
                             </td>
                             <td>
                                 @*Mud select of Areas *@
-                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowGroups">
+                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
                                     <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
                                     @foreach (var type in _areas)
                                     {
@@ -113,9 +125,13 @@
                          </tr>
                          <tr>
                             <td>
-                                <MudSelect @bind-Value="grupo" Label="Grupo" Placeholder="Please Select">
-                                    <MudSelectItem Value="@("Grupo 1")">Grupo 1</MudSelectItem>
-                                    <MudSelectItem Value="@("Grupo 2")">Grupo 2</MudSelectItem>
+                                @*Mud select of Groups *@
+                                <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Group</MudSelectItem>
+                                    @foreach (var type in _groups)
+                                    {
+                                        <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
                                 </MudSelect>
                             </td>
                             <td>
@@ -136,14 +152,17 @@
         </MudPaper>
     </MudItem>
 </MudGrid>
-<MudGrid Justify="Justify.Center" Class="overflow-x-scroll">
-    <MudItem lg="10">
-        <MudSimpleTable Hover=true Striped=true>
+<MudGrid Justify="Justify.Center" Class="overflow-x-auto mb-12">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem Style="text-align: center">
+            <MudText Typo="Typo.h6">@month.ToUpper() @year</MudText>
+        </MudItem>
+        <MudSimpleTable Striped=true Bordered=true>
             <thead>
                 <tr>
                     @for(var dayIndex = 0; dayIndex < days.Count(); dayIndex++)
                     {
-                        <th style="text-align: center;">
+                        <th style="text-align: center; width:14.28%">
                             @days[dayIndex]
                         </th>
                     }
@@ -155,16 +174,30 @@
                     <tr>
                         @for (var dayIndex = 0; dayIndex < weeks[weekIndex].Dates.Count(); dayIndex++)
                         {
+                            var day = weeks[weekIndex].Dates[dayIndex].DayName;
                             var wIndex = weekIndex;
                             var dIndex = dayIndex;
-                            <td style="text-align: center;" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
-                                @weeks[weekIndex].Dates[dayIndex].DateValue
-                                <br/><br/>
-                                @*<MudIcon Icon="@Icons.Material.Filled.Info" Title="Favorite" Color="Color.Info" />*@
-                                @*<label style="color:#c00; font-weight:bold">@weeks[weekIndex].Dates[dayIndex].Note</label>*@
-                                <br /><br />
-                                [@weekIndex, @dayIndex]
-                            </td>
+                            @if (weekIndex == 0 && (day == "31" || day == "30" || day == "29" || day == "28" || day == "27" || day == "26" || day == "25"))
+                            {
+                                <td style="text-align: end; width:14.28%;">
+                                    <span style="color: #DDDDDD">@weeks[weekIndex].Dates[dayIndex].DayName</span>
+                                    <br/><br/>
+                                    <br /><br />
+                                </td>
+                            }
+                            else
+                            {
+                                <td style="text-align: end; width:14.28%" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
+                                    @weeks[weekIndex].Dates[dayIndex].DayName
+                                    <br/><br/>
+                                    @*<MudIcon Icon="@Icons.Material.Filled.Info" Title="Favorite" Color="Color.Info" />*@
+                                    @*<label style="color:#c00; font-weight:bold">@weeks[weekIndex].Dates[dayIndex].Note</label>*@
+                                    <br /><br />
+                                    @*[@weekIndex, @dayIndex]*@
+                                </td>
+                                
+                            }
+                            
                         }
                     </tr>
                 }
