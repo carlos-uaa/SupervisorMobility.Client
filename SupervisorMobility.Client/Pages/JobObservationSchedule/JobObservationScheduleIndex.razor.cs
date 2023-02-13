@@ -100,7 +100,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             int flag = 0;
             Week week = new Week();
             List<DayEvent> dates = new List<DayEvent>();
-            int flag2 = 0;
 
             var totalDays = (int)(endDate - startDate).TotalDays;
             int countdays = 0;
