@@ -1,0 +1,126 @@
+﻿@page "/assychart/UploadAssyCharts"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IFileUploadService FileUploadService
+@inject IPlantService PlantServices
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Upload And Bulk Assy Chart</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<MudContainer Fixed="true" Class="py-3">
+    <MudGrid>
+        <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
+            <MudImage Src="Images/uploadcloud.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+        </MudItem>
+        <MudItem id="Upload" xs="10" xl="10" class="d-flex flex-column">
+            <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+
+                <MudSpacer />
+                <MudText Typo="Typo.h6">Assy Chart</MudText>
+                <MudSpacer />
+
+            </MudItem>
+            <MudItem Class="d-flex flex-column align-center justify-center">
+                @*File Upload*@
+                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                    <InputFile id="input" OnChange="@OnChange" hidden single></InputFile>
+
+                    <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
+
+                </MudItem>
+                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                    <MudTextField Class="flex-initial d-flex flex-grow-1 px-9" Width="60%" @bind-Value="@FileName" Label="File Name" Variant="Variant.Outlined" Disabled="true" />
+                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2" Width="20%"
+                               HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="input">
+                        Upload Files
+                    </MudButton>
+                </MudItem>
+            </MudItem>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<MudContainer Fixed="true" Class="py-10">
+    <MudGrid>
+        <MudItem>
+            @if (showTableToShow)
+            {
+                <MudTable Items="@dataTableToShow" T="BulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
+                    <ToolBarContent>
+                        <MudSpacer />
+                        <MudText Typo="Typo.h6">Data To Upload</MudText>
+                        <MudSpacer />
+                        <MudButton @onclick="(() => UploadFunction())">
+                            <MudText>Upload Data</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton @onclick="(() => CancelFunction())">
+                            <MudText>Cancel Upload Data</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Cancel" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                        </MudButton>
+                        <MudSpacer />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Plant</MudTh>
+                        <MudTh>Area</MudTh>
+                        <MudTh>Distribution</MudTh>
+                        <MudTh>GOS</MudTh>
+                        <MudTh>CCP</MudTh>
+                        <MudTh>HOE</MudTh>
+                        <MudTh>Operation</MudTh>
+                        <MudTh>Model</MudTh>
+                        <MudTh>Creation Date</MudTh>
+                        <MudTh>Modification Date</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Plant">
+                            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Area">
+                            <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Distribution ">
+                            <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="GOS">
+                            <MudText Align="Align.Center">@context.GOS</MudText>
+                        </MudTd> <MudTd DataLabel="CCP">
+                            <MudText Align="Align.Center">@context.CCP</MudText>
+                        </MudTd> <MudTd DataLabel="HOE">
+                            <MudText Align="Align.Center">@context.HOE</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Operation">
+                            <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Product">
+                            <MudText Align="Align.Center">@context.Product?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Creation Date">
+                            <MudText Align="Align.Center">@context.CreationDate</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Modification Date">
+                            <MudText Align="Align.Center">@context.ModificationDate</MudText>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+<MudSpacer></MudSpacer>
+
+

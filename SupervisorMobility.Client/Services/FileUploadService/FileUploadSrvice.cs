@@ -23,8 +23,15 @@ namespace SupervisorMobility.Client.Services.FileUploadService
 
             return result;
         }
+        public async Task<UploadDataResult> SetNewData(UploadResult fileinfo)
+        {
+            var response = await _http.PostAsJsonAsync("File/Data", fileinfo);
 
+            var result = await response.Content.ReadFromJsonAsync<UploadDataResult>();
 
+            return result;
+        }
     }
+
 
 }

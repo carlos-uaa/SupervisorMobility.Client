@@ -1,4 +1,6 @@
 ﻿using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.AssyChartService
@@ -56,6 +58,8 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             return assycharts;
         }
 
+      
+
         public Task<List<AssyChart>> GetAssyChartsByArea(int plantId, int areaId)
         {
             throw new NotImplementedException();
@@ -66,9 +70,20 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             throw new NotImplementedException();
         }
 
-        public Task<List<AssyChart>> GetAssyChartsByPlant(int plantId)
+        public async Task<List<AssyChart>> GetAssyChartsByPlant(int plantId)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"assycharts/byplantid/{plantId}");
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var assycharts = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
+
+            return assycharts;
         }
 
         public async Task<bool> UpdateAssyChart(int assychartId, AssyChart AssyChartToUpdate)

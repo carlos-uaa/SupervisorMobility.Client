@@ -25,7 +25,7 @@ namespace SupervisorMobility.Client.Data.Entities
         //PLANT INFO
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
-        public int PlantId { get; set; }
+        public int  PlantId { get; set; }
         public Plant Plant { get; set; }
         //AREA INFO
         [Required]
@@ -39,6 +39,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public Distribution Distribution { get; set; }
         //Operation Info
         public int OperationId { get; set; }
+        public Operation Operation { get; set; }
         //Data Operation to create
         [Required]
         public string OperationCode { get; set;}
@@ -46,7 +47,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public string OperationDescription { get; set;}
         [Required]
         public bool? OperationIsActive { get; set; } = false;
-        public Operation Operation { get; set; }
+        
 
 
     }
