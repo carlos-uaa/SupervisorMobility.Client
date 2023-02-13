@@ -1,0 +1,47 @@
+﻿@page "/assychart/BulkAssyCharts"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IFileUploadService FileUploadService
+@inject IPlantService PlantServices
+@inject IJSRuntime JS
+@inject IAssyChartService AssyChartServices
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Upload And Bulk Assy Chart</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<MudSpacer></MudSpacer>
+<MudGrid id="Bulk">
+    <MudItem xl="10" xs="10">
+        <MudItem class="align-center justify-center mud-width-full">
+            <MudText Typo="Typo.h6">Assy Chart Bulk</MudText>
+        </MudItem>
+        <MudItem class="d-flex">
+            <MudSwitch class="flex-auto" @bind-Checked="@AllPlantsSwitch" Label="Download All Assy Charts" Color="Color.Info" />
+            <MudSpacer />
+            @if (!AllPlantsSwitch)
+            {
+                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)">
+                    <MudSelectItem Disabled="true" Value="0">Select a Plant to bulk</MudSelectItem>
+                    @foreach (var type in _plants)
+                    {
+                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+        </MudItem>
+        <MudItem class="my-2">
+            <MudButton OnClick="DoBulk" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" >Download Bulk</MudButton>
+        </MudItem>
+    </MudItem>
+    <MudItem xl="2" xs="2" Class="align-center justify-center">
+        <MudImage Src="Images/bulk.png" Alt="Bulk image" Height="120" Width="120" Class="align-center justify-center"> </MudImage>
+    </MudItem>
+</MudGrid>
+
+
