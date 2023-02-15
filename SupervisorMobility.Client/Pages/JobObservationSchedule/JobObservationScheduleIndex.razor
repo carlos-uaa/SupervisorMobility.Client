@@ -11,6 +11,7 @@
 @inject IDialogService DialogService
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
+@inject IJobObservationService JobObservationService
 
 @inject NavigationManager NavigationManager
 @inject HttpClient httpClient
@@ -155,7 +156,7 @@
 <MudGrid Justify="Justify.Center" Class="overflow-x-auto mb-12">
     <MudItem lg="10" md="12" sm="12" xs="12">
         <MudItem Style="text-align: center">
-            <MudText Typo="Typo.h6">@month.ToUpper() @year</MudText>
+            <MudText Typo="Typo.h6">@month @year</MudText>
         </MudItem>
         <MudSimpleTable Striped=true Bordered=true>
             <thead>
@@ -181,19 +182,26 @@
                             {
                                 <td style="text-align: end; width:14.28%;">
                                     <span style="color: #DDDDDD">@weeks[weekIndex].Dates[dayIndex].DayName</span>
-                                    <br/><br/>
-                                    <br /><br />
+                                    <div style="min-height: 10vh"></div>
                                 </td>
                             }
                             else
                             {
-                                <td style="text-align: end; width:14.28%" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
+                                <td style="text-align: end; width:14.28%;" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
                                     @weeks[weekIndex].Dates[dayIndex].DayName
-                                    <br/><br/>
-                                    @*<MudIcon Icon="@Icons.Material.Filled.Info" Title="Favorite" Color="Color.Info" />*@
-                                    @*<label style="color:#c00; font-weight:bold">@weeks[weekIndex].Dates[dayIndex].Note</label>*@
-                                    <br /><br />
-                                    @*[@weekIndex, @dayIndex]*@
+                                    <div style="min-height: 10vh">
+                                    @foreach(var jobobs in _jobObservation)
+                                    {
+                                        flagJob = false;
+                                        if (jobobs.DateStart?.ToShortDateString() == weeks[weekIndex].Dates[dayIndex].DateValue)
+                                        {
+                                            <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" >
+                                                @jobobs.JobObservationId <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                            </MudButton>
+                                            flagJob = true;
+                                        }
+                                    }
+                                    </div>
                                 </td>
                                 
                             }
@@ -205,7 +213,25 @@
         </MudSimpleTable>
     </MudItem>
 </MudGrid>
-@if(displayModal){
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudIconButton @onclick="(() => JobObservationDetails(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+        <MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+
+@*@if(displayModal){
     <div id="divModal">
         <div class="container">
             <div class="panel panel-default">
@@ -248,3 +274,4 @@
         </div>
     </div>
 }
+*@

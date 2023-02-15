@@ -1,4 +1,4 @@
-﻿@page "/jobobservation/updatejobobservation/{jobobservationId:int}"
+﻿@page "/jobobservation/details/{jobobservationId:int}"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
@@ -22,30 +22,36 @@
 <PageTitle>Supervisor Mobility | Job Observation</PageTitle>
 
 @* Job Observation Form*@
-<EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
-    <DataAnnotationsValidator />
-    <MudSwitch Class="mt-3" Label="Job Observation Is active?" @bind-Checked="@_jobObservation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
-    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
-        <MudItem lg="10" md="12" sm="12" xs="12">
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
-                    Tarjeta de Observación de Operación Cíclica
-                    <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
-                </MudText>
-            </MudItem>
+@if (_jobObservation.IsActive == true)
+{
+    <MudText>
+        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+    </MudText>
+}
+else
+{
+    <MudText>
+        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+    </MudText>
+}
+<MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">
+                Tarjeta de Observación de Operación Cíclica
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+            </MudText>
+        </MudItem>
+        <MudPaper Class="" Elevation="0">
             <MudItem Class="ml-2">
                 <MudSimpleTable Dense="@dense" Hover="@hover" ReadOnly="@ronly"
-                            HorizontalScrollbar="true">
+                          HorizontalScrollbar="true">
                     <tbody>
                         <tr>
                             <td>
-                                @*Mud select of Plants *@
-                                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
-                                    <MudSelectItem Disabled="true" Value="@_jobObservation.PlantId">Select a Plant</MudSelectItem>
-                                    @foreach (var type in _plants)
-                                    {
-                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
+                                @*Mud select of Plants*@
+                                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId">
+                                    <MudSelectItem Disabled="true" Value="@_jobObservation.PlantId">@_jobObservation.Plant?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
@@ -56,36 +62,23 @@
                         <tr>
                             <td>
                                 @*Mud select of Areas *@
-                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                    <MudSelectItem Disabled="true" Value="@_jobObservation.AreaId">Select an Area</MudSelectItem>
-                                    @foreach (var type in _areas)
-                                    {
-                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
+                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId">
+                                    <MudSelectItem Disabled="true" Value="@_jobObservation.AreaId">@_jobObservation.Area?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
                             <td>
                                 <MudTextField T="string" @bind-Value="_jobObservation.Observer" Label="Observador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
-
                             </td>
                         </tr>
                         <tr>
                             <td class="d-flex">
                                 @*Mud select of Distribution *@
-                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                    <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">Select a Distribution</MudSelectItem>
-                                    @foreach (var type in _distributions)
-                                    {
-                                        <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
+                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId">
+                                    <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">@_jobObservation.Distribution?.Description</MudSelectItem>
                                 </MudSelect>
                                 @*Mud select of Operations *@
-                                <MudSelect T="int" Label="Operation" Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)">
-                                    <MudSelectItem Disabled="true" Value="@_jobObservation.OperationId">Select an Operation</MudSelectItem>
-                                    @foreach (var type in _operations)
-                                    {
-                                        <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId">
+                                    <MudSelectItem Disabled="true" Value="@_jobObservation.OperationId">@_jobObservation.Operation?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
                             <td>
@@ -94,10 +87,10 @@
                         </tr>
                         <tr>
                             <td colspan="2" style="text-align: center;">
-                                <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" style="width:100%;">
-                                <MudRadio Option="1" Color="Color.Info" Size="Size.Small">Verificar la Capacitación</MudRadio>
-                                <MudRadio Option="2" Color="Color.Info" Size="Size.Small">Mantener y/o Mejorar el área de trabajo</MudRadio>
-                                <MudRadio Option="3" Color="Color.Info" Size="Size.Small">Manejo de anomalía</MudRadio>
+                                <MudRadioGroup @bind-SelectedOption="_jobObservation.Option">
+                                <MudRadio Option="1" Color="Color.Info" Size="Size.Small" Disabled=true>Verificar la Capacitación</MudRadio>
+                                <MudRadio Option="2" Color="Color.Info" Size="Size.Small" Disabled=true>Mantener y/o Mejorar el área de trabajo</MudRadio>
+                                <MudRadio Option="3" Color="Color.Info" Size="Size.Small" Disabled=true>Manejo de anomalía</MudRadio>
                                 @if(_jobObservation.Option == 3)
                                 {
                                         <MudTextField @bind-Value="_jobObservation.Anomaly" T="string" Label="Write the anomaly" Placeholder="Anomaly" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
@@ -198,10 +191,10 @@
                     <tbody>
                         <tr>
                             <td>
-                                S
+                               S
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.SArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.SArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                         <tr>
@@ -209,7 +202,7 @@
                                 Q
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.QArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.QArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                         <tr>
@@ -217,7 +210,7 @@
                                 D
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.DArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.DArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                         <tr>
@@ -225,7 +218,7 @@
                                 C
                             </td>
                             <td colspan="9">
-                                <MudTextField T="string" @bind-Value="_jobObservation.CArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.CArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                         <tr>
@@ -233,7 +226,7 @@
                                 Otros
                             </td>
                             <td colspan="9">
-                                <MudTextField T="string" @bind-Value="_jobObservation.OthersArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.OthersArea" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                     </tbody>
@@ -258,10 +251,10 @@
                     <tbody>
                         <tr>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.IdentifiedActivity" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.IdentifiedActivity" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                         <th>
@@ -276,7 +269,7 @@
                         </th>
                         <tr>
                             <td>
-                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
+                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
                             </td>
                             <td>
                             <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
@@ -286,14 +279,10 @@
                             <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </td>
                         </tr>
+                       
                     </tbody>
                 </MudSimpleTable>
             </MudItem>
-
-            <MudCardActions>
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Update AssyChart</MudButton>
-                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">Cancel</MudButton>
-            </MudCardActions>
-        </MudItem>
-    </MudGrid>
-</EditForm>
+        </MudPaper>
+    </MudItem>
+</MudGrid>

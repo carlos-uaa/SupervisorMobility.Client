@@ -9,10 +9,10 @@
         Task<JobObservation> GetJobObservationById(int jobObservationId);
 
         // Create job observation
-        Task<JobObservation> CreateJobObservationType(JobObservation jobObservation);
+        Task<JobObservation> CreateJobObservation(JobObservation jobObservation);
 
         // Update job observation
-        Task UpdateJobObservation(JobObservation jobObservation);
+        Task<bool> UpdateJobObservation(JobObservation jobObservation);
 
         // Delete job observation
         Task DeleteJobObservation(int jobObservationId);

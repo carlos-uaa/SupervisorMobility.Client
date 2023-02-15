@@ -17,8 +17,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
         public List<Group> _groups { get; set; } = new();
+        public List<JobObservation> _jobObservation { get; set; } = new();
 
-        public int plantId; 
+
+
+        public int plantId;
         public int areaId;
         public int groupId;
 
@@ -51,6 +54,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            _jobObservation = await JobObservationService.GetAllJobObservations();
             _plants = await PlantServices.GetPlants();
             _groups = await GroupService.GetGroups();
         }
@@ -86,7 +90,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
 
             }
-                
+
             var day1 = new List<string>();
             for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
             {
@@ -109,7 +113,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 flag = flag + 1;
                 dates.Add(new DayEvent()
                 {
-                    DateValue = dt.ToString("dd-MM-yyyy"),
+                    DateValue = dt.ToString("d/M/yyyy"),
                     DayName = dt.ToString("dd")
                 });
 
@@ -143,11 +147,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         }
 
 
-        private void OpenDialog()
-        {
-            var options = new DialogOptions { CloseOnEscapeKey = true };
-            DialogService.Show<DialogExample>("Simple Dialog", options);
-        }
+        //private void OpenDialog()
+        //{
+        //    var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        //    DialogService.Show<DialogExample>("Simple Dialog", options);
+        //}
+
 
         private async void ShowAreas()
         {
@@ -170,6 +175,27 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             GenerateCalendarHead();
             GenerateCalendarBody();
         }
+
+        void JobObservationDetails(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"jobobservation/details/{jobObservationId}");
+        }
+        void JobObservationUpdate(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+        }
+
+        public bool flagJob = false;
+        private bool visible = false;
+        private int jobId;
+        private void OpenDialog2(int id)
+        {
+            jobId = id;
+            visible = true;
+        }
+        void Close() => visible = false;
+
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
     }
 

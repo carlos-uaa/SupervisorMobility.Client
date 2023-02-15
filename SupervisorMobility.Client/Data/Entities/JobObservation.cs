@@ -7,28 +7,30 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public int JobObservationId { get; set; }
         
-        [Required]
-        public Plant Plant { get; set; }
-        [Required]
-        public Area Area { get; set; }
-        [Required]
-        public Distribution Distribution { get; set; }
-        [Required]
-        public Operation Operation { get; set; }
+        public Plant? Plant { get; set; }
+        public Area? Area { get; set; }
+        public Distribution? Distribution { get; set; }
+        public Operation? Operation { get; set; }
 
         [Required]
-        public int PlantId;
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
+        public int PlantId { get; set; }
         [Required]
-        public int AreaId;
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate an Area")]
+        public int AreaId { get; set; }
         [Required]
-        public int DistributionId;
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Distribution")]
+        public int DistributionId { get; set; }
         [Required]
-        public int OperationId;
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operation")]
+        public int OperationId { get; set; }
 
         public bool IsActive { get; set; }
-
-        public DateTime? dateStart { get; set; }
-        public DateTime? dateEnd { get; set; }
+        
+        [Required]
+        public DateTime? DateStart { get; set; }
+        [Required]
+        public DateTime? DateEnd { get; set; }
 
         public string Observer { get; set; }
         public string Operator { get; set; }

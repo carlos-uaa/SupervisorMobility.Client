@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.JobObservationService
 {
@@ -15,9 +14,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        public async Task<JobObservation> CreateJobObservationType(JobObservation jobObservation)
+        public async Task<JobObservation> CreateJobObservation(JobObservation _jobObservation)
         {
-            var response = await _http.PostAsJsonAsync("jobObservations", jobObservation);
+            var response = await _http.PostAsJsonAsync($"jobobservations", _jobObservation);
             var newJobObservation = await response.Content.ReadFromJsonAsync<JobObservation>();
 
             return newJobObservation;
@@ -25,12 +24,12 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
         public async Task DeleteJobObservation(int jobObservationId)
         {
-            var response = await _http.DeleteAsync($"jobObservations/{jobObservationId}");
+            var response = await _http.DeleteAsync($"jobobservations/{jobObservationId}");
         }
 
         public async Task<List<JobObservation>> GetAllJobObservations()
         {
-            var response = await _http.GetAsync("jobObservations");
+            var response = await _http.GetAsync($"jobobservations");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -45,7 +44,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
         public async Task<JobObservation> GetJobObservationById(int jobObservationId)
         {
-            var response = await _http.GetAsync($"jobObservations/{jobObservationId}");
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -58,9 +57,15 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
-        public async Task UpdateJobObservation(JobObservation jobObservation)
+        public async Task<bool> UpdateJobObservation(JobObservation jobObservation)
         {
-            var response = await _http.PutAsJsonAsync($"jobObservations/{jobObservation.JobObservationId}", jobObservation);
+            var response = await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}", jobObservation);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
 
     }
