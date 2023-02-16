@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
 {
@@ -9,41 +10,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+        public JobObservation _jobObservation { get; set; } = new();
 
-        public int plantId;
-        public int areaId;
-        public int distributionId;
-        public int operationId;
-
-        public DateTime? dateStart = DateTime.Today;
-        public DateTime? dateEnd = DateTime.Today;
-
-        public string observer { get; set; } = "Juan";
-        public string operator1 { get; set; } = "Pedro";
-
-        public int option { get; set; } = 1;
-        public string anomaly { get; set; }
-
-      
-        public string time1HOE { get; set; } = "10 min";
-        public string time2HOE { get; set; } = "20 min";
         string[] models = new string[5] { "P71A", "X247", "P71A", "X247", "P71A" };
         string[] cicles = new string[5] { "1 min", "2 min", "3 min", "4 min", "5 min" };
-
-        public string models2;
-
-        public string sArea;
-        public string qArea;
-        public string dArea;
-        public string cArea;
-        public string othersArea;
-
-        public string identifiedActivity = "Actividad Identificada";
-        public string ssvCommentary = "ssv comentario";
-        public string operatorCommentary = "operator comment";
-        public string ssvSignature = "Juan";
-        public string operatorSignature ="Pedro";
-
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
@@ -58,30 +28,81 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            _jobObservation.DateStart = DateTime.Now;
+            _jobObservation.DateEnd = DateTime.Now;
+            _jobObservation.Option = 3;
             _plants = await PlantServices.GetPlants();
-            models2 = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4] + "|";
         }
         private async void ShowAreas()
         {
-            _areas = await AreaServices.GetAreas(plantId);
+            _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
 
         private async void ShowDistributions()
         {
-            _distributions = await DistributionService.GetDistributions(plantId, areaId);
+            _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
         }
         private async void ShowOperations()
         {
-            _operations = await OperationService.GetOperations(plantId, areaId, distributionId);
+            _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 
         private async Task CreateNewJobObservation()
         {
-            models2 = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4] + "|";
 
-            Task.Delay(10);
+
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cicles= cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
+            //Console.WriteLine(_jobObservation.PlantId);
+            //Console.WriteLine(_jobObservation.AreaId);
+            //Console.WriteLine(_jobObservation.DistributionId);
+            //Console.WriteLine(_jobObservation.OperationId);
+            //Console.WriteLine(_jobObservation.IsActive);
+            //Console.WriteLine(_jobObservation.DateStart);
+            //Console.WriteLine(_jobObservation.DateEnd);
+            //Console.WriteLine(_jobObservation.Observer);
+            //Console.WriteLine(_jobObservation.Operator);
+            //Console.WriteLine(_jobObservation.Option);
+            //Console.WriteLine(_jobObservation.Anomaly);
+            //Console.WriteLine(_jobObservation.Time1HOE);
+            //Console.WriteLine(_jobObservation.Time2HOE);
+            //Console.WriteLine(_jobObservation.Models);
+            //Console.WriteLine(_jobObservation.Cicles);
+            //Console.WriteLine(_jobObservation.SArea);
+            //Console.WriteLine(_jobObservation.QArea);
+            //Console.WriteLine(_jobObservation.DArea);
+            //Console.WriteLine(_jobObservation.CArea);
+            //Console.WriteLine(_jobObservation.OthersArea);
+            //Console.WriteLine(_jobObservation.IdentifiedActivity);
+            //Console.WriteLine(_jobObservation.SsvCommentary);
+            //Console.WriteLine(_jobObservation.OperatorCommentary);
+            //Console.WriteLine(_jobObservation.SsvSignature);
+            //Console.WriteLine(_jobObservation.OperatorSignature);
+
+            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+            if (result != null)
+            {
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
         }
 
+        void CancelCreateJobObservation()
+        {
+            NavigationManager.NavigateTo("/jobobservation");
+        }
+
+
+        //async void CreateNewAssyChartAsync()
+        //{
+        //    var result = await AssyChartServices.CreateAssyChart(_newassychart);
+        //    if (result != null)
+        //        NavigationManager.NavigateTo("/assychart");
+        //    else
+        //        await JsRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+        //}
 
     }
 }
