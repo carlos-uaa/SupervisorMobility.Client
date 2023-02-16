@@ -14,13 +14,12 @@ global using SupervisorMobility.Client.Services.ProductsService;
 global using SupervisorMobility.Client.Services.QuestionTypeService;
 global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
 global using SupervisorMobility.Client.Services.AssyChartService;
-global using SupervisorMobility.Client.Services.FileUploadService;
+global using SupervisorMobility.Client.Services.FileUploadAndDownloadService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -45,8 +44,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
-builder.Services.AddScoped<IFileUploadService, FileUploadService>();
-
+builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
+//cors
 
 
 await builder.Build().RunAsync();
