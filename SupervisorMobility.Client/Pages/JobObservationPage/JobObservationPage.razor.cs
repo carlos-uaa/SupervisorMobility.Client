@@ -44,12 +44,24 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
 
-        void JobObservationDetails(int jobObservationId)
+        void CreateJobObservation()
         {
-            NavigationManager.NavigateTo($"jobobservation/details/{jobObservationId}");
+            var date = DateTime.Now.ToShortDateString();
+            date = date.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
         }
 
+        public bool flagJob = false;
+        private bool visible = false;
+        private int jobId;
+        private void OpenDialog2(int id)
+        {
+            jobId = id;
+            visible = true;
+        }
+        void Close() => visible = false;
 
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
 
     }

@@ -6,6 +6,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
     public partial class CreateJobObservation
     {
 
+        [Parameter]
+        public string date { get; set; }
+
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
@@ -22,28 +25,37 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Job Observation", href: "", disabled: true)
+            new BreadcrumbItem("Home", href: "/"),
+            new BreadcrumbItem("Job Observation", href: "/jobobservation"),
+            new BreadcrumbItem("New Job Observation", href: "", disabled: true)
         };
 
         protected async override Task OnInitializedAsync()
         {
-            _jobObservation.DateStart = DateTime.Now;
-            _jobObservation.DateEnd = DateTime.Now;
+            date = date.Replace("-", "/");
+            _jobObservation.IsActive= true;
+            _jobObservation.DateStart = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.Option = 3;
             _plants = await PlantServices.GetPlants();
         }
         private async void ShowAreas()
         {
+            _jobObservation.AreaId = 0;
+            _jobObservation.DistributionId = 0;
+            _jobObservation.OperationId = 0;
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
 
         private async void ShowDistributions()
         {
+            _jobObservation.DistributionId = 0;
+            _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
         }
         private async void ShowOperations()
         {
+            _jobObservation.OperationId = 0;
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 

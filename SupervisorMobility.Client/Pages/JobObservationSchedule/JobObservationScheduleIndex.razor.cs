@@ -30,10 +30,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         private string proceso { get; set; }
         private string area { get; set; }
         private string grupo { get; set; }
-        private string ssv { get; set; }
+        private string ssv { get; set; } = "Azael";
 
-
-        bool displayModal = false;
         List<string> monthNames = new List<string>();
         List<string> days = new List<string>();
         List<Week> weeks = new List<Week>();
@@ -136,14 +134,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             }
         }
 
-        private void CloseModal()
+        private void CreateJobObservation(string date)
         {
-            displayModal = false;
-        }
-
-        private void OpenModal(int wIndex, int dIndex)
-        {
-            displayModal = true;
+            date = date.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
         }
 
 
@@ -156,6 +150,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private async void ShowAreas()
         {
+            areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
         }
 
@@ -176,16 +171,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             GenerateCalendarBody();
         }
 
-        void JobObservationDetails(int jobObservationId)
-        {
-            NavigationManager.NavigateTo($"jobobservation/details/{jobObservationId}");
-        }
         void JobObservationUpdate(int jobObservationId)
         {
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
 
-        public bool flagJob = false;
         private bool visible = false;
         private int jobId;
         private void OpenDialog2(int id)

@@ -16,50 +16,14 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient httpClient
 
-
-<style type="text/css">
-
-    @@ media (max-width: 400px) {
-        .d-flex {
-            display: flex !important;
-            flex-direction: column
-        }
-    }
-
-    #tblParent tbody tr td {
-        width: 200px;
-        height: 200px;
-    }
-
-    #divParent{
-        position: relative;
-    }
-
-    #divModal {
-        z-index: 10;
-        position: absolute;
-        border: 1px solid #000000;
-        border-radius: 3px;
-        background-color: #ffffff;
-        left: 40%;
-        top: 20%;
-        width: 400px;
-        min-height: 300px;
-    }
-
-    .modalHeading{
-        text-align: center;
-        font-size: 50px;
-        text-decoration: underline;
-        margin-bottom: 36px;
-    }
-
-    
-</style>
-
-
 @*Title*@
 <PageTitle>Supervisor Mobility | Job Observation Index</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
 @*Form*@
 <MudGrid Justify="Justify.Center">
     <MudItem lg="10" md="12" sm="12" xs="12">
@@ -71,11 +35,8 @@
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true>
                     <thead>
                         <tr>
-                            <th style="text-align: center;">
-                               <MudDatePicker Label="Month" OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
-                            </th>
-                            <th style="text-align: center;">
-                                <MudDatePicker Label="Year" OpenTo="OpenTo.Year" FixDay="1" DateFormat="yyyy" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+                            <th colspan="2" style="text-align: center;">
+                               <MudDatePicker Label="Month / Year" OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
                             </th>
                         </tr>
                         <tr>
@@ -136,10 +97,7 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudSelect @bind-Value="ssv" Label="SSV" Placeholder="Please Select">
-                                    <MudSelectItem Value="@("SSV 1")">SSV 1</MudSelectItem>
-                                    <MudSelectItem Value="@("SSV 2")">SSV 2</MudSelectItem>
-                                </MudSelect>
+                                <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" RequiredError="SSV is required!" OnlyValidateIfDirty="true" />
                             </td>
                          </tr>
                          <tr>
@@ -187,18 +145,32 @@
                             }
                             else
                             {
-                                <td style="text-align: end; width:14.28%;" @ondblclick="@(()=>OpenModal(wIndex, dIndex))">
+                                var date = @weeks[weekIndex].Dates[dayIndex].DateValue;
+                                <td style="text-align: end; width:14.28%;" @ondblclick="@(()=>CreateJobObservation(date))">
+                                    
                                     @weeks[weekIndex].Dates[dayIndex].DayName
                                     <div style="min-height: 10vh">
                                     @foreach(var jobobs in _jobObservation)
                                     {
-                                        flagJob = false;
-                                        if (jobobs.DateStart?.ToShortDateString() == weeks[weekIndex].Dates[dayIndex].DateValue)
-                                        {
-                                            <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" >
-                                                @jobobs.JobObservationId <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
-                                            </MudButton>
-                                            flagJob = true;
+                                        var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
+                  @*                      <span>@compare 
+                                            @jobobs.DateStart
+                                            @jobobs.DateEnd
+                                       </span>*@
+                                            if (jobobs.DateStart <= compare && compare <= jobobs.DateEnd && plantId == jobobs.PlantId && areaId == jobobs.AreaId)
+                                            {
+                                                if(jobobs.DateStart == compare && jobobs.DateEnd == compare)
+                                                {
+                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                        @jobobs.JobObservationId <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                    </MudButton>
+                                                }
+                                                else
+                                                {
+                                                    <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                    @jobobs.JobObservationId <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                </MudButton>
+                                                }
                                         }
                                     }
                                     </div>
@@ -218,60 +190,11 @@
 <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll">
-            <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
+            <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId" ></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudIconButton @onclick="(() => JobObservationDetails(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Info"></MudIconButton>
         <MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
         <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
     </DialogActions>
 </MudDialog>
-
-
-
-
-@*@if(displayModal){
-    <div id="divModal">
-        <div class="container">
-            <div class="panel panel-default">
-                <div class="panel-heading modalHeading">Set Note</div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label>From Date:</label>
-                        </div>
-                        <div class="col-md-8">
-                            <input type="date" style="width:100%"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>To Date:</label>
-                    </div>
-                    <div class="col-md-8">
-                        <input type="date" style="width:100%" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>Note:</label>
-                    </div>
-                    <div class="col-md-8">
-                        <input type="date" style="width:100%" />
-                    </div>
-                </div>
-                <div class="row" style="margin-bottom: 10px;">
-                    <div class="col-md-6">
-                    </div>
-                    <div class="col-md-6" style="text-align: right;">
-                        <button class="btn btn-success" style="float:left; margin-right:5px">Save</button>
-                        <button class="btn btn-danger" @onclick="CloseModal" style="float:left; margin-right:5px">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-*@
