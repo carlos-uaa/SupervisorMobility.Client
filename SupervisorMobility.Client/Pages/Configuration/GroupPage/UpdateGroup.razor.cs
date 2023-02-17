@@ -28,10 +28,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
         }
 
         // Update group
-        void UpdateGroupAsync()
+        async void UpdateGroupAsync()
         {
-            GroupService.UpdateGroup(_group);
-            NavigationManager.NavigateTo($"groups");
+
+            var result = await GroupService.UpdateGroup(_group);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"groups");
+            }
         }
     }
 }

@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.GroupService
         }
 
         // Update group
-        public async Task UpdateGroup(Group group)
+        public async Task<bool> UpdateGroup(Group group)
         {
             var response = await _http.PutAsJsonAsync($"groups/{group.GroupId}", group);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -12,7 +12,7 @@
         Task<SupportDocumentType> CreateSupportDocumentType(SupportDocumentType supportDocumentType);
 
         // Update support document type
-        Task UpdateSupportDocumentType(SupportDocumentType supportDocumentType);
+        Task<bool> UpdateSupportDocumentType(SupportDocumentType supportDocumentType);
 
         // Delete support document type
         Task DeleteSupportDocumentType(int id);

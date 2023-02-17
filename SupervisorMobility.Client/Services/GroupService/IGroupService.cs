@@ -12,7 +12,7 @@
         Task<Group> CreateGroup(Group group);
 
         // Update group
-        Task UpdateGroup(Group group);
+        Task<bool> UpdateGroup(Group group);
 
         // Delete group
         Task DeleteGroup(int id);

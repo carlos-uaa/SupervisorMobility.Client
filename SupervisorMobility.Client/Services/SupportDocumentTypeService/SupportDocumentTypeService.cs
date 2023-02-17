@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.SupportDocumentTypeService
         }
 
         // Update support document type
-        public async Task UpdateSupportDocumentType(SupportDocumentType supportDocumentType)
+        public async Task<bool> UpdateSupportDocumentType(SupportDocumentType supportDocumentType)
         {
             var response = await _http.PutAsJsonAsync($"supportdocumenttypes/{supportDocumentType.SupportDocumentTypeId}", supportDocumentType);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
