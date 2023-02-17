@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.ProductsService
         }
 
         // Update product
-        public async Task UpdateProduct(Product product)
+        public async Task<bool> UpdateProduct(Product product)
         {
             var response = await _http.PutAsJsonAsync($"products/{product.ProductId}", product);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

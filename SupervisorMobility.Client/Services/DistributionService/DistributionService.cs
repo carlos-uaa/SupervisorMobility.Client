@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.DistributionService
         }
 
         // Update distribution
-        public async Task UpdateDistribution(int plantId, int areaId, Distribution distribution)
+        public async Task<bool> UpdateDistribution(int plantId, int areaId, Distribution distribution)
         {
             var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{areaId}/distributions/{distribution.DistributionId}", distribution);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

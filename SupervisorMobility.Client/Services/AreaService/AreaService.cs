@@ -78,9 +78,15 @@ namespace SupervisorMobility.Client.Services.AreaService
         }
 
         // Update area
-        public async Task UpdateArea(int plantId, Area area)
+        public async Task<bool> UpdateArea(int plantId, Area area)
         {
             var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{area.AreaId}", area);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -15,7 +15,7 @@
         Task<Area> GetAreaIncludingOperations(int plantId, int areaId);
 
         // Update area
-        Task UpdateArea(int plantId, Area area);
+        Task<bool> UpdateArea(int plantId, Area area);
 
         // Delete area
         Task DeleteArea(int plantId, int areaId);

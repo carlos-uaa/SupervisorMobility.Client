@@ -12,7 +12,7 @@
         Task<Distribution> CreateDistribution(int plantId, int areaId, Distribution distribution);
 
         // Update distribution
-        Task UpdateDistribution(int plantId, int areaId, Distribution distribution);
+        Task<bool> UpdateDistribution(int plantId, int areaId, Distribution distribution);
 
         // Delete distribution
         Task DeleteDistribution(int plantId, int areaId, int distributionId);

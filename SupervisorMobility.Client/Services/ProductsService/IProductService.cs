@@ -12,7 +12,7 @@
         Task<Product> CreateProduct(Product product);
 
         // Update product
-        Task UpdateProduct(Product product);
+        Task<bool> UpdateProduct(Product product);
 
         // Delete product
         Task DeleteProduct(int id);

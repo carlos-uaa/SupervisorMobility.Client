@@ -78,9 +78,15 @@ namespace SupervisorMobility.Client.Services.PlantService
         }
 
         // Update plant
-        public async Task UpdatePlant(Plant plant)
+        public async Task<bool> UpdatePlant(Plant plant)
         {
             var response = await _http.PutAsJsonAsync($"plants/{plant.PlantId}", plant);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

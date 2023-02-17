@@ -22,12 +22,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         {
             _products = await ProductService.GetProducts();
         }
-
+        
         // Create product
         void CreateProduct()
         {
             NavigationManager.NavigateTo($"products/createproduct");
         }
+
 
         // Delete product
         async Task DeleteProduct(int productId)

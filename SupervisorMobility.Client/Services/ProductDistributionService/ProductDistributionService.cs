@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.ProductDistributionService
         }
 
         // Update distribution
-        public async Task UpdateDistribution(int productId, ProductDistribution productDistribution)
+        public async Task<bool> UpdateDistribution(int productId, ProductDistribution productDistribution)
         {
             var response = await _http.PutAsJsonAsync($"product/{productId}/distributions/{productDistribution.ProductDistributionId}", productDistribution);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

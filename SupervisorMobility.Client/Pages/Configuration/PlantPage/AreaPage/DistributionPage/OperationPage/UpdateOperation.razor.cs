@@ -63,8 +63,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Update operation
         async void UpdateOperationAsync()
         {
-            await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+            var result = await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+            }
         }
 
         // Cancel submit form
