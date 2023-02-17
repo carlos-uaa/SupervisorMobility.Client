@@ -8,7 +8,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
     public partial class UploadAssyCharts
     {
-                // Breadcrumb links
+        // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -16,7 +16,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             new BreadcrumbItem("Assy Chart", href: "/assychart"),
             new BreadcrumbItem("Upload Assy Chart", href: "/UploadAssyCharts", disabled: true),
         };
-        
+
         //Objects to Interacting with the archive upload
         private string FileName;
         private string ErrorMessageToDisplay;
@@ -39,7 +39,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _plants = await PlantServices.GetPlants();
         }
 
-      
+
         async Task OnChange(InputFileChangeEventArgs e)
         {
             //Clear Data
@@ -95,7 +95,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     {
                         csv = await GetDataTableFromExcel(e.File);
                         isOkFile = true;
-                    }catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
                     }
@@ -104,9 +105,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 bool isFirstRow = true;
 
 
-                try
+
+                foreach (string[] row in csv)
                 {
-                    foreach (string[] row in csv)
+                    try
                     {
                         if (isFirstRow)
                         {
@@ -114,64 +116,75 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                             plantToUse.Code = row[4];
                             plantToUse.Description = row[7];
                             isFirstRow = false;
+
                         }
                         else
                         {
                             var ToInsertIntoList = new BulkAndUpload();
-                            ToInsertIntoList.AssyChardId = int.Parse(row[0]);
-                            ToInsertIntoList.IsActive = bool.Parse(row[1]);
-                            ToInsertIntoList.GOS = row[2];
-                            ToInsertIntoList.CCP = row[3];
-                            ToInsertIntoList.HOE = row[4];
+                            ToInsertIntoList.AssyChardId = row[0] != "" ? int.Parse(row[0]) : -1;
+                            ToInsertIntoList.IsActive = row[1] != "" ? bool.Parse(row[1]) : true;
+                            ToInsertIntoList.GOS = row[2] != "" ? row[2] : "";
+                            ToInsertIntoList.CCP = row[3] != "" ? row[3] : "";
+                            ToInsertIntoList.HOE = row[4] != "" ? row[4] : "";
+
+
                             ToInsertIntoList.CreationDate = DateTime.Parse(row[5]);
                             ToInsertIntoList.ModificationDate = DateTime.Parse(row[6]);
+
                             ToInsertIntoList.Plant = plantToUse;
                             ToInsertIntoList.PlantId = plantToUse.PlantId;
-                            ToInsertIntoList.ProductId = int.Parse(row[7]);
+
+                            ToInsertIntoList.ProductId = row[7] != "" ? int.Parse(row[7]) : -1;
+
                             ToInsertIntoList.Product = new Product
                             {
-                                ProductId = int.Parse(row[7]),
-                                Code = row[8],
-                                Description = row[9],
-                                IsActive = bool.Parse(row[10])
+                                ProductId = row[7] != "" ? int.Parse(row[7]) : -1,
+                                Code = row[8] != "" ? row[8] : "",
+                                Description = row[9] != "" ? row[9] : "",
+                                IsActive = row[10] != "" ? bool.Parse(row[10]) : true,
                             };
+
                             ToInsertIntoList.AreaId = int.Parse(row[11]);
                             ToInsertIntoList.Area = new Area
                             {
-                                Code = row[12],
-                                Description = row[13],
-                                IsActive = bool.Parse(row[14])
+                                AreaId = row[11] != "" ? int.Parse(row[11]) : -1,
+                                Code = row[12] != "" ? row[12] : "",
+                                Description = row[13] != "" ? row[13] : "",
+                                IsActive = row[14] != " " ? bool.Parse(row[14]) : true,
                             };
-                            ToInsertIntoList.OperationId = int.Parse(row[15]);
+                            ToInsertIntoList.OperationId = row[15] != "" ? int.Parse(row[15]) : -1;
                             ToInsertIntoList.Operation = new Operation
                             {
-                                AreaId = int.Parse(row[11]),
-                                Code = row[16],
-                                Description = row[17],
-                                IsActive = bool.Parse(row[18])
+                                OperationId = row[15] != "" ? int.Parse(row[15]) : -1,
+                                Code = row[16] != "" ? row[16] : "",
+                                Description = row[17] != "" ? row[17] : "",
+                                IsActive = row[18] != "" ? bool.Parse(row[18]) : true,
                             };
-                            ToInsertIntoList.DistributionId = int.Parse(row[19]);
+                            ToInsertIntoList.DistributionId = row[19] != "" ? int.Parse(row[19]) : -1;
                             ToInsertIntoList.Distribution = new Distribution
                             {
-                                Code = row[20],
-                                Description = row[21],
-                                IsActive = bool.Parse(row[22])
+                                DistributionId = row[19] != "" ? int.Parse(row[19]) : -1,
+                                Code = row[20] != "" ? row[20] : "",
+                                Description = row[21] != "" ? row[21] : "",
+                                IsActive = row[22] != "" ? bool.Parse(row[22]) : true,
                             };
 
                             dataTableToShow.Add(ToInsertIntoList);
 
                         }
-
                     }
-                    //active display table
-                    showTableToShow = true;
-                }
-                catch (Exception ex)
-                {
-                    ErrorMessageToDisplay = "Archivo Incorrecto/ Contenido Incorrecto";
-                    Console.WriteLine(ex.ToString());
+                    catch (Exception ex)
+                    {
 
-                }
+                        ErrorMessageToDisplay = "Archivo Incorrecto/Contenido Incorrecto/Error De Procesamiento. Porfavor Consulte a su Admnistrador";
+                        Console.WriteLine($"I{ex.Message}");
+
+                    }//endtrycatch
+
+                }//end foreach 
+                 //active display table
+                showTableToShow = true;
+
 
 
             }//end else
@@ -270,13 +283,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UploadFunction()
         {
-            Console.WriteLine("Into Upload");
             using var content = new MultipartFormDataContent();
-            Console.WriteLine($"Filesource is {FileSource?.Name}");
 
             if (FileSource is not null)
             {
-                Console.WriteLine("Into Not NUll");
 
                 var fileContent = new StreamContent(FileSource.OpenReadStream(509600000));
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(FileSource.ContentType);
@@ -286,14 +296,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 name: "\"file\"",
                 fileName: FileSource.Name);
 
-                var newUploadResults = await FileUploadService.UploadFile(content);
-                Console.WriteLine("New Results");
+                var newUploadResults = await FileUpDoServices.UploadFile(content);
 
                 if (newUploadResults is not null)
                 {
                     uploadResult = newUploadResults;
                     Console.WriteLine($"Into not null result {uploadResult.FileName} {uploadResult.StorageFileName}");
-                    var newDataResults = await FileUploadService.SetNewData(uploadResult);  
+                    var newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
                 }
 
                 Console.WriteLine($"Out not null result {uploadResult.FileName} {uploadResult.StorageFileName}");
