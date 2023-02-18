@@ -28,10 +28,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         }
 
         // Update plant
-        void UpdatePlantAsync()
+        async void UpdatePlantAsync()
         {
-            PlantService.UpdatePlant(_plant);
-            NavigationManager.NavigateTo($"plants");
+            var result = await PlantService.UpdatePlant(_plant);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"plants");
+            }
+
         }
     }
 }

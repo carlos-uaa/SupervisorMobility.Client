@@ -31,8 +31,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Job Observation", href: "", disabled: true)
+            new BreadcrumbItem("Home", href: "/"),
+            new BreadcrumbItem("Job Observation", href: "/jobobservation"),
+            new BreadcrumbItem("Update Job Observation", href: "", disabled: true)
         };
 
         protected async override Task OnInitializedAsync()
@@ -48,15 +49,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         private async void ShowAreas()
         {
+            _jobObservation.AreaId = 0;
+            _jobObservation.DistributionId = 0;
+            _jobObservation.OperationId = 0;
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
 
         private async void ShowDistributions()
         {
+            _jobObservation.DistributionId = 0;
+            _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
         }
         private async void ShowOperations()
         {
+            _jobObservation.OperationId = 0;
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 

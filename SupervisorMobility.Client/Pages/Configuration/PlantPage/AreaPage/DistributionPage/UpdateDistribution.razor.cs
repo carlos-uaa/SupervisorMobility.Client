@@ -50,10 +50,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         }
 
         // Update distribution
-        void UpdateDistributionAsync()
+        async void UpdateDistributionAsync()
         {
-            DistributionService.UpdateDistribution(PlantId, AreaId, _distribution);
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            var result = await DistributionService.UpdateDistribution(PlantId, AreaId, _distribution);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+            }
+
         }
 
         // Cancel submit form

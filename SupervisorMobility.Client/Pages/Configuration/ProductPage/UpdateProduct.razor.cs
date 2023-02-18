@@ -28,10 +28,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         }
 
         // Update product
-        void UpdateProductAsync()
+        async Task UpdateProductAsync()
         {
-            ProductService.UpdateProduct(_product);
-            NavigationManager.NavigateTo($"products");
+
+            var result = await ProductService.UpdateProduct(_product);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo("/products");
+            }
+
         }
     }
 }

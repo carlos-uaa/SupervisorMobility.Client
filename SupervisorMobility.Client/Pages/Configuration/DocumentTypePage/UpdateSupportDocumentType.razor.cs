@@ -28,10 +28,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         }
 
         // Update support document type
-        void UpdateSupportDocumentTypeAsync()
+        async void UpdateSupportDocumentTypeAsync()
         {
-            SupportDocumentTypeService.UpdateSupportDocumentType(_supportDocumentType);
-            NavigationManager.NavigateTo($"documenttypes");
+
+            var result = await SupportDocumentTypeService.UpdateSupportDocumentType(_supportDocumentType);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"documenttypes");
+            }
+
         }
     }
 }

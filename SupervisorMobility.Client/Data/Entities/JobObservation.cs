@@ -6,7 +6,7 @@ namespace SupervisorMobility.Client.Data.Entities
     {
 
         public int JobObservationId { get; set; }
-        
+
         public Plant? Plant { get; set; }
         public Area? Area { get; set; }
         public Distribution? Distribution { get; set; }
@@ -26,13 +26,15 @@ namespace SupervisorMobility.Client.Data.Entities
         public int OperationId { get; set; }
 
         public bool IsActive { get; set; }
-        
+
         [Required]
         public DateTime? DateStart { get; set; }
         [Required]
         public DateTime? DateEnd { get; set; }
 
+        [Required(ErrorMessage = "Observer is required")]
         public string Observer { get; set; }
+        [Required(ErrorMessage = "Operator is required")]
         public string Operator { get; set; }
 
         public int Option { get; set; }

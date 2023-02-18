@@ -12,7 +12,7 @@
         Task<ProductOperation> CreateOperation(int productId, int productDistributionId, ProductOperation productOperation);
 
         // Update operation
-        Task UpdateOperation(int productId, int productDistributionId, int productOperationId, ProductOperation productOperation);
+        Task<bool> UpdateOperation(int productId, int productDistributionId, int productOperationId, ProductOperation productOperation);
 
         // Delete operation 
         Task DeleteOperation(int productId, int productDistributionId, int productOperationId);

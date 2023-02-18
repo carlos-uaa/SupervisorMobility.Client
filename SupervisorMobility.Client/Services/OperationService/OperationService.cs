@@ -62,9 +62,15 @@ namespace SupervisorMobility.Client.Services.OperationService
         }
 
         // Update operation
-        public async Task UpdateOperation(int plantId, int areaId, int distributionId, int operationId, Operation operation)
+        public async Task<bool> UpdateOperation(int plantId, int areaId, int distributionId, int operationId, Operation operation)
         {
             var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}/operations/{operation.OperationId}", operation);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

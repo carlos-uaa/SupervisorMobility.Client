@@ -40,10 +40,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         }
 
         // Update area
-        void UpdateAreaAsync()
+        async void UpdateAreaAsync()
         {
-            AreaService.UpdateArea(plantId, _area);
-            NavigationManager.NavigateTo($"plants/{plantId}");
+            var result = await AreaService.UpdateArea(plantId, _area);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"plants/{plantId}");
+            }
+
         }
     }
 }

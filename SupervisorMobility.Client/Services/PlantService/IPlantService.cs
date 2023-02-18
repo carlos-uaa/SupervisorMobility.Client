@@ -15,7 +15,7 @@
         Task<Plant> CreatePlant(Plant plant);
 
         // Update plant
-        Task UpdatePlant(Plant plant);
+        Task<bool> UpdatePlant(Plant plant);
 
         // Delete plant
         Task DeletePlant(int id);

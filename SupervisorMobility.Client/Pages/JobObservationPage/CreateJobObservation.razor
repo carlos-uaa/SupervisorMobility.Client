@@ -1,4 +1,4 @@
-﻿@page "/jobobservation/createjobobservation"
+﻿@page "/jobobservation/createjobobservation/{date}"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
@@ -20,11 +20,15 @@
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Job Observation</PageTitle>
-
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
 @* Job Observation Form*@
 <EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
     <DataAnnotationsValidator />
-    <MudSwitch Class="mt-3" Label="Job Observation Is active?" @bind-Checked="@_jobObservation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
     <MudItem lg="10" md="12" sm="12" xs="12">
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
@@ -34,6 +38,7 @@
             </MudText>
         </MudItem>
             <MudItem Class="ml-2">
+            <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="@_jobObservation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Class="pt-3 pb-3">
                     <tbody>
                         <tr>
@@ -49,14 +54,14 @@
                             </td>
                             <td class="d-flex">
                                 <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4"/>
-                                    <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" />
+                                <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" />
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 @*Mud select of Areas *@
                                 <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                    <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                    <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                                     @foreach (var type in _areas)
                                     {
                                         <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
@@ -64,7 +69,8 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.Observer" Label="Observador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.Observer" Label="Observador" />
+                                <MudText Color="Color.Error" Style="font-size:12px"><ValidationMessage For="@(() => _jobObservation.Observer)"/></MudText>
 
                             </td>
                         </tr>
@@ -88,7 +94,8 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" />
+                                <MudText Color="Color.Error" Style="font-size:12px"><ValidationMessage For="@(() => _jobObservation.Operator)" /></MudText>
                             </td>
                         </tr>
                         <tr>

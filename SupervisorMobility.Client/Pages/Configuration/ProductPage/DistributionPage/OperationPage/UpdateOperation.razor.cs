@@ -55,8 +55,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.Distribution
         // Update operation
         async void UpdateOperationAsync()
         {
-            await ProductOperationService.UpdateOperation(ProductId, DistributionId, OperationId, _operation);
-            NavigationManager.NavigateTo($"product/{ProductId}/distributions/{DistributionId}");
+            var result = await ProductOperationService.UpdateOperation(ProductId, DistributionId, OperationId, _operation);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"product/{ProductId}/distributions/{DistributionId}");
+            }
         }
 
         // Cancel submit form

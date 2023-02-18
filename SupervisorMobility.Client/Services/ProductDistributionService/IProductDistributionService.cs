@@ -12,7 +12,7 @@
         Task<ProductDistribution> CreateDistribution(int productId, ProductDistribution productDistribution);
 
         // Update distribution
-        Task UpdateDistribution(int productId, ProductDistribution productDistribution);
+        Task<bool> UpdateDistribution(int productId, ProductDistribution productDistribution);
 
         // Delete distribution
         Task DeleteDistribution(int product, int productDistributionId);

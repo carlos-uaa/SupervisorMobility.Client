@@ -40,10 +40,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.Distribution
         }
 
         // Update distribution
-        void UpdateDistributionAsync()
+        async Task UpdateDistributionAsync()
         {
-            ProductDistributionService.UpdateDistribution(ProductId, _distribution);
-            NavigationManager.NavigateTo($"products/{ProductId}");
+            var result = await ProductDistributionService.UpdateDistribution(ProductId, _distribution);
+
+            if (result)
+            {
+                NavigationManager.NavigateTo($"products/{ProductId}");
+            }
+
         }
 
         // Cancel submit form
