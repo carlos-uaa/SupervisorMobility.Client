@@ -4,6 +4,7 @@
     {
         public string? FileName { get; set; }  
         public string? StorageFileName { get; set; }
+
     }
 
     public class UploadDataResult

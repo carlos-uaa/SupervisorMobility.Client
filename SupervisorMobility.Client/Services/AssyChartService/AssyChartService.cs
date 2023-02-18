@@ -32,15 +32,8 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         public async Task<AssyChart> GetAssyChart(int assyChartId)
         {
             var response = await _http.GetAsync($"assycharts/{assyChartId}");
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ApplicationException(content);
-            }
-
-            var assychart = JsonSerializer.Deserialize<AssyChart>(content, _options);
-            return assychart;
+            var content = await response.Content.ReadFromJsonAsync<AssyChart>(); 
+            return content;
         }
 
         public async Task<List<AssyChart>> GetAssyCharts()

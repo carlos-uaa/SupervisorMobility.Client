@@ -36,6 +36,10 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
                 var  result = await response.Content.ReadFromJsonAsync<UploadDataResult>();
                 return result;
             }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Error Upload Data");
+            }
 
             return null;
         }

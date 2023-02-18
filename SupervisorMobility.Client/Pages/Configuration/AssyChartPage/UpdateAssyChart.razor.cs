@@ -33,6 +33,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         protected async override Task OnInitializedAsync()
         {
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
+         
             _assychart.OperationDescription = _assychart.Operation.Description;
             _assychart.OperationCode = _assychart.Operation.Code;
             _plants = await PlantServices.GetPlants();

@@ -28,11 +28,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool AllPlantsSwitch = true;
 
         //Table to display elements in file, verificate data to upload
+        private bool displayResume = false;
+        private bool activeUpload = false;
         private bool showTableToShow = false;
         private List<string[]> csv = new List<string[]>();
         private List<BulkAndUpload> dataTableToShow = new();
 
         private UploadResult uploadResult = new();
+        private UploadDataResult retornedResult = new();
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -283,6 +287,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UploadFunction()
         {
+            activeUpload = true;
             using var content = new MultipartFormDataContent();
 
             if (FileSource is not null)
@@ -301,16 +306,28 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 if (newUploadResults is not null)
                 {
                     uploadResult = newUploadResults;
-                    Console.WriteLine($"Into not null result {uploadResult.FileName} {uploadResult.StorageFileName}");
-                    var newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
+                    
+                    UploadDataResult newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
+
+                    if(newDataResults is not null)
+                    {
+                        //tiene resultados
+                        showTableToShow = false;
+                        retornedResult = newDataResults;
+                    }
+                    else
+                    {
+                        ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                    }
+
                 }
 
-                Console.WriteLine($"Out not null result {uploadResult.FileName} {uploadResult.StorageFileName}");
+        
 
             }
             else
             {
-                Console.WriteLine(" Archivo vacio");
+                        ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
             }
 
 
