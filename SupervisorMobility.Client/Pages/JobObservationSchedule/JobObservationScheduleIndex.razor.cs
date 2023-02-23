@@ -134,6 +134,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             }
         }
 
+        public void Help()
+        {
+
+        }
+
         private void CreateJobObservation(string date)
         {
             date = date.Replace("/", "-");

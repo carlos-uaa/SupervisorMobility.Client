@@ -10,6 +10,7 @@
 @inject IChecklistService ChecklistService
 @inject IDialogService DialogService
 @inject IPlantService PlantServices
+@inject IProductService ProductService
 @inject IAreaService AreaServices
 @inject IDistributionService DistributionService
 @inject IOperationService OperationService
@@ -27,7 +28,7 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 @* Job Observation Form*@
-<EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
+<EditForm Model="_jobObservation" OnValidSubmit="EditJobObservation">
     <DataAnnotationsValidator />
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="10" md="12" sm="12" xs="12">
@@ -69,9 +70,9 @@
                                     }
                                 </MudSelect>
                             </td>
-                            <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.Observer" Label="Observador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
-
+                            <td class="d-flex">
+                                <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" />
                             </td>
                         </tr>
                         <tr>
@@ -94,7 +95,10 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                                <div class="d-flex">
+                                    <MudTextField T="string" @bind-Value="_jobObservation.Observer" Label="Observador" Class="mr-4" />
+                                    <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" />
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -142,43 +146,91 @@
                         </tr>
                         <tr>
                             <td>
-                                <MudTextField T="string" @bind-Value="models[0]" Label="Model 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                @*Mud select of Products *@
+                                <MudSelect T="int" Label="Product 1" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[0]">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                                    @foreach (var type in _products)
+                                    {
+                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="models[1]" Label="Model 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudSelect T="int" Label="Product 2" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[1]">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                                    @foreach (var type in _products)
+                                    {
+                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="models[2]" Label="Model 3" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudSelect T="int" Label="Product 3" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[2]">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                                    @foreach (var type in _products)
+                                    {
+                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="models[3]" Label="Model 4" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudSelect T="int" Label="Product 4" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[3]">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                                    @foreach (var type in _products)
+                                    {
+                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="models[4]" Label="Model 5" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudSelect T="int" Label="Product 5" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[4]">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                                    @foreach (var type in _products)
+                                    {
+                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                    }
+                                </MudSelect>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="5">
-                                <MudText Style="text-align:center; font-weight:bold;">
+                                <MudText Style="text-align:center; font-weight:bold;" Class="mt-5">
                                     Tiempo ciclo
                                 </MudText>
+                                <MudItem Class="d-flex align-center">
+                                    <MudToggleIconButton Toggled="@isRunning" ToggledChanged="OnTimerChanged" Color="Color.Info"
+                                                         Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+
+                                    <MudText>@elapsedTime</MudText>&nbsp; s
+                                </MudItem>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <MudRadioGroup @bind-SelectedOption="opt">
+                                    <MudRadio Option="1" Color="Color.Info" Size="Size.Small">Cicle 1</MudRadio>
+                                    <MudRadio Option="2" Color="Color.Info" Size="Size.Small">Cicle 2</MudRadio>
+                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small">Cicle 3</MudRadio>
+                                    <MudRadio Option="4" Color="Color.Info" Size="Size.Small">Cicle 4</MudRadio>
+                                    <MudRadio Option="5" Color="Color.Info" Size="Size.Small">Cicle 5</MudRadio>
+                                </MudRadioGroup>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[0]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="cicles[0]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="s" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[1]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="cicles[1]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="s" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[2]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="cicles[2]" Label="Cicle 3" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="s" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[3]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="cicles[3]" Label="Cicle 4" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="s" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[4]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="cicles[4]" Label="Cicle 5" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="s" Adornment="Adornment.End" />
                             </td>
                         </tr>
                     </tbody>

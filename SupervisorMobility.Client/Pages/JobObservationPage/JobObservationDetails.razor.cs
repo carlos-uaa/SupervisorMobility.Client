@@ -8,16 +8,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         [Parameter]
         public int JobObservationId { get; set; }
         public JobObservation _jobObservation { get; set; } = new();
+        List<Product> _products { get; set; } = new();
 
         //Objects
         private bool dense = false;
         private bool hover = false;
         private bool ronly = false;
 
-        List<Plant> _plants { get; set; } = new();
-        List<Area> _areas = new();
-        List<Distribution> _distributions = new();
-        List<Operation> _operations = new();
+        public string hour1 { get; set; }
+        public string hour2 { get; set; }
+        TimeSpan? endHour { get; set; }
+        TimeSpan? startHour { get; set; }
 
         public int plantId;
         public int areaId;
@@ -30,8 +31,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string observer { get; set; } = "Juan";
         public string operator1 { get; set; } = "Pedro";
 
-
-        string[] models = new string[5];
+        int[] models = new int[5];
         string[] cicles = new string[5];
 
 
@@ -50,10 +50,19 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         protected async override Task OnInitializedAsync()
         {
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
-            models = _jobObservation.Models.Split('|');
+            _products = await ProductService.GetProducts();
+            var prod = _jobObservation.Models.Split('|');
+            models[0] = Int32.Parse(prod[0]);
+            models[1] = Int32.Parse(prod[1]);
+            models[2] = Int32.Parse(prod[2]);
+            models[3] = Int32.Parse(prod[3]);
+            models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
-            
-            _plants = await PlantServices.GetPlants();
+
+            startHour = _jobObservation.DateStart?.TimeOfDay;
+            endHour = _jobObservation.DateEnd?.TimeOfDay;
+            Console.WriteLine(startHour);
+
         }
 
 
