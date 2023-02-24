@@ -82,15 +82,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             if (confirm)
             {
-
+                _assychart.RemoveAll(assychart => assychart.AssyChardId == assychartid);
                 await AssyChartServices.DeleteAssyChart(assychartid);
-                NavigationManager.NavigateTo($"assychart");
             }
 
 
 
         }
-
+        
 
 
 

@@ -6,10 +6,15 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Color="Color.Info">
+
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        @*<MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />*@
+        
+        <MudMenu StartIcon="@Icons.Material.Filled.Info" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="Need help navigating?" Color="Color.Primary" Variant="Variant.Filled">
+            <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" Href="/guides">
+                Guides
+            </MudMenuItem>
+        </MudMenu>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -17,18 +22,61 @@
         </MudDrawerHeader>
         <NavMenu />
     </MudDrawer>
-    <MudMainContent>
-        <MudContainer Class="mt-2 px-8" MaxWidth="MaxWidth.False">
+    <MudMainContent Class="main">
+        <MudContainer Class="mt-2 px-8 content" MaxWidth="MaxWidth.False" @onmouseover="@OnMouseOut">
             @Body
         </MudContainer>
-    </MudMainContent>
-</MudLayout>
+        <footer class="footerContainer" id="footer">
 
-@code {
+            <div class="lock">
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-unlock" />
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-lock" />
+
+            </div>
+
+            <div class="footersep">
+
+                <MudText>Hello! Username, @(DateTime.Today.Year)</MudText>
+
+
+                    <MudList Color="Color.Primary" Clickable="true" @onmouseover="@OnMouseOver">
+                        <MudListItem Icon="@Icons.Material.Filled.Info" Text="Need help navigating?" Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                            <NestedList>
+
+                                <MudListItem Icon="@Icons.Material.Filled.MenuBook" Href="/guides">
+                                    Guides
+                                </MudListItem>
+                            </NestedList>
+
+                        </MudListItem>
+                    </MudList>
+
+                </div>
+            </footer>
+
+        </MudMainContent>
+    </MudLayout>
+
+    @code {
     bool _drawerOpen = true;
-
+    bool _IsHovering = false;
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    protected void OnMouseOver(MouseEventArgs mouseEvent)
+    {
+        if (!_IsHovering)
+        {
+            _IsHovering = true;
+            //StateHasChanged();
+        }
+    }
+
+    protected void OnMouseOut(MouseEventArgs mouseEvent)
+    {
+        _IsHovering = false;
+        //StateHasChanged();
     }
 }

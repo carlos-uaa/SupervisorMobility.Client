@@ -45,5 +45,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         {
             NavigationManager.NavigateTo($"checklistcategories/category/updatecategory/{categoryId}");
         }
+
+        private string searchString = "";
+
+        private bool FilterFunc(ChecklistCategory element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.ChecklistCategoryId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Sequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.ChecklistCategoryId} {element.Code} {element.Description} {element.Sequence}".Contains(searchString))
+                return true;
+            return false;
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         public List<Product> _products { get; set; } = new();
         Product _product = new();
 
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -51,6 +52,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         void ProductDetails(int productId)
         {
             NavigationManager.NavigateTo($"products/{productId}");
+        }
+        private string searchString = "";
+
+        private bool FilterFunc(Product element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.ProductId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true; 
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.ProductId} {element.Code} {element.Description}".Contains(searchString))
+                return true;
+            return false;
         }
     }
 }

@@ -1,12 +1,10 @@
 ﻿@page "/assychart"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject IChecklistService ChecklistService
 @inject IAssyChartService AssyChartServices
-@using System.Net.Http.Json
-@using MudBlazor
 @inject ISnackbar Snackbar
-
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Assy Chart</PageTitle>
@@ -17,94 +15,103 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
-<MudTable Items="_assychart" T="AssyChart" Dense="@dense" Hover="@hover" ReadOnly="@ronly"
-          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)"
-          HorizontalScrollbar="true">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Assy Chart</MudText>
+@if (_assychart == null)
+{
+    <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+}
+else if (_assychart.Count == 0)
+{
+    <text>Defects List not found</text>
+}
+else
+{
+    <MudTable Items="_assychart" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)"  Class="styled-table table-striped"
+          HorizontalScrollbar="true"> 
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center" >
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">Assy Chart</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/UploadAssyCharts#Upload">
+                        <MudText>Upload Data</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/BulkAssyCharts#Bulk">
+                        <MudText>Bulk Data</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Downloading" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/createassychart">
+                        <MudText>Create AssyChart</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
 
-        <MudSpacer />
-        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
-        <MudButton Href="/assychart/UploadAssyCharts#Upload">
-            <MudText>Upload Data</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
-        </MudButton>
-        <MudSpacer />
-        <MudButton Href="/assychart/BulkAssyCharts#Bulk">
-            <MudText>Bulk Data</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.Downloading" aria-label="Cancel" Color="Color.Warning"></MudIcon>
-        </MudButton>
-        <MudSpacer />
-        <MudButton Href="/assychart/createassychart">
-            <MudText>Create AssyChart</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Cancel" Color="Color.Warning"></MudIcon>
-        </MudButton>
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Plant?.Description)">Plant</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Area?.Description)">Area</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Distribution?.Description)">Distribution</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.GOS)">GOS</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CCP)">CCP</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.HOE)">HOE</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Operation?.Description)">Operation</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Product?.Description)">Model</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CreationDate)">Creation Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.ModificationDate)">Modification Date</MudTableSortLabel></MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <GroupHeaderTemplate>
+            <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.GroupName}: {context.Key}")</MudTh>
+            </GroupHeaderTemplate>
+            <RowTemplate>
+                <MudTd DataLabel="Plant">
+                    <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Area">
+                    <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Distribution">
+                    <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="GOS">
+                    <MudText Align="Align.Center">@context.GOS</MudText>
+                </MudTd> <MudTd DataLabel="CCP">
+                    <MudText Align="Align.Center">@context.CCP</MudText>
+                </MudTd> <MudTd DataLabel="HOE">
+                    <MudText Align="Align.Center">@context.HOE</MudText>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Product">
+                    <MudText Align="Align.Center">@context.Product?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Creation Date">
+                    <MudText Align="Align.Center">@context.CreationDate</MudText>
+                </MudTd>
+                <MudTd DataLabel="Modification Date">
+                    <MudText Align="Align.Center">@context.ModificationDate</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudText Align="Align.Center">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => GoToUpdateAssyChart(context.AssyChardId))"></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete" @onclick="(() => DeleteAssyChart(context.AssyChardId))"></MudIconButton>
+                    </MudText>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
 
-    </ToolBarContent>
-    <ColGroup>
-        <col style="width: 60px;" />
-        <col />
-        <col />
-        <col />
-        <col />
-        <col />
-    </ColGroup>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Plant?.Description)">Plant</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Area?.Description)">Area</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Distribution?.Description)">Distribution</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.GOS)">GOS</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CCP)">CCP</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.HOE)">HOE</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Operation?.Description)">Operation</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Product?.Description)">Model</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CreationDate)">Creation Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.ModificationDate)">Modification Date</MudTableSortLabel></MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <GroupHeaderTemplate>
-        <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.GroupName}: {context.Key}")</MudTh>
-        </GroupHeaderTemplate>
-        <RowTemplate>
-            <MudTd DataLabel="Plant">
-                <MudText Align="Align.Center">@context.Plant?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Area">
-                <MudText Align="Align.Center">@context.Area?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Distribution">
-                <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="GOS">
-                <MudText Align="Align.Center">@context.GOS</MudText>
-            </MudTd> <MudTd DataLabel="CCP">
-                <MudText Align="Align.Center">@context.CCP</MudText>
-            </MudTd> <MudTd DataLabel="HOE">
-                <MudText Align="Align.Center">@context.HOE</MudText>
-            </MudTd>
-            <MudTd DataLabel="Description">
-                <MudText Align="Align.Center">@context.Operation?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Product">
-                <MudText Align="Align.Center">@context.Product?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Creation Date">
-                <MudText Align="Align.Center">@context.CreationDate</MudText>
-            </MudTd>
-            <MudTd DataLabel="Modification Date">
-                <MudText Align="Align.Center">@context.ModificationDate</MudText>
-            </MudTd>
-            <MudTd>
-                <MudText Align="Align.Center">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => GoToUpdateAssyChart(context.AssyChardId))"></MudIconButton>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete" @onclick="(() => DeleteAssyChart(context.AssyChardId))"></MudIconButton>
-                </MudText>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-
+}
 

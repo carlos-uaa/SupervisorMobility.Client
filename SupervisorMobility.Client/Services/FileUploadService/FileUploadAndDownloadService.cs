@@ -38,7 +38,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Error Upload Data");
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
             }
 
             return null;

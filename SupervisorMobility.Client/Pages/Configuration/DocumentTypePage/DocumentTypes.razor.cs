@@ -47,5 +47,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         {
             NavigationManager.NavigateTo($"documenttypes/updatesupportdoctype/{supportDocumentTypeId}");
         }
+
+        private string searchString = "";
+
+        private bool FilterFunc(SupportDocumentType element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.SupportDocumentTypeId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.SupportDocumentTypeId} {element.Code} {element.Description}".Contains(searchString))
+                return true;
+            return false;
+        }
     }
 }

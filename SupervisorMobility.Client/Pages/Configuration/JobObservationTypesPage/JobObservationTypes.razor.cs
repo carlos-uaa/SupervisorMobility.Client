@@ -46,5 +46,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
         {
             NavigationManager.NavigateTo($"jobobservationtypes/updatejobobservationtype/{jobObservationTypeId}");
         }
+
+        private string searchString = "";
+
+        private bool FilterFunc(JobObservationType element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.JobObservationTypeId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.JobObservationTypeId} {element.Code} {element.Description}".Contains(searchString))
+                return true;
+            return false;
+        }
     }
 }

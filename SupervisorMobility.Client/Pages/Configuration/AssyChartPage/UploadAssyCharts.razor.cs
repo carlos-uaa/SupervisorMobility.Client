@@ -3,6 +3,7 @@ using MudBlazor;
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using System.Net.Http.Headers;
+using Microsoft.JSInterop;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -109,6 +110,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 bool isFirstRow = true;
 
 
+                showTableToShow = true;
 
                 foreach (string[] row in csv)
                 {
@@ -182,12 +184,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                         ErrorMessageToDisplay = "Archivo Incorrecto/Contenido Incorrecto/Error De Procesamiento. Porfavor Consulte a su Admnistrador";
                         Console.WriteLine($"I{ex.Message}");
-
+                        showTableToShow = false;
                     }//endtrycatch
 
                 }//end foreach 
                  //active display table
-                showTableToShow = true;
 
 
 
@@ -283,8 +284,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             FileSource = null;
 
 
+
         }
 
+   
         async void UploadFunction()
         {
             activeUpload = true;
@@ -306,14 +309,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 if (newUploadResults is not null)
                 {
                     uploadResult = newUploadResults;
-                    
+
                     UploadDataResult newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
 
                     if(newDataResults is not null)
                     {
                         //tiene resultados
+                        ErrorMessageToDisplay = "Upload Data Succesfull";
+                        csv.Clear();
+                        dataTableToShow.Clear();
+
+                        displayResume = true;
+                        activeUpload = false;
                         showTableToShow = false;
+                        FileSource = null;
                         retornedResult = newDataResults;
+
+                        base.StateHasChanged();
+
                     }
                     else
                     {
@@ -321,8 +334,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     }
 
                 }
-
-        
+                else {
+                    //error al subir el archivo
+                }
 
             }
             else
@@ -334,6 +348,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         }
 
+       
     }//end UploadAndBulk
 
 

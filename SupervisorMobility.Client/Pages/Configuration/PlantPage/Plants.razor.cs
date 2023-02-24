@@ -74,6 +74,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 return true;
             if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
             if ($"{element.PlantId} {element.Code} {element.Description}".Contains(searchString))
                 return true;
             return false;

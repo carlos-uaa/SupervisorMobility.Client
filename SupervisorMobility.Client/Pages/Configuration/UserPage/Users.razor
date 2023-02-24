@@ -1,0 +1,267 @@
+﻿@page "/usersmanagement"
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Users Management</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+
+@if (users == null)
+{
+    <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+}
+else if (users.Count == 0)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /><MudSkeleton SkeletonType="SkeletonType.Circle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /><MudSkeleton SkeletonType="SkeletonType.Circle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /><MudSkeleton SkeletonType="SkeletonType.Circle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /><MudSkeleton SkeletonType="SkeletonType.Circle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /><MudSkeleton SkeletonType="SkeletonType.Circle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else
+{
+    <MudGrid class="d-flex flex-column justify-center align-self-center">
+        <MudItem class="d-flex justify-center align-self-center ">
+            <MudText Typo="Typo.h6" Class="align-item-center center">Users</MudText>
+        </MudItem>
+        <MudItem Class="d-flex">
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudSpacer />
+            <MudButton Href="/usersmanagement/UploadUsers">
+                <MudText>Upload Users</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle" aria-label="Upload" Color="Color.Primary"></MudIcon>
+            </MudButton>
+            <MudSpacer />
+            <MudButton Href="/usersmanagement/BulkUsers">
+                <MudText>Bulk Users</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.CloudDownload" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+            </MudButton>
+            <MudSpacer />
+            <MudButton Href="/usersmanagement/createuser">
+                <MudText>Create new User</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.PersonAddAlt1" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+            </MudButton>
+            <MudSpacer />
+
+        </MudItem>
+    </MudGrid>
+    <MudSimpleTable Class="styled-table table-striped">
+
+        <thead>
+
+            <tr>
+                <th>IdUser</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>1</td>
+                <td>Marco</td>
+                <td>Root</td>
+                <td>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Success" Href=""> </MudIconButton>
+
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="()=>EditUser(1)">@*Edit*@</MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() =>DeleteUser(1))"></MudIconButton>
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Pedro</td>
+                <td>Root</td>
+                <td>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Success" Href=""> </MudIconButton>
+
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="()=>EditUser(1)">@*Edit*@</MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => DeleteUser(1))"></MudIconButton>
+                </td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Unknown</td>
+                <td>Root</td>
+                <td>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Success" Href=""> </MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="()=>EditUser(1)">@*Edit*@</MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() =>DeleteUser(1))"></MudIconButton>
+                </td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+
+    @* <MudTable Items="_assychart" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" Class="styled-table table-striped"
+          HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">Assy Chart</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/UploadAssyCharts#Upload">
+                        <MudText>Upload Data</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/BulkAssyCharts#Bulk">
+                        <MudText>Bulk Data</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Downloading" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/assychart/createassychart">
+                        <MudText>Create AssyChart</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Plant?.Description)">Plant</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Area?.Description)">Area</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Distribution?.Description)">Distribution</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.GOS)">GOS</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CCP)">CCP</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.HOE)">HOE</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Operation?.Description)">Operation</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Product?.Description)">Model</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CreationDate)">Creation Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.ModificationDate)">Modification Date</MudTableSortLabel></MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <GroupHeaderTemplate>
+            <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.GroupName}: {context.Key}")</MudTh>
+            </GroupHeaderTemplate>
+            <RowTemplate>
+                <MudTd DataLabel="Plant">
+                    <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Area">
+                    <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Distribution">
+                    <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="GOS">
+                    <MudText Align="Align.Center">@context.GOS</MudText>
+                </MudTd> <MudTd DataLabel="CCP">
+                    <MudText Align="Align.Center">@context.CCP</MudText>
+                </MudTd> <MudTd DataLabel="HOE">
+                    <MudText Align="Align.Center">@context.HOE</MudText>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Product">
+                    <MudText Align="Align.Center">@context.Product?.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Creation Date">
+                    <MudText Align="Align.Center">@context.CreationDate</MudText>
+                </MudTd>
+                <MudTd DataLabel="Modification Date">
+                    <MudText Align="Align.Center">@context.ModificationDate</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudText Align="Align.Center">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => GoToUpdateAssyChart(context.AssyChardId))"></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete" @onclick="(() => DeleteAssyChart(context.AssyChardId))"></MudIconButton>
+                    </MudText>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>*@
+
+}
+
+
+
+
+@code {
+
+    List<string> users = new List<string>(){
+    "Pedro",
+    "Marco",
+    "Emmanuel"
+    };
+    private string searchString = "";
+
+
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Users Management", href: "", disabled: true)
+        };
+
+    void EditUser(int iduser)
+    {
+
+    }
+
+    void DeleteUser(int iduser)
+    {
+
+    }
+
+}
