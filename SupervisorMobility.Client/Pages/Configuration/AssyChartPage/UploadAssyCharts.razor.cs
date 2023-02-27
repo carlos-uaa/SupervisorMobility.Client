@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using System.Net.Http.Headers;
 using Microsoft.JSInterop;
+using DocumentFormat.OpenXml.Office.CustomUI;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -88,10 +90,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 {
                     foreach (var item in outputFileString.Split(Environment.NewLine))
                     {
-                        csv.Add(SplitCSV(item.ToString()));
+                        var addtolist = SplitCSV(item.ToString());
+
+
+                        if (!addtolist.All(string.IsNullOrWhiteSpace))
+                        {
+                            csv.Add(addtolist);
+                        }
+
                     }
+
                     csv.RemoveAt(1);
-                    csv.RemoveAt(csv.Count - 1);
                 }
 
                 if (regexlsx.IsMatch(e.File.Name))
@@ -111,6 +120,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
                 showTableToShow = true;
+
 
                 foreach (string[] row in csv)
                 {
@@ -133,9 +143,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                             ToInsertIntoList.CCP = row[3] != "" ? row[3] : "";
                             ToInsertIntoList.HOE = row[4] != "" ? row[4] : "";
 
-
-                            ToInsertIntoList.CreationDate = DateTime.Parse(row[5]);
-                            ToInsertIntoList.ModificationDate = DateTime.Parse(row[6]);
+                            ToInsertIntoList.CreationDate = row[5] != "" ? DateTime.Parse(row[5]) : DateTime.Now;
+                            ToInsertIntoList.ModificationDate = row[6] != "" ? DateTime.Parse(row[6]) : DateTime.Now;
 
                             ToInsertIntoList.Plant = plantToUse;
                             ToInsertIntoList.PlantId = plantToUse.PlantId;
@@ -182,8 +191,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     catch (Exception ex)
                     {
 
-                        ErrorMessageToDisplay = "Archivo Incorrecto/Contenido Incorrecto/Error De Procesamiento. Porfavor Consulte a su Admnistrador";
-                        Console.WriteLine($"I{ex.Message}");
+                        ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
+                        Console.WriteLine($"{ex.Message}");
                         showTableToShow = false;
                     }//endtrycatch
 
@@ -287,7 +296,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         }
 
-   
+
         async void UploadFunction()
         {
             activeUpload = true;
@@ -312,7 +321,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                     UploadDataResult newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
 
-                    if(newDataResults is not null)
+                    if (newDataResults is not null)
                     {
                         //tiene resultados
                         ErrorMessageToDisplay = "Upload Data Succesfull";
@@ -334,21 +343,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     }
 
                 }
-                else {
+                else
+                {
                     //error al subir el archivo
                 }
 
             }
             else
             {
-                        ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
             }
 
 
 
         }
 
-       
+
     }//end UploadAndBulk
 
 
