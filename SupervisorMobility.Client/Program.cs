@@ -15,6 +15,7 @@ global using SupervisorMobility.Client.Services.QuestionTypeService;
 global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
 global using SupervisorMobility.Client.Services.AssyChartService;
 global using SupervisorMobility.Client.Services.FileUploadAndDownloadService;
+global using SupervisorMobility.Client.Services.UserService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -41,6 +42,7 @@ builder.Services.AddScoped<ISupportDocumentTypeService, SupportDocumentTypeServi
 builder.Services.AddScoped<IDistributionService, DistributionService>();
 builder.Services.AddScoped<IProductDistributionService, ProductDistributionService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
