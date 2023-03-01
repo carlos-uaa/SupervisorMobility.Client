@@ -1,6 +1,10 @@
 ﻿@page "/usersmanagement/CreateUser"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 @inject IFileUploadAndDownloadService FileUpDoServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IGroupService GroupServices
+
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Create Users</PageTitle>
@@ -11,7 +15,66 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
+<MudContainer>
 
+    @*Form*@
+    <EditForm Model="_user" OnValidSubmit="CreateUser">
+        <DataAnnotationsValidator />
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader >
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Create User</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudChip Variant="Variant.Text" Color="Color.Success">New User</MudChip>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTextField Label="User Name" @bind-Value="@_user.Name" For="@(() => _user.Name)" />
+                        <MudTextField Label="User Payroll Number" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" />
+
+                        @*Mud select of Plants *@
+                        <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.PlantId" For="@(() => _user.PlantId)" SelectedValuesChanged="ShowAreas">
+                            <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                            @foreach (var type in _plants)
+                            {
+                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @*Mud select of Areas *@
+                        <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.AreaId" For="@(() => _user.AreaId)">
+                            <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @*Mud select of Areas *@
+                        <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.GroupId" For="@(() => _user.GroupId)">
+                            <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
+                            @foreach (var type in _groups)
+                            {
+                                <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        //Permisos
+
+                        //Permisos
+                       
+                        <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_user.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Create User</MudButton>
+                        <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">Cancel Creation</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+</MudContainer>
 
 
 @code {
@@ -23,7 +86,28 @@
             new BreadcrumbItem("Create Users", href: "", disabled: true),
         };
 
+    private User _user = new User();
+    List<Plant> _plants { get; set; } = new();
+    List<Area> _areas = new();
+    List<Group> _groups { get; set; } = new();
 
+
+    protected async override Task OnInitializedAsync()
+    {
+        _plants = await PlantServices.GetPlants();
+        _groups = await GroupServices.GetGroups();
+    }
+
+    private async void ShowAreas()
+    {
+        _user.AreaId = 0;
+        _areas = await AreaServices.GetAreas(_user.PlantId);
+    }
+
+    private void CreateUser()
+    {
+        // Aquí debes agregar la lógica para guardar el nuevo usuario en la base de datos
+    }
 
 
 }
