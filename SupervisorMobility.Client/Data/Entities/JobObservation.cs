@@ -32,6 +32,12 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         public DateTime? DateEnd { get; set; }
 
+        public DateTime? PlannedStartDate { get; set; }
+        public DateTime? PlannedEndDate { get; set; }
+        public string? Justification { get; set; }
+        public int? Status { get; set; }
+
+
         [Required(ErrorMessage = "Observer is required")]
         public string Observer { get; set; }
         [Required(ErrorMessage = "Operator is required")]

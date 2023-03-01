@@ -123,6 +123,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.DateStart = newDate1;
             _jobObservation.DateEnd = newDate2;
 
+            if(_jobObservation.Justification == "")
+            {
+                _jobObservation.Justification = null;
+            }
+
             var result = await JobObservationService.UpdateJobObservation(_jobObservation);
 
             if (result)

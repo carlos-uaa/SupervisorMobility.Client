@@ -195,5 +195,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 StopTimer();
         }
 
+        void Option1() => opt= 1;
+        void Option2() => opt= 2;
+        void Option3() => opt= 3;
+        void Option4() => opt= 4;
+        void Option5() => opt= 5;
+
     }
 }
