@@ -5,6 +5,7 @@ global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.DistributionService;
 global using SupervisorMobility.Client.Services.ProductDistributionService;
 global using SupervisorMobility.Client.Services.GroupService;
+global using SupervisorMobility.Client.Services.GlosaryService;
 global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
 global using SupervisorMobility.Client.Services.OperationService;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IProductDistributionService, ProductDistributionServi
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IGlosaryService, GlosaryService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();

@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Groups", href: "/groups"),
-            new BreadcrumbItem("UpdateGroup", href: "", disabled: true)
+            new BreadcrumbItem("Update Group", href: "", disabled: true)
         };
 
         // Objects
