@@ -18,13 +18,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         };
 
         Product _product = new();
-        public List<ProductDistribution> _distributions { get; set; } = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _product = await ProductService.GetProductById(ProductId);
-            _distributions = await ProductDistributionService.GetDistributions(ProductId);
+            _product = await ProductService.GetProductAndCollection(ProductId);
         }
 
         void CreateDistribution()
@@ -39,8 +37,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 
             if (confirm)
             {
-                _distributions.RemoveAll(distribution => distribution.ProductDistributionId == distributionId);
-                await ProductDistributionService.DeleteDistribution(ProductId, distributionId);
+                _product.Distributions.RemoveAll(distribution => distribution.DistributionId == distributionId);
+                await ProductService.DeleteDistribution(ProductId, distributionId);
             }
         }
 

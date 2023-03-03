@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.ProductsService
 {
@@ -28,11 +30,32 @@ namespace SupervisorMobility.Client.Services.ProductsService
         {
             var response = await _http.DeleteAsync($"products/{id}");
         }
+        
+        public async Task DeleteDistribution(int productId, int distributionId)
+        {
+            var response = await _http.DeleteAsync($"products/{productId}/distributions/{distributionId}");
+        }
+       
 
         // Get product by Id
         public async Task<Product> GetProductById(int id)
         {
             var response = await _http.GetAsync($"products/{id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var product = JsonSerializer.Deserialize<Product>(content, _options);
+
+            return product;
+        }
+
+        public async Task<Product> GetProductAndCollection(int id)
+        {
+            var response = await _http.GetAsync($"products/{id}?collections=true");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

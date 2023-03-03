@@ -3,7 +3,11 @@
 @inject IFileUploadAndDownloadService FileUpDoServices
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
+@inject IUserService UserServices
 @inject IGroupService GroupServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
 
 
 @*Title*@
@@ -59,9 +63,12 @@
                                 <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                             }
                         </MudSelect>
-                        //Permisos
+                        <MudContainer Class="d-flex flex-row">
+                            <MudSwitch Class="mt-3" Label="Is Admin?" @bind-Checked="_user.IsAdmin" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                        <MudSwitch Class="mt-3" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                            <MudSwitch Class="mt-3" Label="Is Operator?" @bind-Checked="_user.IsOperator" Color="Color.Info" UnCheckedColor="Color.Dark" />
 
-                        //Permisos
+                        </MudContainer>
                        
                         <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_user.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
 
@@ -104,9 +111,16 @@
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
 
-    private void CreateUser()
+    private async void CreateUser()
     {
-        // Aquí debes agregar la lógica para guardar el nuevo usuario en la base de datos
+        _user.CreatedDate = DateTime.Now;
+        _user.LastUpdated = DateTime.Now;
+
+        var result = await UserServices.CreateUser(_user);
+        if (result != null)
+            NavigationManager.NavigateTo("/usersmanagement");
+        else
+            await JsRuntime.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
     }
 
 
