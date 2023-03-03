@@ -81,6 +81,21 @@ namespace SupervisorMobility.Client.Services.DistributionService
             return distributions;
         }
 
+        public async Task<List<Distribution>> GetDistributionsWhitCollections(int plantId, int areaId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions?includecollections=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var distributions = JsonSerializer.Deserialize<List<Distribution>>(content, _options);
+
+            return distributions;
+        }
+
         // Update distribution
         public async Task<bool> UpdateDistribution(int plantId, int areaId, Distribution distribution)
         {
