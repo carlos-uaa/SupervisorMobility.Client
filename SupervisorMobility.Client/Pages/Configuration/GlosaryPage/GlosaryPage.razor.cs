@@ -20,6 +20,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
 {
     public partial class GlosaryPage
     {
+        [CascadingParameter]
+        public Dictionary<string, Glosary> _glosaryInfo { get; set; }
+
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>{
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
