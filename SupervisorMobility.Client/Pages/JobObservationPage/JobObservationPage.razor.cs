@@ -17,6 +17,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool hover = true;
         private bool ronly = false;
         private string searchString = "";
+        
+
 
         // Objects
         public List<JobObservation> _jobObservation { get; set; } = new();
@@ -24,7 +26,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            await LateDates();
             _jobObservation = await JobObservationService.GetAllJobObservations();
+        }
+
+        public async Task LateDates()
+        {
+            _jobObservation = await JobObservationService.GetAllJobObservations();
+            foreach(var jobobs in _jobObservation)
+            {
+                if(Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 4)
+                {
+                    jobobs.Status = 3;
+                    await JobObservationService.UpdateJobObservation(jobobs);
+                }
+            }
         }
 
 
@@ -62,6 +78,31 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         void Close() => visible = false;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        private bool FilterFunc(JobObservation element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.JobObservationId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.DateStart.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Observer.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Operator.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.JobObservationId} {element.Observer} {element.Operator}".Contains(searchString))
+                return true;
+            return false;
+        }
 
 
     }

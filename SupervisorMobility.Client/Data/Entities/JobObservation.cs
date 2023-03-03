@@ -7,10 +7,10 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public int JobObservationId { get; set; }
 
-        public Plant? Plant { get; set; }
-        public Area? Area { get; set; }
-        public Distribution? Distribution { get; set; }
-        public Operation? Operation { get; set; }
+        public Plant Plant { get; set; }
+        public Area Area { get; set; }
+        public Distribution Distribution { get; set; }
+        public Operation Operation { get; set; }
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]

@@ -39,6 +39,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         bool isRunning = false;
         public int opt = 1;
 
+        //Glosary
+        private List<Glosary> glosary = new();
+        private Dictionary<string, Glosary> _glosaryInfo;
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -49,6 +53,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            glosary = await GlosaryService.GetGlosary();
+            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+
+            foreach (var kvp in _glosaryInfo)
+            {
+                Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value.Description);
+            }
             date = date.Replace("-", "/");
 
             _jobObservation.IsActive= true;
@@ -103,7 +115,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.Cicles= cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.DateStart = newDate1;
             _jobObservation.DateEnd = newDate2;
-
+            _jobObservation.Status = 1;
 
            //Console.WriteLine(_jobObservation.PlantId);
             //Console.WriteLine(_jobObservation.AreaId);
@@ -136,6 +148,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation Created", Severity.Info);
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else

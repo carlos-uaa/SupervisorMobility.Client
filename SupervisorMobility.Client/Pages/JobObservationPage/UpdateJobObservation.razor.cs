@@ -122,8 +122,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.DateStart = newDate1;
             _jobObservation.DateEnd = newDate2;
+            _jobObservation.Status = 2;
 
-            if(_jobObservation.Justification == "")
+            if (_jobObservation.Justification == "")
             {
                 _jobObservation.Justification = null;
             }
@@ -132,7 +133,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             if (result)
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Job Observation Succesful Update!"); // Alert
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Updated", Severity.Info);
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -191,6 +195,30 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             else
                 StopTimer();
         }
+
+        public async void FinalizeJobObservation()
+        {
+
+            if (_jobObservation.SsvSignature != null && _jobObservation.SsvSignature != "" && _jobObservation.OperatorSignature != null && _jobObservation.OperatorSignature != "")
+            {
+                _jobObservation.Status = 4;
+            }
+
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation);
+
+            if (result)
+            {
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finalized", Severity.Info);
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+
+        }
+
 
 
 

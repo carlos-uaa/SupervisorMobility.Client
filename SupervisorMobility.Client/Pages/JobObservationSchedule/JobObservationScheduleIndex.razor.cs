@@ -11,6 +11,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         public DateTime? date = DateTime.Today;
         DateTime? _yearMonth = DateTime.Today;
         private string month;
+        private string showMonth;
         private string year;
         public List<ChecklistCategory> _checklistCategories { get; set; } = new();
 
@@ -48,6 +49,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             public bool Boolean { get; set; }
             public string String { get; set; }
         }
+
+
+        public int optionStatus { get; set; } = 0;
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -172,6 +176,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             startDate = new DateTime(yearIndex, monthIndex, 1);
             endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
 
+            showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
         }
