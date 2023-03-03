@@ -11,7 +11,10 @@ namespace SupervisorMobility.Client.Data.Entities
         public int Payroll { get; set; }
         [Required]
         public string Name { get; set; } = string.Empty;
-        public string? Permissions { get; set; }
+        public bool IsAdmin { get; set; }
+        public bool IsSupervisor { get; set; }
+        public bool IsOperator { get; set; }
+
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdated { get; set; }
         public DateTime? DisabledDate { get; set; }

@@ -48,16 +48,49 @@ namespace SupervisorMobility.Client.Services.UserService
         public async Task<User> CreateUser(User _newUser)
         {
             var response = await _http.PostAsJsonAsync($"Users", _newUser);
-            var newUser = await response.Content.ReadFromJsonAsync<User>();
-            return newUser;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newUser = await response.Content.ReadFromJsonAsync<User>();
+                return newUser;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+
+            }
+
+            return null;
+            
+
+           
         }
        
         //get User by id
         public async Task<User> GetUser(int UserId)
         {
             var response = await _http.GetAsync($"Users/{UserId}");
-            var content = await response.Content.ReadFromJsonAsync<User>();
-            return content;
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<User>();
+                return content;
+            }
+
+            return null;
+        }  
+        public async Task<User> GetUserAndCollection(int UserId)
+        {
+            var response = await _http.GetAsync($"Users/{UserId}?collections=true");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<User>();
+                return content;
+            }
+
+            return null;
+
+
         }
 
         public async Task<List<User>> GetUsers()
@@ -65,14 +98,31 @@ namespace SupervisorMobility.Client.Services.UserService
             var response = await _http.GetAsync("Users");
             var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                throw new ApplicationException(content);
+                var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                return UsersList;
             }
 
-            var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+            return null;
+           
+        } 
+        public async Task<List<User>> GetUsersWhitCollections()
+        {
+            var response = await _http.GetAsync("Users?collections=true");
+            var content = await response.Content.ReadAsStringAsync();
 
-            return UsersList;
+            if (response.IsSuccessStatusCode)
+            {
+                var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                return UsersList;
+            }
+
+            return null;
+
+           
         }
         //delete User
         public async Task DeleteUser(int UserId)

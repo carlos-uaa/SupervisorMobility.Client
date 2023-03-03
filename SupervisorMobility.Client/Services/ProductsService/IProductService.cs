@@ -7,6 +7,7 @@
 
         // Get product by Id
         Task<Product> GetProductById(int id);
+        Task<Product> GetProductAndCollection(int id);
 
         // Create product
         Task<Product> CreateProduct(Product product);
@@ -16,5 +17,9 @@
 
         // Delete product
         Task DeleteProduct(int id);
+
+        Task DeleteDistribution(int productId, int distributionId);
+       
+
     }
 }

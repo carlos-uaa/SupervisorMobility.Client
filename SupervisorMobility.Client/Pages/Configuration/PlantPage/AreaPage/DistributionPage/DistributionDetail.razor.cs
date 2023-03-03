@@ -30,7 +30,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         Plant _plant = new();
         Area _area = new();
         Distribution _distribution = new();
-        private List<Operation> _operations = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
@@ -38,7 +37,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _area = await AreaService.GetAreaIncludingOperations(PlantId, AreaId);
             _plant = await PlantService.GetPlantById(PlantId);
-            _operations = await OperationService.GetOperations(PlantId, AreaId, DistributionId);
         }
 
         // Links
@@ -65,8 +63,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
 
             if (confirm)
             {
-                _operations.RemoveAll(operation => operation.OperationId == operationId);
+                _distribution.Operations.RemoveAll(operation => operation.OperationId == operationId);
                 await OperationService.DeleteOperation(PlantId, AreaId, DistributionId, operationId);
+            }
+        }
+        
+        async Task DeleteProduct(int productId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this product?");
+
+            if (confirm)
+            {
+                _distribution.Products.RemoveAll(product => product.ProductId == productId);
+                await DistributionService.DeleteProductFromDistribution(PlantId, AreaId, DistributionId, productId);
             }
         }
 

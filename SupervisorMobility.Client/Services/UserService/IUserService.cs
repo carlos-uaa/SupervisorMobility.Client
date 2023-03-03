@@ -13,7 +13,9 @@ namespace SupervisorMobility.Client.Services.UserService
         //READ
         //get  Users
         Task<List<User>> GetUsers();
+        Task<List<User>> GetUsersWhitCollections();
         Task<User> GetUser(int UserId);
+        Task<User> GetUserAndCollection(int UserId);
 
         //UPDATE
         Task<bool> UpdateUser(int UserId, User _newUser);

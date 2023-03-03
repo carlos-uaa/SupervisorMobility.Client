@@ -29,10 +29,30 @@ namespace SupervisorMobility.Client.Services.DistributionService
             var response = await _http.DeleteAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}");
         }
 
+        //delete product from distribution
+        public async Task DeleteProductFromDistribution(int plantId, int areaId, int distributionId, int productId)
+        {
+            var response = await _http.DeleteAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}/products/{productId}");
+        }
+
         // Get distribution by Id
         public async Task<Distribution> GetDistributionById(int plantId, int areaId, int distributionId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var distribution = JsonSerializer.Deserialize<Distribution>(content, _options);
+
+            return distribution;
+        } 
+        public async Task<Distribution> GetDistributionWhitCollections(int plantId, int areaId, int distributionId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}?includeCollections=true");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
