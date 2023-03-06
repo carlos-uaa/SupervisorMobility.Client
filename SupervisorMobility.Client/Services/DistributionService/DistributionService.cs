@@ -50,7 +50,7 @@ namespace SupervisorMobility.Client.Services.DistributionService
 
             return distribution;
         } 
-        public async Task<Distribution> GetDistributionWhitCollections(int plantId, int areaId, int distributionId)
+        public async Task<Distribution> GetDistributionWithCollections(int plantId, int areaId, int distributionId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}?includeCollections=true");
             var content = await response.Content.ReadAsStringAsync();
@@ -81,7 +81,7 @@ namespace SupervisorMobility.Client.Services.DistributionService
             return distributions;
         }
 
-        public async Task<List<Distribution>> GetDistributionsWhitCollections(int plantId, int areaId)
+        public async Task<List<Distribution>> GetDistributionsWithCollections(int plantId, int areaId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions?includecollections=true");
             var content = await response.Content.ReadAsStringAsync();

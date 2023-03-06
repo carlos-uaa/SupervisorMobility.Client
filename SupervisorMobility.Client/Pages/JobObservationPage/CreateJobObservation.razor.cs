@@ -82,12 +82,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
-            _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
+            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
         }
-        private async void ShowOperations()
+        private void ShowOperations()
         {
             _jobObservation.OperationId = 0;
-            _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
         }
 
         private async Task CreateNewJobObservation()

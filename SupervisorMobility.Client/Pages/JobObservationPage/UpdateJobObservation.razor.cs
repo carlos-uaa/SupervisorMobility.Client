@@ -199,10 +199,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public async void FinalizeJobObservation()
         {
 
-            if (_jobObservation.SsvSignature != null && _jobObservation.SsvSignature != "" && _jobObservation.OperatorSignature != null && _jobObservation.OperatorSignature != "")
-            {
-                _jobObservation.Status = 4;
-            }
+            _jobObservation.DateFinalized = DateTime.Now;
+            Console.WriteLine(_jobObservation.DateFinalized);
+            _jobObservation.Status = 4;
 
             var result = await JobObservationService.UpdateJobObservation(_jobObservation);
 
