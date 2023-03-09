@@ -1,5 +1,4 @@
 ﻿using Microsoft.JSInterop;
-using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.ProductsService
@@ -8,11 +7,15 @@ namespace SupervisorMobility.Client.Services.ProductsService
     {
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
+        private readonly IJSRuntime _js;
+
 
         // Constructor
-        public ProductService(HttpClient http)
+        public ProductService(HttpClient http, IJSRuntime jSRuntime)
         {
             _http = http;
+            _js = jSRuntime;
+
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -23,6 +26,36 @@ namespace SupervisorMobility.Client.Services.ProductsService
             var newProduct = await response.Content.ReadFromJsonAsync<Product>();
 
             return newProduct;
+        }
+
+        //Create Distribution 
+        public async Task<Distribution> CreateDistribution(int productId, int plantId, int areaId, Distribution distribution)
+        {
+            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions?plantId={plantId}&areaId={areaId}", distribution);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
+                return newDistribution;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+            return null;
+        }
+        
+        public async Task<Distribution> AddDistribution(int productId, int plantId, int areaId, Distribution distribution)
+        {
+            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions/add?plantId={plantId}&areaId={areaId}", distribution);
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
+                return newDistribution;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+            return null;
         }
 
         // Delete product

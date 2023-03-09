@@ -1,6 +1,6 @@
 ﻿namespace SupervisorMobility.Client.Data.Entities
 {
-    public class UploadDataResult
+    public class UploadAssyChartResult
     {
         public int? PlantUpdate { get; set; }
         public int? PlantCreate { get; set; }

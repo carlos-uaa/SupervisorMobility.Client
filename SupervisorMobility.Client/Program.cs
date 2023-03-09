@@ -9,6 +9,7 @@ global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
+global using SupervisorMobility.Client.Services.GuideService;
 global using SupervisorMobility.Client.Services.ProductsService;
 global using SupervisorMobility.Client.Services.QuestionTypeService;
 global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
@@ -31,6 +32,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 // Services
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IGuideService, GuideService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
 builder.Services.AddScoped<IAssyChartService, AssyChartService>();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();

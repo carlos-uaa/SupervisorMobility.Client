@@ -37,8 +37,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private List<string[]> csv = new List<string[]>();
         private List<BulkAndUpload> dataTableToShow = new();
 
-        private UploadResult uploadResult = new();
-        private UploadDataResult retornedResult = new();
+        private FileUpload uploadResult = new();
+        private UploadAssyChartResult retornedResult = new();
 
 
         protected async override Task OnInitializedAsync()
@@ -51,11 +51,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             //Clear Data
             FileName = string.Empty;
+            FileSource = null;
+
             ErrorMessageToDisplay = string.Empty;
             csv.Clear();
             dataTableToShow.Clear();
             showTableToShow = false;
-            FileSource = null;
 
 
             //Assign new data
@@ -319,7 +320,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 {
                     uploadResult = newUploadResults;
 
-                    UploadDataResult newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
+                    UploadAssyChartResult newDataResults = await FileUpDoServices.ProccedToUpdateData(uploadResult);
 
                     if (newDataResults is not null)
                     {

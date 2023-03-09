@@ -1,11 +1,11 @@
 ﻿@page "/GuidesManagement"
-@inject IGroupService GroupService
+@inject IGuideService GuidesServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Guides</PageTitle>
+<PageTitle>Supervisor Mobility | Guides Management</PageTitle>
 
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
@@ -14,12 +14,201 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
+@if (_Guides == null)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else if (_Guides.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">No Guides Found</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudButton Href="/GuidesManagement/CreateGuide">
+                    <MudText>Create New Guide</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.PostAdd" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+}
+else
+{
+    
+    <MudTable Items="_Guides" T="Guide" ReadOnly="true" FixedHeader=true
+          SortLabel="Sort By" Filter="new Func<Guide,bool>(FilterFunc)" Class="styled-table table-striped"
+          HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">Guides</MudText>
+                </MudItem><MudSpacer />
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/GuidesManagement/CreateGuide">
+                        <MudText>Create New Guide</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.PostAdd" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.GuideId)">Guide Id</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Code)"> Code</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Name)">Guide Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Description)">Description</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.IsActive)">Status</MudTableSortLabel></MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="GuideId">
+                <MudText Align="Align.Center">@context.GuideId</MudText>
+            </MudTd>
+            <MudTd DataLabel="Code">
+                <MudText Align="Align.Center">@context.Code</MudText>
+            </MudTd>
+            <MudTd DataLabel="Name">
+                <MudText Align="Align.Center">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="Description">
+                <MudText Align="Align.Center">@context.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                @if (context.IsActive == true)
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Success" @onclick="(() =>  DetailsGuide(context.GuideId))"> </MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="()=>EditGuide(context.GuideId)">@*Edit*@</MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() =>DeleteGuide(context.GuideId))"></MudIconButton>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+}
+
+
+
+
 @code {
+
+    List<Guide> _Guides = new List<Guide>();
+    string searchString = "";
+
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Guides Management", href: "", disabled: true)
         };
+
+    protected async override Task OnInitializedAsync()
+    {
+        _Guides = await GuidesServices.GetAllGuides();
+    }
+
+
+
+    void EditGuide(int guideId)
+    {
+        NavigationManager.NavigateTo($"/GuidesManagement/{guideId}/EditGuide");
+    }
+
+    async void DeleteGuide(int guideId)
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this guide?");
+
+        if (confirm)
+        {
+            _Guides.RemoveAll(guide => guide.GuideId == guideId);
+            //await PlantService.DeletePlant(plantId);
+        }
+    }
+
+    void DetailsGuide(int guideId)
+    {
+        NavigationManager.NavigateTo($"/GuidesManagement/{guideId}/DetailGuide");
+    }
+
+    private bool FilterFunc(Guide element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.GuideId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Description.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.GuideId} {element.Code} {element.Description}".Contains(searchString))
+            return true;
+        return false;
+    }
 
 }

@@ -7,11 +7,11 @@
 <PageTitle>Supervisor Mobility | @_product.Description</PageTitle>
 
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links" >
+<MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
         @if (item.Text == "ProductsDetail")
         {
-        <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_product.Description</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_product.Description</MudButton>
         }
         else
         {
@@ -50,10 +50,28 @@
             <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Distributions">
                 @if (_product.Distributions.Count > 0)
                 {
-                    <MudTable Items="_product.Distributions" Hover="true" T="Distribution">
+                    <MudTable Items="_product.Distributions" Hover="true" T="Distribution" Filter="new Func<Distribution,bool>(FilterFunc)" Class="styled-table table-striped">
                         <ToolBarContent>
-                            <MudSpacer />
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateDistribution())"></MudIconButton>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                   
+                                    <MudButton @onclick="(() => CreateDistribution())">
+                                        <MudText>Create Distribution</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Downloading" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                                    </MudButton>
+                                    <MudSpacer />
+                                    <MudButton @onclick="(() => AddExistDistribution())">
+                                        <MudText>Add Exist Distribution</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.NoteAdd" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                                    </MudButton>
+                                    <MudSpacer />
+
+                                </MudItem>
+                            </MudGrid>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
@@ -111,8 +129,8 @@
                     <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no distributions created for this distribution.</MudText>
                     <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
                         <MudButton Color="Color.Info" @onclick="(() => CreateDistribution())">Create a new distribution</MudButton>
-                        <MudSpacer/>
-                        <MudButton Color="Color.Info" @onclick="(() => CreateDistribution())">Adding a exist distribution</MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Info" @onclick="(() => AddExistDistribution())">Adding a exist distribution</MudButton>
 
                     </MudText>
                 }
