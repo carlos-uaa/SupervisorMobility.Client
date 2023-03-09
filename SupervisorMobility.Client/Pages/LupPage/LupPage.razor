@@ -1,0 +1,379 @@
+﻿@page "/lup"
+
+@inject ILupService LupService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@*Title*@
+<PageTitle>Supervisor Mobility | LUP</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+@*Dashboard grid*@
+<MudGrid>
+    <MudItem Class="align-item-center">
+        <MudText Typo="Typo.h6">Areas of opportunity detected</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="12">
+        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info" Centered="true" >
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="S">
+                @if(_lupS.Count > 0)
+                {
+                    <MudTable Items="_lupS" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                    <ToolBarContent>
+                        <MudGrid class="d-flex flex-column justify-center align-self-center">
+                            <MudItem Class="d-flex">
+                                <MudSpacer />
+                                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                <MudSpacer />
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
+                                <MudSpacer />
+                            </MudItem>
+                        </MudGrid>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudText Align="Align.Center">Actions</MudText>
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="LupId">
+                            <MudText Align="Align.Center">@context.LupId</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Status">
+                            <MudText Align="Align.Center">@context.Status</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Observer">
+                            <MudText Align="Align.Center">@context.Observer</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Is active?">
+                            @if (context.IsActive == true)
+                            {
+                                <MudText Align="Align.Center">
+                                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText Align="Align.Center">
+                                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                </MudText>
+                            }
+                        </MudTd>
+                        <MudTd>
+                            <MudText Align="Align.Center">
+                                <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+
+            </MudTabPanel>
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Q">
+                @if (_lupQ.Count > 0)
+                {
+                    <MudTable Items="_lupQ" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <ToolBarContent>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="LupId">
+                                <MudText Align="Align.Center">@context.LupId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudText Align="Align.Center">@context.Status</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Observer">
+                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Is active?">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else{
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+            </MudTabPanel>
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="D">
+                @if (_lupD.Count > 0)
+                {
+                        <MudTable Items="_lupD" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                            <ToolBarContent>
+                                <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                    <MudItem Class="d-flex">
+                                        <MudSpacer />
+                                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                        <MudSpacer />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
+                                        <MudSpacer />
+                                    </MudItem>
+                                </MudGrid>
+                            </ToolBarContent>
+                            <HeaderContent>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudText Align="Align.Center">Actions</MudText>
+                                </MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="LupId">
+                                    <MudText Align="Align.Center">@context.LupId</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Status">
+                                    <MudText Align="Align.Center">@context.Status</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Observer">
+                                    <MudText Align="Align.Center">@context.Observer</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Is active?">
+                                @if (context.IsActive == true)
+                                {
+                                            <MudText Align="Align.Center">
+                                                <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                            </MudText>
+                                }
+                                else
+                                {
+                                            <MudText Align="Align.Center">
+                                                <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                            </MudText>
+                                }
+                                </MudTd>
+                                <MudTd>
+                                    <MudText Align="Align.Center">
+                                        <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                        <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                        <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                                    </MudText>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                }
+                else
+                {
+                        <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+            </MudTabPanel>
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="C">
+                @if (_lupC.Count > 0)
+                {
+                    <MudTable Items="_lupC" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <ToolBarContent>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="LupId">
+                                <MudText Align="Align.Center">@context.LupId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudText Align="Align.Center">@context.Status</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Observer">
+                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Is active?">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+            </MudTabPanel>
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Others">
+                @if (_lupOther.Count > 0)
+                {
+                    <MudTable Items="_lupOther" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <ToolBarContent>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="LupId">
+                                <MudText Align="Align.Center">@context.LupId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudText Align="Align.Center">@context.Status</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Observer">
+                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Is active?">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+            </MudTabPanel>
+        </MudTabs>
+    </MudItem>
+</MudGrid>

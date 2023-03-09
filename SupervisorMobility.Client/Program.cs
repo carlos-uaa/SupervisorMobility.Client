@@ -7,6 +7,7 @@ global using SupervisorMobility.Client.Services.GroupService;
 global using SupervisorMobility.Client.Services.GlosaryService;
 global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
+global using SupervisorMobility.Client.Services.LupService;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
 global using SupervisorMobility.Client.Services.GuideService;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
+using SupervisorMobility.Client.Services.LupService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -46,6 +48,7 @@ builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IGlosaryService, GlosaryService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
+builder.Services.AddScoped<ILupService, LupService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 //cors
 
