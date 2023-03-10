@@ -7,6 +7,7 @@
 
         // Get job observation by Id
         Task<JobObservation> GetJobObservationById(int jobObservationId);
+        Task<JobObservation> GetJobObservationWithLup(int jobObservationId);
 
         // Create job observation
         Task<JobObservation> CreateJobObservation(JobObservation jobObservation);

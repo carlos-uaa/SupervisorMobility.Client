@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Timers;
 
@@ -12,6 +14,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         [Parameter]
         public int JobObservationId { get; set; }
         public JobObservation _jobObservation { get; set; } = new();
+        public Lup lup { get; set; } = new();
+
+        public JobObservation _lupJobObservations { get; set; } = new();
 
         public string hour1 { get; set; }
         public string hour2 { get; set; }
@@ -37,16 +42,34 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public int distributionId;
         public int operationId;
 
+        public string areaS;
+        public string areaQ;
+        public string areaD;
+        public string areaC;
+        public string areaOther;
+
+
         int[] models = new int[5];
         string[] cicles = new string[5];
 
         //timer
-        const string DEFAULT_TIME = "00:00:00";
+        const string DEFAULT_TIME = "00:00:00:000";
         string elapsedTime = DEFAULT_TIME;
         System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
         bool isRunning = false;
         public int opt = 1;
+
+        //Glosary
+        private List<Glosary> glosary = new();
+        private Dictionary<string, Glosary> _glosaryInfo;
+
+
+        //Lup Modal
+        private bool visible = false;
+        private int lupId;
+
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -56,11 +79,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             new BreadcrumbItem("Update Job Observation", href: "", disabled: true)
         };
 
+        void Closed(MudChip chip)
+        {
+            // react to chip closed
+        }
         protected async override Task OnInitializedAsync()
         {
+            glosary = await GlosaryService.GetGlosary();
+            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
-  
+            _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+
+
             startHour = _jobObservation.DateStart?.TimeOfDay;
             endHour = _jobObservation.DateEnd?.TimeOfDay;
 
@@ -219,7 +251,141 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
 
+        //Lup
 
+        public async void AddLup(int pillar)
+        {
+
+            switch (pillar)
+            {
+                case 1: 
+                    if(areaS != null && areaS.Length > 0)
+                    {
+                        lup.Oportunity = areaS;
+                        areaS = "";
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 2:
+                    if (areaQ != null && areaQ.Length > 0)
+                    {
+                        lup.Oportunity = areaQ;
+                        areaQ = "";
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 3:
+                    if (areaD != null && areaD.Length > 0)
+                    {
+                        lup.Oportunity = areaD;
+                        areaD = "";
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 4:
+                    if (areaC != null && areaC.Length > 0)
+                    {
+                        lup.Oportunity = areaC;
+                        areaC = "";
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 5:
+                    if (areaOther != null && areaOther.Length > 0)
+                    {
+                        lup.Oportunity = areaOther;
+                        areaOther = "";
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+
+            }
+
+            lup.Observer = _jobObservation.Observer;
+            lup.JobObservationId = _jobObservation.JobObservationId;
+            lup.Pillar = pillar;
+            lup.Status = 1;
+            lup.CreatedDate= DateTime.Now;
+            lup.IsActive = true;
+
+
+            var result = await LupService.CreateLup(lup);
+            if (result != null)
+            {
+                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+                StateHasChanged();
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Lup Created", Severity.Info);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Lup", Severity.Error);
+            }
+        }
+
+        //lup modal
+        private void OpenDialog2(int id)
+        {
+            lupId = id;
+            visible = true;
+        }
+        void Close() => visible = false;
+        void EditLup(int lupId)
+        {
+            NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
+        }
+
+        async Task DeleteLup(int lupId)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this lup?");
+
+            if (confirm)
+            {
+                await LupService.DeleteLup(lupId);
+
+                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+                StateHasChanged();
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Lup Deleted", Severity.Info);
+
+
+            }
+        }
 
     }
 }

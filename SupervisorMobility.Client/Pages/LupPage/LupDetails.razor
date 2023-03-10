@@ -1,0 +1,201 @@
+﻿@page "/lup/details/{lupId:int}"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject IJobObservationService JobObservationService
+@inject ILupService LupService
+
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+
+@*Title*@
+<PageTitle>Supervisor Mobility | LUP</PageTitle>
+
+@* Lup *@
+<MudGrid Justify="Justify.Center">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        @if (_lup.IsActive == true)
+{
+    <MudText>
+                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">Active</MudChip>
+    </MudText>
+}
+else
+{
+    <MudText>
+                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Inactive</MudChip>
+    </MudText>
+}
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">
+                Lup @_lup.LupId
+            </MudText>
+        </MudItem>
+        <MudItem Class="ml-2">
+            <MudSimpleTable Bordered Class="mt-3">
+                <tbody>
+                    <tr>
+                        <td style="width:50%">
+                            <MudDatePicker @bind-Date="_lup.CreatedDate" Label="Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                        </td>
+                        <td> 
+                        @if(_lup.EndDate == null)
+                        {
+                            <MudText>End Date: Not yet completed</MudText>
+                        }
+                        else
+                        {
+                            <MudDatePicker @bind-Date="_lup.EndDate" Label="End Date" Color="Color.Info" AdornmentColor="Color.Info" />
+                        }
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+            <MudSimpleTable Style="overflow-x: auto;" Bordered=true Class="mt-3 mb-3">
+                <thead>
+                    <tr>
+                        <th>
+                            <MudText Style="font-weight:bold;">
+                                Pillar
+                            </MudText>
+                        </th>
+                        <th>
+                            <MudText Style="text-align:center; font-weight:bold;">
+                                Opportunity area detected
+                            </MudText>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if(_lup.Pillar == 1)
+                        {
+                        <td style="width: 20%">
+                            S
+                        </td>
+                        <td>
+                             <MudText >@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 2)
+                        {
+                        <td>
+                            Q
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 3)
+                        {
+                        <td>
+                            D
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 4)
+                        {
+                        <td>
+                            C
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 5)
+                        {
+                        <td>
+                            Otros
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }                        
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+            <MudSimpleTable Style="overflow-x: auto;" Bordered>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:bold; width: 20%">Job Observation Id</td>
+                        <td>
+                            <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                                <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @_lup.JobObservationId</MudChip>
+                                </MudBadge>
+                            </MudTooltip>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Observer</td>
+                        <td>@_lup.Observer</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Q3</td>
+                        <td>@_lup.Q3</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Q4</td>
+                        <td>@_lup.Q4</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Status</td>
+                        <td>
+                            @switch (_lup.Status)
+                            {
+                                case 1:
+                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                    break;
+                                case 2:
+                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                    break;
+                                case 3:
+                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                    break;
+                                case 4:  
+                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                    break; 
+                            }
+                            
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+                <MudSimpleTable Bordered Class="mt-3 mb-10">
+                <thead>
+                    <tr>
+                        <td>
+                            <MudText Typo="Typo.h6">
+                                Evidence
+                            </MudText>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <MudText>
+                                No files uploaded yet
+                            </MudText>
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
+    </MudItem>
+</MudGrid>

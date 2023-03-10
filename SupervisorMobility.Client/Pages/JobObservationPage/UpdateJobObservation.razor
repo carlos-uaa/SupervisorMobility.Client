@@ -15,6 +15,8 @@
 @inject IDistributionService DistributionService
 @inject IOperationService OperationService
 @inject IJobObservationService JobObservationService
+@inject IGlosaryService GlosaryService
+@inject ILupService LupService
 @inject ISnackbar Snackbar
 
 @inject NavigationManager NavigationManager
@@ -284,74 +286,388 @@
                                     Área de oportunidad detectada
                                 </MudText>
                             </th>
+                            <th style="width: 5%">
+                                Add
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>
-                                S
+                            <td width="10%">
+                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S"))
+                                {
+                                    Glosary word;
+                                    word = _glosaryInfo["S"];
+                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                            <MudText>@word.Name</MudText>
+                                        </MudBadge>
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <span>S</span>
+                                }
+                            </td>
+                            <td style="align-content: end">
+                                <MudTextField T="string" @bind-Value="areaS" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"/>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.SArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTooltip Text="Add to Pillar S in LUP" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                    <MudIconButton @onclick="(() => AddLup(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                </MudTooltip>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                Q
+                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                                {
+                                    Glosary word;
+                                    word = _glosaryInfo["Q"];
+                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                            <MudText>@word.Name</MudText>
+                                        </MudBadge>
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <span>Q</span>
+                                }
+                            </td>
+                            <td style="align-content: end">
+                                <MudTextField T="string" @bind-Value="areaQ" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.QArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTooltip Text="Add to Pillar Q in LUP" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                    <MudIconButton @onclick="(() => AddLup(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                </MudTooltip>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 D
                             </td>
+                            <td style="align-content: end">
+                                <MudTextField T="string" @bind-Value="areaD" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
+                            </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.DArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTooltip Text="Add to Pillar D in LUP" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                    <MudIconButton @onclick="(() => AddLup(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                </MudTooltip>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 C
                             </td>
-                            <td colspan="9">
-                                <MudTextField T="string" @bind-Value="_jobObservation.CArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            <td style="align-content: end">
+                                <MudTextField T="string" @bind-Value="areaC" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
+                            </td>
+                            <td>
+                                <MudTooltip Text="Add to Pillar C in LUP" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                    <MudIconButton @onclick="(() => AddLup(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                </MudTooltip>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Otros
                             </td>
-                            <td colspan="9">
-                                <MudTextField T="string" @bind-Value="_jobObservation.OthersArea" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            <td style="align-content: end">
+                                <MudTextField T="string" @bind-Value="areaOther" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" />
+                            </td>
+                            <td>
+                                <MudTooltip Text="Add to Pillar Other in LUP" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                    <MudIconButton @onclick="(() => AddLup(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                </MudTooltip>
                             </td>
                         </tr>
                     </tbody>
                 </MudSimpleTable>
             </MudItem>
             <MudItem Class="ml-2">
-                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-3">
-                    <thead>
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
+                    <tbody>
                         <tr>
-                            <th>
+                            <td colspan="2">
+                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <MudText Style="font-weight:bold;">
+                                                    Pillar
+                                                </MudText>
+                                            </th>
+                                            <th>
+                                                <MudText Style="text-align:center; font-weight:bold;">
+                                                    Improve / Activity Detected
+                                                </MudText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="10%">
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S"))
+                                                {
+                                                    Glosary word;
+                                                    word = _glosaryInfo["S"];
+                                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                            <MudText>@word.Name</MudText>
+                                                        </MudBadge>
+                                                    </MudTooltip>
+                                                }
+                                                else
+                                                {
+                                                    <span>S</span>
+                                                }
+                                            </td>
+                                            <td>
+                                            @if(_lupJobObservations.Lup.Count > 0)
+                                            {
+                                                foreach (var lup in _lupJobObservations.Lup)
+                                                {
+                                                    if(lup.Pillar == 1){
+                                                    <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                        <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialog2(lup.LupId))">
+                                                            <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                                @if(lup.Oportunity.Length < 50)
+                                                                {
+                                                                    @lup.Oportunity
+                                                                }
+                                                                else{
+                                                                    @lup.Oportunity.Substring(0,50) <span>...</span> 
+                                                                }
+                                                            </MudChip>
+                                                                @if (lup.IsActive == true)
+                                                                {
+                                                                    <MudText>
+                                                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Inactive Style="cursor:pointer"</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                            <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup(lup.LupId))"></MudIconButton>
+                                                            </MudTooltip>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                    
+                                                    }
+                                                }
+                                            }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                                                {
+                                                    Glosary word;
+                                                    word = _glosaryInfo["Q"];
+                                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                            <MudText>@word.Name</MudText>
+                                                        </MudBadge>
+                                                    </MudTooltip>
+                                                }
+                                                else
+                                                {
+                                                    <span>Q</span>
+                                                }
+                                            </td>
+                                            <td>
+                                            @if(_lupJobObservations.Lup.Count > 0)
+                                            {
+                                                foreach (var lup in _lupJobObservations.Lup)
+                                                {
+                                                    if(lup.Pillar == 2){
+                                                    <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                        <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialog2(lup.LupId))">
+                                                            <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                                @if(lup.Oportunity.Length < 50)
+                                                                {
+                                                                    @lup.Oportunity
+                                                                }
+                                                                else{
+                                                                    @lup.Oportunity.Substring(0,50) <span>...</span> 
+                                                                }
+                                                            </MudChip>
+                                                                @if (lup.IsActive == true)
+                                                                {
+                                                                    <MudText>
+                                                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Inactive</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                            <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup(lup.LupId))"></MudIconButton>
+                                                            </MudTooltip>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                    
+                                                    }
+                                                }
+                                            }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                D
+                                            </td>
+                                            <td>
+                                            @if(_lupJobObservations.Lup.Count > 0)
+                                            {
+                                                foreach (var lup in _lupJobObservations.Lup)
+                                                {
+                                                    if(lup.Pillar == 3){
+                                                    <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialog2(lup.LupId))">
+                                                                    <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                                @if(lup.Oportunity.Length < 50)
+                                                                {
+                                                                    @lup.Oportunity
+                                                                }
+                                                                else{
+                                                                    @lup.Oportunity.Substring(0,50) <span>...</span> 
+                                                                }
+                                                            </MudChip>
+                                                                @if (lup.IsActive == true)
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Inactive</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                            <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup(lup.LupId))"></MudIconButton>
+                                                            </MudTooltip>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                    
+                                                    }
+                                                }
+                                            }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                C
+                                            </td>
+                                            <td >
+                                            @if (_lupJobObservations.Lup.Count > 0)
+                                            {
+                                                foreach (var lup in _lupJobObservations.Lup)
+                                                {
+                                                    if (lup.Pillar == 4)
+                                                    {
+                                                        <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                            <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialog2(lup.LupId))">
+                                                                    <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                                    @if (lup.Oportunity.Length < 50)
+                                                                    {
+                                                                        @lup.Oportunity
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @lup.Oportunity.Substring(0,50) <span>...</span>
+                                                                    }
+                                                                </MudChip>
+                                                                @if (lup.IsActive == true)
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Inactive</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup(lup.LupId))"></MudIconButton>
+                                                                </MudTooltip>
+                                                            </MudButton>
+                                                        </MudTooltip>
+
+                                                    }
+                                                }
+                                            }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Otros
+                                            </td>
+                                            <td >
+                                            @if(_lupJobObservations.Lup.Count > 0)
+                                            {
+                                                foreach (var lup in _lupJobObservations.Lup)
+                                                {
+                                                    if(lup.Pillar == 5){
+                                                    <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                        <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialog2(lup.LupId))">
+                                                            <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                                @if(lup.Oportunity.Length < 70)
+                                                                {
+                                                                    @lup.Oportunity
+                                                                }
+                                                                else{
+                                                                    @lup.Oportunity.Substring(0,70) <span>...</span> 
+                                                                }
+                                                            </MudChip>
+                                                                @if (lup.IsActive == true)
+                                                                {
+                                                                    <MudText>
+                                                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText>
+                                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Inactive</MudChip>
+                                                                    </MudText>
+                                                                }
+                                                            <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup(lup.LupId))"></MudIconButton>
+                                                            </MudTooltip>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                    
+                                                    }
+                                                }
+                                            }
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">
                                 <MudText Style="text-align:center; font-weight:bold;">
-                                    Mejora / Actividad Identificada
-                                </MudText>
-                            </th>
-                            <th>
-                                <MudText Style="text-align:center; font-weight:bold;">
-                                    Comentario de SSV
+                                    SSV Comentaries
                                 </MudText>
                             </th>
                         </tr>
-                    </thead>
-                    <tbody>
                         <tr>
-                            <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.IdentifiedActivity" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
-                            </td>
-                            <td>
+                            <td colspan="2">
                                 <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
@@ -389,3 +705,17 @@
         </MudItem>
     </MudGrid>
 </EditForm>
+
+
+@*lup modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.LupPage.LupDetails LupId="lupId"></SupervisorMobility.Client.Pages.LupPage.LupDetails>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudIconButton @onclick="(() => EditLup(lupId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>

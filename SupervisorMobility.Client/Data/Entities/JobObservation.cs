@@ -11,6 +11,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public Area Area { get; set; }
         public Distribution Distribution { get; set; }
         public Operation Operation { get; set; }
+        public ICollection<Lup> Lup { get; set; } = new List<Lup>();
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
@@ -57,7 +58,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public string CArea { get; set; }
         public string OthersArea { get; set; }
 
-        public string IdentifiedActivity { get; set; }
         public string SsvCommentary { get; set; }
         public string OperatorCommentary { get; set; }
         public string SsvSignature { get; set; }

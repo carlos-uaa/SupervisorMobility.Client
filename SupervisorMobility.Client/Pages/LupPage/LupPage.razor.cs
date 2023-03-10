@@ -15,6 +15,11 @@ namespace SupervisorMobility.Client.Pages.LupPage
         public List<Lup> _lupOther { get; set; } = new();
 
 
+        private bool visible = false;
+        private int lupId;
+
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -53,8 +58,27 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
             if (confirm)
             {
-                _lup.RemoveAll(product => product.LupId == lupId);
+                _lup.RemoveAll(l => l.LupId == lupId);
                 await LupService.DeleteLup(lupId);
+
+                _lup = await LupService.GetAllLup();
+                _lupS.Clear();
+                _lupQ.Clear();
+                _lupD.Clear();
+                _lupC.Clear();
+                _lupOther.Clear();
+
+                foreach (var lup in _lup)
+                {
+                    switch (lup.Pillar)
+                    {
+                        case 1: _lupS.Add(lup); break;
+                        case 2: _lupQ.Add(lup); break;
+                        case 3: _lupD.Add(lup); break;
+                        case 4: _lupC.Add(lup); break;
+                        case 5: _lupOther.Add(lup); break;
+                    }
+                }
             }
         }
 
@@ -64,10 +88,6 @@ namespace SupervisorMobility.Client.Pages.LupPage
             NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
         }
 
-        void LupDetails(int lupId)
-        {
-            NavigationManager.NavigateTo($"lup/{lupId}");
-        }
         private string searchString = "";
 
         private bool FilterFunc(Lup element)
@@ -78,12 +98,21 @@ namespace SupervisorMobility.Client.Pages.LupPage
                 return true;
             if (element.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Observer.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Oportunity.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if ($"{element.LupId} {element.Status} {element.Observer}".Contains(searchString))
                 return true;
             return false;
         }
+
+        //Modal
+
+        private void OpenDialog2(int id)
+        {
+            lupId = id;
+            visible = true;
+        }
+        void Close() => visible = false;
 
     }
 }
