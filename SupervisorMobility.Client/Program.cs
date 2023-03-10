@@ -22,14 +22,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using SupervisorMobility.Client.Services.LupService;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-
-// Connection to API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7017/api/") });
 
 // Services
 builder.Services.AddMudServices();
@@ -50,7 +47,31 @@ builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
-//cors
 
+// Connection to API
+builder.Services.AddScoped<CustomHttpClientService>();
 
 await builder.Build().RunAsync();
+
+
+public class CustomHttpClientService
+{
+    private readonly HttpClient _apiHttpClient;
+    private readonly HttpClient _bridgeHttpClient;
+
+    public CustomHttpClientService()
+    {
+        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7017/api/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:4251/") };
+    }
+
+    public HttpClient GetApiHttpClient()
+    {
+        return _apiHttpClient;
+    }
+
+    public HttpClient GetBridgeHttpClient()
+    {
+        return _bridgeHttpClient;
+    }
+}

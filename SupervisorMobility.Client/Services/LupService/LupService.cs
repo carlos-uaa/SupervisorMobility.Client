@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.LupService
 {
     public class LupService : ILupService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public LupService(HttpClient http)
+        public LupService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 

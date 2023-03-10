@@ -6,14 +6,16 @@ namespace SupervisorMobility.Client.Services.ProductsService
     public class ProductService : IProductService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
 
         // Constructor
-        public ProductService(HttpClient http, IJSRuntime jSRuntime)
+        public ProductService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
 
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };

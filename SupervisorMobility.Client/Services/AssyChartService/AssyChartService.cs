@@ -1,4 +1,5 @@
-﻿using SupervisorMobility.Client.Data.Entities;
+﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using System.Net.Http.Json;
@@ -8,12 +9,14 @@ namespace SupervisorMobility.Client.Services.AssyChartService
     public class AssyChartService : IAssyChartService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
 
-        public AssyChartService(HttpClient http)
+        public AssyChartService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
         //Create Assychart

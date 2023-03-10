@@ -1,0 +1,147 @@
+﻿@page "/GuidesManagement/1/DetailGuide";
+<h3>DetailGuide</h3>
+
+
+<MudPaper Width="600px" Elevation="0">
+    <MudTreeView ServerData="LoadServerData" Items="rootNode.TreeItems">
+        <ItemTemplate>
+            <MudTreeViewItem Value="@context" LoadingIconColor="Color.Info" CanExpand="@context.EsDirectorio" Text="@context.Nombre" EndTextTypo="@Typo.caption" />
+        </ItemTemplate>
+    </MudTreeView>
+</MudPaper>
+
+@code {
+
+
+    public class Elemento
+    {
+        public string Nombre { get; set; }
+        public string Ruta { get; set; }
+        public bool EsDirectorio { get; set; }
+
+        public Elemento(string nombre, string ruta, bool directory)
+        {
+            this.Nombre = nombre;
+            this.Ruta = ruta;
+            this.EsDirectorio = directory;
+        }
+    }
+
+
+    List<Elemento> elementos = new List<Elemento>() {
+            new Elemento("01. PRESS", "01. PRESS", true),
+            new Elemento("01. CCP", "01. PRESS/01. CCP", true),
+            new Elemento("02. BiW", "02. BiW", true),
+            new Elemento("01. P71A", "02. BiW/01. P71A", true),
+            new Elemento("01. IMP B", "02. BiW/01. P71A/01. IMP B", true),
+            new Elemento("02. ANTICORROSION", "02. BiW/01. P71A/02. ANTICORROSION", true),
+            new Elemento("03. PRECISION", "02. BiW/01. P71A/03. PRECISION", true),
+            new Elemento("04. APARIENCIA", "02. BiW/01. P71A/04. APARIENCIA", true),
+            new Elemento("05. TORQUE", "02. BiW/01. P71A/05. TORQUE", true),
+            new Elemento("02. X247", "02. BiW/02. X247", true),
+            new Elemento("01. IMP B", "02. BiW/02. X247/01. IMP B", true),
+            new Elemento("02. ANTICORROSION", "02. BiW/02. X247/02. ANTICORROSION", true),
+            new Elemento("03. PRECISION", "02. BiW/02. X247/03. PRECISION", true),
+            new Elemento("04. APARIENCIA", "02. BiW/02. X247/04. APARIENCIA", true),
+            new Elemento("05. TORQUE", "02. BiW/02. X247/05. TORQUE", true),
+            new Elemento("03.N71A", "02. BiW/03.N71A", true),
+            new Elemento("01. IMP B", "02. BiW/03.N71A/01. IMP B", true),
+            new Elemento("02. ANTICORROSION", "02. BiW/03.N71A/02. ANTICORROSION", true),
+            new Elemento("03. PRECISION", "02. BiW/03.N71A/03. PRECISION", true),
+            new Elemento("04. APARIENCIA", "02. BiW/03.N71A/04. APARIENCIA", true),
+            new Elemento("05. TORQUE", "02. BiW/03.N71A/05. TORQUE", true),
+            new Elemento("03. PAINT", "03. PAINT", true),
+            new Elemento("01. PRETRATAMIENTO", "03. PAINT/01. PRETRATAMIENTO", true),
+            new Elemento("01. CCP", "03. PAINT/01. PRETRATAMIENTO/01. CCP", true),
+            new Elemento("02. FORMATOS", "03. PAINT/01. PRETRATAMIENTO/02. FORMATOS", true) };
+
+    TreeItemData rootNode { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+
+        rootNode = ConstruirArbol(elementos);
+    }
+
+
+    public class TreeItemData
+    {
+        public string Nombre { get; set; }
+        public string Ruta { get; set; }
+        public bool EsDirectorio { get; set; }
+        public HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
+
+        public TreeItemData()
+        {
+            TreeItems = new HashSet<TreeItemData>();
+        }
+
+
+        public TreeItemData(string nombre, string ruta, bool esDirectorio)
+        {
+            Nombre = nombre;
+            Ruta = ruta;
+            EsDirectorio = esDirectorio;
+            TreeItems = new HashSet<TreeItemData>();
+        }
+
+
+        public void AgregarNodo(TreeItemData nodo)
+        {
+            TreeItems.Add(nodo);
+        }
+
+    }
+
+
+    public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
+    {
+        await Task.Delay(500);
+        return parentNode.TreeItems;
+    }
+
+
+    public TreeItemData ConstruirArbol(List<Elemento> elementos)
+    {
+        TreeItemData root = new TreeItemData { Nombre = "Raíz", Ruta = "", EsDirectorio = true };
+        root.TreeItems = new  HashSet<TreeItemData>();
+
+        foreach (Elemento itemData in elementos)
+        {
+            // Dividir la ruta en partes y crear cada nodo del árbol
+            string[] rutaPartes = itemData.Ruta.Split('/');
+            TreeItemData parent = root;
+
+            for (int i = 0; i < rutaPartes.Length; i++)
+            {
+                string nombre = rutaPartes[i];
+
+                // Buscar el nodo en los hijos del padre actual
+                TreeItemData nodoActual = parent.TreeItems.ToList().Find(child => child.Nombre == nombre);
+
+                if (nodoActual == null)
+                {
+                    // Si el nodo no existe, crearlo y agregarlo como hijo del padre actual
+                    nodoActual = new TreeItemData(){ Nombre = nombre, Ruta = string.Join("/", rutaPartes, 0, i + 1), EsDirectorio = true };
+                    nodoActual.TreeItems = new HashSet<TreeItemData>();
+                    parent.TreeItems.Add(nodoActual);
+                }
+
+                // Actualizar el padre actual
+                parent = nodoActual;
+            }
+
+            // Agregar el nodo final (hoja)
+            //TreeItemData hoja = new TreeItemData { Nombre = itemData.Nombre, Ruta = itemData.Ruta, EsDirectorio = true };
+            //hoja.TreeItems = null;
+            //parent.TreeItems.Add(hoja);
+        }
+
+        // Imprimir el árbol
+        return root;
+    }
+}
+
+
+}

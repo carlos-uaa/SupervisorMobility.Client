@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.AreaService
 {
     public class AreaService : IAreaService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public AreaService(HttpClient http)
+        public AreaService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 

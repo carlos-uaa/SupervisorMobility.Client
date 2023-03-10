@@ -7,13 +7,15 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
     public class FileUploadAndDownloadService : IFileUploadAndDownloadService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public FileUploadAndDownloadService(HttpClient http, IJSRuntime jSRuntime)
+        public FileUploadAndDownloadService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
@@ -21,7 +23,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         //Assy CHART Upload
         public async Task<FileUpload> UploadFile(MultipartFormDataContent contentfile)
         {
-            var response = await _http.PostAsync("File", contentfile);
+            var response = await _http.PostAsync($"File", contentfile);
            
             var result = await response.Content.ReadFromJsonAsync<FileUpload>();
 
@@ -33,7 +35,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         {
             Console.WriteLine("upload Guide");
 
-            var response = await _http.PostAsync("File/UploadGuide", contentfile);
+            var response = await _http.PostAsync($"File/UploadGuide", contentfile);
 
             if (response.IsSuccessStatusCode)
             {
@@ -49,7 +51,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         //UploadUsers
         public async Task<FileUpload> UploadUsers(MultipartFormDataContent contentfile)
         {
-            var response = await _http.PostAsync("File/UploadUsers", contentfile);
+            var response = await _http.PostAsync($"File/UploadUsers", contentfile);
            
             var result = await response.Content.ReadFromJsonAsync<FileUpload>();
 
@@ -59,7 +61,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         //UploadEvidences
         public async Task<List<FileUpload>> UploadEvidences(MultipartFormDataContent contentfile)
         {
-            var response = await _http.PostAsync("File/UploadEvidences", contentfile);
+            var response = await _http.PostAsync($"File/UploadEvidences", contentfile);
             var content = await response.Content.ReadAsStringAsync();
 
             var result = JsonSerializer.Deserialize<List<FileUpload>>(content, _options);
@@ -67,7 +69,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         }
         public async Task<UploadAssyChartResult> ProccedToUpdateData(FileUpload fileinfo)
         {
-            var response = await _http.PostAsJsonAsync("File/Data", fileinfo);
+            var response = await _http.PostAsJsonAsync($"File/Data", fileinfo);
 
             if (response.IsSuccessStatusCode)
             {

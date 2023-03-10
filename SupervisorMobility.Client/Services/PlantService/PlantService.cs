@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.PlantService
 {
     public class PlantService : IPlantService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public PlantService(HttpClient http)
+        public PlantService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -32,7 +35,7 @@ namespace SupervisorMobility.Client.Services.PlantService
         // Get plant by Id
         public async Task<Plant> GetPlantById(int id)
         {
-            var response = await _http.GetAsync($"plants/{id}");
+            var response = await _httpBridge.GetAsync($"plants/{id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

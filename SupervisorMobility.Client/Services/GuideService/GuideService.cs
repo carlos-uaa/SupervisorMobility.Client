@@ -7,15 +7,17 @@ namespace SupervisorMobility.Client.Services.GuideService
     public class GuideService : IGuideService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
         private readonly IFileUploadAndDownloadService FilesServices;
         private readonly IJSRuntime _js;
 
 
         // Constructor
-        public GuideService(HttpClient http, IJSRuntime jSRuntime)
+        public GuideService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
