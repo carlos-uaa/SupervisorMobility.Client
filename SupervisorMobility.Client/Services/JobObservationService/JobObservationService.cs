@@ -42,6 +42,22 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
+        public async Task<JobObservation> GetJobObservationWithLup(int jobObservationId)
+        {
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}?IncludeLup=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var jobObservation = JsonSerializer.Deserialize<JobObservation>(content, _options);
+
+            return jobObservation;
+        }
+
+
         public async Task<JobObservation> GetJobObservationById(int jobObservationId)
         {
             var response = await _http.GetAsync($"jobobservations/{jobObservationId}");

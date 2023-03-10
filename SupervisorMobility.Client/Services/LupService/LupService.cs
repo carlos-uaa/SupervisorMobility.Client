@@ -27,6 +27,7 @@ namespace SupervisorMobility.Client.Services.LupService
             var response = await _http.DeleteAsync($"lup/{lupId}");
         }
 
+
         public async Task<List<Lup>> GetAllLup()
         {
             var response = await _http.GetAsync($"lup");

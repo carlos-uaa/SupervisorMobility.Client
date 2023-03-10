@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
+using System;
 using System.Globalization;
 using System.Timers;
 
@@ -17,11 +19,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         DateTime newDate1;
         DateTime newDate2;
 
+        List<JobObservation> _jobObservations;
         List<Plant> _plants { get; set; } = new();
         List<Product> _products { get; set; } = new();
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+        List<Lup> _tempLup { get; set; } = new();
+        Lup lup { get; set; } = new();
+        List<Lup> _lup { get; set; } = new();
+
         public JobObservation _jobObservation { get; set; } = new();
 
         int[] models = new int[5];
@@ -117,40 +124,33 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.DateEnd = newDate2;
             _jobObservation.Status = 1;
 
-           //Console.WriteLine(_jobObservation.PlantId);
-            //Console.WriteLine(_jobObservation.AreaId);
-            //Console.WriteLine(_jobObservation.DistributionId);
-            //Console.WriteLine(_jobObservation.OperationId);
-            //Console.WriteLine(_jobObservation.IsActive);
-     
-            //Console.WriteLine(_jobObservation.DateStart);
-            //Console.WriteLine(_jobObservation.DateEnd);
-            //Console.WriteLine(_jobObservation.DateEnd);
-            //Console.WriteLine(_jobObservation.Observer);
-            //Console.WriteLine(_jobObservation.Operator);
-            //Console.WriteLine(_jobObservation.Option);
-            //Console.WriteLine(_jobObservation.Anomaly);
-            //Console.WriteLine(_jobObservation.Time1HOE);
-            //Console.WriteLine(_jobObservation.Time2HOE);
-            //Console.WriteLine(_jobObservation.Models);
-            //Console.WriteLine(_jobObservation.Cicles);
-            //Console.WriteLine(_jobObservation.SArea);
-            //Console.WriteLine(_jobObservation.QArea);
-            //Console.WriteLine(_jobObservation.DArea);
-            //Console.WriteLine(_jobObservation.CArea);
-            //Console.WriteLine(_jobObservation.OthersArea);
-            //Console.WriteLine(_jobObservation.IdentifiedActivity);
-            //Console.WriteLine(_jobObservation.SsvCommentary);
-            //Console.WriteLine(_jobObservation.OperatorCommentary);
-            //Console.WriteLine(_jobObservation.SsvSignature);
-            //Console.WriteLine(_jobObservation.OperatorSignature);
-
             var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
-                Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
+
+                if(_tempLup.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach(var temp in _tempLup)
+                    {
+                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await LupService.CreateLup(temp);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Lup", Severity.Error);
+                        }
+                    }
+                }
+
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -210,11 +210,119 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 StopTimer();
         }
 
-        void Option1() => opt= 1;
-        void Option2() => opt= 2;
-        void Option3() => opt= 3;
-        void Option4() => opt= 4;
-        void Option5() => opt= 5;
+        void Option1() => opt = 1;
+        void Option2() => opt = 2;
+        void Option3() => opt = 3;
+        void Option4() => opt = 4;
+        void Option5() => opt = 5;
+
+
+        //Lup
+        void Closed(MudChip chip)
+        {
+            // react to chip closed
+        }
+        public void AddTempLup(int pillar)
+        {
+
+            switch (pillar)
+            {
+                case 1:
+                    if (_jobObservation.SArea != null && _jobObservation.SArea.Length > 0)
+                    {
+                        lup.Oportunity = _jobObservation.SArea;
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 2:
+                    if (_jobObservation.QArea != null && _jobObservation.QArea.Length > 0)
+                    {
+                        lup.Oportunity = _jobObservation.QArea;
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 3:
+                    if (_jobObservation.DArea != null && _jobObservation.DArea.Length > 0)
+                    {
+                        lup.Oportunity = _jobObservation.DArea;
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 4:
+                    if (_jobObservation.CArea != null && _jobObservation.CArea.Length > 0)
+                    {
+                        lup.Oportunity = _jobObservation.CArea;
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 5:
+                    if (_jobObservation.OthersArea != null && _jobObservation.OthersArea.Length > 0)
+                    {
+                        lup.Oportunity = _jobObservation.OthersArea;
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+            }
+
+            lup.Observer = _jobObservation.Observer;
+            lup.JobObservationId = 0;
+            lup.Pillar = pillar;
+            lup.Status = 1;
+            lup.CreatedDate = DateTime.Now;
+            lup.IsActive = true;
+
+            _tempLup.Add(lup);
+            lup = new();
+            
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Lup item added", Severity.Info);
+
+
+
+        }
+
+        public void DeleteLup(Lup lup)
+        {
+            switch (lup.Pillar) {
+                case 1: _jobObservation.SArea = ""; break;
+                case 2: _jobObservation.QArea = ""; break;
+                case 3: _jobObservation.DArea = ""; break;
+                case 4: _jobObservation.CArea = ""; break;
+                case 5: _jobObservation.OthersArea = ""; break; 
+            }
+            _tempLup.Remove(lup);
+        }
 
     }
 }

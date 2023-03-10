@@ -18,7 +18,7 @@
         <MudText Typo="Typo.h6">Areas of opportunity detected</MudText>
     </MudItem>
     <MudItem xs="12" sm="12" md="12">
-        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info" Centered="true" >
+        <MudTabs Elevation="4" Rounded="true" Color="Color.Info" Centered="true" >
             <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="S">
                 @if(_lupS.Count > 0)
                 {
@@ -29,20 +29,18 @@
                                 <MudSpacer />
                                 <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                 <MudSpacer />
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
-                                <MudSpacer />
                             </MudItem>
                         </MudGrid>
                     </ToolBarContent>
                     <HeaderContent>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
                             <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
                             <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
@@ -56,10 +54,34 @@
                             <MudText Align="Align.Center">@context.LupId</MudText>
                         </MudTd>
                         <MudTd DataLabel="Status">
-                            <MudText Align="Align.Center">@context.Status</MudText>
+                                <MudText Align="Align.Center">
+                                    @switch (context.Status)
+                                    {
+                                        case 1:
+                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                            break;
+                                        case 2:
+                                            <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                            break;
+                                        case 3:
+                                            <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                            break;
+                                        case 4:
+                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                            break;
+                                    }
+                                </MudText>
                         </MudTd>
-                        <MudTd DataLabel="Observer">
-                            <MudText Align="Align.Center">@context.Observer</MudText>
+                            <MudTd DataLabel="Oportunity">
+                                @if (context.Oportunity.Length > 100)
+                                {
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
                         </MudTd>
                         <MudTd DataLabel="Is active?">
                             @if (context.IsActive == true)
@@ -77,7 +99,7 @@
                         </MudTd>
                         <MudTd>
                             <MudText Align="Align.Center">
-                                <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
                                 <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
                                 <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
                             </MudText>
@@ -101,20 +123,18 @@
                                     <MudSpacer />
                                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                     <MudSpacer />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
-                                    <MudSpacer />
                                 </MudItem>
                             </MudGrid>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
@@ -128,10 +148,34 @@
                                 <MudText Align="Align.Center">@context.LupId</MudText>
                             </MudTd>
                             <MudTd DataLabel="Status">
-                                <MudText Align="Align.Center">@context.Status</MudText>
+                                <MudText Align="Align.Center">
+                                    @switch (context.Status)
+                                    {
+                                        case 1:
+                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                            break;
+                                        case 2:
+                                            <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                            break;
+                                        case 3:
+                                            <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                            break;
+                                        case 4:
+                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                            break;
+                                    }
+                                </MudText>
                             </MudTd>
-                            <MudTd DataLabel="Observer">
-                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            <MudTd DataLabel="Oportunity">
+                                @if (context.Oportunity.Length > 100)
+                                {
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
                             </MudTd>
                             <MudTd DataLabel="Is active?">
                                 @if (context.IsActive == true)
@@ -149,7 +193,7 @@
                             </MudTd>
                             <MudTd>
                                 <MudText Align="Align.Center">
-                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
                                 </MudText>
@@ -171,20 +215,18 @@
                                         <MudSpacer />
                                         <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                         <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
-                                        <MudSpacer />
                                     </MudItem>
                                 </MudGrid>
                             </ToolBarContent>
                             <HeaderContent>
                                 <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
                                 </MudTh>
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
                                 </MudTh>
                                 <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                                 </MudTh>
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
@@ -198,10 +240,34 @@
                                     <MudText Align="Align.Center">@context.LupId</MudText>
                                 </MudTd>
                                 <MudTd DataLabel="Status">
-                                    <MudText Align="Align.Center">@context.Status</MudText>
+                                <MudText Align="Align.Center">
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                        break;
+                                    }
+                                </MudText>
                                 </MudTd>
-                                <MudTd DataLabel="Observer">
-                                    <MudText Align="Align.Center">@context.Observer</MudText>
+                            <MudTd DataLabel="Oportunity">
+                                @if (context.Oportunity.Length > 100)
+                                {
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
                                 </MudTd>
                                 <MudTd DataLabel="Is active?">
                                 @if (context.IsActive == true)
@@ -219,7 +285,7 @@
                                 </MudTd>
                                 <MudTd>
                                     <MudText Align="Align.Center">
-                                        <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
                                         <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
                                         <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
                                     </MudText>
@@ -242,20 +308,18 @@
                                     <MudSpacer />
                                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                     <MudSpacer />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
-                                    <MudSpacer />
                                 </MudItem>
                             </MudGrid>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
@@ -269,10 +333,34 @@
                                 <MudText Align="Align.Center">@context.LupId</MudText>
                             </MudTd>
                             <MudTd DataLabel="Status">
-                                <MudText Align="Align.Center">@context.Status</MudText>
+                                <MudText Align="Align.Center">
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                        break;
+                                    }
+                                </MudText>
                             </MudTd>
-                            <MudTd DataLabel="Observer">
-                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            <MudTd DataLabel="Oportunity">
+                                @if (context.Oportunity.Length > 100)
+                                {
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
                             </MudTd>
                             <MudTd DataLabel="Is active?">
                                 @if (context.IsActive == true)
@@ -290,7 +378,7 @@
                             </MudTd>
                             <MudTd>
                                 <MudText Align="Align.Center">
-                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
                                 </MudText>
@@ -313,20 +401,18 @@
                                     <MudSpacer />
                                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                     <MudSpacer />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateLup())"></MudIconButton>
-                                    <MudSpacer />
                                 </MudItem>
                             </MudGrid>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Product Id</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Observer)">Observer</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
@@ -340,10 +426,32 @@
                                 <MudText Align="Align.Center">@context.LupId</MudText>
                             </MudTd>
                             <MudTd DataLabel="Status">
-                                <MudText Align="Align.Center">@context.Status</MudText>
+                                <MudText Align="Align.Center">
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                        break;
+                                    }
+                                </MudText>
                             </MudTd>
-                            <MudTd DataLabel="Observer">
-                                <MudText Align="Align.Center">@context.Observer</MudText>
+                            <MudTd DataLabel="Oportunity">
+                                @if(context.Oportunity.Length > 100){
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else{
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
                             </MudTd>
                             <MudTd DataLabel="Is active?">
                                 @if (context.IsActive == true)
@@ -361,7 +469,7 @@
                             </MudTd>
                             <MudTd>
                                 <MudText Align="Align.Center">
-                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => LupDetails(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Success" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
                                     <MudIconButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
                                 </MudText>
@@ -377,3 +485,16 @@
         </MudTabs>
     </MudItem>
 </MudGrid>
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.LupPage.LupDetails LupId="lupId"></SupervisorMobility.Client.Pages.LupPage.LupDetails>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudIconButton @onclick="(() => EditLup(lupId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
