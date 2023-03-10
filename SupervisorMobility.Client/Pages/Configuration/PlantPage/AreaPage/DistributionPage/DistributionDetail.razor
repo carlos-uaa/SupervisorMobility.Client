@@ -61,10 +61,23 @@
             <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Operations">
                 @if (_distribution.Operations.Count > 0)
                 {
-                    <MudTable Items="_distribution.Operations" Hover="true" T="Operation">
+                    <MudTable Items="_distribution.Operations" Hover="true" T="Operation" Filter="new Func<Operation,bool>(FilterOperation)" Class="styled-table table-striped">
+                        
                         <ToolBarContent>
-                            <MudSpacer />
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateOperation())"></MudIconButton>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search In Operations" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                    <MudButton @onclick="(() => CreateOperation())">
+                                        <MudText>Create Operation</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Operation" Color="Color.Primary"></MudIcon>
+                                    </MudButton>
+                                    <MudSpacer />
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
@@ -128,13 +141,89 @@
             <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Products">
                 @if (_distribution.Products.Count > 0)
                 {
-                    
+
+                    <MudTable Items="_distribution.Products" Hover="true" T="Product" Filter="new Func<Product,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <ToolBarContent>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search In Products" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                    <MudButton @onclick="(() => CreateProduct())">
+                                        <MudText>Create Product</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Prodict" Color="Color.Primary"></MudIcon>
+                                    </MudButton>
+                                    <MudSpacer />
+
+                                    <MudButton @onclick="(() => AddExistProduct())">
+                                        <MudText>Add Exist Product</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Add Exist Product" Color="Color.Primary"></MudIcon>
+                                    </MudButton>
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Product, object>(x=>x?.ProductId)">Product Id</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Product, object>(x=>x?.Code)">Code</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Product, object>(x=>x?.Description)">Description</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Product, object>(x=>x?.IsActive)">Status</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="ProductId">
+                                <MudText Align="Align.Center">@context.ProductId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Code">
+                                <MudText Align="Align.Center">@context.Code</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Description">
+                                <MudText Align="Align.Center">@context.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => ProductDetails(context.ProductId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditProduct(context.ProductId))"></MudIconButton>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteProduct(context.ProductId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
                 }
                 else
                 {
-                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no Products created for this distribution.</MudText>
+
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no products created for this distribution</MudText>
                     <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-                        
+                        <MudButton Color="Color.Info" @onclick="(() => CreateProduct())">Create a new product</MudButton>
+                        <MudSpacer />
+                        <MudButton Color="Color.Info" @onclick="(() => AddExistProduct())">Adding a exist product</MudButton>
+
                     </MudText>
                 }
             </MudTabPanel>

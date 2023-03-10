@@ -19,15 +19,15 @@ namespace SupervisorMobility.Client.Services.UserService
         }
 
         //
-        public async Task<UploadResult> UploadFileUsers(MultipartFormDataContent contentfile)
+        public async Task<FileUpload> UploadFileUsers(MultipartFormDataContent contentfile)
         {
             var response = await _http.PostAsync("Users/FileUpload", contentfile);
 
-            var result = await response.Content.ReadFromJsonAsync<UploadResult>();
+            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
 
             return result;
         }
-        public async Task<UsersUploadResult> ProccedToUploadUsers(UploadResult fileinfo)
+        public async Task<UsersUploadResult> ProccedToUploadUsers(FileUpload fileinfo)
         {
             var response = await _http.PostAsJsonAsync("Users/FileUpload/Data", fileinfo);
 

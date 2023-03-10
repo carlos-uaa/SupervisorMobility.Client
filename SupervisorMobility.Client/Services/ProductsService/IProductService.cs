@@ -19,7 +19,11 @@
         Task DeleteProduct(int id);
 
         Task DeleteDistribution(int productId, int distributionId);
-       
+
+        //Distributions
+        Task<Distribution> CreateDistribution(int productId, int plantId, int areaId, Distribution distribution);
+        Task<Distribution> AddDistribution(int productId, int plantId, int areaId, Distribution distribution);
+
 
     }
 }

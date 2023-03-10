@@ -1,5 +1,6 @@
 ﻿@page "/usersmanagement/UploadUsers"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@using System.Text.RegularExpressions;
 @inject IFileUploadAndDownloadService FileUpDoServices
 
 @*Title*@
@@ -16,7 +17,7 @@
 <MudContainer Fixed="true" Class="py-3">
     <MudGrid>
         <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
-            <MudImage Src="Images/uploadcloud.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+            <MudImage Src="Images/userup.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
         </MudItem>
         <MudItem id="Upload" xs="10" xl="10" class="d-flex flex-column">
             <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
@@ -29,21 +30,42 @@
             <MudItem Class="d-flex flex-column align-center justify-center">
                 @*File Upload*@
                 <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
-                    <InputFile id="input" OnChange="@OnChange" hidden single></InputFile>
 
                     <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
 
                 </MudItem>
                 <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
-                    <MudTextField Class="flex-initial d-flex flex-grow-1 px-9" Width="60%" @bind-Value="@FileName" Label="File Name" Variant="Variant.Outlined" Disabled="true" />
-                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2" Width="20%"
-                               HtmlTag="label"
-                               Variant="Variant.Filled"
-                               Style="Color: #594ae2ff"
-                               StartIcon="@Icons.Material.Filled.CloudUpload"
-                               for="input">
-                        Upload File
-                    </MudButton>
+                    <MudStack Style="width: 80%">
+                        <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                                       @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+                            <ButtonTemplate Context="DragAndDrop">
+                                <MudPaper Height="200px" Outlined="true" Class="@DragClass">
+                                    <MudText Typo="Typo.h6">Drag and drop file Xlsx/CSV here or click</MudText>
+                                    @foreach (var file in fileNames)
+                                    {
+                                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                            <MudText Typo="Typo.h6">@file.message</MudText>
+
+                                            @switch (file.ftype)
+                                            {
+                                                case "xls":
+                                                    <img src="Images/xls.png" Height="70" Width="70" />
+                                                    break;
+                                                case "csv":
+                                                    <img src="Images/csv.png" Height="70" Width="70" />
+                                                    break;
+                                                default:
+                                                    <img src="Images/error.png" Height="70" Width="70" />
+                                                    break;
+                                            }
+
+                                            <MudChip Color="Color.Dark" Text="@file.name" />
+                                        </MudItem>
+                                    }
+                                </MudPaper>
+                            </ButtonTemplate>
+                        </MudFileUpload>
+                    </MudStack>
                 </MudItem>
             </MudItem>
         </MudItem>
@@ -53,71 +75,70 @@
 <MudContainer Fixed="true" Class="py-10">
     <MudGrid>
         <MudItem>
-            Table Here
             @*@if (showTableToShow)
             {
-                <MudTable Items="@dataTableToShow" T="BulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
-                    <ToolBarContent>
-                        <MudSpacer />
-                        <MudText Typo="Typo.h6">Data To Upload</MudText>
-                        <MudSpacer />
-                        <MudButton @onclick="(() => UploadFunction())" Disabled="@activeUpload">
-                            <MudText>Upload Data</MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
-                        </MudButton>
-                        <MudSpacer />
-                        <MudButton @onclick="(() => CancelFunction())">
-                            <MudText>Cancel Upload Data</MudText>
-                            <MudIcon Icon="@Icons.Material.Filled.Cancel" aria-label="Cancel" Color="Color.Warning"></MudIcon>
-                        </MudButton>
-                        <MudSpacer />
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>Plant</MudTh>
-                        <MudTh>Area</MudTh>
-                        <MudTh>Distribution</MudTh>
-                        <MudTh>GOS</MudTh>
-                        <MudTh>CCP</MudTh>
-                        <MudTh>HOE</MudTh>
-                        <MudTh>Operation</MudTh>
-                        <MudTh>Model</MudTh>
-                        <MudTh>Creation Date</MudTh>
-                        <MudTh>Modification Date</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Plant">
-                            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Area">
-                            <MudText Align="Align.Center">@context.Area?.Description</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Distribution ">
-                            <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="GOS">
-                            <MudText Align="Align.Center">@context.GOS</MudText>
-                        </MudTd> <MudTd DataLabel="CCP">
-                            <MudText Align="Align.Center">@context.CCP</MudText>
-                        </MudTd> <MudTd DataLabel="HOE">
-                            <MudText Align="Align.Center">@context.HOE</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Operation">
-                            <MudText Align="Align.Center">@context.Operation?.Description</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Product">
-                            <MudText Align="Align.Center">@context.Product?.Description</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Creation Date">
-                            <MudText Align="Align.Center">@context.CreationDate</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Modification Date">
-                            <MudText Align="Align.Center">@context.ModificationDate</MudText>
-                        </MudTd>
-                    </RowTemplate>
-                    <PagerContent>
-                        <MudTablePager />
-                    </PagerContent>
-                </MudTable>
+            <MudTable Items="@dataTableToShow" T="BulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
+            <ToolBarContent>
+            <MudSpacer />
+            <MudText Typo="Typo.h6">Data To Upload</MudText>
+            <MudSpacer />
+            <MudButton @onclick="(() => UploadFunction())" Disabled="@activeUpload">
+            <MudText>Upload Data</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
+            </MudButton>
+            <MudSpacer />
+            <MudButton @onclick="(() => CancelFunction())">
+            <MudText>Cancel Upload Data</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.Cancel" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+            </MudButton>
+            <MudSpacer />
+            </ToolBarContent>
+            <HeaderContent>
+            <MudTh>Plant</MudTh>
+            <MudTh>Area</MudTh>
+            <MudTh>Distribution</MudTh>
+            <MudTh>GOS</MudTh>
+            <MudTh>CCP</MudTh>
+            <MudTh>HOE</MudTh>
+            <MudTh>Operation</MudTh>
+            <MudTh>Model</MudTh>
+            <MudTh>Creation Date</MudTh>
+            <MudTh>Modification Date</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+            <MudTd DataLabel="Plant">
+            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Area">
+            <MudText Align="Align.Center">@context.Area?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Distribution ">
+            <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="GOS">
+            <MudText Align="Align.Center">@context.GOS</MudText>
+            </MudTd> <MudTd DataLabel="CCP">
+            <MudText Align="Align.Center">@context.CCP</MudText>
+            </MudTd> <MudTd DataLabel="HOE">
+            <MudText Align="Align.Center">@context.HOE</MudText>
+            </MudTd>
+            <MudTd DataLabel="Operation">
+            <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Product">
+            <MudText Align="Align.Center">@context.Product?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel="Creation Date">
+            <MudText Align="Align.Center">@context.CreationDate</MudText>
+            </MudTd>
+            <MudTd DataLabel="Modification Date">
+            <MudText Align="Align.Center">@context.ModificationDate</MudText>
+            </MudTd>
+            </RowTemplate>
+            <PagerContent>
+            <MudTablePager />
+            </PagerContent>
+            </MudTable>
             }*@
         </MudItem>
     </MudGrid>
@@ -130,6 +151,25 @@
 
 
 @code {
+
+    private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    private string DragClass = DefaultDragClass;
+    private List<FileToDisplay> fileNames = new List<FileToDisplay>();
+
+    private class FileToDisplay
+    {
+        public string name { get; set; }
+        public string ftype { get; set; }
+        public string message { get; set; }
+    }
+
+    private string FileName;
+
+    private string ErrorMessageToDisplay;
+    private string FileErrorMesage;
+    private IBrowserFile? FileSource;
+    private bool ToCreate = false;
+
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -139,28 +179,67 @@
         };
 
 
-    private string FileName;
-    private string ErrorMessageToDisplay;
-    private IBrowserFile? FileSource;
-
-
-
     private bool activeUpload = false;
     private bool showTableToShow = false;
     private List<string[]> csv = new List<string[]>();
     private List<BulkAndUpload> dataTableToShow = new();
 
-    private UploadResult uploadResult = new();
-    private UploadDataResult retornedResult = new();
+    private FileUpload uploadResult = new();
+    private UploadAssyChartResult retornedResult = new();
 
 
-    protected async override Task OnInitializedAsync()
+    private async void OnInputFileChanged(InputFileChangeEventArgs e)
     {
+        await Clear();
+
+        FileName = e.File.Name;
+
+        Regex fileExtentionExcel = new Regex(@".+\.xls", RegexOptions.Compiled);
+        Regex fileExtentionCSV = new Regex(@".+\.csv", RegexOptions.Compiled);
+
+        if (!fileExtentionExcel.IsMatch(FileName) && !fileExtentionCSV.IsMatch(FileName))
+        {
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "otro", message = "This not a XLSX/csv file " });
+            FileErrorMesage = "This not a XLSX/CSV File";
+            FileName = string.Empty;
+            FileSource = null;
+            ToCreate = false;
+        }
+        else
+        {
+            if (fileExtentionExcel.IsMatch(FileName))
+            {
+                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
+            }
+            else
+            {
+                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
+
+            }
+
+            FileErrorMesage = string.Empty;
+            FileSource = e.File;
+            ToCreate = true;
+        }
+
+        StateHasChanged();
     }
 
-
-    async Task OnChange(InputFileChangeEventArgs e)
+    private async Task Clear()
     {
+        fileNames.Clear();
+        ClearDragClass();
+        await Task.Delay(100);
+    }
+
+    private void SetDragClass()
+    {
+        DragClass = $"{DefaultDragClass} mud-border-primary";
+    }
+
+    private void ClearDragClass()
+    {
+        DragClass = DefaultDragClass;
     }
 
 }

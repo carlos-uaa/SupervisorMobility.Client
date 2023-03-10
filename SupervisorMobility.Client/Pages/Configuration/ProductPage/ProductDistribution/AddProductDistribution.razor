@@ -1,0 +1,186 @@
+﻿@page "/product/{productId:int}/AddDistributionInProducts"
+@inject IProductService ProductServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Add Exist Distribution</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<EditForm Model="_distribution" OnValidSubmit="AddingDistributionAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Add Exist Distribution</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Exist Distribution</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid Class="d-flex flex-row mb-5">
+                        <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@PlantId" For="@(() => PlantId)" SelectedValuesChanged="UpdateAreas">
+                            <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                            @foreach (var plant in _plants)
+                            {
+                                <MudSelectItem Value="plant.PlantId">@($"{plant.Code} - {plant.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        @*Mud select of Areas *@
+
+                        <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@AreaId" For="@(() => AreaId)" SelectedValuesChanged="UpdateDistributions">
+                            <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                            @foreach (var area in _areas)
+                            {
+                                <MudSelectItem Value="area.AreaId">@($"{area.Code} - {area.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @*Mud select of distributions *@
+
+                        <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@DistributionId" For="@(() => DistributionId)" SelectedValuesChanged="UpdateDistributionDisplay">
+                            <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                            @foreach (var type in _distributions)
+                            {
+                                <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                    </MudGrid>
+                   
+                    @if(DistributionId != 0)
+                    {
+                        <MudGrid Class="d-flex flex-column justify-center align-self-center">
+                            <MudItem>
+                                <MudText Typo="Typo.h6">Distribution details</MudText>
+                                
+                            </MudItem>
+                            <MudItem>
+                                @if (useButton)
+                                {
+                                    <MudText Typo="Typo.h6">Canot Add This Distribution has exist</MudText>
+                                }
+                            </MudItem>
+                            <MudItem>
+                                <MudTextField Label="Distribution description" Disabled
+                                          @bind-Value="_distribution.Description" For="@(() => _distribution.Description)" />
+                                <MudTextField Label="Code" Class="mt-3" Disabled
+                                          @bind-Value="_distribution.Code" For="@(() => _distribution.Code)" />
+                                <MudSwitch Class="mt-3" Label="Is active?" Disabled @bind-Checked="_distribution.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+
+                            </MudItem>
+
+                        </MudGrid>
+                        
+                    }
+
+                      </MudCardContent>
+                <MudCardActions>
+                   
+                    <MudButton ButtonType="ButtonType.Submit" Disabled="useButton" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Add Distribution</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">Cancel</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    public int PlantId { get; set; }
+    public int AreaId { get; set; }
+    public int DistributionId { get; set; } = 0;
+
+    public bool useButton = false;
+
+    public Product _product { get; set; }
+    public Distribution _distribution = new();
+
+
+    public List<Plant> _plants { get; set; } = new List<Plant>();
+    public List<Area> _areas { get; set; } = new List<Area>();
+    public List<Distribution> _distributions { get; set; } = new List<Distribution>();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _product = await ProductServices.GetProductAndCollection(ProductId);
+        _plants = await PlantServices.GetPlants();
+
+        _links.Add(new BreadcrumbItem($"{_product.Description}", href: $"/products{ProductId}"));
+        _links.Add(new BreadcrumbItem("Add Existent Distribution", href: "", disabled: true));
+
+    }
+
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Products", href: "/products"),
+        };
+
+
+    // Cancel submit form
+    void CancelCreateOrUpdate()
+    {
+        NavigationManager.NavigateTo($"products/{ProductId}");
+    }
+
+    async void UpdateAreas()
+    {
+        AreaId = 0;
+        DistributionId = 0;
+        _areas = await AreaServices.GetAreas(PlantId);
+    }
+
+    private async void UpdateDistributions()
+    {
+        DistributionId = 0;
+
+        _distributions = await DistributionServices.GetDistributions(PlantId, AreaId);
+    }
+
+    private void UpdateDistributionDisplay()
+    {
+
+        _distribution = _distributions[_distributions.FindIndex(d => d.DistributionId == DistributionId)];
+
+        if (_product.Distributions.Exists(d => d.DistributionId == _distribution.DistributionId) )
+        {
+            useButton = true;
+        }
+        else
+        {
+            useButton = false;
+        }
+    }
+
+ 
+    // Create distribution
+    async void AddingDistributionAsync()
+    {
+        var result = await ProductServices.AddDistribution(ProductId, PlantId, AreaId, _distribution);
+
+        if (result != null)
+        {
+            NavigationManager.NavigateTo($"products/{ProductId}");
+        }
+
+    }
+
+}

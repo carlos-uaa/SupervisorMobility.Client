@@ -21,5 +21,10 @@
 
         //delete product from distribution
         Task DeleteProductFromDistribution(int plantId, int areaId, int distributionId, int productId);
+
+        //product
+        Task<Product> CreateProduct(int plantId, int areaId, int distributionId, Product product);
+        Task<Product> AddProduct(int plantId, int areaId, int distributionId, Product product);
+
     }
 }

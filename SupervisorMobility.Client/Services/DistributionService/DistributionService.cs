@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.DistributionService
 {
     public class DistributionService : IDistributionService
     {
         private readonly HttpClient _http;
+        private readonly IJSRuntime _js;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public DistributionService(HttpClient http)
+        public DistributionService(HttpClient http, IJSRuntime jSRuntime)
         {
             _http = http;
+            _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -107,5 +110,43 @@ namespace SupervisorMobility.Client.Services.DistributionService
 
             return false;
         }
+        
+        //Product
+        public async Task<Product> CreateProduct(int plantId, int areaId, int distributionId, Product product)
+        {
+
+            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions{distributionId}/products", product);
+            var content = await response.Content.ReadAsStringAsync();
+
+           
+            if (response.IsSuccessStatusCode)
+            {
+                var newproduct = await response.Content.ReadFromJsonAsync<Product>();
+                return newproduct;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+
+            return null;
+        }
+        
+        public async Task<Product> AddProduct(int plantId, int areaId, int distributionId, Product product)
+        {
+            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions{distributionId}/products/add", product);
+            var content = await response.Content.ReadAsStringAsync();
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newproduct = await response.Content.ReadFromJsonAsync<Product>();
+                return newproduct;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+
+            return null;
+
+        }
+
     }
 }

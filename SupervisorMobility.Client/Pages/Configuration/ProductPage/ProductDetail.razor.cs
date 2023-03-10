@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 {
@@ -27,7 +28,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 
         void CreateDistribution()
         {
-            NavigationManager.NavigateTo($"product/{ProductId}/distributions/createdistribution");
+            NavigationManager.NavigateTo($"product/{ProductId}/CreateDistributionByProducts");
+        }  
+        
+        void AddExistDistribution()
+        {
+            NavigationManager.NavigateTo($"product/{ProductId}/AddDistributionInProducts");
         }
 
         // Delete distribution
@@ -53,5 +59,29 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         {
             NavigationManager.NavigateTo($"product/{ProductId}/updatedistribution/{distributionId}");
         }
+
+        // Create product
+        void CreateProduct()
+        {
+            NavigationManager.NavigateTo($"products/createproduct");
+        }
+
+        string searchString = string.Empty;
+
+        private bool FilterFunc(Distribution element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.DistributionId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.DistributionId} {element.Code} {element.Description}".Contains(searchString))
+                return true;
+            return false;
+        }
+
     }
 }
