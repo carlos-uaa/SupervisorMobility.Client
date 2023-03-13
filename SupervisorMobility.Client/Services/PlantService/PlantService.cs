@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Services.PlantService
         // Get plant by Id
         public async Task<Plant> GetPlantById(int id)
         {
-            var response = await _httpBridge.GetAsync($"plants/{id}");
+            var response = await _http.GetAsync($"plants/{id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

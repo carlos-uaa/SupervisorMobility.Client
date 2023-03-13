@@ -1,7 +1,11 @@
 ﻿@page "/usersmanagement/UploadUsers"
+@using ClosedXML.Excel;
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
-@using System.Text.RegularExpressions;
 @inject IFileUploadAndDownloadService FileUpDoServices
+@inject IPlantService PlantsServices
+@inject IAreaService AreasServices
+@inject IGroupService GroupsServices
+@inject IUserService UsersServices
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Upload Users</PageTitle>
@@ -75,71 +79,62 @@
 <MudContainer Fixed="true" Class="py-10">
     <MudGrid>
         <MudItem>
-            @*@if (showTableToShow)
+            @if (showTableInUI)
             {
-            <MudTable Items="@dataTableToShow" T="BulkAndUpload" HorizontalScrollbar="true" ReadOnly="true">
-            <ToolBarContent>
-            <MudSpacer />
-            <MudText Typo="Typo.h6">Data To Upload</MudText>
-            <MudSpacer />
-            <MudButton @onclick="(() => UploadFunction())" Disabled="@activeUpload">
-            <MudText>Upload Data</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
-            </MudButton>
-            <MudSpacer />
-            <MudButton @onclick="(() => CancelFunction())">
-            <MudText>Cancel Upload Data</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.Cancel" aria-label="Cancel" Color="Color.Warning"></MudIcon>
-            </MudButton>
-            <MudSpacer />
-            </ToolBarContent>
-            <HeaderContent>
-            <MudTh>Plant</MudTh>
-            <MudTh>Area</MudTh>
-            <MudTh>Distribution</MudTh>
-            <MudTh>GOS</MudTh>
-            <MudTh>CCP</MudTh>
-            <MudTh>HOE</MudTh>
-            <MudTh>Operation</MudTh>
-            <MudTh>Model</MudTh>
-            <MudTh>Creation Date</MudTh>
-            <MudTh>Modification Date</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-            <MudTd DataLabel="Plant">
-            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Area">
-            <MudText Align="Align.Center">@context.Area?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Distribution ">
-            <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="GOS">
-            <MudText Align="Align.Center">@context.GOS</MudText>
-            </MudTd> <MudTd DataLabel="CCP">
-            <MudText Align="Align.Center">@context.CCP</MudText>
-            </MudTd> <MudTd DataLabel="HOE">
-            <MudText Align="Align.Center">@context.HOE</MudText>
-            </MudTd>
-            <MudTd DataLabel="Operation">
-            <MudText Align="Align.Center">@context.Operation?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Product">
-            <MudText Align="Align.Center">@context.Product?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Creation Date">
-            <MudText Align="Align.Center">@context.CreationDate</MudText>
-            </MudTd>
-            <MudTd DataLabel="Modification Date">
-            <MudText Align="Align.Center">@context.ModificationDate</MudText>
-            </MudTd>
-            </RowTemplate>
-            <PagerContent>
-            <MudTablePager />
-            </PagerContent>
-            </MudTable>
-            }*@
+                <MudTable Items="@dataToShowInTable" T="User" HorizontalScrollbar="true" ReadOnly="true">
+                    <ToolBarContent>
+                        <MudSpacer />
+                        <MudText Typo="Typo.h6">Data To Upload</MudText>
+                        <MudSpacer />
+                        <MudButton @onclick="(() => UploadFunction())" Disabled="@activeUpload">
+                            <MudText>Upload users</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.UploadFile" aria-label="Upload" Color="Color.Primary"></MudIcon>
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton @onclick="(() => CancelFunction())">
+                            <MudText>Cancel Upload Users</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Cancel" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                        </MudButton>
+                        <MudSpacer />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>UserId</MudTh>
+                        <MudTh>User Name</MudTh>
+                        <MudTh>User Payroll</MudTh>
+                        <MudTh>Plant</MudTh>
+                        <MudTh>Area</MudTh>
+                        <MudTh>Grup</MudTh>
+                        <MudTh>Permissions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="User Id">
+                            <MudText Align="Align.Center">@context.UserId?</MudText>
+                        </MudTd>
+                        <MudTd DataLabel=" Name">
+                            <MudText Align="Align.Center">@context.Name?</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Payroll">
+                            <MudText Align="Align.Center">@context.Payroll?</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Plant">
+                            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+                        </MudTd> <MudTd DataLabel="Area">
+                            <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                        </MudTd> <MudTd DataLabel="Group">
+                            <MudText Align="Align.Center">@context.Group?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Permissions">
+                            <MudText Align="Align.Center">
+                                Permisos
+
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            }
         </MudItem>
     </MudGrid>
 </MudContainer>
@@ -170,6 +165,32 @@
     private IBrowserFile? FileSource;
     private bool ToCreate = false;
 
+    private bool showResume = false;
+    private bool activeUpload = false;
+    private bool showTableInUI = false;
+    private List<string[]> DataInDocument = new List<string[]>();
+    private List<User> dataToShowInTable = new();
+
+    private FileUpload uploadResult = new();
+    private UsersUploadResult commitUsersResult = new();
+
+    private List<Plant> _plants = new List<Plant>();
+    private List<List<Area>> _areas = new List<List<Area>>();
+    private List<Group> _groups = new List<Group>();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _plants = await PlantsServices.GetPlants();
+
+        foreach (var item in _plants)
+        {
+            _areas.Add(await AreasServices.GetAreas(item.PlantId));
+        }
+
+        _groups = await GroupsServices.GetGroups();
+    }
+
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -179,14 +200,6 @@
         };
 
 
-    private bool activeUpload = false;
-    private bool showTableToShow = false;
-    private List<string[]> csv = new List<string[]>();
-    private List<BulkAndUpload> dataTableToShow = new();
-
-    private FileUpload uploadResult = new();
-    private UploadAssyChartResult retornedResult = new();
-
 
     private async void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -194,8 +207,8 @@
 
         FileName = e.File.Name;
 
-        Regex fileExtentionExcel = new Regex(@".+\.xls", RegexOptions.Compiled);
-        Regex fileExtentionCSV = new Regex(@".+\.csv", RegexOptions.Compiled);
+        System.Text.RegularExpressions.Regex fileExtentionExcel = new System.Text.RegularExpressions.Regex(@".+\.xls", System.Text.RegularExpressions.RegexOptions.Compiled);
+        System.Text.RegularExpressions.Regex fileExtentionCSV = new System.Text.RegularExpressions.Regex(@".+\.csv", System.Text.RegularExpressions.RegexOptions.Compiled);
 
         if (!fileExtentionExcel.IsMatch(FileName) && !fileExtentionCSV.IsMatch(FileName))
         {
@@ -207,22 +220,220 @@
         }
         else
         {
-            if (fileExtentionExcel.IsMatch(FileName))
-            {
-                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
-            }
-            else
-            {
-                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
-
-            }
 
             FileErrorMesage = string.Empty;
             FileSource = e.File;
             ToCreate = true;
+
+
+            var fileContent = new StreamContent(FileSource.OpenReadStream(FileSource.Size));
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(FileSource.ContentType);
+
+            MemoryStream ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
+
+
+            if (fileExtentionExcel.IsMatch(FileName))
+            {
+                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
+                try
+                {
+                    DataInDocument = await GetDataTableFromExcel(FileSource);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            else
+            {
+                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
+                var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+
+                foreach (var item in outputFileString.Split(Environment.NewLine))
+                {
+                    var addtolist = SplitCSV(item.ToString());
+
+
+                    if (!addtolist.All(string.IsNullOrWhiteSpace))
+                    {
+                        DataInDocument.Add(addtolist);
+                    }
+
+                }
+
+            }
+
+            bool isFirstRow = true;
+            showTableInUI = true;
+
+            foreach (string[] row in DataInDocument)
+            {
+                //Console.WriteLine($"Line: {row[0]}  {row[1]} {row[2]} {row[3]}  {row[4]} {row[5]} {row[6]} {row[7]} {row[8]} {row[9]}  {row[10]} {row[11]} {row[12]} {row[13]}");
+                Console.WriteLine($"Line: {row[0]} ");
+            }
+            //data to table
+            foreach (string[] row in DataInDocument)
+            {
+                try
+                {
+                    var ToInsertIntoList = new User();
+                    ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
+                    ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
+                    ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+
+                    ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
+                    ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
+                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+
+                    ToInsertIntoList.IsAdmin = row[6] != "" ? bool.Parse(row[6]) : false;
+                    ToInsertIntoList.IsSupervisor = row[7] != "" ? bool.Parse(row[7]) : false;
+                    ToInsertIntoList.IsOperator = row[8] != "" ? bool.Parse(row[8]) : false;
+
+                    try
+                    {
+                        ToInsertIntoList.CreatedDate = row[9] != "n/a" ? DateTime.Parse(row[9]) : DateTime.Now;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        ToInsertIntoList.CreatedDate = DateTime.Now;
+
+                    }
+
+                    try
+                    {
+                        ToInsertIntoList.LastUpdated = row[10] != "n/a" ? DateTime.Parse(row[10]) : DateTime.Now;
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        ToInsertIntoList.LastUpdated = DateTime.Now;
+
+                    }
+
+                    try
+                    {
+                        ToInsertIntoList.DisabledDate = row[11] != "n/a" ? DateTime.Parse(row[11]) : DateTime.Now;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        ToInsertIntoList.DisabledDate = DateTime.Now;
+
+                    }
+
+
+                    ToInsertIntoList.IsActive = row[12] != "" ? bool.Parse(row[12]) : true;
+
+                    try
+                    {
+                        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+                        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                        ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
+                    }
+                    catch (Exception ex)
+                    {
+                        showTableInUI = false;
+                        ErrorMessageToDisplay = "Document Incomplet fields";
+                        Console.WriteLine($"{ex.Message}");
+                    }
+
+                    dataToShowInTable.Add(ToInsertIntoList);
+
+
+                }
+                catch (Exception ex)
+                {
+
+                    ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
+                    Console.WriteLine($"{ex.Message}");
+                    showTableInUI = false;
+                }
+            }
         }
 
         StateHasChanged();
+    }
+
+    public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
+    {
+        List<string[]> dtTable = new List<string[]>();
+        List<BulkAndUpload> dtTableToReturn = new List<BulkAndUpload>();
+        List<string> rows = new List<string>();
+        BulkAndUpload ToInsertInDtoTable = new();
+
+
+        using (MemoryStream memStream = new MemoryStream())
+        {
+            await file.OpenReadStream(file.Size).CopyToAsync(memStream);
+            using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
+            {
+                //Read the first Sheet from Excel file.
+                IXLWorksheet workSheet = workBook.Worksheet(1);
+
+                //Loop through the Worksheet rows.
+                bool firstRow = true;
+                foreach (IXLRow row in workSheet.Rows())
+                {
+                    if (firstRow)
+                    {
+                        firstRow = false;
+                    }
+                    else
+                    {
+                        bool hasNonEmptyCell = false;
+                        rows.Clear();
+                        foreach (IXLCell cell in row.Cells())
+                        {
+                            string cellValue = cell.Value?.ToString() ?? "";
+                            Console.WriteLine($"Cel value {cellValue}");
+                            rows.Add(cellValue);
+                            //if (!string.IsNullOrEmpty(cellValue))
+                            //{
+                            //    hasNonEmptyCell = true;
+                            //}
+                        }
+                        //if (hasNonEmptyCell)
+                        //{
+                            dtTable.Add(rows.ToArray());
+                        //}
+                    }
+                }
+
+            }
+        }
+
+        return dtTable;
+    }
+
+    private string[] SplitCSV(string input)
+    {
+        //Excludes commas within quotes
+        System.Text.RegularExpressions.Regex csvSplit = new System.Text.RegularExpressions.Regex("(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)", System.Text.RegularExpressions.RegexOptions.Compiled);
+        List<string> list = new List<string>();
+        string curr = string.Empty;
+        foreach (System.Text.RegularExpressions.Match match in csvSplit.Matches(input))
+        {
+            curr = match.Value;
+            if (0 == curr.Length) list.Add("");
+
+            list.Add(curr.TrimStart(','));
+        }
+        list.RemoveAt(0);
+
+        return list.ToArray();
+    }
+
+    void CancelFunction()
+    {
+        FileName = string.Empty;
+        ErrorMessageToDisplay = string.Empty;
+        DataInDocument.Clear();
+        dataToShowInTable.Clear();
+        showTableInUI = false;
+        FileSource = null;
     }
 
     private async Task Clear()
@@ -241,5 +452,68 @@
     {
         DragClass = DefaultDragClass;
     }
+
+    async void UploadFunction()
+    {
+        activeUpload = true;
+        using var content = new MultipartFormDataContent();
+
+        if (FileSource is not null)
+        {
+
+            var fileContent = new StreamContent(FileSource.OpenReadStream(FileSource.Size));
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(FileSource.ContentType);
+
+            content.Add(
+            content: fileContent,
+            name: "\"file\"",
+            fileName: FileSource.Name);
+
+            var fileUploadResult = await FileUpDoServices.UploadUsers(content);
+
+            if (fileUploadResult is not null)
+            {
+                uploadResult = fileUploadResult;
+
+                UsersUploadResult newDataResults = await UsersServices.ProccedToUploadUsers(uploadResult);
+
+                if (newDataResults is not null)
+                {
+                    //tiene resultados
+                    ErrorMessageToDisplay = "Upload Data Succesfull";
+                    DataInDocument.Clear();
+                    dataToShowInTable.Clear();
+
+                    showResume = true;
+                    activeUpload = false;
+                    showTableInUI = false;
+                    FileSource = null;
+                    commitUsersResult = newDataResults;
+
+                    base.StateHasChanged();
+
+                }
+                else
+                {
+                    ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                }
+
+            }
+            else
+            {
+                //error al subir el archivo
+            }
+
+        }
+        else
+        {
+            ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+        }
+
+
+
+    }
+
+
 
 }

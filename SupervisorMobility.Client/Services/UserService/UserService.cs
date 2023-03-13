@@ -20,15 +20,7 @@ namespace SupervisorMobility.Client.Services.UserService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        //
-        public async Task<FileUpload> UploadFileUsers(MultipartFormDataContent contentfile)
-        {
-            var response = await _http.PostAsync("Users/FileUpload", contentfile);
-
-            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
-
-            return result;
-        }
+       
         public async Task<UsersUploadResult> ProccedToUploadUsers(FileUpload fileinfo)
         {
             var response = await _http.PostAsJsonAsync("Users/FileUpload/Data", fileinfo);
