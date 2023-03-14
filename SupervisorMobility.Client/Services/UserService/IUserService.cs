@@ -4,7 +4,6 @@ namespace SupervisorMobility.Client.Services.UserService
 {
     public interface IUserService
     {
-        Task<FileUpload> UploadFileUsers(MultipartFormDataContent contentfile);
         Task<UsersUploadResult> ProccedToUploadUsers(FileUpload fileinfo);
 
         //Create User

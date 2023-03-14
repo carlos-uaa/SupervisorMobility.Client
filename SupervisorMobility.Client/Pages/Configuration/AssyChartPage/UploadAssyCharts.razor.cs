@@ -285,16 +285,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         void CancelFunction()
         {
-
             FileName = string.Empty;
             ErrorMessageToDisplay = string.Empty;
             csv.Clear();
             dataTableToShow.Clear();
             showTableToShow = false;
             FileSource = null;
-
-
-
         }
 
 

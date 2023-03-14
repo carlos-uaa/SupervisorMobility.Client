@@ -24,12 +24,12 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         public async Task<FileUpload> UploadFile(MultipartFormDataContent contentfile)
         {
             var response = await _http.PostAsync($"File", contentfile);
-           
+
             var result = await response.Content.ReadFromJsonAsync<FileUpload>();
 
             return result;
         }
-        
+
         //Upload guide file
         public async Task<FileUpload> UploadGuide(MultipartFormDataContent contentfile)
         {
@@ -46,26 +46,42 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
             return null;
 
-           
+
         }
         //UploadUsers
         public async Task<FileUpload> UploadUsers(MultipartFormDataContent contentfile)
         {
             var response = await _http.PostAsync($"File/UploadUsers", contentfile);
-           
+
             var result = await response.Content.ReadFromJsonAsync<FileUpload>();
 
             return result;
         }
-        
-        //UploadEvidences
-        public async Task<List<FileUpload>> UploadEvidences(MultipartFormDataContent contentfile)
-        {
-            var response = await _http.PostAsync($"File/UploadEvidences", contentfile);
-            var content = await response.Content.ReadAsStringAsync();
 
-            var result = JsonSerializer.Deserialize<List<FileUpload>>(content, _options);
-            return result;
+        //UploadEvidences
+        public async Task<List<FileUpload>> UploadEvidences(MultipartFormDataContent contentfiles)
+        {
+            Console.WriteLine($"antes de responce");
+
+            var response = await _http.PostAsync($"File/UploadEvidences", contentfiles);
+            Console.WriteLine($"despues de responce");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<List<FileUpload>>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+
         }
         public async Task<UploadAssyChartResult> ProccedToUpdateData(FileUpload fileinfo)
         {
@@ -73,7 +89,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
 
             if (response.IsSuccessStatusCode)
             {
-                var  result = await response.Content.ReadFromJsonAsync<UploadAssyChartResult>();
+                var result = await response.Content.ReadFromJsonAsync<UploadAssyChartResult>();
                 return result;
             }
             else

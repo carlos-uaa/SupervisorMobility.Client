@@ -89,9 +89,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
         }
-        
 
 
+        private bool visible = false;
+        private void OpenDialogGOS(string ruta)
+        {
+            visible = true;
+        }
+        void Close() => visible = false;
+
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
     }
 }

@@ -20,8 +20,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? Status { get; set; }
 
         //Evidence
-        //public ICollection<FileUpload> Evidences { get; set; }
-        //    = new List<FileUpload>();
+        public ICollection<FileUpload> Evidences { get; set; }
+            = new List<FileUpload>();
 
         [Required]
         public DateTime? CreatedDate { get; set; }
