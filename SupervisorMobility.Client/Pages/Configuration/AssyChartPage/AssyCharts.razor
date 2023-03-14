@@ -5,6 +5,7 @@
 @inject IChecklistService ChecklistService
 @inject IAssyChartService AssyChartServices
 @inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Assy Chart</PageTitle>
@@ -30,10 +31,10 @@ else if (_assychart.Count == 0)
 else
 {
     <MudTable Items="_assychart" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
-          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)"  Class="styled-table table-striped"
-          HorizontalScrollbar="true"> 
+          SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" Class="styled-table table-striped"
+          HorizontalScrollbar="true">
         <ToolBarContent>
-            <MudGrid class="d-flex flex-column justify-center align-self-center" >
+            <MudGrid class="d-flex flex-column justify-center align-self-center">
                 <MudItem class="d-flex justify-center align-self-center ">
                     <MudText Typo="Typo.h6" Class="align-item-center center">Assy Chart</MudText>
                 </MudItem>
@@ -80,7 +81,7 @@ else
             <RowTemplate>
                 <MudTd DataLabel="Id AssyChart">
                     <MudText Align="Align.Center">@context.AssyChardId</MudText>
-                </MudTd><MudTd DataLabel="Plant"> 
+                </MudTd><MudTd DataLabel="Plant">
                     <MudText Align="Align.Center">@context.Plant?.Description</MudText>
                 </MudTd>
                 <MudTd DataLabel="Area">
@@ -93,7 +94,7 @@ else
                     <MudText Align="Align.Center">
                         <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
                             <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS</MudChip>
+                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS</MudChip>
                             </MudButton>
                         </MudTooltip>
                     </MudText>
@@ -139,14 +140,128 @@ else
         </MudTable>
 
 }
-<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+<MudDialog DisableSidePadding="false" @bind-IsVisible="GosDialog" Options="dialogOptions">
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll">
-            <SupervisorMobility.Client.Pages.SupervisorMobility.Client.Pages.Configuration.SupervisorMobility.Client.Pages.Configuration.GuidesPage.GuidesIndex ></SupervisorMobility.Client.Pages.SupervisorMobility.Client.Pages.Configuration.SupervisorMobility.Client.Pages.Configuration.GuidesPage.GuidesIndex>
+
+
+
         </MudContainer>
     </DialogContent>
     <DialogActions>
         @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+        <MudButton Color="Color.Info" OnClick="CloseGos">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="CcpDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+            <MudGrid Class="d-flex justify-center flex-row align-content-center align-center" Style="max-height: 75vh; min-height:50vh; overflow-y: scroll">
+
+                @foreach (var DocFile in GosFilesInFolder.operation)
+                {
+                    <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                        <MudItem>
+                            <MudText>@DocFile.Nombre</MudText>
+                            <MudButton Href="@DocFile.URL">Download </MudButton>
+                        </MudItem>
+
+
+                        @switch (DocFile.Extension)
+                        {
+                            case "pdf":
+                                <img src="Images/pdf.png" Height="70" Width="70" />
+                                ;
+
+                                break;
+                            case "doc":
+                                // Para documentos Word con extensión .doc
+                                <img src="Images/doc.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "docx":
+                                <img src="Images/docx.png" Height="70" Width="70" />
+                                ;
+                                // Para documentos Word con extensión .docx
+                                break;
+
+                            case "ppt":
+                                <img src="Images/ppt.png" Height="70" Width="70" />
+                                ;
+                                // Para presentaciones PowerPoint con extensión .ppt
+                                break;
+
+                            case "pptx":
+                                <img src="Images/pptx.png" Height="70" Width="70" />
+                                ;
+                                // Para presentaciones PowerPoint con extensión .pptx
+                                break;
+
+                            case "xls":
+                                // Para hojas de cálculo Excel con extensión .xls
+                                <img src="Images/xls.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "xlsx":
+                                // Para hojas de cálculo Excel con extensión .xlsx
+                                <img src="Images/xlsx.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "jpg":
+                                <img src="Images/jpg.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "jpeg":
+                                // Para imágenes JPEG con extensión .jpg o .jpeg
+                                <img src="Images/jpg.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "png":
+                                // Para imágenes PNG con extensión .png
+                                <img src="Images/png.png" Height="70" Width="70" />
+                                ;
+                                break;
+
+                            case "gif":
+                                // Para imágenes GIF con extensión .gif
+                                <img src="Images/gif.png" Height="70" Width="70" />
+                                ;
+                                break;
+                        }
+                        <MudButton Target="_blank"
+                               Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               Style="text-transform:none">
+                            Name
+                        </MudButton>
+
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
+        <MudButton Color="Color.Info" OnClick="CloseCcp">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="HoeDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+
+
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
+        <MudButton Color="Color.Info" OnClick="CloseHoe">Close</MudButton>
     </DialogActions>
 </MudDialog>

@@ -18,7 +18,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
         //Objects
-        private bool dense = false;
         private bool hover = true;
         private bool ronly = false;
         private string searchString = "";
@@ -91,12 +90,31 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
 
-        private bool visible = false;
-        private void OpenDialogGOS(string ruta)
+        private bool CcpDialog = false;
+        private bool HoeDialog = false;
+        private bool GosDialog = false;
+
+        private FilesCDMS CcpFilesInFolder = new FilesCDMS();
+        private FilesCDMS HoeFilesInFolder = new FilesCDMS();
+        private FilesCDMS GosFilesInFolder = new FilesCDMS();
+        private async void OpenDialogGOS(string ruta)
         {
-            visible = true;
+            GosDialog = true;
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
         }
-        void Close() => visible = false;
+        void CloseGos() => GosDialog = false;
+
+        private void OpenDialogCcp(string ruta)
+        {
+            CcpDialog = true;
+        }
+        void CloseCcp() => CcpDialog = false;
+
+        private void OpenDialogHoe(string ruta)
+        {
+            HoeDialog = true;
+        }
+        void CloseHoe() => HoeDialog = false;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 

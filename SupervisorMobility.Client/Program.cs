@@ -17,6 +17,7 @@ global using SupervisorMobility.Client.Services.SupportDocumentTypeService;
 global using SupervisorMobility.Client.Services.AssyChartService;
 global using SupervisorMobility.Client.Services.FileUploadAndDownloadService;
 global using SupervisorMobility.Client.Services.UserService;
+global using SupervisorMobility.Client.Services.BridgeCDMSService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IGlosaryService, GlosaryService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
+builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 
 // Connection to API
@@ -62,7 +64,7 @@ public class CustomHttpClientService
     public CustomHttpClientService()
     {
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7017/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:4251/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:443/") };
     }
 
     public HttpClient GetApiHttpClient()

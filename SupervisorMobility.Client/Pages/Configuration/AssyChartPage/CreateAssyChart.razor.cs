@@ -14,12 +14,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         List<Distribution> _distributions { get; set; } = new();
 
 
-
-        string[] _ccp { get; set; } = { "/01. PRESS ", "/01. PRESS/01. CCP ", "/02. BiW ", "/02. BiW/01. P71A ", "/02. BiW/01. P71A/01. IMP B ", "/02. BiW/01. P71A/02. ANTICORROSION ", "/02. BiW/01. P71A/03. PRECISION ", "/02. BiW/01. P71A/04. APARIENCIA ", "/02. BiW/01. P71A/05. TORQUE ", "/02. BiW/02. X247 ", "/02. BiW/02. X247/01. IMP B ", "/02. BiW/02. X247/02. ANTICORROSION ", "/02. BiW/02. X247/03. PRECISION ", "/02. BiW/02. X247/04. APARIENCIA ", "/02. BiW/02. X247/05. TORQUE ", "/02. BiW/03.N71A ", "/02. BiW/03.N71A/01. IMP B ", "/02. BiW/03.N71A/02. ANTICORROSION ", "/02. BiW/03.N71A/03. PRECISION ", "/02. BiW/03.N71A/04. APARIENCIA ", "/02. BiW/03.N71A/05. TORQUE ", "/03. PAINT ", "/03. PAINT/01. PRETRATAMIENTO "};
-        string[] _hoe { get; set; } = {"/01. PRESS/04. MANTENIMIENTO ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA/01. WELDING ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA/02. GLUE ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA/03. APPAREANCE ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA/04. TORQUE ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/01. LINEA/05. OTHER ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/03. CMM ","/02. BODY/01. CALIDAD/01. P71A, N71A,  X247/03. CMM/01. LOM ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A/01. SOLDADURA ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A/02. SELLO ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A/03. PRESICION ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A/04. TORQUE ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/01. P71A/05. APARIENCIA ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A/01. SOLDADURA ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A/02. SELLO ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A/03. PRESICION ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A/04. TORQUE ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/02. N71A/05. APARIENCIA ","/02. BODY/01. CALIDAD/02. Normas de Inspeccion/03. X247 "};
-        string[] _gos { get; set; } = { "/01. PRESS", "/01. PRESS/01. MANUFACTURA/01. X247", "/01. PRESS/01. MANUFACTURA", "/01. PRESS/01. MANUFACTURA/02. P71A", "/01. PRESS/01. MANUFACTURA/03. N71A", "/02. BiW", "/02. BiW/01. P71A", "/02. BiW/01. P71A/01. LWR BED (Z1)", "/02. BiW/01. P71A/01. LWR BED (Z1)/01.  AJ", "/02. BiW/01. P71A/01. LWR BED (Z1)/02. JR", "/02. BiW/01. P71A/01. LWR BED (Z1)/03. NSL", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/01. AJ", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/01. AJ/01. WH (LH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/01. AJ/02. WH (RH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/01. AJ/03. AJ ROOF", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/02. JR", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/02. JR/01. BS- REINF (LH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/02. JR/02. BS- REINF(RH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/03. NSL", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/03. NSL/01. BSM-BSO(LH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/03. NSL/02. BSM-BSO(RH)", "/02. BiW/01. P71A/02. UPR BODY (Z2-Z2.3)/04. NRL", "/02. BiW/01. P71A/03. HEM LINE (Z3)", "/02. BiW/01. P71A/03. HEM LINE (Z3)/01. AJ", "/02. BiW/01. P71A/03. HEM LINE (Z3)/02. JR", "/02. BiW/01. P71A/03. HEM LINE (Z3)/03. NSL", "/02. BiW/01. P71A/03. HEM LINE (Z3)/04. WELD NUT", "/02. BiW/01. P71A/04. METAL LINE (Z4)"};
-
-
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
@@ -65,56 +59,29 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             NavigationManager.NavigateTo("/assychart");
         }
 
-        public class Elemento
+    
+        TreeItemData rootNodeCCP { get; set; }
+        TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
+        TreeItemData rootNodeHOE { get; set; }
+        TreeItemData SelectedNodeCCP { get; set; }
+        TreeItemData SelectedNodeGOS { get; set; }
+        TreeItemData SelectedNodeHOE { get; set; }
+
+        FoldersCDMS GOSFolders { get ; set; } = new FoldersCDMS();
+        FoldersCDMS CCPFolders { get ; set; } = new FoldersCDMS();
+        FoldersCDMS HOEFolders { get ; set; } = new FoldersCDMS();
+
+
+
+        protected override async void OnInitialized()
         {
-            public string Nombre { get; set; }
-            public string Ruta { get; set; }
-            public bool EsDirectorio { get; set; }
-
-            public Elemento(string nombre, string ruta, bool directory)
-            {
-                this.Nombre = nombre;
-                this.Ruta = ruta;
-                this.EsDirectorio = directory;
-            }
-        }
-
-
-        List<Elemento> elementos = new List<Elemento>() {
-            new Elemento("01. PRESS", "01. PRESS", true),
-            new Elemento("01. CCP", "01. PRESS/01. CCP", true),
-            new Elemento("02. BiW", "02. BiW", true),
-            new Elemento("01. P71A", "02. BiW/01. P71A", true),
-            new Elemento("01. IMP B", "02. BiW/01. P71A/01. IMP B", true),
-            new Elemento("02. ANTICORROSION", "02. BiW/01. P71A/02. ANTICORROSION", true),
-            new Elemento("03. PRECISION", "02. BiW/01. P71A/03. PRECISION", true),
-            new Elemento("04. APARIENCIA", "02. BiW/01. P71A/04. APARIENCIA", true),
-            new Elemento("05. TORQUE", "02. BiW/01. P71A/05. TORQUE", true),
-            new Elemento("02. X247", "02. BiW/02. X247", true),
-            new Elemento("01. IMP B", "02. BiW/02. X247/01. IMP B", true),
-            new Elemento("02. ANTICORROSION", "02. BiW/02. X247/02. ANTICORROSION", true),
-            new Elemento("03. PRECISION", "02. BiW/02. X247/03. PRECISION", true),
-            new Elemento("04. APARIENCIA", "02. BiW/02. X247/04. APARIENCIA", true),
-            new Elemento("05. TORQUE", "02. BiW/02. X247/05. TORQUE", true),
-            new Elemento("03.N71A", "02. BiW/03.N71A", true),
-            new Elemento("01. IMP B", "02. BiW/03.N71A/01. IMP B", true),
-            new Elemento("02. ANTICORROSION", "02. BiW/03.N71A/02. ANTICORROSION", true),
-            new Elemento("03. PRECISION", "02. BiW/03.N71A/03. PRECISION", true),
-            new Elemento("04. APARIENCIA", "02. BiW/03.N71A/04. APARIENCIA", true),
-            new Elemento("05. TORQUE", "02. BiW/03.N71A/05. TORQUE", true),
-            new Elemento("03. PAINT", "03. PAINT", true),
-            new Elemento("01. PRETRATAMIENTO", "03. PAINT/01. PRETRATAMIENTO", true),
-            new Elemento("01. CCP", "03. PAINT/01. PRETRATAMIENTO/01. CCP", true),
-            new Elemento("02. FORMATOS", "03. PAINT/01. PRETRATAMIENTO/02. FORMATOS", true) };
-
-        TreeItemData rootNode { get; set; }
-        TreeItemData SelectedNode { get; set; }
-
-
-        protected override void OnInitialized()
-        {
-
-            rootNode = ConstruirArbol(elementos);
+            GOSFolders = await CDMSServices.GetFoldersGOS();
+            CCPFolders = await CDMSServices.GetFoldersCCP();
+            HOEFolders = await CDMSServices.GetFoldersHOE();
+            rootNodeCCP = ConstruirArbol(CCPFolders.operation);
+            rootNodeHOE = ConstruirArbol(HOEFolders.operation);
+            rootNodeGOS = ConstruirArbol(GOSFolders.operation);
+            StateHasChanged();
         }
         
         public class TreeItemData
@@ -151,18 +118,23 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             await Task.Delay(500);
             return parentNode.TreeItems;
+        } 
+        public async Task<HashSet<TreeItemData>> LoadServerData2(TreeItemData parentNode)
+        {
+            await Task.Delay(500);
+            return parentNode.TreeItems;
         }
 
 
-        public TreeItemData ConstruirArbol(List<Elemento> elementos)
+        public TreeItemData ConstruirArbol(List<OperationFolders> elementos)
         {
             TreeItemData root = new TreeItemData { Nombre = "Raíz", Ruta = "", EsDirectorio = true };
             root.TreeItems = new HashSet<TreeItemData>();
 
-            foreach (Elemento itemData in elementos)
+            foreach (OperationFolders itemData in elementos)
             {
                 // Dividir la ruta en partes y crear cada nodo del árbol
-                string[] rutaPartes = itemData.Ruta.Split('/');
+                string[] rutaPartes = itemData.ruta.Split('/');
                 TreeItemData parent = root;
 
                 for (int i = 0; i < rutaPartes.Length; i++)
@@ -175,7 +147,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     if (nodoActual == null)
                     {
                         // Si el nodo no existe, crearlo y agregarlo como hijo del padre actual
-                        nodoActual = new TreeItemData() { Nombre = nombre, Ruta = itemData.Ruta, EsDirectorio = true };
+                        nodoActual = new TreeItemData() { Nombre = nombre, Ruta = itemData.ruta, EsDirectorio = true };
                         nodoActual.TreeItems = new HashSet<TreeItemData>();
                         parent.TreeItems.Add(nodoActual);
                     }
