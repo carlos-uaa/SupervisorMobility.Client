@@ -31,6 +31,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         public JobObservation _jobObservation { get; set; } = new();
 
+        public string areaS;
+        public string areaQ;
+        public string areaD;
+        public string areaC;
+        public string areaOther;
+
         int[] models = new int[5];
         string[] cicles = new string[5] { "00:00:00", "00:00:00", "00:00:00", "00:00:00", "00:00:00" };
 
@@ -50,6 +56,25 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private List<Glosary> glosary = new();
         private Dictionary<string, Glosary> _glosaryInfo;
 
+        //Past Job observation
+        //Lup Modal
+        private bool visiblePast = false;
+        private bool visibleLup = false;
+        private int lupId;
+
+        private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        //Past job observation
+        public List<User> users;
+        public User user;
+        public List<JobObservation> pastJobs = new();
+        public List<JobObservation> pastjobObservations = new();
+        public List<Lup> pastLup = new();
+        public JobObservation pastJob = new();
+
+
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -60,6 +85,32 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+
+            //Past Job observations
+            users = await UsersService.GetUsers();
+            user = users.FirstOrDefault()!;
+
+            if (user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+
+                foreach (var job in pastJobs)
+                {
+                    if (job.Observer == user.Name)
+                    {
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach (var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+
+                }
+
+            }
+
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
@@ -224,13 +275,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         public void AddTempLup(int pillar)
         {
-
             switch (pillar)
             {
                 case 1:
-                    if (_jobObservation.SArea != null && _jobObservation.SArea.Length > 0)
+                    if (areaS != null && areaS.Length > 0)
                     {
-                        lup.Oportunity = _jobObservation.SArea;
+                        lup.Oportunity = areaS;
+                        areaS = "";
                     }
                     else
                     {
@@ -241,9 +292,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
                     break;
                 case 2:
-                    if (_jobObservation.QArea != null && _jobObservation.QArea.Length > 0)
+                    if (areaQ != null && areaQ.Length > 0)
                     {
-                        lup.Oportunity = _jobObservation.QArea;
+                        lup.Oportunity = areaQ;
+                        areaQ = "";
                     }
                     else
                     {
@@ -254,9 +306,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
                     break;
                 case 3:
-                    if (_jobObservation.DArea != null && _jobObservation.DArea.Length > 0)
+                    if (areaD != null && areaD.Length > 0)
                     {
-                        lup.Oportunity = _jobObservation.DArea;
+                        lup.Oportunity = areaD;
+                        areaD = "";
                     }
                     else
                     {
@@ -267,9 +320,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
                     break;
                 case 4:
-                    if (_jobObservation.CArea != null && _jobObservation.CArea.Length > 0)
+                    if (areaC != null && areaC.Length > 0)
                     {
-                        lup.Oportunity = _jobObservation.CArea;
+                        lup.Oportunity = areaC;
+                        areaC = "";
                     }
                     else
                     {
@@ -280,9 +334,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
                     break;
                 case 5:
-                    if (_jobObservation.OthersArea != null && _jobObservation.OthersArea.Length > 0)
+                    if (areaOther != null && areaOther.Length > 0)
                     {
-                        lup.Oportunity = _jobObservation.OthersArea;
+                        lup.Oportunity = areaOther;
+                        areaOther = "";
                     }
                     else
                     {
@@ -292,6 +347,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         return;
                     }
                     break;
+
             }
 
             lup.Observer = _jobObservation.Observer;
@@ -324,5 +380,24 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _tempLup.Remove(lup);
         }
 
+        //Past Job observation
+        private void OpenDialogLup(int id)
+        {
+            lupId = id;
+            visibleLup = true;
+        }
+
+        private void OpenDialogPastJobObservations()
+        {
+            visiblePast = true;
+        }
+
+        void CloseLup() => visibleLup = false;
+        void CloseOverdue() => visiblePast = false;
+
+        void EditLup(int lupId)
+        {
+            NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
+        }
     }
 }
