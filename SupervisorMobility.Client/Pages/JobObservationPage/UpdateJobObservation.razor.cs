@@ -13,9 +13,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         [Parameter]
         public int JobObservationId { get; set; }
+
         public JobObservation _jobObservation { get; set; } = new();
         public Lup lup { get; set; } = new();
-
         public JobObservation _lupJobObservations { get; set; } = new();
 
         public string hour1 { get; set; }
@@ -66,10 +66,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         //Lup Modal
-        private bool visible = false;
+        private bool visibleLup = false;
+        private bool visiblePast = false;
         private int lupId;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        //Past job observation
+        public List<User> users;
+        public User user;
+        public List<JobObservation> pastJobs = new();
+        public List<JobObservation> pastjobObservations = new();
+        public List<Lup> pastLup = new();
+        public JobObservation pastJob = new();
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -85,12 +95,40 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         protected async override Task OnInitializedAsync()
         {
+
+            //Past job obseravtion
+            users = await UsersService.GetUsers();
+            user = users.FirstOrDefault()!;
+
+            if(user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+                
+                foreach(var job in pastJobs)
+                {
+                    if(job.Observer == user.Name)
+                    {
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach(var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+                    
+                }
+
+            }
+
+
+
+            //glosary
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
-
 
 
             startHour = _jobObservation.DateStart?.TimeOfDay;
@@ -231,6 +269,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public async void FinalizeJobObservation()
         {
 
+            if(_jobObservation.OperatorSignature != user.Payroll.ToString())
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Operator Signature", Severity.Error);
+                return;
+            }
+
             _jobObservation.DateFinalized = DateTime.Now;
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;
@@ -343,7 +389,35 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (result != null)
             {
                 _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+                users = await UsersService.GetUsers();
+                user = users.FirstOrDefault()!;
+
+                pastjobObservations = new();
+                pastLup = new();
+                if (user != null)
+                {
+                    pastJobs = await JobObservationService.GetAllJobObservations();
+
+                    foreach (var job in pastJobs)
+                    {
+                        if (job.Observer == user.Name)
+                        {
+                            pastjobObservations.Add(job);
+
+                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                            foreach (var lups in pastJob.Lup)
+                            {
+                                pastLup.Add(lups);
+                            }
+                        }
+
+                    }
+
+                }
+
                 StateHasChanged();
+
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Lup Created", Severity.Info);
@@ -357,12 +431,19 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
         //lup modal
-        private void OpenDialog2(int id)
+        private void OpenDialogLup(int id)
         {
             lupId = id;
-            visible = true;
+            visibleLup = true;
         }
-        void Close() => visible = false;
+
+        private void OpenDialogPastJobObservations()
+        {
+            visiblePast = true;
+        }
+
+        void CloseLup() => visibleLup = false;
+        void CloseOverdue() => visiblePast = false;
         void EditLup(int lupId)
         {
             NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
@@ -377,6 +458,37 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 await LupService.DeleteLup(lupId);
 
                 _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+
+                users = await UsersService.GetUsers();
+                user = users.FirstOrDefault()!;
+
+                pastjobObservations = new();
+                pastLup = new();
+
+                if (user != null)
+                {
+                    pastJobs = await JobObservationService.GetAllJobObservations();
+
+                    foreach (var job in pastJobs)
+                    {
+                        if (job.Observer == user.Name)
+                        {
+                            pastjobObservations.Add(job);
+
+                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                            foreach (var lups in pastJob.Lup)
+                            {
+                                pastLup.Add(lups);
+                            }
+                        }
+
+                    }
+
+                }
+
+
+
                 StateHasChanged();
 
                 Snackbar.Clear();

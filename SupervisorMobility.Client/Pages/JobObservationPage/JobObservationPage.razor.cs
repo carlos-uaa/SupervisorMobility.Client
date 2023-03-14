@@ -85,17 +85,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return true;
             if (element.JobObservationId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
             if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.DateStart.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.Observer.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Operator.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;

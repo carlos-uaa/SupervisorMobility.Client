@@ -42,13 +42,11 @@
     </ColGroup>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Plant?.Description)">Plant</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Area?.Description)">Area</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)">Distribution</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">Operation</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.DateStart)">Start date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Observer)">Observer</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator)">Operator</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">Status</MudTableSortLabel></MudTh>
         <MudTh Style="text-align: center">Actions</MudTh>
     </HeaderContent>
     <GroupHeaderTemplate>
@@ -57,12 +55,6 @@
         <RowTemplate>
             <MudTd DataLabel="JobObservationId">
                 <MudText Align="Align.Center">@context.JobObservationId</MudText>
-            </MudTd>
-            <MudTd DataLabel="Plant">
-                <MudText Align="Align.Center">@context.Plant?.Description</MudText>
-            </MudTd>
-            <MudTd DataLabel="Area">
-                <MudText Align="Align.Center">@context.Area?.Description</MudText>
             </MudTd>
             <MudTd DataLabel="Distribution">
                 <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
@@ -73,15 +65,31 @@
             <MudTd DataLabel="Start Date">
                 <MudText Align="Align.Center">@context.DateStart?.ToShortDateString()</MudText>
             </MudTd>
-            <MudTd DataLabel="Observer">
-                <MudText Align="Align.Center">@context.Observer</MudText>
-            </MudTd>
             <MudTd DataLabel="Operator">
                 <MudText Align="Align.Center">@context.Operator</MudText>
             </MudTd>
+            <MudTd DataLabel="Status">
+                <MudText Align="Align.Center">
+                @switch(context.Status)
+                {
+                    case 1:
+                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Planned</MudChip>
+                        break;
+                    case 2:
+                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">In Progress</MudChip>
+                        break;
+                    case 3:
+                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Late</MudChip>
+                        break;
+                    case 4:
+                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">Finished</MudChip>
+                        break;
+                }
+                </MudText>
+            </MudTd>
             <MudTd>
                 <MudText Align="Align.Center">
-                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Success" @onclick="(() => OpenDialog2(context.JobObservationId))" Size="Size.Small"></MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))" Size="Size.Small"></MudIconButton>
                 <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))" Size="Size.Small"></MudIconButton>
                 <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="(() => DeleteJobObservation(context.JobObservationId))" Size="Size.Small"></MudIconButton>
                 </MudText>
@@ -95,7 +103,7 @@
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
     <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll">
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
             <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
         </MudContainer>
     </DialogContent>

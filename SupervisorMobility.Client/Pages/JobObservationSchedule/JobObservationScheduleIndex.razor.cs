@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using System;
 using static MudBlazor.CategoryTypes;
 
@@ -68,12 +69,28 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             new BreadcrumbItem("Job Observation Schedule", href: "", disabled: true)
         };
 
-        protected override void OnInitialized()
+        protected async override void OnInitialized()
         {
+            await LateDates();
             monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
             GenerateCalendarHead();
             GenerateCalendarBody();
         }
+
+        //Change the status if the observation is late
+        public async Task LateDates()
+        {
+            _jobObservation = await JobObservationService.GetAllJobObservations();
+            foreach (var jobobs in _jobObservation)
+            {
+                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 4)
+                {
+                    jobobs.Status = 3;
+                    await JobObservationService.UpdateJobObservation(jobobs);
+                }
+            }
+        }
+
         private void GenerateCalendarHead()
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
