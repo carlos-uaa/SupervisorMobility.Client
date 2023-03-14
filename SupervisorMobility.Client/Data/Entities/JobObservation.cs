@@ -46,17 +46,10 @@ namespace SupervisorMobility.Client.Data.Entities
         public int Option { get; set; }
         public string? Anomaly { get; set; }
 
-
         public string Time1HOE { get; set; }
         public string Time2HOE { get; set; }
         public string Models { get; set; }
         public string Cicles { get; set; }
-
-        public string SArea { get; set; }
-        public string QArea { get; set; }
-        public string DArea { get; set; }
-        public string CArea { get; set; }
-        public string OthersArea { get; set; }
 
         public string SsvCommentary { get; set; }
         public string OperatorCommentary { get; set; }

@@ -371,11 +371,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public void DeleteLup(Lup lup)
         {
             switch (lup.Pillar) {
-                case 1: _jobObservation.SArea = ""; break;
-                case 2: _jobObservation.QArea = ""; break;
-                case 3: _jobObservation.DArea = ""; break;
-                case 4: _jobObservation.CArea = ""; break;
-                case 5: _jobObservation.OthersArea = ""; break; 
+                case 1: areaS = ""; break;
+                case 2: areaQ = ""; break;
+                case 3: areaD = ""; break;
+                case 4: areaC = ""; break;
+                case 5: areaOther = ""; break; 
             }
             _tempLup.Remove(lup);
         }
