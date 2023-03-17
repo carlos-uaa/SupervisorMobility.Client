@@ -29,7 +29,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _lup = await LupService.GetAllLup();
+            _lup = await LupServices.GetAllLup();
             
             foreach(var lup in _lup)
             {
@@ -59,9 +59,9 @@ namespace SupervisorMobility.Client.Pages.LupPage
             if (confirm)
             {
                 _lup.RemoveAll(l => l.LupId == lupId);
-                await LupService.DeleteLup(lupId);
+                await LupServices.DeleteLup(lupId);
 
-                _lup = await LupService.GetAllLup();
+                _lup = await LupServices.GetAllLup();
                 _lupS.Clear();
                 _lupQ.Clear();
                 _lupD.Clear();

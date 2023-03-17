@@ -25,14 +25,14 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         protected async override Task OnInitializedAsync()
         {
-            _lup = await LupService.GetLupByIdWhitFile(LupId);
+            _lup = await LupServices.GetLupByIdWhitFile(LupId);
         }
         private async Task EditLup()
         {
 
             _lup.Status = 2;
 
-            var result = await LupService.UpdateLup(_lup);
+            var result = await LupServices.UpdateLup(_lup);
 
             if (result)
             {
@@ -50,7 +50,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
             _lup.EndDate = DateTime.Now;
             _lup.Status = 4;
 
-            var result = await LupService.UpdateLup(_lup);
+            var result = await LupServices.UpdateLup(_lup);
 
             if (result)
             {
@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
             _lup.EndDate = DateTime.Now;
             _lup.Status = 3;
 
-            var result = await LupService.UpdateLup(_lup);
+            var result = await LupServices.UpdateLup(_lup);
 
             if (result)
             {
@@ -183,7 +183,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
             fileNames.Clear();
             fileNames2.Clear();
-            _lup = await LupService.GetLupByIdWhitFile(LupId);
+            _lup = await LupServices.GetLupByIdWhitFile(LupId);
             StateHasChanged();
 
             upload = true;
