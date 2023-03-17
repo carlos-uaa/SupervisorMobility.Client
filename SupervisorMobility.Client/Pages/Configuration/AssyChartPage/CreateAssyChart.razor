@@ -68,46 +68,66 @@
 
                     @*GOS*@
 
-                    <MudPaper Width="600px" Elevation="0">
-                        <MudTextField Label="Selected GOS Folder" Disabled=true
+                    @if (rootNodeGOS.TreeItems.Count > 0)
+                    {
+                        <MudPaper Width="600px" Elevation="0">
+                            <MudTextField Label="Selected GOS Folder" ReadOnly="true"
                                       @bind-Value="@_newassychart.GOS" For="@(() => @_newassychart.GOS)" />
-                        <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems" >
-                            <ItemTemplate>
-                                <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @_newassychart.GOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
-                            </ItemTemplate>
-                        </MudTreeView>
-                    </MudPaper>
-
+                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
+                                <ItemTemplate>
+                                    <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @_newassychart.GOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
+                                </ItemTemplate>
+                            </MudTreeView>
+                        </MudPaper>
+                    }
                     @*CCP*@
-                    <MudPaper Width="600px" Elevation="0">
-                        <MudTextField Label="Selected CCP Folder" Disabled=true
-                                      @bind-Value="@_newassychart.CCP" For="@(() => @_newassychart.CCP)" />
-                        <MudTreeView ServerData="LoadServerData2" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems" >
-                            <ItemTemplate>
-                                <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @_newassychart.CCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
-                            </ItemTemplate>
-                        </MudTreeView>
-                    </MudPaper>
 
-                @*    <MudSelect Label="CCP" Variant="Variant.Text" Placeholder="Select a CCP" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.CCP" For="@(() => _newassychart.CCP)">
-                        <MudSelectItem Disabled="true" Value="@_newassychart.GOS">Select a CCP</MudSelectItem>
-                        @foreach (var type in _ccp)
-                        {
-                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
-                        }
+                    @if (rootNodeCCP.TreeItems.Count > 0)
+                    {
+
+                        <MudPaper Width="600px" Elevation="0">
+                            <MudTextField Label="Selected CCP Folder" ReadOnly="true" 
+                                      @bind-Value="@_newassychart.CCP" For="@(() => @_newassychart.CCP)" />
+                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
+                                <ItemTemplate>
+                                    <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @_newassychart.CCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
+                                </ItemTemplate>
+                            </MudTreeView>
+                        </MudPaper>
+                    }
+
+
+
+                    @*    <MudSelect Label="CCP" Variant="Variant.Text" Placeholder="Select a CCP" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.CCP" For="@(() => _newassychart.CCP)">
+                    <MudSelectItem Disabled="true" Value="@_newassychart.GOS">Select a CCP</MudSelectItem>
+                    @foreach (var type in _ccp)
+                    {
+                    <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
+                    }
                     </MudSelect>*@
 
                     @*HOE*@
-@*
-                    <MudPaper Width="600px" Elevation="0">
-                        <MudTextField Label="Selected GOE Folder" Disabled=true
-                                      @bind-Value="@_newassychart.HOE" For="@(() => @_newassychart.HOE)" />
-                        <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems" >
-                            <ItemTemplate>
-                                <MudTreeViewItem Value="@OtherContext" @onclick="@(() => { @_newassychart.HOE = OtherContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre" EndTextTypo="@Typo.caption" />
-                            </ItemTemplate>
-                        </MudTreeView>
-                    </MudPaper>*@
+
+                    @if (rootNodeHOE.TreeItems.Count > 0)
+                    {
+                        <MudPaper Width="600px" Elevation="0">
+                            @if(SelectedNodeHOE is not null)
+                            {
+                                <MudTextField Label="Selected HOE Folder" ReadOnly="true" Value="@_newassychart.HOE.Replace('§', ' ')" />
+                            }
+                            else
+                            {
+                                <MudText>Selected HOE Folder</MudText>
+                            }
+
+                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems">
+                                <ItemTemplate>
+                                    <MudTreeViewItem Value="@OtherContext" @onclick="@(() => { @_newassychart.HOE = OtherContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre.Split('§').Last()" EndTextTypo="@Typo.caption" />
+                                </ItemTemplate>
+                            </MudTreeView>
+                        </MudPaper>
+                    }
+
 
                     @*Operation creation*@
                     <MudCardContent>

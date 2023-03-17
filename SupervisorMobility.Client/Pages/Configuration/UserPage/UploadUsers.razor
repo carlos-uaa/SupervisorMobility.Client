@@ -1,10 +1,15 @@
 ﻿@page "/usersmanagement/UploadUsers"
+
+@using Microsoft.AspNetCore.Components.Forms;
+@using MudBlazor;
+@using System.Text.RegularExpressions;
 @using ClosedXML.Excel;
-@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@using System.Net.Http.Headers;
+@using Microsoft.JSInterop;
 @inject IFileUploadAndDownloadService FileUpDoServices
 @inject IPlantService PlantsServices
 @inject IAreaService AreasServices
-@inject IGroupService GroupsServices
+@inject IGroupService GroupServices
 @inject IUserService UsersServices
 
 @*Title*@
@@ -176,7 +181,7 @@
 
     private List<Plant> _plants = new List<Plant>();
     private List<List<Area>> _areas = new List<List<Area>>();
-    private List<Group> _groups = new List<Group>();
+    private List<Data.Entities.Group> _groups = new List<Data.Entities.Group>();
 
 
     protected async override Task OnInitializedAsync()
@@ -188,7 +193,7 @@
             _areas.Add(await AreasServices.GetAreas(item.PlantId));
         }
 
-        _groups = await GroupsServices.GetGroups();
+        _groups = await GroupServices.GetGroups();
     }
 
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -231,25 +236,11 @@
 
             MemoryStream ms = new MemoryStream();
             await fileContent.CopyToAsync(ms);
+            var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            bool isOkFile = false;
 
-
-            if (fileExtentionExcel.IsMatch(FileName))
+            if (fileExtentionCSV.IsMatch(e.File.Name))
             {
-                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
-                try
-                {
-                    DataInDocument = await GetDataTableFromExcel(FileSource);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-            else
-            {
-                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
-                var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray());
-
                 foreach (var item in outputFileString.Split(Environment.NewLine))
                 {
                     var addtolist = SplitCSV(item.ToString());
@@ -262,96 +253,113 @@
 
                 }
 
+                //DataInDocument.RemoveAt(1);
+                fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
+
             }
 
-            bool isFirstRow = true;
+            if (fileExtentionExcel.IsMatch(FileName))
+            {
+                try
+                {
+                    DataInDocument = await GetDataTableFromExcel(e.File);
+                    isOkFile = true;
+                    fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+
             showTableInUI = true;
 
             foreach (string[] row in DataInDocument)
             {
                 //Console.WriteLine($"Line: {row[0]}  {row[1]} {row[2]} {row[3]}  {row[4]} {row[5]} {row[6]} {row[7]} {row[8]} {row[9]}  {row[10]} {row[11]} {row[12]} {row[13]}");
-                Console.WriteLine($"Line: {row[0]} ");
+                Console.WriteLine($"Line: {row[0]} {row[1]} {row[2]} ");
             }
             //data to table
-            foreach (string[] row in DataInDocument)
-            {
-                try
-                {
-                    var ToInsertIntoList = new User();
-                    ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
-                    ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
-                    ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+            //foreach (string[] row in DataInDocument)
+            //{
+            //    try
+            //    {
+            //        var ToInsertIntoList = new User();
+            //        ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
+            //        ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
+            //        ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
 
-                    ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
-                    ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
-                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+            //        ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
+            //        ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
+            //        ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
 
-                    ToInsertIntoList.IsAdmin = row[6] != "" ? bool.Parse(row[6]) : false;
-                    ToInsertIntoList.IsSupervisor = row[7] != "" ? bool.Parse(row[7]) : false;
-                    ToInsertIntoList.IsOperator = row[8] != "" ? bool.Parse(row[8]) : false;
+            //        ToInsertIntoList.IsAdmin = row[6] != "" ? bool.Parse(row[6]) : false;
+            //        ToInsertIntoList.IsSupervisor = row[7] != "" ? bool.Parse(row[7]) : false;
+            //        ToInsertIntoList.IsOperator = row[8] != "" ? bool.Parse(row[8]) : false;
 
-                    try
-                    {
-                        ToInsertIntoList.CreatedDate = row[9] != "n/a" ? DateTime.Parse(row[9]) : DateTime.Now;
+            //        try
+            //        {
+            //            ToInsertIntoList.CreatedDate = row[9] != "n/a" ? DateTime.Parse(row[9]) : DateTime.Now;
 
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.CreatedDate = DateTime.Now;
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            ToInsertIntoList.CreatedDate = DateTime.Now;
 
-                    }
+            //        }
 
-                    try
-                    {
-                        ToInsertIntoList.LastUpdated = row[10] != "n/a" ? DateTime.Parse(row[10]) : DateTime.Now;
-
-
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.LastUpdated = DateTime.Now;
-
-                    }
-
-                    try
-                    {
-                        ToInsertIntoList.DisabledDate = row[11] != "n/a" ? DateTime.Parse(row[11]) : DateTime.Now;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.DisabledDate = DateTime.Now;
-
-                    }
+            //        try
+            //        {
+            //            ToInsertIntoList.LastUpdated = row[10] != "n/a" ? DateTime.Parse(row[10]) : DateTime.Now;
 
 
-                    ToInsertIntoList.IsActive = row[12] != "" ? bool.Parse(row[12]) : true;
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            ToInsertIntoList.LastUpdated = DateTime.Now;
 
-                    try
-                    {
-                        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
-                        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
-                        ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
-                    }
-                    catch (Exception ex)
-                    {
-                        showTableInUI = false;
-                        ErrorMessageToDisplay = "Document Incomplet fields";
-                        Console.WriteLine($"{ex.Message}");
-                    }
+            //        }
 
-                    dataToShowInTable.Add(ToInsertIntoList);
+            //        try
+            //        {
+            //            ToInsertIntoList.DisabledDate = row[11] != "n/a" ? DateTime.Parse(row[11]) : DateTime.Now;
+
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            ToInsertIntoList.DisabledDate = DateTime.Now;
+
+            //        }
 
 
-                }
-                catch (Exception ex)
-                {
+            //        ToInsertIntoList.IsActive = row[12] != "" ? bool.Parse(row[12]) : true;
 
-                    ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
-                    Console.WriteLine($"{ex.Message}");
-                    showTableInUI = false;
-                }
-            }
+            //        try
+            //        {
+            //            ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+            //            ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+            //            ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            showTableInUI = false;
+            //            ErrorMessageToDisplay = "Document Incomplet fields";
+            //            Console.WriteLine($"{ex.Message}");
+            //        }
+
+            //        dataToShowInTable.Add(ToInsertIntoList);
+
+
+            //    }
+            //    catch (Exception ex)
+            //    {
+
+            //        ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
+            //        Console.WriteLine($"{ex.Message}");
+            //        showTableInUI = false;
+            //    }
+            //}
         }
 
         StateHasChanged();
@@ -359,12 +367,9 @@
 
     public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
     {
-        List<string[]> dtTable = new List<string[]>();
-        List<BulkAndUpload> dtTableToReturn = new List<BulkAndUpload>();
-        List<string> rows = new List<string>();
-        BulkAndUpload ToInsertInDtoTable = new();
-
-
+        List<string[]> DataToReturn = new List<string[]>();
+        List<string> RowsInFile = new List<string>();
+        int emptyCellCount = 0;
         using (MemoryStream memStream = new MemoryStream())
         {
             await file.OpenReadStream(file.Size).CopyToAsync(memStream);
@@ -374,38 +379,30 @@
                 IXLWorksheet workSheet = workBook.Worksheet(1);
 
                 //Loop through the Worksheet rows.
-                bool firstRow = true;
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    if (firstRow)
+                    if (!row.IsEmpty())
                     {
-                        firstRow = false;
-                    }
-                    else
-                    {
-                        bool hasNonEmptyCell = false;
-                        rows.Clear();
+                        RowsInFile.Clear();
+
                         foreach (IXLCell cell in row.Cells())
                         {
-                            string cellValue = cell.Value?.ToString() ?? "";
-                            Console.WriteLine($"Cel value {cellValue}");
-                            rows.Add(cellValue);
-                            //if (!string.IsNullOrEmpty(cellValue))
-                            //{
-                            //    hasNonEmptyCell = true;
-                            //}
+                            RowsInFile.Add(cell.Value.ToString());
+                           
+                            if (string.IsNullOrEmpty(cell.Value.ToString().Trim()))
+                            {
+                                emptyCellCount++;
+                            }
+
+
                         }
-                        //if (hasNonEmptyCell)
-                        //{
-                            dtTable.Add(rows.ToArray());
-                        //}
+                        DataToReturn.Add(RowsInFile.ToArray());
                     }
                 }
-
             }
         }
-
-        return dtTable;
+        Console.WriteLine("Number of empty cells: " + emptyCellCount);
+        return DataToReturn;
     }
 
     private string[] SplitCSV(string input)

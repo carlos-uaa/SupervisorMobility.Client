@@ -5,13 +5,13 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
     public interface IBridgeCDMSService
     {
 
-        Task<FoldersCDMS> GetFoldersCCP();
-        Task<FoldersCDMS> GetFoldersHOE();
-        Task<FoldersCDMS> GetFoldersGOS();
+        Task<CDMS_CCP_Folder> GetFoldersCCP();
+        Task<CDMS_HOE_Folder> GetFoldersHOE();
+        Task<CDMS_GOS_Folder> GetFoldersGOS();
         //get Assy Chart by Id
-        Task<FilesCDMS> GetFilesCCP(string ruta);
-        Task<FilesCDMS> GetFilesHOE(string ruta);
-        Task<FilesCDMS> GetFilesGOS(string ruta);
+        Task<CDMS_CCP_Document> GetFilesCCP(string ruta);
+        Task<CDMS_HOE_Document> GetFilesHOE(string route);
+        Task<CDMS_GOS_Document> GetFilesGOS(string ruta);
 
     }
 }

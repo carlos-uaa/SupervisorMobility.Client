@@ -21,13 +21,13 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
         //CCP
-        public async Task<FoldersCDMS> GetFoldersCCP()
+        public async Task<CDMS_CCP_Folder> GetFoldersCCP()
         {
             var response = await _httpBridge.GetAsync("SMCcp/GetDirectoryPathsCcp");
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FoldersCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Folder>();
                 return result;
             }
             else
@@ -38,13 +38,13 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
         //HOE
-        public async Task<FoldersCDMS> GetFoldersHOE()
+        public async Task<CDMS_HOE_Folder> GetFoldersHOE()
         {
             var response = await _httpBridge.GetAsync("SMHoe/GetDirectoryPaths");
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FoldersCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Folder>();
                 return result;
             }
             else
@@ -55,13 +55,13 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
         //GOS
-        public async Task<FoldersCDMS> GetFoldersGOS()
+        public async Task<CDMS_GOS_Folder> GetFoldersGOS()
         {
             var response = await _httpBridge.GetAsync("SMGos/GetDirectoryPathsGos");
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FoldersCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Folder>();
                 return result;
             }
             else
@@ -72,13 +72,21 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
         //get Assy Chart by Id
-       public async Task<FilesCDMS> GetFilesCCP(string ruta)
+        public async Task<CDMS_CCP_Document> GetFilesCCP(string ruta)
         {
-            var response = await _httpBridge.PostAsJsonAsync("/SMCcp/PostArchivesDirectoryCcp", ruta);
+
+            var parameters = new Dictionary<string, string>
+        {
+            { "route", ruta }
+        };
+
+            var content = new FormUrlEncodedContent(parameters);
+
+            var response = await _httpBridge.PostAsJsonAsync("/SMCcp/PostArchivesDirectoryCcp", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FilesCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Document>();
                 return result;
             }
             else
@@ -88,13 +96,23 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
-        public async Task<FilesCDMS> GetFilesHOE(string ruta)
+        public async Task<CDMS_HOE_Document> GetFilesHOE(string route)
         {
-            var response = await _httpBridge.PostAsJsonAsync("/SMHoe/PostArchivesDirectoryHOE", ruta);
+
+
+            var parameters = new Dictionary<string, string>
+        {
+            { "route", route }
+        };
+
+            var content = new FormUrlEncodedContent(parameters);
+
+
+            var response = await _httpBridge.PostAsync("/SMHoe/PostArchivesDirectoryHOE", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FilesCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Document>();
                 return result;
             }
             else
@@ -104,13 +122,20 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
-        public async Task<FilesCDMS> GetFilesGOS(string ruta)
+        public async Task<CDMS_GOS_Document> GetFilesGOS(string ruta)
         {
-            var response = await _httpBridge.PostAsJsonAsync("/SMGos/PostArchivesDirectoryGos", ruta);
+
+            var parameters = new Dictionary<string, string>
+        {
+            { "route", ruta }
+        };
+
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await _httpBridge.PostAsJsonAsync("/SMGos/PostArchivesDirectoryGos", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FilesCDMS>();
+                var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Document>();
                 return result;
             }
             else
