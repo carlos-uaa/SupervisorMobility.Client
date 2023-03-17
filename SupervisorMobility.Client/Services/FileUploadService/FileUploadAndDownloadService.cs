@@ -59,18 +59,15 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         }
 
         //UploadEvidences
-        public async Task<List<FileUpload>> UploadEvidences(MultipartFormDataContent contentfiles)
+        public async Task<FileUpload> UploadEvidences(MultipartFormDataContent? contentfiles, int lupId)
         {
-            Console.WriteLine($"antes de responce");
-
-            var response = await _http.PostAsync($"File/UploadEvidences", contentfiles);
-            Console.WriteLine($"despues de responce");
+            var response = await _http.PostAsync($"File/UploadEvidences?lupId={lupId}", contentfiles);
 
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
 
-                var result = JsonSerializer.Deserialize<List<FileUpload>>(content, _options);
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
 
                 return result;
 

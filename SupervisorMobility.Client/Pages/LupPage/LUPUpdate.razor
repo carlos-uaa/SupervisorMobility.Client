@@ -1,10 +1,12 @@
 ﻿@page "/lup/updateLup/{lupid:int}"
+@using System.Text.RegularExpressions;
+@using System.Net.Http.Headers;
 
 @inject ILupService LupService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
-
+@inject IFileUploadAndDownloadService FilesServices
  
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Lup</PageTitle>
@@ -171,22 +173,196 @@
             <MudSimpleTable Bordered Class="mt-3 mb-10">
                 <thead>
                     <tr>
-                        <td style="width: 80%">
+                        <td>
                             <MudText Typo="Typo.h6">
                                 Evidence
                             </MudText>
-                        </td>
-                        <td >
-                            <MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.CloudUpload" for="@context"> Upload Files</MudButton>
                         </td>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="2">
-                            <MudText>
-                                No files uploaded yet
-                            </MudText>
+                        <td class="d-flex" style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                        @if(_lup.Evidences.Count > 0 ){
+                            @foreach (var evidence in _lup.Evidences)
+                            {
+                                <MudPaper Class="mr-5 mt-5">
+                                    <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                        @switch (evidence?.ContentType)
+                                        {
+                                            case "application/pdf":
+                                                    <img src="Images/pdf.png" Height="70" Width="70" />
+                                                    break;
+
+                                                case "application/msword":
+                                                    // Para documentos Word con extensión .doc
+                                                    <img src="Images/doc.png" Height="70" Width="70" />
+
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                                    <img src="Images/docx.png" Height="70" Width="70" />
+
+                                                    // Para documentos Word con extensión .docx
+                                                    break;
+
+                                                case "application/vnd.ms-powerpoint":
+                                                    <img src="Images/ppt.png" Height="70" Width="70" />
+                                                    // Para presentaciones PowerPoint con extensión .ppt
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                                    <img src="Images/pptx.png" Height="70" Width="70" />
+
+                                                    // Para presentaciones PowerPoint con extensión .pptx
+                                                    break;
+
+                                                case "application/vnd.ms-excel":
+                                                    // Para hojas de cálculo Excel con extensión .xls
+                                                    <img src="Images/xls.png" Height="70" Width="70" />
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                                    // Para hojas de cálculo Excel con extensión .xlsx
+                                                    <img src="Images/xlsx.png" Height="70" Width="70" />
+
+                                                    break;
+
+                                                case "image/jpeg":
+                                                    <img src="Images/jpg.png" Height="70" Width="70" />
+
+                                                    // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                    break;
+
+                                                case "image/png":
+                                                    // Para imágenes PNG con extensión .png
+                                                    <img src="Images/png.png" Height="70" Width="70" />
+
+                                                    break;
+
+                                                case "image/gif":
+                                                    // Para imágenes GIF con extensión .gif
+                                                    <img src="Images/gif.png" Height="70" Width="70" />
+                                                    break;
+
+                                                default:
+                                                    <img src="Images/error.png" Height="70" Width="70" />
+                                                    break;
+                                        }
+                                        @evidence.FileName
+                                        <MudButton Class="d-flex justify-center flex-row align-content-center align-center"
+                                            @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                            <MudItem>
+                                                <MudText Color="Color.Info">Download</MudText>
+                                                <MudChip Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                            </MudItem>
+                                        </MudButton>
+                                    </MudItem>
+
+                                </MudPaper>
+                            }
+                        }
+                        else 
+                        {
+                            <span>No files uploaded yet</span>
+                        }
+                         </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <MudStack Style="width: 100%">
+                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                                           @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+                                <ButtonTemplate Context="evidence">
+                                    <MudPaper Height="300px" Outlined="true" Class="@DragClass">
+                                        <MudText Typo="Typo.h6">Drag and drop evidence files here or click</MudText>
+
+                                        <MudGrid Class="d-flex justify-center flex-row align-content-center align-center">
+                                            @foreach (var file in fileNames)
+                                            {
+                                                <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                                    <MudText Typo="Typo.h6">@file.message</MudText>
+
+                                                    @switch (file.ftype)
+                                                    {
+                                                        case "application/pdf":
+                                                            <img src="Images/pdf.png" Height="70" Width="70" />
+                                                            break;
+
+                                                        case "application/msword":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="70" Width="70" />
+
+                                                            break;
+
+                                                        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                                            <img src="Images/docx.png" Height="70" Width="70" />
+
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
+
+                                                        case "application/vnd.ms-powerpoint":
+                                                            <img src="Images/ppt.png" Height="70" Width="70" />
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
+
+                                                        case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                                            <img src="Images/pptx.png" Height="70" Width="70" />
+
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
+
+                                                        case "application/vnd.ms-excel":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="70" Width="70" />
+                                                            break;
+
+                                                        case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="70" Width="70" />
+
+                                                            break;
+
+                                                        case "image/jpeg":
+                                                            <img src="Images/jpg.png" Height="70" Width="70" />
+
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            break;
+
+                                                        case "image/png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="70" Width="70" />
+
+                                                            break;
+
+                                                        case "image/gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="70" Width="70" />
+                                                            break;
+
+                                                        default:
+                                                            <img src="Images/error.png" Height="70" Width="70" />
+                                                            break;
+                                                    }
+                                                    @*OnClick="@(() => Deleteitem(file))"*@
+                                                    <MudButton Target="_blank"
+                                                           Variant="Variant.Text"
+                                                           Color="Color.Secondary"
+                                                           Style="text-transform:none">
+                                                        @file.name
+                                                    </MudButton>
+                                                </MudItem>
+                                            }
+                                        </MudGrid>
+
+                                    </MudPaper>
+                                </ButtonTemplate>
+                            </MudFileUpload>
+                            <MudToolBar DisableGutters="true" Class="gap-4">
+                                <MudButton StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="Upload" Disabled="@(upload)" Color="Color.Info" Variant="Variant.Filled">Upload</MudButton>
+                                <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+                            </MudToolBar>
+                        </MudStack>
                         </td>
                     </tr>
                 </tbody>
