@@ -12,6 +12,7 @@
 
         Task DownloadFileFromOnePlant(int idPlant);
         Task DownloadFileFromAllPlants();
+        Task DownloadFileUsers();
 
         Task DownloadFileGuide(int idfile, string filename);
 

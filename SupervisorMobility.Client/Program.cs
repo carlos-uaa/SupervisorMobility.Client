@@ -1,5 +1,8 @@
 global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
+global using SupervisorMobility.Client.Data.Entities.CDMS;
+global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
+global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.DistributionService;
@@ -63,7 +66,6 @@ public class CustomHttpClientService
 
     public CustomHttpClientService()
     {
-      
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
         _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
     }

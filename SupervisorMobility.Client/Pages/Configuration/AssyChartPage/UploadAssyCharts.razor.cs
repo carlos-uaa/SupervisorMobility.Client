@@ -211,9 +211,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
         {
             List<string[]> dtTable = new List<string[]>();
-            List<BulkAndUpload> dtTableToReturn = new List<BulkAndUpload>();
             List<string> Columns = new List<string>();
-            BulkAndUpload ToInsertInDtoTable = new();
 
 
             using (MemoryStream memStream = new MemoryStream())

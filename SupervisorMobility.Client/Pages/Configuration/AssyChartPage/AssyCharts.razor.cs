@@ -1,6 +1,8 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.CDMS;
+using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using static MudBlazor.CategoryTypes;
 
@@ -28,9 +30,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         protected async override Task OnInitializedAsync()
         {
-
             _assychart = await AssyChartServices.GetAssyCharts();
-            Console.WriteLine(_assychart);
         }
 
 
@@ -94,9 +94,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool HoeDialog = false;
         private bool GosDialog = false;
 
-        private FilesCDMS CcpFilesInFolder = new FilesCDMS();
-        private FilesCDMS HoeFilesInFolder = new FilesCDMS();
-        private FilesCDMS GosFilesInFolder = new FilesCDMS();
+        private CDMS_CCP_Document CcpFilesInFolder = new CDMS_CCP_Document();
+        private CDMS_HOE_Document HoeFilesInFolder = new CDMS_HOE_Document();
+        private CDMS_GOS_Document GosFilesInFolder = new CDMS_GOS_Document();
         private async void OpenDialogGOS(string ruta)
         {
             GosDialog = true;
@@ -110,8 +110,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
         void CloseCcp() => CcpDialog = false;
 
-        private void OpenDialogHoe(string ruta)
+        private async void OpenDialogHoe(string ruta)
         {
+            HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
             HoeDialog = true;
         }
         void CloseHoe() => HoeDialog = false;

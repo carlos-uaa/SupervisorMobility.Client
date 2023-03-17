@@ -128,6 +128,21 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
                 await _js.InvokeVoidAsync("downloadFileFromStream", "Report ALL Plants.xlsx", streamRef);
             }
         }
+        public async Task DownloadFileUsers()
+        {
+            var response = await _http.GetAsync($"File/Bulk/DownloadUsers");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "BulkUsers.xlsx", streamRef);
+            }
+        }
 
 
         public async Task DownloadFileGuide(int idfile, string filename)
