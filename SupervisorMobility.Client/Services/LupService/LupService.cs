@@ -8,12 +8,14 @@ namespace SupervisorMobility.Client.Services.LupService
         private readonly HttpClient _http;
         private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
+        private readonly IJSRuntime _js;
 
         // Constructor
         public LupService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -59,6 +61,21 @@ namespace SupervisorMobility.Client.Services.LupService
             var lup = JsonSerializer.Deserialize<Lup>(content, _options);
 
             return lup;
+        }
+
+        public async Task<Lup> GetLupByIdWhitFile(int lupId)
+        {
+            var response = await _http.GetAsync($"lup/{lupId}?includeFile=true");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var lup = JsonSerializer.Deserialize<Lup>(content, _options);
+                return lup;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+            return null;
+
         }
 
         public async Task<bool> UpdateLup(Lup lup)
