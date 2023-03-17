@@ -12,7 +12,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         protected async override Task OnInitializedAsync()
         {
-            _lup = await LupService.GetLupById(LupId);
+            _lup = await LupServices.GetLupByIdWhitFile(LupId);
 
         }
 
