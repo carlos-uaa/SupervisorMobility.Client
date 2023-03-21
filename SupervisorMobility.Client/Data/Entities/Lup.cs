@@ -17,6 +17,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int Pillar { get; set; }
         public string? Q3 { get; set; }
         public string? Q4 { get; set; }
+        public string? Justification { get; set; }
         public int? Status { get; set; }
 
         //Evidence

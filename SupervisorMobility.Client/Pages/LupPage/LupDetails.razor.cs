@@ -20,5 +20,10 @@ namespace SupervisorMobility.Client.Pages.LupPage
         {
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
+
+        private async Task DownloadFile(int fileId, string filename)
+        {
+            await FilesServices.DownloadFileEvidence(fileId, filename);
+        }
     }
 }

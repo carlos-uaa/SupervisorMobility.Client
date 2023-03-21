@@ -103,6 +103,7 @@ namespace SupervisorMobility.Client.Shared
 
         void JobObservationUpdate(int jobObservationId)
         {
+            NavigationManager.NavigateTo($"/");
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
 
@@ -117,11 +118,5 @@ namespace SupervisorMobility.Client.Shared
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
-        void NavigateTo(int id)
-        {
-            
-            NavigationManager.NavigateTo($"/");
-            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{id}");
-        }
     }
 }

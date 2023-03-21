@@ -15,6 +15,7 @@
         Task DownloadFileUsers();
 
         Task DownloadFileGuide(int idfile, string filename);
+        Task DownloadFileEvidence(int idfile, string filename);
 
 
     }

@@ -100,28 +100,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             users = await UsersService.GetUsers();
             user = users.FirstOrDefault()!;
 
-            if(user != null)
-            {
-                pastJobs = await JobObservationService.GetAllJobObservations();
-                
-                foreach(var job in pastJobs)
-                {
-                    if(job.Observer == user.Name)
-                    {
-                        pastjobObservations.Add(job);
-
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
-                        foreach(var lups in pastJob.Lup)
-                        {
-                            pastLup.Add(lups);
-                        }
-                    }
-                    
-                }
-
-            }
-
-
+          
 
             //glosary
             glosary = await GlosaryService.GetGlosary();
@@ -147,6 +126,34 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[3] = Int32.Parse(prod[3]);
             models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
+
+
+            if (user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+
+                foreach (var job in pastJobs)
+                {
+                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                    {
+
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach (var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+
+                }
+
+            }
+            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+
+
+
         }
         private async void ShowAreas()
         {
@@ -415,7 +422,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-
                 StateHasChanged();
 
                 Snackbar.Clear();
@@ -497,6 +503,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
             }
+        }
+
+        void GoToJobObservation(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"/");
+            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
 
     }

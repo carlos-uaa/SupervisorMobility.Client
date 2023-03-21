@@ -712,7 +712,7 @@
                 <thead>
                     <tr>
                         <th style="text-align: center"><MudText>Id</MudText></th>
-                        <th style="text-align: center"><MudText>Is Active?</MudText></th>
+                        <th style="text-align: center"><MudText>Start Date</MudText></th>
                         <th style="text-align: center; width: 65%"><MudText>Total Lup</MudText></th>
                         <th style="text-align: center"><MudText>Status</MudText></th>
                     </tr>
@@ -721,20 +721,13 @@
                 @foreach(var past in pastjobObservations)
                 {
                     <tr>
-                        <td><MudText>@past.JobObservationId</MudText></td>
                         <td>
-                        @if (past.IsActive == true)
-                        {
-                            <MudText Align="Align.Center">
-                                <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText Align="Align.Center">
-                                <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                            </MudText>
-                        }
+                            <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(past.JobObservationId))"> @past.JobObservationId</MudChip>
+                            </MudTooltip>
+                        </td>
+                        <td>
+                            <MudText>@past.DateStart?.ToShortDateString()</MudText>
                         </td>
                         <td><MudText>
                         @if(pastLup.Count > 0)
@@ -763,17 +756,20 @@
                                                     @lup.Oportunity.Substring(0,70) <span>...</span>
                                                 }
                                             </MudChip>
-                                            @if (lup.IsActive == true)
+                                            @switch (lup.Status)
                                             {
-                                                <MudText>
-                                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Active</MudChip>
-                                                </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudText>
-                                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Inactive</MudChip>
-                                                </MudText>
+                                                case 1:
+                                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                                    break;
+                                                case 2:
+                                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">In Progress</MudChip>
+                                                    break;
+                                                case 3:
+                                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                                    break;
+                                                case 4:
+                                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                                    break;
                                             }
                                         </MudButton>
                                     </MudTooltip>
