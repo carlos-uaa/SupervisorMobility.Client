@@ -90,27 +90,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             users = await UsersService.GetUsers();
             user = users.FirstOrDefault()!;
 
-            if (user != null)
-            {
-                pastJobs = await JobObservationService.GetAllJobObservations();
-
-                foreach (var job in pastJobs)
-                {
-                    if (job.Observer == user.Name)
-                    {
-                        pastjobObservations.Add(job);
-
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
-                        foreach (var lups in pastJob.Lup)
-                        {
-                            pastLup.Add(lups);
-                        }
-                    }
-
-                }
-
-            }
-
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
@@ -127,6 +106,32 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.Option = 3;
             _plants = await PlantServices.GetPlants();
             _products = await ProductService.GetProducts();
+
+
+
+            if (user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+
+                foreach (var job in pastJobs)
+                {
+                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date)
+                    {
+
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach (var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+
+                }
+
+            }
+            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+
         }
         private async void ShowAreas()
         {
@@ -398,6 +403,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         void EditLup(int lupId)
         {
             NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
+        }
+
+        void GoToJobObservation(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"/");
+            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
     }
 }

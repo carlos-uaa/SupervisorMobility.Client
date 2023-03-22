@@ -9,6 +9,7 @@
 @inject IDialogService DialogService
 @inject IJobObservationService JobObservationService
 @inject ILupService LupServices
+@inject IFileUploadAndDownloadService FilesServices
 
 @inject NavigationManager NavigationManager
 
@@ -153,6 +154,13 @@ else
                         <td>@_lup.Q4</td>
                     </tr>
                     <tr>
+                        @if (!(_lup.Justification == null || _lup.Justification.Length == 0) && _lup.Status == 4)
+                        {
+                            <td style="font-weight:bold">Justification</td>
+                            <td>@_lup.Justification</td>
+                        }
+                    </tr>
+                    <tr>
                         <td style="font-weight:bold">Status</td>
                         <td>
                             @switch (_lup.Status)
@@ -193,7 +201,7 @@ else
                                 @foreach (var evidence in _lup.Evidences)
                                 {
                                     <MudPaper Class="mr-5 mt-5">
-                                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center mt-5">
                                             @switch (evidence?.ContentType)
                                             {
                                                 case "application/pdf":
@@ -255,7 +263,13 @@ else
                                                     <img src="Images/error.png" Height="70" Width="70" />
                                                     break;
                                             }
-                                            <MudChip Text="@evidence?.FileName" Color="Color.Info" Variant="Variant.Text" Size="Size.Small"></MudChip>
+                                            <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                                    <MudItem>
+                                                        <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                                    </MudItem> 
+                                                </MudButton>
+                                            </MudTooltip>
                                         </MudItem>
 
                                     </MudPaper>

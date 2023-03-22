@@ -47,6 +47,16 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         public async void CancelLup()
         {
+
+            if(_lup.Justification == null || _lup.Justification.Length == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"You need to add the justification", Severity.Error);
+                return;
+            }
+
+
             _lup.EndDate = DateTime.Now;
             _lup.Status = 4;
 
@@ -114,9 +124,24 @@ namespace SupervisorMobility.Client.Pages.LupPage
             public string message { get; set; }
         }
 
-        private void Deleteitem(FileToDisplay toRemove)
+        private async void RemoveEvidence(int fileUploadId)
         {
-            fileNames.Remove(toRemove);
+            var response = await LupServices.RemoveEvidence(LupId, fileUploadId);
+            Console.WriteLine(fileUploadId);
+            if (response)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Evidence removed", Severity.Info);
+                _lup = await LupServices.GetLupByIdWhitFile(LupId);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Failed to remove evidence", Severity.Error);
+            }
         }
 
 
@@ -202,7 +227,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         private async Task DownloadFile(int fileId, string filename)
         {
-            await FilesServices.DownloadFileGuide(fileId, filename);
+            await FilesServices.DownloadFileEvidence(fileId, filename);
         }
 
     }

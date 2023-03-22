@@ -89,5 +89,17 @@ namespace SupervisorMobility.Client.Services.LupService
             return false;
         }
 
+        public async Task<bool> RemoveEvidence(int lupId, int fileUploadId)
+        {
+            var response = await _http.PostAsJsonAsync($"lup/{lupId}/evidence/remove", fileUploadId);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

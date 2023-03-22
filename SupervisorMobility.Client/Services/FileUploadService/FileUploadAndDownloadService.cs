@@ -161,6 +161,23 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             }
 
         }
+
+        public async Task DownloadFileEvidence(int idfile, string filename)
+        {
+            var response = await _http.GetAsync($"File/Evidence/{idfile}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", $"{filename}", streamRef);
+            }
+
+        }
     }
 
 
