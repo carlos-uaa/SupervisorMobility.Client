@@ -51,16 +51,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             public string String { get; set; }
         }
 
-
         public int optionStatus { get; set; } = 0;
 
-        // Initialization
-        protected async override Task OnInitializedAsync()
-        {
-            _jobObservation = await JobObservationService.GetAllJobObservations();
-            _plants = await PlantServices.GetPlants();
-            _groups = await GroupService.GetGroups();
-        }
+        //User
+        private string json = string.Empty;
+        public User user = new();
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -68,6 +63,51 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Job Observation Schedule", href: "", disabled: true)
         };
+
+        // Initialization
+        protected async override Task OnInitializedAsync()
+        {
+            await GetUserAsync();
+
+            if(user != null)
+            {
+                _plants = await PlantServices.GetPlants();
+                _groups = await GroupService.GetGroups();
+                plantId = user.PlantId;
+                
+                areaId = user.AreaId;
+                groupId= user.GroupId;
+
+                _areas = await AreaServices.GetAreas(plantId);
+                supervisor = user.Name;
+                StateHasChanged();
+            }
+            _jobObservation = await JobObservationService.GetAllJobObservations();
+            _plants = await PlantServices.GetPlants();
+            _groups = await GroupService.GetGroups();
+        }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
 
         protected async override void OnInitialized()
         {
@@ -95,7 +135,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
             {
-                Console.Write("lunes");
                 startDate = startDate.AddDays(-1);
             }
             switch (startDate.DayOfWeek)
@@ -185,9 +224,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             _yearMonth = value;
             month = $"{_yearMonth?.ToString("MMMM")}";
             year = $"{_yearMonth?.ToString("yyyy")}";
-            Console.WriteLine(_yearMonth);
-            Console.WriteLine(DateTime.Now.Year.ToString());
-            Console.WriteLine(year);
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
             startDate = new DateTime(yearIndex, monthIndex, 1);

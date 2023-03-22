@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using System;
 using System.Globalization;
 using System.Timers;
@@ -66,8 +67,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         //Past job observation
-        public List<User> users;
-        public User user;
         public List<JobObservation> pastJobs = new();
         public List<JobObservation> pastjobObservations = new();
         public List<Lup> pastLup = new();
@@ -83,12 +82,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             new BreadcrumbItem("New Job Observation", href: "", disabled: true)
         };
 
+
+        //User
+        private string json = string.Empty;
+        public User user = new();
+
         protected async override Task OnInitializedAsync()
         {
 
-            //Past Job observations
-            users = await UsersService.GetUsers();
-            user = users.FirstOrDefault()!;
 
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
@@ -107,7 +108,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _plants = await PlantServices.GetPlants();
             _products = await ProductService.GetProducts();
 
+            await GetUserAsync();
 
+            if (user != null)
+            {
+                _plants = await PlantServices.GetPlants();
+                _jobObservation.PlantId = user.PlantId;
+
+                _jobObservation.AreaId = user.AreaId;
+
+                _areas = await AreaServices.GetAreas(user.PlantId);
+                _jobObservation.Observer = user.Name;
+                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                StateHasChanged();
+            }
 
             if (user != null)
             {
@@ -133,6 +147,29 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
         private async void ShowAreas()
         {
             _jobObservation.AreaId = 0;

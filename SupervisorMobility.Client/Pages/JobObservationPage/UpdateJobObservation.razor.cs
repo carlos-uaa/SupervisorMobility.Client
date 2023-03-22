@@ -74,8 +74,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         //Past job observation
-        public List<User> users;
-        public User user;
         public List<JobObservation> pastJobs = new();
         public List<JobObservation> pastjobObservations = new();
         public List<Lup> pastLup = new();
@@ -89,19 +87,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             new BreadcrumbItem("Update Job Observation", href: "", disabled: true)
         };
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+
         void Closed(MudChip chip)
         {
             // react to chip closed
         }
         protected async override Task OnInitializedAsync()
         {
-
-            //Past job obseravtion
-            users = await UsersService.GetUsers();
-            user = users.FirstOrDefault()!;
-
           
-
             //glosary
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
@@ -127,6 +123,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
 
+            await GetUserAsync();
 
             if (user != null)
             {
@@ -134,7 +131,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 
@@ -155,6 +152,29 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
         private async void ShowAreas()
         {
             _jobObservation.AreaId = 0;
@@ -397,8 +417,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
 
-                users = await UsersService.GetUsers();
-                user = users.FirstOrDefault()!;
+                await GetUserAsync();
 
                 pastjobObservations = new();
                 pastLup = new();
@@ -408,8 +427,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name)
+                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
+
                             pastjobObservations.Add(job);
 
                             pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
@@ -422,6 +443,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
+                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
                 StateHasChanged();
 
                 Snackbar.Clear();
@@ -465,21 +487,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
 
-
-                users = await UsersService.GetUsers();
-                user = users.FirstOrDefault()!;
+                await GetUserAsync();
 
                 pastjobObservations = new();
                 pastLup = new();
-
                 if (user != null)
                 {
                     pastJobs = await JobObservationService.GetAllJobObservations();
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name)
+                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
+
                             pastjobObservations.Add(job);
 
                             pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
@@ -492,8 +513,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-
-
+                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
                 StateHasChanged();
 

@@ -43,9 +43,6 @@
                                 <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.IsActive)">Is Active?</MudTableSortLabel>
-                        </MudTh>
-                        <MudTh>
                             <MudText Align="Align.Center">Actions</MudText>
                         </MudTh>
                     </HeaderContent>
@@ -82,20 +79,6 @@
                                 {
                                     <MudText Align="Align.Center">@context.Oportunity </MudText>
                                 }
-                        </MudTd>
-                        <MudTd DataLabel="Is active?">
-                            @if (context.IsActive == true)
-                            {
-                                <MudText Align="Align.Center">
-                                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                                </MudText>
-                            }
-                            else
-                            {
-                                <MudText Align="Align.Center">
-                                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                                </MudText>
-                            }
                         </MudTd>
                         <MudTd>
                             <MudText Align="Align.Center">
@@ -481,6 +464,108 @@
                 {
                     <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
                 }
+            </MudTabPanel>
+            <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="All Lup">
+                @if (_lup.Count > 0)
+                {
+                    <MudTable Items="_lup" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <ToolBarContent>
+                            <MudGrid class="d-flex flex-column justify-center align-self-center">
+                                <MudItem Class="d-flex">
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                    <MudSpacer />
+                                </MudItem>
+                            </MudGrid>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">Status</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x.Pillar)">Pillar</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">Oportunity</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="LupId">
+                                <MudText Align="Align.Center">@context.LupId</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudText Align="Align.Center">
+                                    @switch (context.Status)
+                                    {
+                                        case 1:
+                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                            break;
+                                        case 2:
+                                            <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                            break;
+                                        case 3:
+                                            <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                            break;
+                                        case 4:
+                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                            break;
+                                    }
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Pillar">
+                                <MudText Align="Align.Center">
+                                    @switch (context.Pillar)
+                                    {
+                                        case 1:
+                                            <MudText>S</MudText>    
+                                            break;
+                                        case 2:
+                                            <MudText>Q</MudText>    
+                                            break;
+                                        case 3:
+                                            <MudText>D</MudText>
+                                            break;
+                                        case 4:
+                                            <MudText>C</MudText>    
+                                            break;
+                                        case 5:
+                                            <MudText>Other</MudText>    
+                                            break;
+                                    }
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Oportunity">
+                                @if (context.Oportunity.Length > 100)
+                                {
+
+                                    <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@context.Oportunity </MudText>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                <MudText Align="Align.Center">
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                                    <MudIconButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => DeleteLup(context.LupId))"></MudIconButton>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no areas of opportunity detected for this pillar.</MudText>
+                }
+
             </MudTabPanel>
         </MudTabs>
     </MudItem>
