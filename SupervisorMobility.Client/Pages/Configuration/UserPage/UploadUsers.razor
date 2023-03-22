@@ -38,9 +38,37 @@
             </MudItem>
             <MudItem Class="d-flex flex-column align-center justify-center">
                 @*File Upload*@
-                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
 
                     <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
+                    @if(showResume)
+                    {
+                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                            <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                                <MudItem style="text-align:center">
+                                    <img src="Images/useradd.png" Height="100" Width="100" />
+                                    <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersCreated </MudText>
+                                </MudItem>
+                            </MudPaper>
+                            <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                                <MudItem style="text-align:center">
+                                    <img src="Images/userexist.png" Height="100" Width="100" />
+                                    <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
+                                </MudItem>
+                            </MudPaper>
+                        </MudPaper>
+                    }
+                    else
+                    {
+                        if (activeUpload)
+                        {
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        }
+                    }
+
+
+
+
 
                 </MudItem>
                 <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
@@ -82,11 +110,11 @@
 </MudContainer>
 
 <MudContainer Fixed="true" Class="py-10">
-    <MudGrid>
-        <MudItem>
+    <MudGrid Class="d-flex flex-column align-center justify-center">
+        <MudItem Class="d-flex flex-column align-center justify-center">
             @if (showTableInUI)
             {
-                <MudTable Items="@dataToShowInTable" T="User" HorizontalScrollbar="true" ReadOnly="true">
+                <MudTable Items="@dataToShowInTable" T="User" HorizontalScrollbar="true" ReadOnly="true" FixedHeader=true Class="styled-table table-striped">
                     <ToolBarContent>
                         <MudSpacer />
                         <MudText Typo="Typo.h6">Data To Upload</MudText>
@@ -111,7 +139,7 @@
                         <MudTh>Permissions</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        
+
                         <MudTd DataLabel=" Name">
                             <MudText Align="Align.Center">@context.Name?</MudText>
                         </MudTd>
@@ -127,7 +155,21 @@
                         </MudTd>
                         <MudTd DataLabel="Permissions">
                             <MudText Align="Align.Center">
-                                Permisos
+                                @if(context.IsAdmin){
+                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+
+                                }
+
+                                @if(context.IsSupervisor){
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+
+                                }
+
+                                @if(context.IsOperator){
+                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+
+                                }
+
 
                             </MudText>
                         </MudTd>
@@ -149,7 +191,7 @@
 
 @code {
 
-    private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    private static string DefaultDragClass = "d-flex flex-column align-center justify-center relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
     private string DragClass = DefaultDragClass;
     private List<FileToDisplay> fileNames = new List<FileToDisplay>();
 
@@ -276,7 +318,7 @@
             {
                 Console.WriteLine("Linea");
 
-                foreach(var item in row)
+                foreach (var item in row)
                 {
                     Console.WriteLine(item);
                 }
@@ -290,7 +332,23 @@
                     var ToInsertIntoList = new User();
                     ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
                     ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
+                    if (ToInsertIntoList.Payroll == -1)
+                    {
+                        showTableInUI = false;
+
+                        ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
+                        break;
+                    }
+
                     ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+                    if (ToInsertIntoList.Name == "")
+                    {
+                        showTableInUI = false;
+
+                        ErrorMessageToDisplay = "Document Incomplet fields in Name";
+                        break;
+                    }
+
 
                     ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
                     ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
@@ -346,7 +404,20 @@
                     catch (Exception ex)
                     {
                         showTableInUI = false;
-                        ErrorMessageToDisplay = "Document Incomplet fields";
+                        if (ToInsertIntoList.AreaId == -1)
+                        {
+                            ErrorMessageToDisplay = "Document Incomplet fields in Area";
+                        }
+
+                        if (ToInsertIntoList.PlantId == -1)
+                        {
+                            ErrorMessageToDisplay = "Document Incomplet fields in Plant";
+                        }
+
+                        if (ToInsertIntoList.GroupId == -1)
+                        {
+                            ErrorMessageToDisplay = "Document Incomplet fields in Group";
+                        }
                         Console.WriteLine($"{ex.Message}");
                     }
 
@@ -357,7 +428,6 @@
                 catch (Exception ex)
                 {
 
-                    ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
                     Console.WriteLine($"{ex.Message}");
                     showTableInUI = false;
                 }
@@ -380,23 +450,33 @@
                 IXLWorksheet workSheet = workBook.Worksheet(1);
 
                 workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("J").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("K").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("L").Style.Font.Underline = XLFontUnderlineValues.Single;
-
+                bool firstRow = true;
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    
-                    if (!row.IsEmpty())
+                    if (firstRow)
                     {
-                        RowsInFile.Clear();
-
-                        foreach (IXLCell cell in row.Cells())
-                        {
-                            
-                        }
-                        DataToReturn.Add(RowsInFile.ToArray());
+                        firstRow = false;
                     }
+                    else
+                    {
+                        if (!row.IsEmpty())
+                        {
+                            RowsInFile.Clear();
+
+                            foreach (IXLCell cell in row.Cells())
+                            {
+                                string toinsert = cell.Value.ToString();
+
+                                RowsInFile.Add(toinsert);
+                            }
+                            DataToReturn.Add(RowsInFile.ToArray());
+                        }
+                    }
+
                 }
             }
         }
@@ -434,7 +514,11 @@
     private async Task Clear()
     {
         fileNames.Clear();
+        dataToShowInTable.Clear();
         ClearDragClass();
+        activeUpload = false;
+        showTableInUI = false;
+        DataInDocument.Clear();
         await Task.Delay(100);
     }
 
@@ -476,13 +560,11 @@
                 {
                     //tiene resultados
                     ErrorMessageToDisplay = "Upload Data Succesfull";
-                    DataInDocument.Clear();
-                    dataToShowInTable.Clear();
+
 
                     showResume = true;
-                    activeUpload = false;
-                    showTableInUI = false;
                     FileSource = null;
+                    await Clear();
                     commitUsersResult = newDataResults;
 
                     base.StateHasChanged();
