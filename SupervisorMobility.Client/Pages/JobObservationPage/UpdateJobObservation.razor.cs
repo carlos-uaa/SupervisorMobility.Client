@@ -53,7 +53,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         string[] cicles = new string[5];
 
         //timer
-        const string DEFAULT_TIME = "00:00:00:000";
+        const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
         System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
@@ -110,10 +110,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             endHour = _jobObservation.DateEnd?.TimeOfDay;
 
             _plants = await PlantServices.GetPlants();
-            _products = await ProductService.GetProducts();
+            //_products = await ProductService.GetProducts();
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
-            _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
-            _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+            
+            _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+            _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
             var prod = _jobObservation.Models.Split('|');
             models[0] = Int32.Parse(prod[0]);
@@ -175,6 +177,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
+        //Job observations
         private async void ShowAreas()
         {
             _jobObservation.AreaId = 0;
@@ -204,8 +207,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 Console.WriteLine(newDate1);
             }
-            else
+            else {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date Start", Severity.Error);
                 Console.WriteLine("Unable to parse '{0}'", hour1);
+            }
 
 
             if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
@@ -213,8 +220,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Console.WriteLine(newDate2);
             }
             else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date End", Severity.Error);
                 Console.WriteLine("Unable to parse '{0}'", hour2);
-
+            }
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.DateStart = newDate1;
@@ -246,21 +257,35 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
 
+
+
         //timer
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
+
+            TimeSpan hundreths;
+            int centiseconds = 0;
+            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+                Console.WriteLine($"The duration in hundredths of a second is: {centiseconds}");
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
             switch (opt)
             {
                 case 1:
-                    cicles[0] = elapsedTime; break;
+                    cicles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = elapsedTime; break;
+                    cicles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = elapsedTime; break;
+                    cicles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = elapsedTime; break;
+                    cicles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = elapsedTime; break;
+                    cicles[4] = centiseconds.ToString(); break;
             }
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0, 12);
@@ -283,6 +308,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
             elapsedTime = DEFAULT_TIME;
+
         }
 
         void OnTimerChanged()
@@ -322,6 +348,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
 
         }
+
+
+
 
 
         //Lup

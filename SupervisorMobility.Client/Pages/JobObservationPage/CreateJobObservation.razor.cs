@@ -39,14 +39,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string areaOther;
 
         int[] models = new int[5];
-        string[] cicles = new string[5] { "00:00:00", "00:00:00", "00:00:00", "00:00:00", "00:00:00" };
+        string[] cicles = new string[5] { "", "", "", "", "" };
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
           "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
 
         //timer
-        const string DEFAULT_TIME = "00:00:00";
+        const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
         System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
@@ -94,11 +94,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-
-            foreach (var kvp in _glosaryInfo)
-            {
-                Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value.Description);
-            }
             date = date.Replace("-", "/");
 
             _jobObservation.IsActive= true;
@@ -106,7 +101,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.Option = 3;
             _plants = await PlantServices.GetPlants();
-            _products = await ProductService.GetProducts();
+            //_products = await ProductService.GetProducts();
 
             await GetUserAsync();
 
@@ -186,6 +181,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         private void ShowOperations()
         {
+            _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
         }
@@ -256,21 +252,34 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             NavigationManager.NavigateTo("/jobobservation");
         }
 
+
+
         //timer
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
+            TimeSpan hundreths;
+            int centiseconds = 0;
+            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+                Console.WriteLine($"The duration in hundredths of a second is: {centiseconds}");
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
             switch (opt)
             {
                 case 1:
-                    cicles[0] = elapsedTime; break;
+                    cicles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = elapsedTime; break;
+                    cicles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = elapsedTime; break;
+                    cicles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = elapsedTime; break;
+                    cicles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = elapsedTime; break;
+                    cicles[4] = centiseconds.ToString(); break;
             }
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0,12);
