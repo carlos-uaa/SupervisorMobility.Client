@@ -262,7 +262,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
                 centiseconds = (int)hundreths.TotalMilliseconds / 10;
-                Console.WriteLine($"The duration in hundredths of a second is: {centiseconds}");
             }
             else
             {
@@ -298,6 +297,29 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         void StopTimer()
         {
+            TimeSpan hundreths;
+            int centiseconds = 0;
+            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
+            switch (opt)
+            {
+                case 1:
+                    cicles[0] = centiseconds.ToString(); break;
+                case 2:
+                    cicles[1] = centiseconds.ToString(); break;
+                case 3:
+                    cicles[2] = centiseconds.ToString(); break;
+                case 4:
+                    cicles[3] = centiseconds.ToString(); break;
+                case 5:
+                    cicles[4] = centiseconds.ToString(); break;
+            }
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
