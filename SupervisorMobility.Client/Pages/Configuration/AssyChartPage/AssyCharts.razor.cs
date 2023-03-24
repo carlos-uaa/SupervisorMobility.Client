@@ -4,6 +4,7 @@ using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.CDMS;
 using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using SupervisorMobility.Client.Services.AssyChartService;
 using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
@@ -24,14 +25,92 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool ronly = false;
         private string searchString = "";
 
+
+
+
         // Objects
         public List<AssyChart> _assychart { get; set; } = new();
+        public List<AssyChart> _assychartplant { get; set; } = new();
+        public List<AssyChart> _assychartarea { get; set; } = new();
+        public List<AssyChart> _assychartdistribution { get; set; } = new();
 
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
+        List<Distribution> _distributions { get; set; } = new();
+
+        bool seeplant = true;
+        bool seearea = false;
+        bool seedistribution = false;
+
+        bool showtablePlant = false;
+        bool showtableArea = false;
+        bool showtableDistribution = false;
+
+        private int plantId = 0;
+        private int areaId = 0;
+        private int distributionId = 0;
 
         protected async override Task OnInitializedAsync()
         {
             _assychart = await AssyChartServices.GetAssyCharts();
+            _plants = await PlantServices.GetPlants();
         }
+
+        async void UpdateAreas()
+        {
+            _assychartplant.Clear();
+            showtablePlant = false;
+            distributionId = 0;
+            _distributions.Clear();
+            areaId = 0;
+            _areas.Clear();
+            _areas = await AreaServices.GetAreas(plantId);
+            _assychartplant = await AssyChartServices.GetAssyChartsByPlant(plantId);
+            showtablePlant = true;
+            StateHasChanged();
+        }
+        //Function Update Distributions on change Area select
+
+        private async void UpdateDistributions()
+        {
+            _assychartarea.Clear();
+            showtableArea = false;
+            distributionId = 0;
+            _distributions.Clear();
+            _distributions = await DistributionServices.GetDistributions(plantId, areaId);
+            _assychartarea = await AssyChartServices.GetAssyChartsByArea(plantId, areaId);
+            showtableArea = true;
+            StateHasChanged();
+        }
+
+        private async void UpdateDistirbutionAssyChart()
+        {
+            _assychartdistribution.Clear();
+            showtableDistribution = false;
+            _assychartdistribution = await AssyChartServices.GetAssyChartsByDistribution(plantId, areaId, distributionId);
+            showtableDistribution = true;
+            StateHasChanged();
+        }
+
+        private void plantsTab()
+        {
+            seeplant = true;
+            seearea = false;
+            seedistribution = false;
+        }
+        private void areaTab()
+        {
+            seeplant = true;
+            seearea = true;
+            seedistribution = false;
+        }
+        private void distributionTab()
+        {
+            seeplant = true;
+            seearea = true;
+            seedistribution = true;
+        }
+
 
 
         //Filtering

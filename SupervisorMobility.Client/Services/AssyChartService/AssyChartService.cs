@@ -2,6 +2,7 @@
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.AssyChartPage;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using System.IO;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.AssyChartService
@@ -9,6 +10,7 @@ namespace SupervisorMobility.Client.Services.AssyChartService
     public class AssyChartService : IAssyChartService
     {
         private readonly HttpClient _http;
+        private readonly IJSRuntime _js;
         private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
@@ -17,6 +19,7 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         {
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
         //Create Assychart
@@ -56,30 +59,58 @@ namespace SupervisorMobility.Client.Services.AssyChartService
 
       
 
-        public Task<List<AssyChart>> GetAssyChartsByArea(int plantId, int areaId)
+        public async Task<List<AssyChart>> GetAssyChartsByArea(int plantId, int areaId)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Get AssyCharts By Area: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
         }
 
-        public Task<List<AssyChart>> GetAssyChartsByDistribution(int plantId, int areaId, int distributionId)
+        public async Task<List<AssyChart>> GetAssyChartsByDistribution(int plantId, int areaId, int distributionId)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Get AssyCharts By Plant: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
         }
 
         public async Task<List<AssyChart>> GetAssyChartsByPlant(int plantId)
         {
-            var response = await _http.GetAsync($"assycharts/byplantid/{plantId}");
+            var response = await _http.GetAsync($"assycharts/plant/{plantId}");
 
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                throw new ApplicationException(content);
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Get AssyCharts By Plant: {response.Content.ReadAsStringAsync().Result}");
             }
 
-            var assycharts = JsonSerializer.Deserialize<List<AssyChart>>(content, _options);
-
-            return assycharts;
+            return null;
         }
 
         public async Task<bool> UpdateAssyChart(int assychartId, AssyChart AssyChartToUpdate)
