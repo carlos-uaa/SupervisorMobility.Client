@@ -117,7 +117,7 @@ namespace SupervisorMobility.Client.Services.DistributionService
         public async Task<Product> CreateProduct(int plantId, int areaId, int distributionId, Product product)
         {
 
-            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions{distributionId}/products", product);
+            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}/products", product);
             var content = await response.Content.ReadAsStringAsync();
 
            
@@ -134,7 +134,7 @@ namespace SupervisorMobility.Client.Services.DistributionService
         
         public async Task<Product> AddProduct(int plantId, int areaId, int distributionId, Product product)
         {
-            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions{distributionId}/products/add", product);
+            var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}/products/add", product);
             var content = await response.Content.ReadAsStringAsync();
 
 
