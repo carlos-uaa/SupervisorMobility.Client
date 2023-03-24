@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 
+@inject IUserService UsersService
+@inject IJSRuntime js
+
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -9,10 +12,15 @@
 
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        
-        <MudMenu StartIcon="@Icons.Material.Filled.Info" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="Need help navigating?" Color="Color.Inherit" Style="color:white">
+        <MudMenu StartIcon="@Icons.Material.Filled.Info" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="Need help navigating?" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
             <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
                 Guides
+            </MudMenuItem>
+        </MudMenu>
+        <MudSpacer />
+        <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+            <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="(() => LogOut())">
+                Log out
             </MudMenuItem>
         </MudMenu>
     </MudAppBar>
@@ -38,29 +46,53 @@
 
                 <MudText>Hello! Username, @(DateTime.Today.Year)</MudText>
 
+                <MudList Clickable="true" @onmouseover="@OnMouseOver">
+                    <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text="Need help navigating?" Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                        <NestedList>
 
-                    <MudList Clickable="true" @onmouseover="@OnMouseOver">
-                        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text="Need help navigating?" Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
-                            <NestedList>
+                            <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
+                                Guides
+                            </MudListItem>
+                        </NestedList>
 
-                                <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
-                                    Guides
-                                </MudListItem>
-                            </NestedList>
-
-                        </MudListItem>
-                    </MudList>
-
-                </div>
-            </footer>
-
-        </MudMainContent>
-    </MudLayout>
+                    </MudListItem>
+                </MudList>
+            </div>
+        </footer>
+    </MudMainContent>
+</MudLayout>
 
     @code {
 
+    //User
+    public List<User> users;
+    public User user = new();
+
+    private string json = string.Empty;
+
     bool _drawerOpen = true;
     bool _IsHovering = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+        users = await UsersService.GetUsers();
+        user = users.FirstOrDefault()!;
+
+        json = JsonSerializer.Serialize<User>(user);
+        await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+    }
+
+    private async Task LogOut()
+    {
+        if (await HasPropertyAsync())
+            await js.InvokeAsync<string>("localStorage.removeItem", "user");
+
+        user.Name = "Log in";
+    }
+
+    private async Task<bool> HasPropertyAsync() => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;

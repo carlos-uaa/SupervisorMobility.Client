@@ -17,6 +17,7 @@ using SupervisorMobility.Client.Shared;
 using SupervisorMobility.Client.Services;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace SupervisorMobility.Client.Shared
 {
@@ -27,24 +28,27 @@ namespace SupervisorMobility.Client.Shared
         DateTime yesterday = DateTime.Today.AddDays(-1);
         DateTime thisWeek = DateTime.Today.AddDays(7);
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+
         //Past job observation
-        public List<User> users;
-        public User user;
         public List<JobObservation> jobObservations = new();
         public List<JobObservation> lateObservations = new();
         public List<JobObservation> todayObservations = new();
         public List<JobObservation> thisWeekObservations = new();
+
+
 
         protected async override Task OnInitializedAsync()
         {
 
             await LateDates();
 
-            //job obseravtion
-            users = await UsersService.GetUsers();
-            user = users.FirstOrDefault()!;
+            //user
+            await GetUserAsync();
 
-            if(user != null)
+            if (user != null)
             {
                 jobObservations = await JobObservationService.GetAllJobObservations();
 
@@ -100,6 +104,28 @@ namespace SupervisorMobility.Client.Shared
                 }
             }
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await js.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
 
         void JobObservationUpdate(int jobObservationId)
         {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using System;
 using System.Globalization;
 using System.Timers;
@@ -38,14 +39,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string areaOther;
 
         int[] models = new int[5];
-        string[] cicles = new string[5] { "00:00:00", "00:00:00", "00:00:00", "00:00:00", "00:00:00" };
+        string[] cicles = new string[5] { "", "", "", "", "" };
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
           "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
 
         //timer
-        const string DEFAULT_TIME = "00:00:00";
+        const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
         System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
@@ -66,8 +67,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         //Past job observation
-        public List<User> users;
-        public User user;
         public List<JobObservation> pastJobs = new();
         public List<JobObservation> pastjobObservations = new();
         public List<Lup> pastLup = new();
@@ -83,21 +82,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             new BreadcrumbItem("New Job Observation", href: "", disabled: true)
         };
 
+
+        //User
+        private string json = string.Empty;
+        public User user = new();
+
         protected async override Task OnInitializedAsync()
         {
 
-            //Past Job observations
-            users = await UsersService.GetUsers();
-            user = users.FirstOrDefault()!;
 
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-
-            foreach (var kvp in _glosaryInfo)
-            {
-                Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value.Description);
-            }
             date = date.Replace("-", "/");
 
             _jobObservation.IsActive= true;
@@ -105,9 +101,22 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.Option = 3;
             _plants = await PlantServices.GetPlants();
-            _products = await ProductService.GetProducts();
+            //_products = await ProductService.GetProducts();
 
+            await GetUserAsync();
 
+            if (user != null)
+            {
+                _plants = await PlantServices.GetPlants();
+                _jobObservation.PlantId = user.PlantId;
+
+                _jobObservation.AreaId = user.AreaId;
+
+                _areas = await AreaServices.GetAreas(user.PlantId);
+                _jobObservation.Observer = user.Name;
+                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                StateHasChanged();
+            }
 
             if (user != null)
             {
@@ -133,6 +142,29 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
         private async void ShowAreas()
         {
             _jobObservation.AreaId = 0;
@@ -149,6 +181,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         private void ShowOperations()
         {
+            _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
         }
@@ -219,21 +252,34 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             NavigationManager.NavigateTo("/jobobservation");
         }
 
+
+
         //timer
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
+            TimeSpan hundreths;
+            int centiseconds = 0;
+            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+                Console.WriteLine($"The duration in hundredths of a second is: {centiseconds}");
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
             switch (opt)
             {
                 case 1:
-                    cicles[0] = elapsedTime; break;
+                    cicles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = elapsedTime; break;
+                    cicles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = elapsedTime; break;
+                    cicles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = elapsedTime; break;
+                    cicles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = elapsedTime; break;
+                    cicles[4] = centiseconds.ToString(); break;
             }
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0,12);
