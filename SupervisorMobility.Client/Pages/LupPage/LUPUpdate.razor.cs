@@ -22,10 +22,22 @@ namespace SupervisorMobility.Client.Pages.LupPage
         };
 
         public Lup _lup { get; set; } = new();
+        public JobObservation jobObservation { get; set; } = new();
+
+        //Justification Modal
+        private bool visible = false;
+        private void OpenCancelDialog()
+        {
+            visible = true;
+        }
+        void Close() => visible = false;
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
 
         protected async override Task OnInitializedAsync()
         {
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
+            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
         }
         private async Task EditLup()
         {

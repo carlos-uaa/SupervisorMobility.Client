@@ -7,7 +7,8 @@
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
 @inject IFileUploadAndDownloadService FilesServices
- 
+@inject IJobObservationService JobObservationService
+
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Lup</PageTitle>
 @*Breadcrumb links*@
@@ -126,9 +127,11 @@
                         <td>
                             <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @_lup.JobObservationId</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @_lup.JobObservationId</MudChip>
                                 </MudBadge>
                             </MudTooltip>
+                            <MudChip Variant="Variant.Text" Color="Color.Info"> @jobObservation.Distribution?.Description</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Info"> @jobObservation.Operation?.Description</MudChip>
                         </td>
                     </tr>
                     <tr>
@@ -145,18 +148,6 @@
                         <td style="font-weight:bold">Q4</td>
                         <td>
                             <MudTextField T="string" @bind-Value="_lup.Q4" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:bold">
-                            <MudTooltip Text="In order to cancel the Lup, write the justification" Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                    Justification
-                                </MudBadge>
-                            </MudTooltip>
-                        </td>
-                        <td>
-                            <MudTextField T="string" @bind-Value="_lup.Justification" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
                         </td>
                     </tr>
                     <tr>
@@ -385,9 +376,24 @@
         <MudCardActions>
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">On Hold</MudButton>
                 <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => FinishedLup())">Finished</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => CancelLup())">Cancel Lup</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCancelDialog())">Cancel Lup</MudButton>
                 <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => GoBack())">Go Back</MudButton>
         </MudCardActions>
     </MudItem>
 </MudGrid>
 </EditForm>
+
+@*Cancel Justification Modal*@
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="min-height:40vh; max-height: 75vh; overflow-y: scroll; text-align: center">
+            <MudText Typo="Typo.h6">Write down the justification to cancel the Lup.</MudText>
+            <MudTextField T="string" @bind-Value="_lup.Justification" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="10" Class="mt-8" />
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" @onclick="(() => CancelLup())">Save</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
