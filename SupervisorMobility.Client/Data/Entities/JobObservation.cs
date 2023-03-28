@@ -13,6 +13,10 @@ namespace SupervisorMobility.Client.Data.Entities
         public Operation Operation { get; set; }
         public ICollection<Lup> Lup { get; set; } = new List<Lup>();
 
+        public User Supervisor { get; set; }
+
+        public User Operator { get; set; }
+
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
         public int PlantId { get; set; }
@@ -25,6 +29,12 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operation")]
         public int OperationId { get; set; }
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Supervisor")]
+        public int SupervisorId { get; set; }
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operator")]
+        public int OperatorId { get; set; }
 
         public bool IsActive { get; set; }
 
@@ -36,12 +46,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public DateTime? DateFinalized { get; set; }
         public string? Justification { get; set; }
         public int? Status { get; set; }
-
-
-        [Required(ErrorMessage = "Observer is required")]
-        public string Observer { get; set; }
-        [Required(ErrorMessage = "Operator is required")]
-        public string Operator { get; set; }
 
         public int Option { get; set; }
         public string? Anomaly { get; set; }

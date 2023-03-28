@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Shared
 
                 foreach(var jobobs in jobObservations)
                 {
-                    if(jobobs.Observer == user.Name)
+                    if(jobobs.Supervisor.Name == user.Name)
                     {
                         //yesterday
                         if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)

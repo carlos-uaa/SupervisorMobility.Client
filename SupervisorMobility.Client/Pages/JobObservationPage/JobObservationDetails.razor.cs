@@ -52,8 +52,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
           "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
 
+        //Operator user
+        public List<User> users = new();
+        public List<User> operatorUsers = new();
+
         protected async override Task OnInitializedAsync()
         {
+
+            _jobObservation.Supervisor = new();
+            _jobObservation.Operator = new();
 
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);

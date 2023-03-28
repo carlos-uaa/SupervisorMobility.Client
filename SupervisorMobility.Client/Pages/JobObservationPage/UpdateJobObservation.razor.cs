@@ -91,18 +91,25 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
 
+        //Operator user
+        public List<User> users = new();
+        public List<User> operatorUsers = new();
         void Closed(MudChip chip)
         {
             // react to chip closed
         }
         protected async override Task OnInitializedAsync()
         {
-          
+
+            _jobObservation.Supervisor = new();
             //glosary
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+
+            Console.WriteLine(_jobObservation.Supervisor.Name);
+
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
 
 
@@ -125,6 +132,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
 
+            users = await UsersService.GetUsers();
+            foreach(var user in users)
+            {
+                if(user.Name == _jobObservation.Operator.Name)
+                {
+                    operatorUsers.Add(user);
+                }
+            }
+
+
             await GetUserAsync();
 
             if (user != null)
@@ -133,7 +150,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 
@@ -150,7 +167,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
-
 
 
         }
@@ -268,7 +284,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
                 centiseconds = (int)hundreths.TotalMilliseconds / 10;
-                Console.WriteLine($"The duration in hundredths of a second is: {centiseconds}");
             }
             else
             {
@@ -304,6 +319,29 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         void StopTimer()
         {
+            TimeSpan hundreths;
+            int centiseconds = 0;
+            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
+            switch (opt)
+            {
+                case 1:
+                    cicles[0] = centiseconds.ToString(); break;
+                case 2:
+                    cicles[1] = centiseconds.ToString(); break;
+                case 3:
+                    cicles[2] = centiseconds.ToString(); break;
+                case 4:
+                    cicles[3] = centiseconds.ToString(); break;
+                case 5:
+                    cicles[4] = centiseconds.ToString(); break;
+            }
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
@@ -322,7 +360,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public async void FinalizeJobObservation()
         {
 
-            if(_jobObservation.OperatorSignature != user.Payroll.ToString())
+            if(_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -433,7 +471,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            lup.Observer = _jobObservation.Observer;
+            lup.Observer = _jobObservation.Supervisor.Name;
             lup.JobObservationId = _jobObservation.JobObservationId;
             lup.Pillar = pillar;
             lup.Status = 1;
@@ -456,7 +494,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -526,7 +564,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 

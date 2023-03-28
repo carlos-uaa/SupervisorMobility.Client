@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.LupPage
 {
@@ -9,10 +10,12 @@ namespace SupervisorMobility.Client.Pages.LupPage
         public int LupId { get; set; }
 
         public Lup _lup { get; set; } = new();
+        public JobObservation jobObservation { get; set; } = new();
 
         protected async override Task OnInitializedAsync()
         {
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
+            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
 
         }
 

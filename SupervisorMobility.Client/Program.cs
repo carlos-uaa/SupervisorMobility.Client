@@ -28,9 +28,27 @@ using MudBlazor.Services;
 using SupervisorMobility.Client;
 using Microsoft.Extensions.DependencyInjection;
 
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Add services to the container.
+//var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ');
+
+//builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+//    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+//        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+//            .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamApi"))
+//            .AddInMemoryTokenCaches();
+//builder.Services.AddControllersWithViews()
+//    .AddMicrosoftIdentityUI();
+
+//builder.Services.AddAuthorization(options =>
+//{
+//    // By default, all incoming requests will be authorized according to the default policy
+//    options.FallbackPolicy = options.DefaultPolicy;
+//});
 
 // Services
 builder.Services.AddMudServices();
@@ -52,6 +70,11 @@ builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
+
+
+
+
+
 
 // Connection to API
 builder.Services.AddScoped<CustomHttpClientService>();
