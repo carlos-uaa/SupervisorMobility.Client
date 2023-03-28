@@ -135,11 +135,12 @@ namespace SupervisorMobility.Client.Services.DistributionService
         public async Task<Product> AddProduct(int plantId, int areaId, int distributionId, Product product)
         {
             var response = await _http.PostAsJsonAsync<Product>($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}/products/add", product);
-            var content = await response.Content.ReadAsStringAsync();
 
 
             if (response.IsSuccessStatusCode)
             {
+                var content = await response.Content.ReadAsStringAsync();
+
                 var newproduct = await response.Content.ReadFromJsonAsync<Product>();
                 return newproduct;
             }

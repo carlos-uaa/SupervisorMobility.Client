@@ -94,7 +94,6 @@ else
                             <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
                         </MudTd>
                         <MudTd DataLabel="GOS">
-                            <MudText Align="Align.Center">
                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
                                     <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
                                         <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
@@ -102,19 +101,15 @@ else
                                         </MudButton>
                                     </MudTooltip>
                                 </MudTooltip>
-                            </MudText>
                         </MudTd> <MudTd DataLabel="CCP">
-                            <MudText Align="Align.Center">
+                                        <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(context.CCP))">
                                     <MudTooltip Text="@context.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                        <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
                                             <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
-                                        </MudButton>
                                     </MudTooltip>
                                 </MudTooltip>
-                            </MudText>
+                                        </MudButton>
                         </MudTd> <MudTd DataLabel="HOE">
-                            <MudText Align="Align.Center">
                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
                                     <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
                                         <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
@@ -122,8 +117,7 @@ else
                                         </MudButton>
                                     </MudTooltip>
                                 </MudTooltip>
-                            </MudText>
-                        </MudTd>
+                        </MudTd> 
                         <MudTd DataLabel="Description">
                             <MudText Align="Align.Center">@context.Operation?.Description</MudText>
                         </MudTd>
@@ -150,67 +144,37 @@ else
             </MudTabPanel>
             <MudTabPanel Icon="@Icons.Material.Filled.ScreenSearchDesktop" Text="By Filtering">
 
-                <MudItem Class="d-flex flex-column align-center justify-center mud-width-ful">
-                    <MudItem class="d-flex justify-center align-self-center ">
-                        <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
+
+
+
+
+                <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                    <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Plants" OnClick="plantsTab">
+                        <MudItem Class="d-flex flex-column align-center justify-center">
+                            <MudItem class="d-flex justify-center align-self-center ">
+                                <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
+                            </MudItem>
+                            <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                                @if (seeplant)
+                            {
+                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" AnchorOrigin="Origin.BottomCenter" @bind-Value="plantId" For="@(() => plantId)" SelectedValuesChanged="UpdateAreas">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudPaper>
+                            }
+                        </MudPaper>
                     </MudItem>
-                    <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
-                        @if (seeplant)
-                    {
-                        <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-
-
-                            <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" AnchorOrigin="Origin.BottomCenter" @bind-Value="plantId" For="@(() => plantId)" SelectedValuesChanged="UpdateAreas">
-                                <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
-                                @foreach (var type in _plants)
-                                {
-                                    <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                }
-                            </MudSelect>
-
-                        </MudPaper>
-                    }
-                    @if (seearea)
-                    {
-                        @*Mud select of Areas *@
-                        <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-
-                            <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" For="@(() => areaId)" SelectedValuesChanged="UpdateDistributions">
-                                <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
-                                @foreach (var type in _areas)
-                                {
-                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                }
-                            </MudSelect>
-
-                        </MudPaper>
-                    }
-                    @if (seedistribution)
-                    {
-                        @*Mud select of Distributions *@
-                        <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-
-                            <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" AnchorOrigin="Origin.BottomCenter" @bind-Value="distributionId" For="@(() => distributionId)" SelectedValuesChanged="UpdateDistirbutionAssyChart">
-                                <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
-                                @foreach (var type in _distributions)
-                                {
-                                    <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                }
-                            </MudSelect>
-
-                        </MudPaper>
-                    }
-                </MudPaper>
-            </MudItem>
-
-
-
-            <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Plants" OnClick="plantsTab">
-
                     @if (plantId != 0)
                     {
-                        if(showtablePlant && _assychartplant.Count > 0)
+                        if (showtablePlant && _assychartplant.Count > 0)
                         {
                             <MudTable Items="_assychartplant" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
@@ -324,7 +288,9 @@ else
                                         <MudTablePager />
                                     </PagerContent>
                                 </MudTable>
-                        }else{
+                        }
+                        else
+                        {
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
                     }
@@ -338,9 +304,61 @@ else
 
                 </MudTabPanel>
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Area" OnClick="areaTab">
+                    <MudItem Class="d-flex flex-column align-center justify-center">
+                        <MudItem class="d-flex justify-center align-self-center ">
+                            <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
+                        </MudItem>
+                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                            @if (seeplant)
+                            {
+                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" AnchorOrigin="Origin.BottomCenter" @bind-Value="plantId" For="@(() => plantId)" SelectedValuesChanged="UpdateAreas">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudPaper>
+                            }
+                            @if (seearea)
+                            {
+                                @*Mud select of Areas *@
+                                <MudItem Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" For="@(() => areaId)" SelectedValuesChanged="UpdateDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                        @foreach (var type in _areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudItem>
+                            }
+                            @if (seedistribution)
+                            {
+                                @*Mud select of Distributions *@
+                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+                                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" AnchorOrigin="Origin.BottomCenter" @bind-Value="distributionId" For="@(() => distributionId)" SelectedValuesChanged="UpdateDistirbutionAssyChart">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                                        @foreach (var type in _distributions)
+                                        {
+                                            <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudPaper>
+                            }
+                        </MudPaper>
+                    </MudItem>
                     @if (areaId != 0)
                     {
-                        if(showtableArea && _assychartarea.Count > 0)
+                        if (showtableArea && _assychartarea.Count > 0)
                         {
                             <MudTable Items="_assychartarea" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
@@ -454,16 +472,19 @@ else
                                         <MudTablePager />
                                     </PagerContent>
                                 </MudTable>
-                        }else{
+                        }
+                        else
+                        {
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
                     }
                     else
                     {
-                          @if(plantId == 0){
+                        @if (plantId == 0)
+                        {
                             <MudItem class="d-flex justify-center align-self-center my-5">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">please select one plant</MudText>
-                        </MudItem>
+                                <MudText Typo="Typo.h6" Class="align-item-center center">please select one plant</MudText>
+                            </MudItem>
                         }
                         <MudItem class="d-flex justify-center align-self-center my-5">
                             <MudText Typo="Typo.h6" Class="align-item-center center">please select one area</MudText>
@@ -472,10 +493,61 @@ else
 
                 </MudTabPanel>
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Distribution" OnClick="distributionTab">
-                   
+                    <MudItem Class="d-flex flex-column align-center justify-center">
+                        <MudItem class="d-flex justify-center align-self-center ">
+                            <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
+                        </MudItem>
+                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                            @if (seeplant)
+                            {
+                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" AnchorOrigin="Origin.BottomCenter" @bind-Value="plantId" For="@(() => plantId)" SelectedValuesChanged="UpdateAreas">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudPaper>
+                            }
+                            @if (seearea)
+                            {
+                                @*Mud select of Areas *@
+                                <MudItem Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" For="@(() => areaId)" SelectedValuesChanged="UpdateDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                        @foreach (var type in _areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudItem>
+                            }
+                            @if (seedistribution)
+                            {
+                                @*Mud select of Distributions *@
+                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+
+                                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" AnchorOrigin="Origin.BottomCenter" @bind-Value="distributionId" For="@(() => distributionId)" SelectedValuesChanged="UpdateDistirbutionAssyChart">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                                        @foreach (var type in _distributions)
+                                        {
+                                            <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                </MudPaper>
+                            }
+                        </MudPaper>
+                    </MudItem>
                     @if (distributionId != 0)
                     {
-                        if(showtableDistribution && _assychartdistribution.Count > 0)
+                        if (showtableDistribution && _assychartdistribution.Count > 0)
                         {
                             <MudTable Items="_assychartdistribution" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
@@ -589,22 +661,26 @@ else
                                         <MudTablePager />
                                     </PagerContent>
                                 </MudTable>
-                        }else{
+                        }
+                        else
+                        {
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
                     }
                     else
                     {
-                        @if(plantId == 0){
+                        @if (plantId == 0)
+                        {
                             <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">please select one plant</MudText>
-                        </MudItem>
+                                <MudText Typo="Typo.h6" Class="align-item-center center">please select one plant</MudText>
+                            </MudItem>
                         }
 
-                         @if(areaId == 0){
+                        @if (areaId == 0)
+                        {
                             <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">please select one area</MudText>
-                        </MudItem>
+                                <MudText Typo="Typo.h6" Class="align-item-center center">please select one area</MudText>
+                            </MudItem>
                         }
                         <MudItem class="d-flex justify-center align-self-center ">
                             <MudText Typo="Typo.h6" Class="align-item-center center">please select one distribution</MudText>
@@ -627,6 +703,8 @@ else
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll" Class="d-flex flex-wrap gap-4 ">
 
+            @if(GosFilesInFolder != null){
+            @if( GosFilesInFolder.operation.Count() > 0){
             @foreach (GOSDocument DocFile in GosFilesInFolder.operation)
             {
                 <MudItem Class="d-flex justify-center flex-wrap flex-column align-content-center align-center">
@@ -697,6 +775,10 @@ else
 
                     </MudItem>
                 </MudItem>
+            }
+            }else{
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+            }
             }
 
 

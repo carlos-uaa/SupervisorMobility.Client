@@ -1,9 +1,15 @@
 ﻿@page "/usersmanagement/EditUser/{userId:int}"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
-@inject IFileUploadAndDownloadService FileUpDoServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IUserService UsersServices
+@inject IGroupService GroupServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Edit Users</PageTitle>
+<PageTitle>Supervisor Mobility | Detail Users</PageTitle>
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -13,10 +19,146 @@
 
 
 
+@if (showui)
+{
+    <EditForm Model="_user" OnValidSubmit="UpdateUserAsync">
+        <DataAnnotationsValidator />
+
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h4">User Edit</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudChip Variant="Variant.Text" Color="Color.Info">Update User</MudChip>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudItem Class="flex d-flex-row align-center justify-center">
+                                <MudTextField Typo="Typo.h5" Align="Align.Center" Label="Name" @bind-Value="@_user.Name">@_user.Name</MudTextField>
+
+                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+
+                                @if (_user.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center" Class="pa-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center" Class="pa-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+
+                                <MudSwitch Class="ma-1" Label="Is Active?" @bind-Checked="_user.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                            </MudItem>
+                            </MudItem>
+
+                        <MudItem Class="d-flex flex-column align-center justify-center pa-1 ma-1">
+                            <MudItem class="d-flex justify-center align-self-center">
+                                <MudText Typo="Typo.h6" Class="align-item-center center">Permissions</MudText>
+                            </MudItem>
+
+                            
+                            
+                              <MudItem Class="d-flex flex-row align-center justify-center pt-1 mt-1">
+                                    @if (_user.IsAdmin)
+                                    {
+                                        <MudPaper Class="flex d-flex-row pa-1 ma-1" Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                        </MudPaper>
+                                    }
+
+                                    @if (_user.IsSupervisor)
+                                    {
+                                        <MudPaper Class="flex d-flex-row pa-1 ma-1" Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                        </MudPaper>
+                                    }
+
+                                    @if (_user.IsOperator)
+                                    {
+                                        <MudPaper Class="flex d-flex-row pa-1 ma-1" Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Info">Operator</MudChip>
+                                        </MudPaper>
+                                    }
+
+                               </MudItem>
+                            <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
+
+                                <MudSwitch Class="ma-1" Label="Is Admin?" Color="Color.Primary" UnCheckedColor="Color.Dark" @bind-Checked="_user.IsAdmin" @onchange="CambiarEstado" />
+                                <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Secondary" UnCheckedColor="Color.Dark"/>
+                                <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="_user.IsOperator" Color="Color.Info" UnCheckedColor="Color.Dark"/>
+
+                            </MudItem>
+
+
+                            
+                        </MudItem>
+
+                      
+                        @*Mud select of Plants *@
+                        <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.PlantId" For="@(() => _user.PlantId)" SelectedValuesChanged="ShowAreas">
+                            <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                            @foreach (var type in _plants)
+                            {
+                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @*Mud select of Areas *@
+                        <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.AreaId" For="@(() => _user.AreaId)">
+                            <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @*Mud select of Areas *@
+                        <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.GroupId" For="@(() => _user.GroupId)">
+                            <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
+                            @foreach (var type in _groups)
+                            {
+                                <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
+                        <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">Cancel</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+}
+else
+{
+
+
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+        <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+            <MudText Typo="Typo.h6" Class="align-item-center center">Loading Form</MudText>
+        </MudItem>
+        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        </MudPaper>
+    </MudItem>
+}
+
+
+
 
 @code {
     [Parameter]
     public int userId { get; set; }
+
+
 
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -26,7 +168,90 @@
             new BreadcrumbItem("Edit Users", href: "", disabled: true),
         };
 
+    private User _user = new User();
+    private bool showui = false;
+
+    List<Plant> _plants { get; set; } = new();
+    List<Area> _areas = new();
+    List<Group> _groups { get; set; } = new();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _user = await UsersServices.GetUserAndCollection(userId);
+        showui = true;
+
+        _plants = await PlantServices.GetPlants();
+        _areas = await AreaServices.GetAreas(_user.PlantId);
+        _groups = await GroupServices.GetGroups();
+    }
+
+    private async void ShowAreas()
+    {
+        _user.AreaId = 0;
+        _areas = await AreaServices.GetAreas(_user.PlantId);
+    }
+
+    private void HandleCheckedChanged(bool checkedValue)
+    {
+
+    }
+
+    void CambiarEstado()
+    {
+        if (_user.IsAdmin)
+        {
+            _user.IsSupervisor = false;
+            _user.IsOperator = false;
+        }
+        else if (_user.IsSupervisor)
+        {
+            _user.IsAdmin = false;
+            _user.IsOperator = false;
+        }
+        else if (_user.IsOperator)
+        {
+            _user.IsAdmin = false;
+            _user.IsSupervisor = false;
+        }
+    }
+
+     void isadmin()
+    {
+        if (_user.IsAdmin)
+        {
+            _user.IsOperator = false;
+            _user.IsSupervisor = false;  
+        }
+        StateHasChanged();
+
+    }
+
+    private void isOperator()
+    {
+        if (_user.IsOperator)
+        {
+            _user.IsAdmin = false;
+            _user.IsSupervisor = false;  
+        }
+        StateHasChanged();
+    }
+
+    private void isSupervisor()
+    {
+        if (_user.IsSupervisor)
+        {
+            _user.IsAdmin = false;
+            _user.IsOperator = false;
+        }
+        StateHasChanged();
+
+    }
 
 
 
+    async void UpdateUserAsync()
+    {
+
+    }
 }

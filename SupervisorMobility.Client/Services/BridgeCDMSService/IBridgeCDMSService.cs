@@ -9,9 +9,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         Task<CDMS_HOE_Folder> GetFoldersHOE();
         Task<CDMS_GOS_Folder> GetFoldersGOS();
         //get Assy Chart by Id
-        Task<CDMS_CCP_Document> GetFilesCCP(string ruta);
+        Task<CDMS_CCP_Document> GetFilesCCP(string route);
         Task<CDMS_HOE_Document> GetFilesHOE(string route);
-        Task<CDMS_GOS_Document> GetFilesGOS(string ruta);
+        Task<CDMS_GOS_Document> GetFilesGOS(string route);
 
     }
 }

@@ -72,27 +72,25 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
         //get Assy Chart by Id
-        public async Task<CDMS_CCP_Document> GetFilesCCP(string ruta)
+        public async Task<CDMS_CCP_Document> GetFilesCCP(string route)
         {
+
 
             var parameters = new Dictionary<string, string>
         {
-            { "route", ruta }
+            { "route", route }
         };
 
             var content = new FormUrlEncodedContent(parameters);
 
-            var response = await _httpBridge.PostAsJsonAsync("/SMCcp/PostArchivesDirectoryCcp", content);
+            var response = await _httpBridge.PostAsync("SMCcp/PostArchivesDirectoryCcp", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Document>();
                 return result;
             }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", $"Error get files: {response.Content.ReadAsStringAsync().Result}");
-            }
+            
 
             return null;
         }
@@ -108,40 +106,43 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             var content = new FormUrlEncodedContent(parameters);
 
 
-            var response = await _httpBridge.PostAsync("/SMHoe/PostArchivesDirectoryHOE", content);
+            var response = await _httpBridge.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Document>();
                 return result;
             }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", $"Error get files: {response.Content.ReadAsStringAsync().Result}");
-            }
+            
 
             return null;
         }
-        public async Task<CDMS_GOS_Document> GetFilesGOS(string ruta)
+        public async Task<CDMS_GOS_Document> GetFilesGOS(string route)
         {
+            Console.WriteLine($"antes parametro");
+            Console.WriteLine($"gos {route}");
+
 
             var parameters = new Dictionary<string, string>
         {
-            { "route", ruta }
+            { "route", route }
         };
+            Console.WriteLine($"despues parametro");
 
             var content = new FormUrlEncodedContent(parameters);
-            var response = await _httpBridge.PostAsJsonAsync("/SMGos/PostArchivesDirectoryGos", content);
+
+
+            Console.WriteLine($"encoding");
+
+            var response = await _httpBridge.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+            Console.WriteLine($"respose");
 
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Document>();
                 return result;
             }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", $"Error get files: {response.Content.ReadAsStringAsync().Result}");
-            }
+           
 
             return null;
         }

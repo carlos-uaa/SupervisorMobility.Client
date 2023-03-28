@@ -178,19 +178,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private CDMS_GOS_Document GosFilesInFolder = new CDMS_GOS_Document();
         private async void OpenDialogGOS(string ruta)
         {
-            GosDialog = true;
+            Console.WriteLine($"gos {ruta}");
+        
             GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+            GosDialog = true;
         }
         void CloseGos() => GosDialog = false;
 
-        private void OpenDialogCcp(string ruta)
+        private async void OpenDialogCcp(string ruta)
         {
+            Console.WriteLine($"Cpc {ruta}");
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
             CcpDialog = true;
         }
         void CloseCcp() => CcpDialog = false;
 
         private async void OpenDialogHoe(string ruta)
         {
+            Console.WriteLine($"hoe {ruta}");
+
             HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
             HoeDialog = true;
         }

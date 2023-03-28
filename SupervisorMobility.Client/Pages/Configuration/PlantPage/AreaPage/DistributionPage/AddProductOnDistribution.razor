@@ -32,7 +32,7 @@
                 </MudCardHeader>
                 <MudCardContent>
                     <MudGrid Class="d-flex flex-row mb-5">
-                        <MudSelect T="int" Label="Product" Variant="Variant.Text" Placeholder="Select a Product to add" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@PlantId" For="@(() => PlantId)" SelectedValuesChanged="UpdateProductDisplay">
+                            <MudSelect T="int" Label="Product" Variant="Variant.Text" Placeholder="Select a Product to add" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ProductId" For="@(() => ProductId)" SelectedValuesChanged="UpdateProductDisplay">
                             <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
                             @foreach (var product in _products)
                             {
@@ -93,10 +93,10 @@ else
     [Parameter]
     public int DistributionId { get; set; }
 
-    public int ProductId { get; set; }
+    public int ProductId { get; set; } = 0;
 
 
-    public bool useButton = false;
+    public bool useButton = true;
 
     public Plant _plant { get; set; }
     public Area _area { get; set; }
@@ -112,7 +112,7 @@ else
         _products = await ProductServices.GetProducts();
         _plant = await PlantServices.GetPlantById(PlantId);
         _area = await AreaServices.GetAreaById(PlantId, AreaId);
-        _distribution = await DistributionServices.GetDistributionById(PlantId, AreaId, DistributionId);
+        _distribution = await DistributionServices.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
 
 
         _links.Add(new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"));
@@ -134,29 +134,34 @@ else
     // Cancel submit form
     void CancelCreateOrUpdate()
     {
-        NavigationManager.NavigateTo($"products/{ProductId}");
+        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
     }
 
 
     private void UpdateProductDisplay()
     {
 
-        _product = _products[_products.FindIndex(d => d.ProductId == ProductId)];
-
-        if (_distribution.Products.Exists(p => p.ProductId == _product.ProductId))
+        if (_distribution.Products.Exists(p => p.ProductId == ProductId))
         {
             useButton = true;
         }
         else
         {
-            useButton = false;
+            _product = _products[_products.FindIndex(d => d.ProductId == ProductId)];
+
+            if (ProductId != 0 && _product != null)
+                useButton = false;
         }
+
+        StateHasChanged();
     }
 
 
     // Create distribution
     async void AddingProductAsync()
     {
+        Console.WriteLine($"plant{PlantId}  area{AreaId} dist {DistributionId} prod {ProductId} product {_product.ProductId}");
+
         var result = await DistributionServices.AddProduct(PlantId, AreaId, DistributionId, _product);
 
         if (result != null)
