@@ -133,11 +133,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             cicles = _jobObservation.Cicles.Split('|');
 
             users = await UsersService.GetUsers();
-            foreach(var user in users)
+            foreach(var operatorUser in users)
             {
-                if(user.Name == _jobObservation.Operator.Name)
+                if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.IsOperator)
                 {
-                    operatorUsers.Add(user);
+                    operatorUsers.Add(operatorUser);
                 }
             }
 
