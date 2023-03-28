@@ -93,20 +93,23 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         //Operator user
         public List<User> users = new();
-        public User operatorUser = new();
-
+        public List<User> operatorUsers = new();
         void Closed(MudChip chip)
         {
             // react to chip closed
         }
         protected async override Task OnInitializedAsync()
         {
-          
+
+            _jobObservation.Supervisor = new();
             //glosary
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+
+            Console.WriteLine(_jobObservation.Supervisor.Name);
+
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
 
 
@@ -134,7 +137,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 if(user.Name == _jobObservation.Operator.Name)
                 {
-                    operatorUser = user;
+                    operatorUsers.Add(user);
                 }
             }
 
@@ -164,7 +167,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
-
 
 
         }
@@ -358,7 +360,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public async void FinalizeJobObservation()
         {
 
-            if(_jobObservation.OperatorSignature != operatorUser.Payroll.ToString())
+            if(_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
