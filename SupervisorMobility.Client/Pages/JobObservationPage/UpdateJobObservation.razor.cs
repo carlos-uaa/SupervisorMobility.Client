@@ -91,6 +91,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
 
+        //Operator user
+        public List<User> users = new();
+        public User operatorUser = new();
+
         void Closed(MudChip chip)
         {
             // react to chip closed
@@ -125,6 +129,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
 
+            users = await UsersService.GetUsers();
+            foreach(var user in users)
+            {
+                if(user.Name == _jobObservation.Operator.Name)
+                {
+                    operatorUser = user;
+                }
+            }
+
+
             await GetUserAsync();
 
             if (user != null)
@@ -133,7 +147,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 
@@ -344,7 +358,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public async void FinalizeJobObservation()
         {
 
-            if(_jobObservation.OperatorSignature != user.Payroll.ToString())
+            if(_jobObservation.OperatorSignature != operatorUser.Payroll.ToString())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -455,7 +469,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            lup.Observer = _jobObservation.Observer;
+            lup.Observer = _jobObservation.Supervisor.Name;
             lup.JobObservationId = _jobObservation.JobObservationId;
             lup.Pillar = pillar;
             lup.Status = 1;
@@ -478,7 +492,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -548,7 +562,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 

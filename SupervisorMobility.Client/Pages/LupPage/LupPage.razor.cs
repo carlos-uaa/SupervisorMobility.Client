@@ -7,6 +7,8 @@ namespace SupervisorMobility.Client.Pages.LupPage
     public partial class LupPage
     {
 
+        public List<JobObservation> jobObservationList { get; set; }
+
         public List<Lup> _lup { get; set; } = new();
         public List<Lup> _lupS { get; set; } = new();
         public List<Lup> _lupQ { get; set; } = new();
@@ -26,23 +28,77 @@ namespace SupervisorMobility.Client.Pages.LupPage
             new BreadcrumbItem("LUP", href: "/lup", disabled: true),
         };
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _lup = await LupServices.GetAllLup();
-            
-            foreach(var lup in _lup)
+
+            await GetUserAsync();
+
+            jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
+            foreach(var jobObs in jobObservationList)
             {
-                switch (lup.Pillar)
+                if(jobObs.Lup.Count > 0)
                 {
-                    case 1: _lupS.Add(lup); break;
-                    case 2: _lupQ.Add(lup); break;
-                    case 3: _lupD.Add(lup); break;
-                    case 4: _lupC.Add(lup); break;
-                    case 5: _lupOther.Add(lup); break;
+                    foreach (var lup in jobObs.Lup)
+                    {
+                        if(user != null && user.AreaId == jobObs.AreaId)
+                        {
+                            _lup.Add(lup);
+                            switch (lup.Pillar)
+                            {
+                                case 1: _lupS.Add(lup); break;
+                                case 2: _lupQ.Add(lup); break;
+                                case 3: _lupD.Add(lup); break;
+                                case 4: _lupC.Add(lup); break;
+                                case 5: _lupOther.Add(lup); break;
+                            }
+
+                        }
+                    }
                 }
             }
+
+
+            //_lup = await LupServices.GetAllLup();
+            
+            //foreach(var lup in _lup)
+            //{
+            //    switch (lup.Pillar)
+            //    {
+            //        case 1: _lupS.Add(lup); break;
+            //        case 2: _lupQ.Add(lup); break;
+            //        case 3: _lupD.Add(lup); break;
+            //        case 4: _lupC.Add(lup); break;
+            //        case 5: _lupOther.Add(lup); break;
+            //    }
+            //}
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
 
         // Create product
         void CreateLup()

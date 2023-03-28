@@ -91,9 +91,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return true;
             if (element.DateStart.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Operator.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Operator.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.JobObservationId} {element.Observer} {element.Operator}".Contains(searchString))
+            if ($"{element.JobObservationId} {element.Supervisor.Name} {element.Operator}".Contains(searchString))
                 return true;
             return false;
         }

@@ -87,21 +87,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
 
+        //Operator user
+        public List<User> users = new();
+        public List<User> operatorUsers = new();
+
         protected async override Task OnInitializedAsync()
         {
-
-
-            glosary = await GlosaryService.GetGlosary();
-            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
-
-            date = date.Replace("-", "/");
-
-            _jobObservation.IsActive= true;
-            _jobObservation.DateStart = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _jobObservation.Option = 3;
-            _plants = await PlantServices.GetPlants();
-            //_products = await ProductService.GetProducts();
+            _jobObservation.Supervisor = new();
 
             await GetUserAsync();
 
@@ -113,7 +105,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.AreaId = user.AreaId;
 
                 _areas = await AreaServices.GetAreas(user.PlantId);
-                _jobObservation.Observer = user.Name;
+                _jobObservation.SupervisorId = user.UserId;
+                _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
                 _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
                 StateHasChanged();
             }
@@ -124,7 +118,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Observer == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date)
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date)
                     {
 
                         pastjobObservations.Add(job);
@@ -138,8 +132,36 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 }
 
+
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+
+
+            //operator User
+            users = await UsersService.GetUsers();
+            foreach (var operatorUser in users)
+            {
+                if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.IsOperator)
+                {
+                    operatorUsers.Add(operatorUser);
+                }
+            }
+
+
+
+            glosary = await GlosaryService.GetGlosary();
+            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+            date = date.Replace("-", "/");
+
+            _jobObservation.IsActive = true;
+            _jobObservation.DateStart = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _jobObservation.Option = 3;
+
+            _plants = await PlantServices.GetPlants();
+            //_products = await ProductService.GetProducts();
+
 
         }
 
@@ -423,7 +445,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            lup.Observer = _jobObservation.Observer;
+            lup.Observer = _jobObservation.Supervisor.Name;
             lup.JobObservationId = 0;
             lup.Pillar = pillar;
             lup.Status = 1;
