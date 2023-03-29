@@ -33,9 +33,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         protected async override Task OnInitializedAsync()
         {
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
-         
-            _assychart.OperationDescription = _assychart.Operation.Description;
-            _assychart.OperationCode = _assychart.Operation.Code;
+
             _plants = await PlantServices.GetPlants();
             _areas = await AreaServices.GetAreas(_assychart.PlantId);
             _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
@@ -58,8 +56,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UpdateAssyChartAsync()
         {
-            _assychart.Operation.Description = _assychart.OperationDescription;
-            _assychart.Operation.Code = _assychart.OperationCode;
+          
 
             _assychart.ModificationDate = DateTime.Now;
             var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);

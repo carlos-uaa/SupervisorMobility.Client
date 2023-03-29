@@ -2,23 +2,23 @@
 {
     public class GOSDocument
     {
-        public int ID_DOC { get; }
-        public int ID_Contribuidor { get; }
-        public string Nombre { get; }
-        public string Extension { get; }
-        public string No_Rev { get; }
-        public string Fecha_Carga { get; }
-        public int Estatus { get; }
-        public string GOS_Code { get; }
-        public int ID_Aprobador { get; }
-        public int ID_Revisor { get; }
-        public string Folio_4Ms { get; }
-        public string Key_Word { get; }
-        public string Model_Year { get; }
-        public string Fecha_Modificacion { get; }
-        public int ID_UserModifico { get; }
-        public string WFInstance { get; }
-        public string URL { get; }
-        public bool Directory { get; }
+        public int ID_DOC { get; set; }
+        public int ID_Contribuidor { get; set; }
+        public string Nombre { get; set;}
+        public string Extension { get; set; }
+        public string No_Rev { get; set; }
+        public string Fecha_Carga { get; set; }
+        public int Estatus { get; set; }
+        public string GOS_Code { get; set; }
+        public int ID_Aprobador { get; set; }
+        public int ID_Revisor { get; set; }
+        public string Folio_4Ms { get; set; }
+        public string Key_Word { get; set; }
+        public string Model_Year { get; set; }
+        public string Fecha_Modificacion { get; set; }
+        public int ID_UserModifico { get; set; }
+        public string WFInstance { get; set; }
+        public string URL { get; set; }
+        public bool Directory { get; set; }
     }
 }

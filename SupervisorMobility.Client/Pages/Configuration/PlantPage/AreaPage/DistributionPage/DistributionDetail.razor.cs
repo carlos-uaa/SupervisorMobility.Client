@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         protected override async Task OnParametersSetAsync()
         {
             _distribution = await DistributionService.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
-            _area = await AreaService.GetAreaIncludingOperations(PlantId, AreaId);
+            _area = await AreaService.GetOneAreaIncludingCollections(PlantId, AreaId);
             _plant = await PlantService.GetPlantById(PlantId);
         }
 

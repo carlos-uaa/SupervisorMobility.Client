@@ -7,12 +7,9 @@ namespace SupervisorMobility.Client.Data.Entities
         public int AssyChardId { get; set; }
         [Required]
         public bool? IsActive { get; set; } = false;
-        [Required]
-        public string GOS { get; set; }
-        [Required]
-        public string CCP { get; set; }
-        [Required]
-        public string HOE { get; set; }
+        public string GOS { get; set; } = string.Empty;
+        public string CCP { get; set; } = string.Empty;
+        public string HOE { get; set; } = string.Empty;
         [Required]
         public DateTime CreationDate { get; set; }
         public DateTime ModificationDate { get; set; }
@@ -41,14 +38,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int OperationId { get; set; }
         public Operation Operation { get; set; }
         //Data Operation to create
-        [Required]
-        public string OperationCode { get; set;}
-        [Required]
-        public string OperationDescription { get; set;}
-        [Required]
-        public bool? OperationIsActive { get; set; } = false;
-        
-
+    
 
     }
 }

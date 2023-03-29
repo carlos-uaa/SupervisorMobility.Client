@@ -40,6 +40,25 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             var response = await _http.GetAsync($"assycharts/{assyChartId}");
             var content = await response.Content.ReadFromJsonAsync<AssyChart>(); 
             return content;
+        } 
+        
+        public async Task<AssyChart> GetAssyChartAdvance(int plantId, int areaId, int distributionId, int operationId)
+        {
+            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}/operation/{operationId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<AssyChart>(content, _options);
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Get Folders: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+
         }
 
         public async Task<List<AssyChart>> GetAssyCharts()

@@ -30,7 +30,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _area = await AreaService.GetAreaIncludingOperations(PlantId, AreaId);
+            _area = await AreaService.GetOneAreaIncludingCollections(PlantId, AreaId);
             _plant = await PlantService.GetPlantById(PlantId);
             _distributions = await DistributionService.GetDistributions(PlantId, AreaId);
         }

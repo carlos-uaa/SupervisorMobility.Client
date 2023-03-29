@@ -11,6 +11,7 @@
         Task<List<AssyChart>> GetAssyCharts();
         //get Assy Chart by Id
         Task<AssyChart> GetAssyChart(int assyChartId);
+        Task<AssyChart> GetAssyChartAdvance(int plantId, int areaId, int distributionId, int operationId);
         //Get All AssyChartsByPlant
         Task<List<AssyChart>> GetAssyChartsByPlant(int plantId);
         //Get All AssyChartsByArea

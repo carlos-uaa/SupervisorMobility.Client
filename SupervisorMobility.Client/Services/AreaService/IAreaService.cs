@@ -4,6 +4,7 @@
     {
         // Get all areas by plant id
         Task<List<Area>> GetAreas(int plantId);
+        Task<List<Area>> GetAreasIncludeCollections(int plantId);
 
         // Create area
         Task<Area> CreateArea(int plantId, Area area);
@@ -12,7 +13,7 @@
         Task<Area> GetAreaById(int plantId, int areaId);
 
         // Get area including operations
-        Task<Area> GetAreaIncludingOperations(int plantId, int areaId);
+        Task<Area> GetOneAreaIncludingCollections(int plantId, int areaId);
 
         // Update area
         Task<bool> UpdateArea(int plantId, Area area);

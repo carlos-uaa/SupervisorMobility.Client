@@ -23,50 +23,86 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         //CCP
         public async Task<CDMS_CCP_Folder> GetFoldersCCP()
         {
-            var response = await _httpBridge.GetAsync("SMCcp/GetDirectoryPathsCcp");
+           
+            try
+            {
+                var response = await _httpBridge.GetAsync("SMCcp/GetDirectoryPathsCcp");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Folder>();
-                return result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Folder>();
+                    return result;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
+
 
             return null;
         }
         //HOE
         public async Task<CDMS_HOE_Folder> GetFoldersHOE()
         {
-            var response = await _httpBridge.GetAsync("SMHoe/GetDirectoryPaths");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Folder>();
-                return result;
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-            }
+                var response = await _httpBridge.GetAsync("SMHoe/GetDirectoryPaths");
 
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Folder>();
+                    return result;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
             return null;
         }
         //GOS
         public async Task<CDMS_GOS_Folder> GetFoldersGOS()
         {
-            var response = await _httpBridge.GetAsync("SMGos/GetDirectoryPathsGos");
+            
 
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Folder>();
-                return result;
+                var response = await _httpBridge.GetAsync("SMGos/GetDirectoryPathsGos");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Folder>();
+                    return result;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return null;
@@ -83,16 +119,28 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             var content = new FormUrlEncodedContent(parameters);
 
-            var response = await _httpBridge.PostAsync("SMCcp/PostArchivesDirectoryCcp", content);
 
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Document>();
-                return result;
+                var response = await _httpBridge.PostAsync("SMCcp/PostArchivesDirectoryCcp", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Document>();
+                    return result;
+                }
             }
-            
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
 
             return null;
+
         }
         public async Task<CDMS_HOE_Document> GetFilesHOE(string route)
         {
@@ -106,43 +154,58 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             var content = new FormUrlEncodedContent(parameters);
 
 
-            var response = await _httpBridge.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Document>();
-                return result;
+                var response = await _httpBridge.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Document>();
+                    return result;
+                }
             }
-            
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
 
             return null;
         }
         public async Task<CDMS_GOS_Document> GetFilesGOS(string route)
         {
-            Console.WriteLine($"antes parametro");
-            Console.WriteLine($"gos {route}");
+
 
 
             var parameters = new Dictionary<string, string>
         {
             { "route", route }
         };
-            Console.WriteLine($"despues parametro");
 
             var content = new FormUrlEncodedContent(parameters);
 
 
-            Console.WriteLine($"encoding");
-
-            var response = await _httpBridge.PostAsync("SMGos/PostArchivesDirectoryGos", content);
-            Console.WriteLine($"respose");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Document>();
-                return result;
+                var response = await _httpBridge.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Document>();
+                    return result;
+                }
             }
-           
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
 
             return null;
         }

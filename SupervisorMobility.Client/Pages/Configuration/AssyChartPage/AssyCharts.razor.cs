@@ -25,10 +25,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool ronly = false;
         private string searchString = "";
 
-
-
-
-        // Objects
+        private string HOErute = "";
+        private string CCPrute = "";
+        private string GOSrute = "";
         public List<AssyChart> _assychart { get; set; } = new();
         public List<AssyChart> _assychartplant { get; set; } = new();
         public List<AssyChart> _assychartarea { get; set; } = new();
@@ -49,6 +48,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private int plantId = 0;
         private int areaId = 0;
         private int distributionId = 0;
+
+        private bool CcpDialog = false;
+        private bool HoeDialog = false;
+        private bool GosDialog = false;
+
+        private CDMS_CCP_Document? CcpFilesInFolder;
+        private CDMS_HOE_Document? HoeFilesInFolder;
+        private CDMS_GOS_Document? GosFilesInFolder;
+
+
+        private bool folderError = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -137,7 +147,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 return true;
             if (element.ModificationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.GOS} {element.CCP} {element.OperationDescription}".Contains(searchString))
+            if ($"{element.GOS}{element.CCP}{element.Operation.Description}{element.Plant.Description}{element.Area.Description}{element.Distribution.Description}".Contains(searchString))
                 return true;
             return false;
         }
@@ -156,7 +166,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         async Task DeleteAssyChart(int assychartid)
         {
 
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this AssyChart?");
+            bool confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this AssyChart?");
 
             if (confirm)
             {
@@ -169,40 +179,65 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
 
-        private bool CcpDialog = false;
-        private bool HoeDialog = false;
-        private bool GosDialog = false;
-
-        private CDMS_CCP_Document CcpFilesInFolder = new CDMS_CCP_Document();
-        private CDMS_HOE_Document HoeFilesInFolder = new CDMS_HOE_Document();
-        private CDMS_GOS_Document GosFilesInFolder = new CDMS_GOS_Document();
+        
         private async void OpenDialogGOS(string ruta)
         {
-            Console.WriteLine($"gos {ruta}");
-        
-            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+            GOSrute = ruta;
             GosDialog = true;
+            folderError = false;
+
+            Console.WriteLine($"gos {ruta}");
+
+            GosFilesInFolder = new CDMS_GOS_Document();
+
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+            if (GosFilesInFolder == null)
+                folderError = true;
+
+
+            StateHasChanged();
         }
         void CloseGos() => GosDialog = false;
 
         private async void OpenDialogCcp(string ruta)
         {
-            Console.WriteLine($"Cpc {ruta}");
-            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
+            CCPrute= ruta;
             CcpDialog = true;
+            folderError = false;
+            Console.WriteLine($"Cpc {ruta}");
+
+            CcpFilesInFolder = new CDMS_CCP_Document();
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
+            if (CcpFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
         }
         void CloseCcp() => CcpDialog = false;
 
         private async void OpenDialogHoe(string ruta)
         {
+            HOErute = ruta;
+            HoeDialog = true;
             Console.WriteLine($"hoe {ruta}");
 
+            folderError = false;
+            HoeFilesInFolder = new CDMS_HOE_Document();
             HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
-            HoeDialog = true;
+            if (HoeFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
         }
         void CloseHoe() => HoeDialog = false;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
+        private async Task DownloadFileFromURL(string urlroute, string namefile)
+        {
+            var fileName = namefile;
+            var fileURL = urlroute;
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
     }
 }
