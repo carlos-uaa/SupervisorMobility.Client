@@ -36,6 +36,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
         List<Product> _products { get; set; } = new();
+        private AssyChart _assychart { get; set; } = new AssyChart();
+        private string messageErrorFolders;
+        private bool searchAssychart = false;
+
 
         public int plantId;
         public int areaId;
@@ -168,7 +172,45 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
+            if (_jobObservation.PlantId != 0)
+            {
+                if (_jobObservation.AreaId != 0)
+                {
+                    if (_jobObservation.DistributionId != 0)
+                    {
+                        if (_jobObservation.DistributionId != 0)
+                        {
 
+                            _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                            if (_assychart == null)
+                                messageErrorFolders = "The folders with the information provided were not located.";
+                            else
+                                searchAssychart = true;
+
+                        }
+                        else
+                        {
+                            messageErrorFolders = "Job Observation does not contain a valid operation";
+                            Console.WriteLine("missing plant");
+                        }
+                    }
+                    else
+                    {
+                        messageErrorFolders = "Job Observation does not contain a valid distribution";
+                        Console.WriteLine("missing plant");
+                    }
+                }
+                else
+                {
+                    messageErrorFolders = "Job Observation does not contain a valid area";
+                    Console.WriteLine("missing plant");
+                }
+            }
+            else
+            {
+                messageErrorFolders = "Job Observation does not contain a valid plant";
+                Console.WriteLine("missing plant");
+            }
         }
 
         //Local storage user
@@ -596,6 +638,80 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             NavigationManager.NavigateTo($"/");
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+        }
+
+
+        private bool CcpDialog = false;
+        private bool HoeDialog = false;
+        private bool GosDialog = false;
+        private bool folderError = false;
+
+
+        private CDMS_CCP_Document CcpFilesInFolder = new CDMS_CCP_Document();
+        private CDMS_HOE_Document HoeFilesInFolder = new CDMS_HOE_Document();
+        private CDMS_GOS_Document GosFilesInFolder = new CDMS_GOS_Document();
+
+        private string HOErute = "";
+        private string CCPrute = "";
+        private string GOSrute = "";
+        private async void OpenDialogGOS(string ruta)
+        {
+            GOSrute = ruta;
+            GosDialog = true;
+            folderError = false;
+
+            Console.WriteLine($"gos {ruta}");
+
+            GosFilesInFolder = new CDMS_GOS_Document();
+
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+            if (GosFilesInFolder == null)
+                folderError = true;
+
+
+            StateHasChanged();
+        }
+        void CloseGos() => GosDialog = false;
+
+        private async void OpenDialogCcp(string ruta)
+        {
+            CCPrute = ruta;
+            CcpDialog = true;
+            folderError = false;
+            Console.WriteLine($"Cpc {ruta}");
+
+            CcpFilesInFolder = new CDMS_CCP_Document();
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
+            if (CcpFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
+        }
+        void CloseCcp() => CcpDialog = false;
+
+        private async void OpenDialogHoe(string ruta)
+        {
+            HOErute = ruta;
+            HoeDialog = true;
+            Console.WriteLine($"hoe {ruta}");
+
+            folderError = false;
+            HoeFilesInFolder = new CDMS_HOE_Document();
+            HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
+            if (HoeFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
+        }
+        void CloseHoe() => HoeDialog = false;
+
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        private async Task DownloadFileFromURL(string urlroute, string namefile)
+        {
+            var fileName = namefile;
+            var fileURL = urlroute;
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
         }
 
     }
