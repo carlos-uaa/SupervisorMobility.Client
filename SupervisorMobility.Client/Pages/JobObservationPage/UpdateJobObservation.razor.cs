@@ -368,6 +368,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.DateFinalized = DateTime.Now;
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;

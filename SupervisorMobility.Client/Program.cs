@@ -33,7 +33,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Add services to the container.
+//Add services to the container.
 //var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ');
 
 //builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
