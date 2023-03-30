@@ -92,6 +92,55 @@ namespace SupervisorMobility.Client.Shared
 
         }
 
+        public async Task Refresh()
+        {
+            await GetUserAsync();
+            lateObservations.Clear();
+            todayObservations.Clear();
+            thisWeekObservations.Clear();
+
+            if (user != null)
+            {
+                jobObservations = await JobObservationService.GetAllJobObservations();
+
+                foreach (var jobobs in jobObservations)
+                {
+                    if (jobobs.Supervisor.Name == user.Name)
+                    {
+                        //yesterday
+                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                        {
+                            lateObservations.Add(jobobs);
+
+                            lateObservations = lateObservations.OrderBy(x => x.DateStart).ToList();
+
+                        }
+
+                        if (Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date
+                            && Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
+                        {
+
+                            //today
+                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                            {
+                                todayObservations.Add(jobobs);
+                            }
+                            //this week
+                            else
+                            {
+                                thisWeekObservations.Add(jobobs);
+                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.DateStart).ToList();
+
+                            }
+
+
+
+                        }
+                    }
+                }
+
+            }
+        }
         public async Task LateDates()
         {
             jobObservations = await JobObservationService.GetAllJobObservations();

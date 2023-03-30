@@ -4,6 +4,14 @@
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Text.Json
+@using System.Diagnostics;
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -19,7 +27,7 @@
             </MudMenuItem>
         </MudMenu>
         <MudSpacer />
-        <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+@*        <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
             <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="(() => GetSupervisor())">
                 Supervisor
             </MudMenuItem>
@@ -29,7 +37,27 @@
             <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="(() => LogOut())">
                 Log out
             </MudMenuItem>
-        </MudMenu>
+        </MudMenu>*@
+@*        <LoginDisplay />*@
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@context.User.Identity?.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
+                        Log out
+                    </MudMenuItem>
+                </MudMenu>
+                @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">
+                    @context.User.Identity?.Name
+                </MudButton>
+                <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>*@
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Class="mr-10" Color="Color.Inherit" Style="color:white" Href="authentication/login">
+                    Log in
+                </MudButton>
+                @*<a href="authentication/login">Log in</a>*@
+            </NotAuthorized>
+        </AuthorizeView>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -80,9 +108,21 @@
     bool _drawerOpen = true;
     bool _IsHovering = false;
 
+    [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
     protected async override Task OnInitializedAsync()
     {
-        await GetUserAsync();
+        users = await UsersService.GetUsers();
+        AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
+        
+        // Get the current authentication state
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (!authState.User.Identity.IsAuthenticated)
+        {
+            await LogOut();
+        }
+        //await GetUserAsync();
         //users = await UsersService.GetUsers();
         //user = users.FirstOrDefault()!;
 
@@ -90,6 +130,40 @@
         //await js.InvokeVoidAsync("localStorage.setItem", "user", json);
     }
 
+
+    private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
+    {
+
+        // Get the current authentication state
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        // Get the user from the authentication state
+        var currentUser = authState.User;
+
+        var userId = currentUser.FindFirst("oid")?.Value;
+
+        foreach(var u in users)
+        {
+            if(u.Name == currentUser.Identity?.Name)
+            {
+                user = u;
+                json = JsonSerializer.Serialize<User>(user);
+                await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+            }
+        }
+
+        
+        // Do something with the user
+        //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
+        //await LocalStorage.SetItemAsync("user", userId);
+    }
+
+    private async Task BeginLogout(MouseEventArgs args)
+    {
+        await LogOut();
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
 
     //Local storage user
     private async Task GetUserAsync()
@@ -133,6 +207,7 @@
 
         json = JsonSerializer.Serialize<User>(user);
         await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+        NavigationManager.NavigateTo($"/", true);
     }
 
     private async Task LogOut()
