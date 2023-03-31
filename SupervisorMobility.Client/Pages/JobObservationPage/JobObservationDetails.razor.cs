@@ -102,7 +102,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         if (_jobObservation.DistributionId != 0)
                         {
 
-                            _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                            try
+                            {
+                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                if (_assychart == null)
+                                    messageErrorFolders = "The folders with the information provided were not located.";
+                                else
+                                    searchAssychart = true;
+                            }catch( Exception ex)
+                            {
+                                messageErrorFolders = "The folders with the information provided were not located.";
+                            }
+
                             if (_assychart == null)
                                 messageErrorFolders = "The folders with the information provided were not located.";
                             else

@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage
 {
@@ -98,12 +99,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Update product
         void EditProduct(int productId)
         {
-            NavigationManager.NavigateTo($"products/updateproduct/{productId}");
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{productId}/update");
         }
-
         void ProductDetails(int productId)
         {
-            NavigationManager.NavigateTo($"products/{productId}");
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{productId}/details");
         }
         private string searchString = "";
 

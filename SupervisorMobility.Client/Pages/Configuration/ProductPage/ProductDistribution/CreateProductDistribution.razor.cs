@@ -7,10 +7,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.ProductDistr
     {
         [Parameter]
         public int ProductId { get; set; }
+        // Objects
+        Product _product = new();
+        Distribution _distribution = new();
 
         public int PlantId { get; set; }
         public int AreaId { get; set; }
-
+    
         public List<Plant> _plants { get; set; } = new List<Plant>();
         public List<Area> _areas { get; set; } = new List<Area>();
 
@@ -20,19 +23,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.ProductDistr
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Products", href: "/products"),
-            new BreadcrumbItem("ProductsDetail", href: "", disabled: true),
-            new BreadcrumbItem("New Distribution", href: "", disabled: true),
         };
 
-        // Objects
-        Product _product = new();
-        Distribution _distribution = new();
 
-        // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _product = await ProductServices.GetProductById(ProductId);
+            _product = await ProductServices.GetProductAndCollection(ProductId);
             _plants = await PlantServices.GetPlants();
+
+            _links.Add(new BreadcrumbItem($"{_product.Description}", href: $"/products/{ProductId}"));
+            _links.Add(new BreadcrumbItem("Create New Distribution", href: "", disabled: true));
 
         }
 
