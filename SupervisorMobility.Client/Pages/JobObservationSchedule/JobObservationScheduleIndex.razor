@@ -27,6 +27,20 @@
 @*Form*@
 <MudGrid Justify="Justify.Center">
     <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem Style="text-align: end">
+            <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                <ActivatorContent>
+                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Show All Symbols</MudButton>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">Planned</MudButton></MudMenuItem>
+                    <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Block" IconColor="Color.Info">Planned with SSV coaching</MudButton></MudMenuItem>
+                    <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">In Progress</MudButton></MudMenuItem>
+                    <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">Late</MudButton></MudMenuItem>
+                    <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Circle" IconColor="Color.Success">Finalized</MudButton></MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </MudItem>
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">Programa de Observación de Operación</MudText>
         </MudItem>
@@ -51,22 +65,12 @@
                             <td>Finalized Job Observation</td>
                             <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" /></td>
                          </tr>
-                         <tr>
+@*                         <tr>
                              <td colspan="2">
                                 <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                     <ActivatorContent>
                                         <MudButton Icon="@Icons.Material.Filled.Info" FullWidth=true>Show All Job Observation Symbols</MudButton>
                                     </ActivatorContent>
-@*                                    <ChildContent>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Success">Planned</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">Planned and lasts more than one day</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Block" IconColor="Color.Info">Planned with SSV coaching</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">In Progress</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.StopCircle" IconColor="Color.Warning">In Progress and lasts more than one day</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">Late</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Circle" IconColor="Color.Info">Finalized</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Circle" IconColor="Color.Warning">Finalized and lasts more than one day</MudButton></MudMenuItem>
-                                    </ChildContent>*@
                                     <ChildContent>
                                         <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">Planned</MudButton></MudMenuItem>
                                         <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Block" IconColor="Color.Info">Planned with SSV coaching</MudButton></MudMenuItem>
@@ -76,7 +80,7 @@
                                     </ChildContent>
                                 </MudMenu>
                              </td>
-                         </tr>
+                         </tr>*@
                         <tr>
                             <td colspan="2">
                                 <div class="pt-1 pb-4 pr-2">
@@ -93,36 +97,79 @@
                     <tbody>
                         <tr>
                             <td>
-                                @*Mud select of Plants *@
-                                <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas" >
-                                    <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
-                                    @foreach (var type in _plants)
-                                    {
-                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                @if (user.IsAdmin)
+                                {
+                                    @*Mud select of Plants for Admin*@
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    @*Mud select of Plants*@
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
+                                        @foreach (var type in _plants)
+                                        {
+                                            if(type.PlantId == user.PlantId){
+                                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
+
                             </td>
                             <td>
+                                @if(user.IsAdmin){
+                                    @*Mud select of Areas for Admin*@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                        @foreach (var type in _areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else{
                                 @*Mud select of Areas *@
                                 <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
-                                    <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
                                     @foreach (var type in _areas)
                                     {
-                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        if(type.AreaId == user.AreaId){
+
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
                                     }
                                 </MudSelect>
+                                }
                             </td>
                          </tr>
                          <tr>
                             <td>
-                                @*Mud select of Groups *@
-                                <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
-                                    <MudSelectItem Disabled="true" Value="0">Select a Group</MudSelectItem>
-                                    @foreach (var type in _groups)
-                                    {
-                                        <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                @if(user.IsAdmin){
+                                    @*Mud select of Groups for Admin*@
+                                    <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Group</MudSelectItem>
+                                        @foreach (var type in _groups)
+                                        {
+                                            <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else{
+                                    @*Mud select of Groups *@
+                                    <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
+                                        @foreach (var type in _groups)
+                                        {
+                                            if(type.GroupId == user.GroupId){
+                                                <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
                             </td>
                             <td>
                                 <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" RequiredError="SSV is required!" OnlyValidateIfDirty="true" />
@@ -154,6 +201,7 @@
         <MudItem Style="text-align: center">
             <MudText Typo="Typo.h6">@showMonth @year</MudText>
         </MudItem>
+        @*FixedHeader=true Style="height:70vh" *@
         <MudSimpleTable Striped=true Bordered=true Elevation="6" Class="calendar-table rounded">
             <thead>
                 <tr style="cursor:default">

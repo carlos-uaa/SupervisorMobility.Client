@@ -93,7 +93,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             endHour = _jobObservation.DateEnd?.TimeOfDay;
             Console.WriteLine(startHour);
 
-            if(_jobObservation.PlantId != 0)
+            if (_jobObservation.PlantId != 0)
             {
                 if (_jobObservation.AreaId != 0)
                 {

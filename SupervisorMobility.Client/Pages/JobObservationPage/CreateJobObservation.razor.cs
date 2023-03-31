@@ -72,6 +72,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public List<Lup> pastLup = new();
         public JobObservation pastJob = new();
 
+        public Distribution distribution= new Distribution();
+        public Operation operation = new();
+
+        public bool flag = false;
 
 
         // Breadcrumb links
@@ -112,29 +116,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 StateHasChanged();
             }
 
-            if (user != null)
-            {
-                pastJobs = await JobObservationService.GetAllJobObservations();
-
-                foreach (var job in pastJobs)
-                {
-                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date)
-                    {
-
-                        pastjobObservations.Add(job);
-
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
-                        foreach (var lups in pastJob.Lup)
-                        {
-                            pastLup.Add(lups);
-                        }
-                    }
-
-                }
-
-
-            }
-            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
 
             //operator User
@@ -164,6 +145,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         }
+
 
         //Local storage user
         private async Task GetUserAsync()
@@ -201,11 +183,47 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
         }
-        private void ShowOperations()
+        private async void ShowOperations()
         {
+
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+
+            distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+        }
+
+        private async void ShowPastJobObservations()
+        {
+            flag = true;
+            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+            pastjobObservations = new();
+            pastLup = new();
+            if (user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+
+                foreach (var job in pastJobs)
+                {
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                    {
+
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach (var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+
+                }
+
+
+            }
+            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+            StateHasChanged();
         }
 
         private async Task CreateNewJobObservation()
@@ -484,6 +502,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private void OpenDialogPastJobObservations()
         {
+            if (!flag)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select a distribution and an operation", Severity.Error);
+                return;
+            }
             visiblePast = true;
         }
 
