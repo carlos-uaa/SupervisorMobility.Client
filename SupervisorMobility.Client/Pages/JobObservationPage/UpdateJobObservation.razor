@@ -1,9 +1,12 @@
 ﻿@page "/jobobservation/updatejobobservation/{jobobservationId:int}"
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
 @using System.Globalization;
 @using System.Net.Http.Json;
+@using System.Diagnostics;
 
 @inject IJSRuntime JSRuntime
 @inject IGroupService GroupService
@@ -950,7 +953,24 @@
                             <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
                         </td>
                         <td>
-                            <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
+                            <AuthorizeView Context="activeUser">
+                                <Authorized>
+                                    <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" Href="@route">
+                                        Sign in
+                                    </MudButton>
+                                    @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">
+                                        @context.User.Identity?.Name
+                                    </MudButton>
+                                    <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>*@
+                                </Authorized>
+                                <NotAuthorized>
+                                    <MudButton Class="mr-10" Color="Color.Inherit" Style="color:white" Href="authentication/login">
+                                        Sign in
+                                    </MudButton>
+                                    @*<a href="authentication/login">Log in</a>*@
+                                </NotAuthorized>
+                            </AuthorizeView>
                             <MudText Style="text-align:center; font-weight:bold;">
                                 Firma del Operador
                             </MudText>

@@ -98,6 +98,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         //Operator user
         public List<User> users = new();
         public List<User> operatorUsers = new();
+
+        public string route = string.Empty;
         void Closed(MudChip chip)
         {
             // react to chip closed
@@ -115,6 +117,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             else
             {
+                route = "authenticationSign/login/" + JobObservationId;
                 _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
@@ -181,49 +184,51 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
 
-            if (_jobObservation.PlantId != 0)
-            {
-                if (_jobObservation.AreaId != 0)
+                if (_jobObservation.PlantId != 0)
                 {
-                    if (_jobObservation.DistributionId != 0)
+                    if (_jobObservation.AreaId != 0)
                     {
                         if (_jobObservation.DistributionId != 0)
                         {
-                            try
+                            if (_jobObservation.DistributionId != 0)
                             {
-                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
-                                if (_assychart == null)
+                                try
+                                {
+                                    _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                    if (_assychart == null)
+                                        messageErrorFolders = "The folders with the information provided were not located.";
+                                    else
+                                        searchAssychart = true;
+                                }
+                                catch (Exception ex)
+                                {
                                     messageErrorFolders = "The folders with the information provided were not located.";
-                                else
-                                    searchAssychart = true;
-                            }catch (Exception ex)
-                            {
-                                messageErrorFolders = "The folders with the information provided were not located.";
-                            }
+                                }
 
+                            }
+                            else
+                            {
+                                messageErrorFolders = "Job Observation does not contain a valid operation";
+                                Console.WriteLine("missing plant");
+                            }
                         }
                         else
                         {
-                            messageErrorFolders = "Job Observation does not contain a valid operation";
+                            messageErrorFolders = "Job Observation does not contain a valid distribution";
                             Console.WriteLine("missing plant");
                         }
                     }
                     else
                     {
-                        messageErrorFolders = "Job Observation does not contain a valid distribution";
+                        messageErrorFolders = "Job Observation does not contain a valid area";
                         Console.WriteLine("missing plant");
                     }
                 }
                 else
                 {
-                    messageErrorFolders = "Job Observation does not contain a valid area";
+                    messageErrorFolders = "Job Observation does not contain a valid plant";
                     Console.WriteLine("missing plant");
                 }
-            }
-            else
-            {
-                messageErrorFolders = "Job Observation does not contain a valid plant";
-                Console.WriteLine("missing plant");
             }
         }
 
