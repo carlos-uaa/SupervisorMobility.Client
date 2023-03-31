@@ -6,7 +6,7 @@
 @inject IUserService UserServices
 @inject IGroupService GroupServices
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JsRuntime
+@inject IJSRuntime JS
 
 
 
@@ -63,12 +63,42 @@
                                 <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                             }
                         </MudSelect>
-                        <MudContainer Class="d-flex flex-row">
-                            <MudSwitch Class="mt-3" Label="Is Admin?" @bind-Checked="_user.IsAdmin" Color="Color.Info" UnCheckedColor="Color.Dark" />
-                        <MudSwitch Class="mt-3" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Info" UnCheckedColor="Color.Dark" />
-                            <MudSwitch Class="mt-3" Label="Is Operator?" @bind-Checked="_user.IsOperator" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                        <MudItem>
+                            <MudItem>
+                                <MudText Typo="Typo.h6">Permissions</MudText>
+                            </MudItem>
+                            <MudItem class="d-flex d-flex-column justify-center">
+                                @if (_user.IsAdmin)
+                                {
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                    </MudPaper>
 
-                        </MudContainer>
+                                }
+
+                                @if (_user.IsSupervisor)
+                                {
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                    </MudPaper>
+
+                                }
+
+                                @if (_user.IsOperator)
+                                {
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                    </MudPaper>
+
+                                }
+                            </MudItem>
+                            <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
+                                <MudSwitch Class="ma-1" Label="Is Admin?" @bind-Checked="_user.IsAdmin" Color="Color.Primary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(1))" />
+                                <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Secondary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(2))" />
+                                <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="_user.IsOperator" Color="Color.Info" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(3))" />
+                            </MudItem>
+
+                        </MudItem>
                        
                         <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_user.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
 
@@ -110,6 +140,18 @@
         _user.AreaId = 0;
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
+    private bool _isAnySwitchActive = false;
+
+    private async Task CambiarEstadoSwitch(int switchNumber)
+    {
+        _isAnySwitchActive = true;
+
+        _user.IsAdmin = (switchNumber == 1);
+        _user.IsSupervisor = (switchNumber == 2);
+        _user.IsOperator = (switchNumber == 3);
+
+        await JS.InvokeVoidAsync("resetSwitches", switchNumber);
+    }
 
     private async void CreateUser()
     {
@@ -120,7 +162,7 @@
         if (result != null)
             NavigationManager.NavigateTo("/usersmanagement");
         else
-            await JsRuntime.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
+            await JS.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
     }
 
 
