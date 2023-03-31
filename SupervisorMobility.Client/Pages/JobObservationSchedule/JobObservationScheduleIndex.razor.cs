@@ -67,24 +67,37 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            await GetUserAsync();
 
-            if(user != null)
+            if(!await HasPropertyAsync())
             {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
+            }
+            else
+            {
+
+                await GetUserAsync();
+
+                if(user != null)
+                {
+                    _plants = await PlantServices.GetPlants();
+                    _groups = await GroupService.GetGroups();
+                    plantId = user.PlantId;
+                
+                    areaId = user.AreaId;
+                    groupId= user.GroupId;
+
+                    _areas = await AreaServices.GetAreas(plantId);
+                    supervisor = user.Name;
+                    StateHasChanged();
+                }
+                _jobObservation = await JobObservationService.GetAllJobObservations();
                 _plants = await PlantServices.GetPlants();
                 _groups = await GroupService.GetGroups();
-                plantId = user.PlantId;
-                
-                areaId = user.AreaId;
-                groupId= user.GroupId;
 
-                _areas = await AreaServices.GetAreas(plantId);
-                supervisor = user.Name;
-                StateHasChanged();
             }
-            _jobObservation = await JobObservationService.GetAllJobObservations();
-            _plants = await PlantServices.GetPlants();
-            _groups = await GroupService.GetGroups();
         }
 
         //Local storage user

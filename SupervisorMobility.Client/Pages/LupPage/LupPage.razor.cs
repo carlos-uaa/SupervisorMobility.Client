@@ -31,51 +31,50 @@ namespace SupervisorMobility.Client.Pages.LupPage
         //User
         private string json = string.Empty;
         public User user = new();
+        public bool logged = false;
 
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-
-            await GetUserAsync();
-
-            jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
-            foreach(var jobObs in jobObservationList)
+            logged = await HasPropertyAsync();
+            if (!logged)
             {
-                if(jobObs.Lup.Count > 0)
-                {
-                    foreach (var lup in jobObs.Lup)
-                    {
-                        if(user != null && user.AreaId == jobObs.AreaId)
-                        {
-                            _lup.Add(lup);
-                            switch (lup.Pillar)
-                            {
-                                case 1: _lupS.Add(lup); break;
-                                case 2: _lupQ.Add(lup); break;
-                                case 3: _lupD.Add(lup); break;
-                                case 4: _lupC.Add(lup); break;
-                                case 5: _lupOther.Add(lup); break;
-                            }
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
+            }
+            else
+            {
 
+                await GetUserAsync();
+
+                jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            if (user != null && user.AreaId == jobObs.AreaId)
+                            {
+                                _lup.Add(lup);
+                                switch (lup.Pillar)
+                                {
+                                    case 1: _lupS.Add(lup); break;
+                                    case 2: _lupQ.Add(lup); break;
+                                    case 3: _lupD.Add(lup); break;
+                                    case 4: _lupC.Add(lup); break;
+                                    case 5: _lupOther.Add(lup); break;
+                                }
+
+                            }
                         }
                     }
                 }
             }
 
 
-            //_lup = await LupServices.GetAllLup();
-            
-            //foreach(var lup in _lup)
-            //{
-            //    switch (lup.Pillar)
-            //    {
-            //        case 1: _lupS.Add(lup); break;
-            //        case 2: _lupQ.Add(lup); break;
-            //        case 3: _lupD.Add(lup); break;
-            //        case 4: _lupC.Add(lup); break;
-            //        case 5: _lupOther.Add(lup); break;
-            //    }
-            //}
         }
 
         //Local storage user

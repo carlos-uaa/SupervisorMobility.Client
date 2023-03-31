@@ -52,7 +52,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string areaC;
         public string areaOther;
 
-
         int[] models = new int[5];
         string[] cicles = new string[5];
 
@@ -94,6 +93,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         //User
         private string json = string.Empty;
         public User user = new();
+        public bool logged = false;
 
         //Operator user
         public List<User> users = new();
@@ -104,113 +104,123 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
         protected async override Task OnInitializedAsync()
         {
-
-            _jobObservation.Supervisor = new();
-            //glosary
-            glosary = await GlosaryService.GetGlosary();
-            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
-
-            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
-
-            Console.WriteLine(_jobObservation.Supervisor.Name);
-
-            _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
-
-
-            startHour = _jobObservation.DateStart?.TimeOfDay;
-            endHour = _jobObservation.DateEnd?.TimeOfDay;
-
-            _plants = await PlantServices.GetPlants();
-            //_products = await ProductService.GetProducts();
-            _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
-            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-            
-            _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
-            _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-
-            var prod = _jobObservation.Models.Split('|');
-            models[0] = Int32.Parse(prod[0]);
-            models[1] = Int32.Parse(prod[1]);
-            models[2] = Int32.Parse(prod[2]);
-            models[3] = Int32.Parse(prod[3]);
-            models[4] = Int32.Parse(prod[4]);
-            cicles = _jobObservation.Cicles.Split('|');
-
-            users = await UsersService.GetUsers();
-            foreach(var operatorUser in users)
+            logged = await HasPropertyAsync();
+            if (!logged)
             {
-                if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.IsOperator)
-                {
-                    operatorUsers.Add(operatorUser);
-                }
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
             }
 
-
-            await GetUserAsync();
-
-            if (user != null)
+            else
             {
-                pastJobs = await JobObservationService.GetAllJobObservations();
+                _jobObservation.Supervisor = new();
+                //glosary
+                glosary = await GlosaryService.GetGlosary();
+                _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-                foreach (var job in pastJobs)
+                _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+
+                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+
+                startHour = _jobObservation.DateStart?.TimeOfDay;
+                endHour = _jobObservation.DateEnd?.TimeOfDay;
+
+                _plants = await PlantServices.GetPlants();
+                //_products = await ProductService.GetProducts();
+                _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
+                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+                _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+                _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+
+                var prod = _jobObservation.Models.Split('|');
+                models[0] = Int32.Parse(prod[0]);
+                models[1] = Int32.Parse(prod[1]);
+                models[2] = Int32.Parse(prod[2]);
+                models[3] = Int32.Parse(prod[3]);
+                models[4] = Int32.Parse(prod[4]);
+                cicles = _jobObservation.Cicles.Split('|');
+
+                users = await UsersService.GetUsers();
+                foreach (var operatorUser in users)
                 {
-                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                    if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.IsOperator)
                     {
+                        operatorUsers.Add(operatorUser);
+                    }
+                }
 
-                        pastjobObservations.Add(job);
 
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
-                        foreach (var lups in pastJob.Lup)
+                await GetUserAsync();
+
+                if (user != null)
+                {
+                    pastJobs = await JobObservationService.GetAllJobObservations();
+
+                    foreach (var job in pastJobs)
+                    {
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
-                            pastLup.Add(lups);
+
+                            pastjobObservations.Add(job);
+
+                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                            foreach (var lups in pastJob.Lup)
+                            {
+                                pastLup.Add(lups);
+                            }
                         }
+
                     }
 
                 }
+                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
+                if (_jobObservation.PlantId != 0)
+                {
+                    if (_jobObservation.AreaId != 0)
+                    {
+                        if (_jobObservation.DistributionId != 0)
+                        {
+                            if (_jobObservation.DistributionId != 0)
+                            {
+
+                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                if (_assychart == null)
+                                    messageErrorFolders = "The folders with the information provided were not located.";
+                                else
+                                    searchAssychart = true;
+
+                            }
+                            else
+                            {
+                                messageErrorFolders = "Job Observation does not contain a valid operation";
+                                Console.WriteLine("missing plant");
+                            }
+                        }
+                        else
+                        {
+                            messageErrorFolders = "Job Observation does not contain a valid distribution";
+                            Console.WriteLine("missing plant");
+                        }
+                    }
+                    else
+                    {
+                        messageErrorFolders = "Job Observation does not contain a valid area";
+                        Console.WriteLine("missing plant");
+                    }
+                }
+                else
+                {
+                    messageErrorFolders = "Job Observation does not contain a valid plant";
+                    Console.WriteLine("missing plant");
+                }
             }
-            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
-
-            //if (_jobObservation.PlantId != 0)
-            //{
-            //    if (_jobObservation.AreaId != 0)
-            //    {
-            //        if (_jobObservation.DistributionId != 0)
-            //        {
-            //            if (_jobObservation.DistributionId != 0)
-            //            {
-
-            //                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
-            //                if (_assychart == null)
-            //                    messageErrorFolders = "The folders with the information provided were not located.";
-            //                else
-            //                    searchAssychart = true;
-
-            //            }
-            //            else
-            //            {
-            //                messageErrorFolders = "Job Observation does not contain a valid operation";
-            //                Console.WriteLine("missing plant");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            messageErrorFolders = "Job Observation does not contain a valid distribution";
-            //            Console.WriteLine("missing plant");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        messageErrorFolders = "Job Observation does not contain a valid area";
-            //        Console.WriteLine("missing plant");
-            //    }
-            //}
-            //else
-            //{
-            //    messageErrorFolders = "Job Observation does not contain a valid plant";
-            //    Console.WriteLine("missing plant");
-            //}
+            
         }
 
         //Local storage user

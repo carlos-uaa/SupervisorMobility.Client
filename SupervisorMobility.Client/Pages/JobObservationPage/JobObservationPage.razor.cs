@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
 {
@@ -23,12 +24,50 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         // Objects
         public List<JobObservation> _jobObservation { get; set; } = new();
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+        public bool logged = false;
 
         protected async override Task OnInitializedAsync()
         {
-            await LateDates();
-            _jobObservation = await JobObservationService.GetAllJobObservations();
+            logged = await HasPropertyAsync();
+            if (!logged)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
+            }
+            else
+            {
+                await LateDates();
+                _jobObservation = await JobObservationService.GetAllJobObservations();
+
+            }
         }
+
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
 
         public async Task LateDates()
         {
