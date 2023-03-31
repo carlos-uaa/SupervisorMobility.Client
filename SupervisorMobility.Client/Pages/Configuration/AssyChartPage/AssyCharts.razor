@@ -13,7 +13,7 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | Assy Chart</PageTitle>
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
+<MudBreadcrumbs  Items="_links">
     <ItemTemplate Context="item">
         <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
     </ItemTemplate>
@@ -35,8 +35,8 @@ else
 {
     <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
         <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All AssyCharts">
-            <MudTable Items="_assychart" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
-                  SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" Class="styled-table table-striped"
+            <MudTable Height="50vh" Items="_assychart" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+                  SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true
                   HorizontalScrollbar="true">
                 <ToolBarContent>
                     <MudGrid class="d-flex flex-column justify-center align-self-center">
@@ -174,10 +174,8 @@ else
 
             <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Plants" OnClick="plantsTab">
-                    <MudItem Class="d-flex flex-column align-center justify-center">
-                        <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
-                        </MudItem>
+                    <MudItem Class="d-flex flex-column align-center justify-center ma-1">
+                       
                         <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
                             @if (seeplant)
                             {
@@ -200,7 +198,7 @@ else
                     {
                         if (showtablePlant && _assychartplant.Count > 0)
                         {
-                            <MudTable Items="_assychartplant" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+                            <MudTable Height="50vh" Items="_assychartplant" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
                           HorizontalScrollbar="true">
                                 <ToolBarContent>
@@ -259,36 +257,54 @@ else
                                             <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
                                         </MudTd>
                                         <MudTd DataLabel="GOS">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
-                                                    <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            @if (context.GOS != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
+                                                <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="CCP">
-                                            <MudText Align="Align.Center">
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No GOS Path</MudAlert>
+
+                                        }
+                                    </MudTd> <MudTd DataLabel="CCP">
+                                        @if (@context.CCP != "")
+                                        {
+                                            <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
                                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(context.CCP))">
                                                     <MudTooltip Text="@context.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
-                                                        </MudButton>
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
                                                     </MudTooltip>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="HOE">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
-                                                    <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            </MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No CCP Path</MudAlert>
+                                        }
+                                    </MudTd> <MudTd DataLabel="HOE">
+                                        @if (context.HOE != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
+                                                <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No HOE Path</MudAlert>
+
+                                        }
+
+                                    </MudTd>
                                         <MudTd DataLabel="Description">
                                             <MudText Align="Align.Center">@context.Operation?.Description</MudText>
                                         </MudTd>
@@ -328,10 +344,8 @@ else
 
                 </MudTabPanel>
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Area" OnClick="areaTab">
-                    <MudItem Class="d-flex flex-column align-center justify-center">
-                        <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
-                        </MudItem>
+                    <MudItem Class="d-flex flex-column align-center justify-center ma-1">
+                     
                         <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
                             @if (seeplant)
                             {
@@ -384,7 +398,7 @@ else
                     {
                         if (showtableArea && _assychartarea.Count > 0)
                         {
-                            <MudTable Items="_assychartarea" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+                            <MudTable Height="50vh"  Items="_assychartarea" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
                           HorizontalScrollbar="true">
                                 <ToolBarContent>
@@ -443,36 +457,54 @@ else
                                             <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
                                         </MudTd>
                                         <MudTd DataLabel="GOS">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
-                                                    <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            @if (context.GOS != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
+                                                <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="CCP">
-                                            <MudText Align="Align.Center">
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No GOS Path</MudAlert>
+
+                                        }
+                                    </MudTd> <MudTd DataLabel="CCP">
+                                        @if (@context.CCP != "")
+                                        {
+                                            <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
                                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(context.CCP))">
                                                     <MudTooltip Text="@context.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
-                                                        </MudButton>
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
                                                     </MudTooltip>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="HOE">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
-                                                    <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            </MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No CCP Path</MudAlert>
+                                        }
+                                    </MudTd> <MudTd DataLabel="HOE">
+                                        @if (context.HOE != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
+                                                <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No HOE Path</MudAlert>
+
+                                        }
+
+                                    </MudTd>
                                         <MudTd DataLabel="Description">
                                             <MudText Align="Align.Center">@context.Operation?.Description</MudText>
                                         </MudTd>
@@ -517,10 +549,8 @@ else
 
                 </MudTabPanel>
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text="Distribution" OnClick="distributionTab">
-                    <MudItem Class="d-flex flex-column align-center justify-center">
-                        <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Filters</MudText>
-                        </MudItem>
+                    <MudItem Class="d-flex flex-column align-center justify-center ma-1">
+                        
                         <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
                             @if (seeplant)
                             {
@@ -573,7 +603,7 @@ else
                     {
                         if (showtableDistribution && _assychartdistribution.Count > 0)
                         {
-                            <MudTable Items="_assychartdistribution" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
+                            <MudTable Height="50vh" Items="_assychartdistribution" T="AssyChart" Hover="@hover" ReadOnly="@ronly"
                           SortLabel="Sort By" Filter="new Func<AssyChart,bool>(FilterFunc)" FixedHeader=true Class="styled-table table-striped"
                           HorizontalScrollbar="true">
                                 <ToolBarContent>
@@ -632,36 +662,54 @@ else
                                             <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
                                         </MudTd>
                                         <MudTd DataLabel="GOS">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
-                                                    <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            @if (context.GOS != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(context.GOS))">
+                                                <MudTooltip Text="@context.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogGOS(context.GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.GOS.Split('/').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="CCP">
-                                            <MudText Align="Align.Center">
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No GOS Path</MudAlert>
+
+                                        }
+                                    </MudTd> <MudTd DataLabel="CCP">
+                                        @if (@context.CCP != "")
+                                        {
+                                            <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
                                                 <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(context.CCP))">
                                                     <MudTooltip Text="@context.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogCcp(context.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
-                                                        </MudButton>
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.CCP.Split('/').Last()</MudChip>
                                                     </MudTooltip>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd> <MudTd DataLabel="HOE">
-                                            <MudText Align="Align.Center">
-                                                <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
-                                                    <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                        <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
-                                                        </MudButton>
-                                                    </MudTooltip>
+                                            </MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No CCP Path</MudAlert>
+                                        }
+                                    </MudTd> <MudTd DataLabel="HOE">
+                                        @if (context.HOE != "")
+                                        {
+                                            <MudTooltip Text="Open Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(context.HOE))">
+                                                <MudTooltip Text="@context.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                    <MudButton @onclick="(() => OpenDialogHoe(context.HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                        <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@context.HOE.Split('§').Last()</MudChip>
+                                                    </MudButton>
                                                 </MudTooltip>
-                                            </MudText>
-                                        </MudTd>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">No HOE Path</MudAlert>
+
+                                        }
+
+                                    </MudTd>
                                         <MudTd DataLabel="Description">
                                             <MudText Align="Align.Center">@context.Operation?.Description</MudText>
                                         </MudTd>

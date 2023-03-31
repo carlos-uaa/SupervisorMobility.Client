@@ -28,12 +28,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 
         void CreateDistribution()
         {
-            NavigationManager.NavigateTo($"product/{ProductId}/CreateDistributionByProducts");
+            NavigationManager.NavigateTo($"products/{ProductId}/CreateDistributionByProducts");
         }  
         
         void AddExistDistribution()
         {
-            NavigationManager.NavigateTo($"product/{ProductId}/AddDistributionInProducts");
+            NavigationManager.NavigateTo($"products/{ProductId}/AddDistributionInProducts");
         }
 
         // Delete distribution
@@ -51,13 +51,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         // Distribution details
         void DistributionDetails(int distributionId)
         {
-            NavigationManager.NavigateTo($"product/{ProductId}/distributions/{distributionId}");
+            NavigationManager.NavigateTo($"products/{ProductId}/distribution/{distributionId}");
         }
 
         // Update distribution
         void UpdateDistribution(int distributionId)
         {
-            NavigationManager.NavigateTo($"product/{ProductId}/updatedistribution/{distributionId}");
+            NavigationManager.NavigateTo($"products/{ProductId}/updatedistribution/{distributionId}");
         }
 
         // Create product

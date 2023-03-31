@@ -180,47 +180,51 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 }
                 pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
 
-                if (_jobObservation.PlantId != 0)
+
+            if (_jobObservation.PlantId != 0)
+            {
+                if (_jobObservation.AreaId != 0)
                 {
-                    if (_jobObservation.AreaId != 0)
+                    if (_jobObservation.DistributionId != 0)
                     {
                         if (_jobObservation.DistributionId != 0)
                         {
-                            if (_jobObservation.DistributionId != 0)
+                            try
                             {
-
                                 _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
                                 if (_assychart == null)
                                     messageErrorFolders = "The folders with the information provided were not located.";
                                 else
                                     searchAssychart = true;
-
-                            }
-                            else
+                            }catch (Exception ex)
                             {
-                                messageErrorFolders = "Job Observation does not contain a valid operation";
-                                Console.WriteLine("missing plant");
+                                messageErrorFolders = "The folders with the information provided were not located.";
                             }
+
                         }
                         else
                         {
-                            messageErrorFolders = "Job Observation does not contain a valid distribution";
+                            messageErrorFolders = "Job Observation does not contain a valid operation";
                             Console.WriteLine("missing plant");
                         }
                     }
                     else
                     {
-                        messageErrorFolders = "Job Observation does not contain a valid area";
+                        messageErrorFolders = "Job Observation does not contain a valid distribution";
                         Console.WriteLine("missing plant");
                     }
                 }
                 else
                 {
-                    messageErrorFolders = "Job Observation does not contain a valid plant";
+                    messageErrorFolders = "Job Observation does not contain a valid area";
                     Console.WriteLine("missing plant");
                 }
             }
-            
+            else
+            {
+                messageErrorFolders = "Job Observation does not contain a valid plant";
+                Console.WriteLine("missing plant");
+            }
         }
 
         //Local storage user
@@ -420,8 +424,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.DateFinalized = DateTime.Now;
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;
