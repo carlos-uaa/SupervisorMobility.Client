@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         // Create support document type
         async void CreateSupportDocumentTypeAsync()
         {
+            _supportDocumentType.IsActive = true;
             var result = await SupportDocumentTypeService.CreateSupportDocumentType(_supportDocumentType);
             NavigationManager.NavigateTo($"documenttypes");
         }

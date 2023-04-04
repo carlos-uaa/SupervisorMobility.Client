@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         // Create checklist category
         async void CreateCategoryAsync()
         {
+            _checklistCategory.IsActive = true;
             var result = await ChecklistService.CreateCategory(_checklistCategory);
             NavigationManager.NavigateTo($"checklistcategories");
         }

@@ -18,7 +18,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
 
         // Create job observation type
         async void CreateJobObservationTypeAsync()
-        {
+        {_jobObservationType.IsActive = true;
             var result = await JobObservationTypeService.CreateJobObservationType(_jobObservationType);
             NavigationManager.NavigateTo($"jobobservationtypes");
         }

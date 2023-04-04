@@ -37,6 +37,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         // Create area
         async void CreateAreaAsync()
         {
+            _area.IsActive = true;
             var result = await AreaService.CreateArea(PlantId, _area);
             NavigationManager.NavigateTo($"plants/{PlantId}");
         }

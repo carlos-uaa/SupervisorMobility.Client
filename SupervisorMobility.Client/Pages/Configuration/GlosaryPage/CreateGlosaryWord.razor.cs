@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
         // Create group
         async void CreateGlosaryWordAsync()
         {
+            _glosaryWord.IsActive = true;
             var result = await GlosaryService.CreateGlosaryWord(_glosaryWord);
             NavigationManager.NavigateTo($"glosary");
         }

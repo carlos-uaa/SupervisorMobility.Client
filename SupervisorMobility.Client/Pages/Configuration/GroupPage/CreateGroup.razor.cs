@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
         // Create group
         async void CreateGroupAsync()
         {
+            _group.IsActive = true;
             var result = await GroupService.CreateGroup(_group);
             NavigationManager.NavigateTo($"groups");
         }

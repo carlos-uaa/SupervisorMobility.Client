@@ -1,0 +1,150 @@
+﻿@page "/products/{productId:int}/updatedistribution/{distributionId:int}"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IProductService ProductServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@*Title*@
+<PageTitle>Supervisor Mobility | Distribution Update For Product</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+@if (showui)
+{
+    <MudGrid>
+        @*Distribution info*@
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center" Typo="Typo.h3"><MudIcon Icon="@Icons.Material.Filled.AccountTree"></MudIcon></MudText>
+
+                    <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">@_product.Description</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center" Class="pa-2">@_product.Code</MudText>
+
+                    @if (_product.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        @*Product Info*@
+        <MudItem xs="12" sm="6" md="9">
+            <MudGrid>
+                <MudItem xs="12">
+                    <EditForm Model="_distribution" OnValidSubmit="UpdateDistributionProductAsync">
+                        <DataAnnotationsValidator />
+                        <MudCard>
+                            <MudCardHeader>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">Distribution</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudChip Variant="Variant.Text" Color="Color.Info">Edit</MudChip>
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudTextField Label="Product description"
+                                          @bind-Value="_distribution.Description" For="@(() => _distribution.Description)" />
+                                <MudTextField Label="Code" Class="mt-3"
+                                          @bind-Value="_distribution.Code" For="@(() => _distribution.Code)" />
+                                <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_distribution.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
+                                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => Close())">Cancel</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </EditForm>
+
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+
+
+}
+else
+{
+
+
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+        <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+            <MudText Typo="Typo.h6" Class="align-item-center center">Loading Data</MudText>
+        </MudItem>
+        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        </MudPaper>
+    </MudItem>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    [Parameter]
+    public int DistributionId { get; set; }
+
+
+
+    private bool showui = false;
+    private Distribution _distribution = new();
+    private Product _product { get; set; }
+
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Products", href: "/products"),
+        };
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        _distribution = await ProductServices.GetDistributionOnlyById(ProductId, DistributionId);
+        _product = await ProductServices.GetProductById(ProductId);
+
+        _links.Add(new BreadcrumbItem($"{_product.Description}", href: $"/products/{ProductId}"));
+        _links.Add(new BreadcrumbItem($"Distributions", href: $"/products/{ProductId}"));
+        _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"", disabled: true));
+        showui = true;
+    }
+
+
+    void Close()
+    {
+        NavigationManager.NavigateTo($"/products/{ProductId}");
+    }
+
+    async Task UpdateDistributionProductAsync()
+    {
+
+        var result = await ProductServices.UpdateDistributionForProduct(ProductId, _distribution);
+
+        if (result)
+        {
+            NavigationManager.NavigateTo($"/products/{ProductId}");
+        }
+
+    }
+
+}

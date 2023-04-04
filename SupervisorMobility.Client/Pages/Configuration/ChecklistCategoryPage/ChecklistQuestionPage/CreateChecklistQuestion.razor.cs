@@ -33,6 +33,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         // Create question
         async void CreateQuestionAsync()
         {
+            _question.IsActive = true;
             var result = await ChecklistService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
