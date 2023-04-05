@@ -100,6 +100,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public List<User> operatorUsers = new();
 
         public string route = string.Empty;
+        public bool sign = false;
         void Closed(MudChip chip)
         {
             // react to chip closed
@@ -230,6 +231,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Console.WriteLine("missing plant");
                 }
             }
+        }
+
+        public async Task GoToJobObservation()
+        {
+            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}", true);
+            StateHasChanged();
         }
 
         //Local storage user

@@ -51,7 +51,7 @@
                 {
                     <MudItem Class="d-flex flex-column align-end justify-center pa-1 ma-1">
                         <MudItem class="d-flex flex-column justify-center align-self-end">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Relationated Documents</MudText>
+                            <MudText Typo="Typo.h6" Class="align-item-center center">Related Documents</MudText>
                         </MudItem>
 
                         <MudItem Class="d-flex flex-row align-end justify-center pa-2 ma-2">
@@ -131,7 +131,12 @@
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudText Typo="Typo.h6">
                     Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
-                    <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                    @if(_jobObservation.Type == 1){
+                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
+                    }
+                    else if(_jobObservation.Type == 2){
+                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                    }
                 </MudText>
             </MudItem>
             <MudItem Class="ml-2">
@@ -956,8 +961,11 @@
                             @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
                             <AuthorizeView Context="activeUser">
                                 <Authorized>
-                                    <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" Href="@route">
+                                    <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => sign = !sign)">
                                         Sign in
+                                        @if(sign){
+                                                <RemoteAuthenticatorView Action="login" OnLogInSucceeded="GoToJobObservation" />
+                                        }
                                     </MudButton>
                                     @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">
                                         @context.User.Identity?.Name

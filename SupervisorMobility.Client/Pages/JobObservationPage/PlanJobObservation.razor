@@ -1,0 +1,315 @@
+﻿@page "/jobobservation/planjobobservation/{date}"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+
+@inject IJSRuntime JSRuntime
+@inject IGroupService GroupService
+@inject IChecklistService ChecklistService
+@inject IDialogService DialogService
+@inject IProductService ProductService
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionService
+@inject IOperationService OperationService
+@inject IJobObservationService JobObservationService
+@inject IGlosaryService GlosaryService
+@inject ILupService LupService
+@inject ISnackbar Snackbar
+@inject IUserService UsersService
+@inject NavigationManager NavigationManager
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Job Observation</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+@* Job Observation Form*@
+<EditForm Model="_jobObservation" OnValidSubmit="PlanNewJobObservation">
+    <DataAnnotationsValidator />
+    <MudItem Style="text-align: end">
+        <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">Past Job Observaion | Lup</MudButton>
+    </MudItem>
+    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">
+                Tarjeta de Observación de Operación Cíclica
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
+            </MudText>
+        </MudItem>
+            <MudItem Class="ml-2">
+            @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="@_jobObservation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Class="pt-3 pb-3">
+                    <tbody>
+                        <tr>
+                            <td>
+                                @if(user.IsAdmin){
+                                    @*Mud select for Plants for Admin*@
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else{
+                                    @*Mud select for Plants *@
+                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                        @foreach (var type in _plants)
+                                        {
+                                            if(type.PlantId == user.PlantId){
+                                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
+                            </td>
+                            <td class="d-flex">
+                                <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4"/>
+                                <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @if(user.IsAdmin){
+                                    @*Mud select for Areas for Admin *@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                        @foreach (var type in _areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else{
+                                    @*Mud select for Areas *@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                        @foreach (var type in _areas)
+                                        {
+                                            if(type.AreaId == user.AreaId){
+                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
+
+                            </td>
+                            <td class="d-flex">
+                                <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="d-flex">
+                                @*Mud select for Distribution *@
+                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                    <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                                    @foreach (var type in _distributions)
+                                    {
+                                        <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                @*Mud select for Operation *@
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="ShowPastJobObservations">
+                                    <MudSelectItem Disabled="true" Value="0">Select an Operation</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td>
+                                <div class="d-flex">
+                                    <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observador" Class="mr-4"/>
+
+                                     @*Mud select for Operator *@
+                                    <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Operator</MudSelectItem>
+                                        @foreach (var type in operatorUsers)
+                                        {
+                                            <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+   @*                                 <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" />
+                                    <MudText Color="Color.Error" Style="font-size:12px"><ValidationMessage For="@(() => _jobObservation.Operator)" /></MudText>*@
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: center;">
+                        <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" Style="width:100%;">
+                                <MudRadio Option="1" Color="Color.Info" Size="Size.Small">Verificar la Capacitación</MudRadio>
+                                <MudRadio Option="2" Color="Color.Info" Size="Size.Small">Mantener y/o Mejorar el área de trabajo</MudRadio>
+                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small">
+                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Manejo de la anomalía"))
+                                        {
+                                            Glosary word;
+                                            word = _glosaryInfo["Manejo de la anomalía"];
+                                            <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                    <MudText>@word.Name</MudText>
+                                                </MudBadge>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <span>Manejo de anomalía</span>
+                                        }
+                                    </MudRadio>
+                                @if(_jobObservation.Option == 3)
+                                {
+                                            <MudTextField T="string" @bind-Value="_jobObservation.Anomaly" Label="Write the anomaly" Placeholder="Anomaly" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }
+                        </MudRadioGroup>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudCardActions Class="mt-7">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Plan Job Observation</MudButton>
+                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateJobObservation())">Cancel</MudButton>
+            </MudCardActions>
+    </MudItem>
+</MudGrid>
+</EditForm>
+
+@*Past modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visiblePast" Options="dialogPastJobObservations">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; min-height:50vh; overflow-y: scroll">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Past Job observations | Lup
+                </MudText>
+                <MudText>
+                    <MudChip Color="Color.Info" Variant="Variant.Text">@distribution.Description</MudChip>
+                    <MudChip Color="Color.Info" Variant="Variant.Text">@operation.Description</MudChip>
+
+                </MudText>
+            </MudItem>
+            @if (pastjobObservations.Count > 0)
+            {
+                <MudTable Items="pastjobObservations" T="JobObservation" Bordered Class="mt-3 past-jobObservations-table mb-10">
+                    <HeaderContent>
+                        <MudTh style="text-align: center">
+                            <MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.JobObservationId)">Id</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.DateStart)">Start Date</MudTableSortLabel></MudTh>
+                        <MudTh style="text-align: center; width: 65%">Total Lup</MudTh>
+                        <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">Status</MudTableSortLabel></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(context.JobObservationId))"> @context.JobObservationId</MudChip>
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>@context.DateStart?.ToShortDateString()</MudText>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>
+                                @if (pastLup.Count > 0)
+                                {
+                                    @foreach (var lup in pastLup)
+                                    {
+                                        if (lup.JobObservationId == context.JobObservationId)
+                                        {
+                                            <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                    <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                        @switch (lup.Pillar)
+                                                        {
+                                                            case 1:
+                                                                <span>S | &nbsp;</span>
+                                                                break;
+                                                            case 2:
+                                                                <span>Q | &nbsp;</span>
+                                                                break;
+                                                            case 3:
+                                                                <span>D | &nbsp;</span>
+                                                                break;
+                                                            case 4:
+                                                                <span>C | &nbsp;</span>
+                                                                break;
+                                                            case 5:
+                                                                <span>Other | &nbsp;</span>
+                                                                break;
+                                                        }
+                                                        @if (lup.Oportunity.Length < 70)
+                                                        {
+                                                            @lup.Oportunity
+                                                        }
+                                                        else
+                                                        {
+                                                            @lup.Oportunity.Substring(0,70) <span>...</span>
+                                                        }
+                                                    </MudChip>
+                                                    @switch (lup.Status)
+                                                    {
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">In Progress</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                                            break;
+                                                    }
+                                                </MudButton>
+                                            </MudTooltip>
+                                        }
+                                    }
+                                }
+                            </MudText>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>
+
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Planned</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">In Progress</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Late</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">Finished</MudChip>
+                                        break;
+                                }
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudItem Style="text-align: center; margin-top: 100px">
+                    <MudText Typo="Typo.h6">
+                        There are no Past job observations
+                    </MudText>
+                </MudItem>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="CloseOverdue">Close</MudButton>
+    </DialogActions>
+</MudDialog>
