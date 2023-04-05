@@ -37,6 +37,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int OperatorId { get; set; }
 
         public bool IsActive { get; set; }
+        public int? Type { get; set; }
 
         [Required]
         public DateTime? DateStart { get; set; }

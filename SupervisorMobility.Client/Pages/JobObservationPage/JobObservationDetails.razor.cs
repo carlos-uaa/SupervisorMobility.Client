@@ -61,10 +61,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool folderError = false;
         private string messageErrorFolders;
 
-        public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-          "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
-          "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
-
         //Operator user
         public List<User> users = new();
         public List<User> operatorUsers = new();

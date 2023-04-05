@@ -58,14 +58,27 @@ builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadS
 // Connection to API
 builder.Services.AddScoped<CustomHttpClientService>();
 
+//builder.Services.AddCors(policy => {
+//    policy.AddPolicy("Cors", builder =>
+//        builder
+//            .WithOrigins("https://localhost:44398")
+//            .SetIsOriginAllowedToAllowWildcardSubdomains()
+//            .AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+//});
+
+
+
 //Active Directory
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+
+    //var originalAuthority = options.ProviderOptions.Authentication.Authority;
+    //var loginPromptAuthority = $"{originalAuthority}?prompt=login";
+    //options.ProviderOptions.Authentication.Authority = loginPromptAuthority;
 });
 
 await builder.Build().RunAsync();
-
 
 public class CustomHttpClientService
 {

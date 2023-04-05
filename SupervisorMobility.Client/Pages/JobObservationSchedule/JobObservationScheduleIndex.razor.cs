@@ -218,6 +218,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
         }
 
+        void PlanJobObservation(string date)
+        {
+            date = date.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{date}");
+        }
 
         //private void OpenDialog()
         //{

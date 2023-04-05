@@ -8,7 +8,7 @@ using System.Timers;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
 {
-    public partial class CreateJobObservation
+    public partial class PlanJobObservation
     {
 
         [Parameter]
@@ -83,7 +83,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Job Observation", href: "/jobobservation"),
-            new BreadcrumbItem("New Job Observation", href: "", disabled: true)
+            new BreadcrumbItem("Plan Job Observation", href: "", disabled: true)
         };
 
 
@@ -226,10 +226,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             StateHasChanged();
         }
 
-        private async Task CreateNewJobObservation()
+        private async Task PlanNewJobObservation()
         {
             //Planned
-            _jobObservation.Type = 2;
+            _jobObservation.Type = 1;
+
             Console.WriteLine(startHour);
             hour1 = _jobObservation.DateStart?.ToShortDateString() + $" {startHour}";
             hour2 = _jobObservation.DateEnd?.ToShortDateString() + $" {endHour}";
@@ -294,208 +295,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             NavigationManager.NavigateTo("/jobobservation");
         }
 
-
-
-        //timer
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            TimeSpan hundreths;
-            int centiseconds = 0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = (int)hundreths.TotalMilliseconds / 10;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cicles[0] = centiseconds.ToString(); break;
-                case 2:
-                    cicles[1] = centiseconds.ToString(); break;
-                case 3:
-                    cicles[2] = centiseconds.ToString(); break;
-                case 4:
-                    cicles[3] = centiseconds.ToString(); break;
-                case 5:
-                    cicles[4] = centiseconds.ToString(); break;
-            }
-            DateTime currentTime = e.SignalTime;
-            elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0,12);
-            StateHasChanged();
-        }
-
-        void StartTimer()
-        {
-            startTime = DateTime.Now;
-            timer = new System.Timers.Timer(1);
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
-            timer.Enabled = true;
-            isRunning = true;
-        }
-
-        void StopTimer()
-        {
-            TimeSpan hundreths;
-            int centiseconds = 0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = (int)hundreths.TotalMilliseconds / 10;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cicles[0] = centiseconds.ToString(); break;
-                case 2:
-                    cicles[1] = centiseconds.ToString(); break;
-                case 3:
-                    cicles[2] = centiseconds.ToString(); break;
-                case 4:
-                    cicles[3] = centiseconds.ToString(); break;
-                case 5:
-                    cicles[4] = centiseconds.ToString(); break;
-            }
-            isRunning = false;
-            Console.WriteLine($"Elapsed Time: {elapsedTime}");
-            timer.Enabled = false;
-            elapsedTime = DEFAULT_TIME;
-        }
-
-        void OnTimerChanged()
-        {
-            if (!isRunning)
-                StartTimer();
-            else
-                StopTimer();
-        }
-
-        void Option1() => opt = 1;
-        void Option2() => opt = 2;
-        void Option3() => opt = 3;
-        void Option4() => opt = 4;
-        void Option5() => opt = 5;
-
-
-        //Lup
-        void Closed(MudChip chip)
-        {
-            // react to chip closed
-        }
-        public void AddTempLup(int pillar)
-        {
-            switch (pillar)
-            {
-                case 1:
-                    if (areaS != null && areaS.Length > 0)
-                    {
-                        lup.Oportunity = areaS;
-                        areaS = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error S Area is empty", Severity.Error);
-                        return;
-                    }
-                    break;
-                case 2:
-                    if (areaQ != null && areaQ.Length > 0)
-                    {
-                        lup.Oportunity = areaQ;
-                        areaQ = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
-                        return;
-                    }
-                    break;
-                case 3:
-                    if (areaD != null && areaD.Length > 0)
-                    {
-                        lup.Oportunity = areaD;
-                        areaD = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error D Area is empty", Severity.Error);
-                        return;
-                    }
-                    break;
-                case 4:
-                    if (areaC != null && areaC.Length > 0)
-                    {
-                        lup.Oportunity = areaC;
-                        areaC = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error C Area is empty", Severity.Error);
-                        return;
-                    }
-                    break;
-                case 5:
-                    if (areaOther != null && areaOther.Length > 0)
-                    {
-                        lup.Oportunity = areaOther;
-                        areaOther = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
-                        return;
-                    }
-                    break;
-
-            }
-
-            lup.Observer = _jobObservation.Supervisor.Name;
-            lup.JobObservationId = 0;
-            lup.Pillar = pillar;
-            lup.Status = 1;
-            lup.CreatedDate = DateTime.Now;
-            lup.IsActive = true;
-
-            _tempLup.Add(lup);
-            lup = new();
-            
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"Lup item added", Severity.Info);
-
-
-
-        }
-
-        public void DeleteLup(Lup lup)
-        {
-            switch (lup.Pillar) {
-                case 1: areaS = ""; break;
-                case 2: areaQ = ""; break;
-                case 3: areaD = ""; break;
-                case 4: areaC = ""; break;
-                case 5: areaOther = ""; break; 
-            }
-            _tempLup.Remove(lup);
-        }
-
-        //Past Job observation
         private void OpenDialogLup(int id)
         {
             lupId = id;
@@ -517,15 +316,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         void CloseLup() => visibleLup = false;
         void CloseOverdue() => visiblePast = false;
 
-        void EditLup(int lupId)
-        {
-            NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
-        }
-
         void GoToJobObservation(int jobObservationId)
         {
             NavigationManager.NavigateTo($"/");
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+        }
+
+        //Lup
+        void Closed(MudChip chip)
+        {
+            // react to chip closed
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 
@@ -18,16 +19,38 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool hover = true;
         private bool ronly = false;
         private string searchString = "";
-        
 
+        //Filters
+        public Color color = Color.Default;
+        public bool filters = false;
+        List<Distribution> _distributions = new();
+        List<Operation> _operations = new();
 
+        public int distributionId;
+        public int operationId;
+        public DateTime? filterDate = new();
+        public int OperatorId;
+        public int StatusId;
         // Objects
         public List<JobObservation> _jobObservation { get; set; } = new();
+        public List<JobObservation> _plannedJobObservation { get; set; } = new();
+        public List<JobObservation> _inProgressjobObservation { get; set; } = new();
+        public List<JobObservation> _latejobObservation { get; set; } = new();
+        public List<JobObservation> _finishedjobObservation { get; set; } = new();
+
+        public string totalPlanned;
+        public string totalInProgress;
+        public string totalLate;
+        public string totalFinished;
 
         //User
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+
+        //Operator user
+        public List<User> users = new();
+        public List<User> operatorUsers = new();
 
         protected async override Task OnInitializedAsync()
         {
@@ -42,9 +65,70 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             else
             {
                 await LateDates();
+
+
                 _jobObservation = await JobObservationService.GetAllJobObservations();
 
+                foreach (var jobobs in _jobObservation)
+                {
+                    switch (jobobs.Status)
+                    {
+                        case 1: _plannedJobObservation.Add(jobobs); break;
+                        case 2: _inProgressjobObservation.Add(jobobs); break;
+                        case 3: _latejobObservation.Add(jobobs); break;
+                        case 4: _finishedjobObservation.Add(jobobs); break;
+                    }
+                }
+
+                totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+                totalInProgress = "In Progress (" + _inProgressjobObservation.Count + ")";
+                totalLate = "Late (" + _latejobObservation.Count +")";
+                totalFinished = "Finished (" + _finishedjobObservation.Count +")";
+
+                await GetUserAsync();
+
+                if(user != null)
+                {
+                    _distributions = await DistributionService.GetDistributionsWithCollections(user.PlantId, user.AreaId);
+
+                }
+
+                //operator User
+                users = await UsersService.GetUsers();
+                foreach (var operatorUser in users)
+                {
+                    if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.IsOperator)
+                    {
+                        operatorUsers.Add(operatorUser);
+                    }
+                }
+
             }
+        }
+
+        public void ActiveFilters()
+        {
+            filters = !filters;
+            if(color == Color.Info)
+            {
+                color = Color.Default;
+            }
+            else
+            {
+                color = Color.Info;
+            }
+
+        }
+
+        //Filters
+        private async Task FilterDistributions()
+        {
+
+        }
+
+        private async Task FilterOperations()
+        {
+
         }
 
         //Local storage user
@@ -91,6 +175,28 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 _jobObservation.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
                 await JobObservationService.DeleteJobObservation(jobObservationId);
+                _plannedJobObservation.Clear();
+                _inProgressjobObservation.Clear();
+                _latejobObservation.Clear();
+                _finishedjobObservation.Clear();
+
+                foreach (var jobobs in _jobObservation)
+                {
+                    switch (jobobs.Status)
+                    {
+                        case 1: _plannedJobObservation.Add(jobobs); break;
+                        case 2: _inProgressjobObservation.Add(jobobs); break;
+                        case 3: _latejobObservation.Add(jobobs); break;
+                        case 4: _finishedjobObservation.Add(jobobs); break;
+                    }
+                }
+
+                totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+                totalInProgress = "In Progress (" + _inProgressjobObservation.Count + ")";
+                totalLate = "Late (" + _latejobObservation.Count + ")";
+                totalFinished = "Finished (" + _finishedjobObservation.Count + ")";
+
+                StateHasChanged();
             }
         }
 
@@ -104,6 +210,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             var date = DateTime.Now.ToShortDateString();
             date = date.Replace("/", "-");
             NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
+        }
+
+        void PlanJobObservation()
+        {
+            var date = DateTime.Now.ToShortDateString();
+            date = date.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{date}");
         }
 
         public bool flagJob = false;

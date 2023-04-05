@@ -62,14 +62,19 @@ else
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">
                 Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
-                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                @if(_jobObservation.Type == 1){
+                    <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
+                }
+                else if(_jobObservation.Type == 2){
+                    <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                }
             </MudText>
             <MudItem Style="text-align: end">
                 @if (searchAssychart)
                 {
                     <MudItem Class="d-flex flex-column align-end justify-center pa-1 ma-1">
                         <MudItem class="d-flex flex-column justify-center align-self-end">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Relationated Documents</MudText>
+                            <MudText Typo="Typo.h6" Class="align-item-center center">Related Documents</MudText>
                         </MudItem>
 
                         <MudItem Class="d-flex flex-row align-end justify-center pa-2 ma-2">
@@ -211,7 +216,7 @@ else
                                     </MudRadio>
                                     @if (_jobObservation.Option == 3)
                                     {
-                                        <MudTextField @bind-Value="_jobObservation.Anomaly" T="string" Label="Write the anomaly" Placeholder="Anomaly" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                        <MudTextField @bind-Value="_jobObservation.Anomaly" T="string" Label="Write the anomaly" Placeholder="Anomaly" Variant="Variant.Outlined" Margin="Margin.Dense" />
                                     }
                                 </MudRadioGroup>
 
@@ -228,7 +233,7 @@ else
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <MudTextField T="string" @bind-Value="_jobObservation.Justification" Label="Justification" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    <MudTextField T="string" @bind-Value="_jobObservation.Justification" Label="Justification" Variant="Variant.Outlined" Margin="Margin.Dense" />
                                 </td>
                             </tr>
                         }
@@ -253,10 +258,10 @@ else
                         <tr>
                             <td>
                                 @*<MudTimePicker Label="Minutes" Text="13:37" OpenTo="OpenTo.Minutes" />*@
-                                <MudTextField T="string" @bind-Value="_jobObservation.Time1HOE" Label="Tiempo 1" Required="true" Variant="Variant.Outlined" RequiredError="Time is required!" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.Time1HOE" Label="Tiempo 1" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservation.Time2HOE" Label="Tiempo 2" Required="true" Variant="Variant.Outlined" RequiredError="Time is required!" Margin="Margin.Dense" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.Time2HOE" Label="Tiempo 2" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </td>
                         </tr>
                     </tbody>
@@ -276,56 +281,86 @@ else
                             <td>
                                 @*Mud select of Products*@
                                 <MudSelect T="int" Label="Product 1" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[0]">
-                                    @foreach (var type in _products)
-                                    {
-                                        if (models[0] == type.ProductId)
+                                    @if(models[0] == 0){
+                                        <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
+                                    }
+                                    else{
+                                        @foreach (var type in _products)
                                         {
-                                            <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            if (models[0] == type.ProductId)
+                                            {
+                                                <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            }
                                         }
+
                                     }
                                 </MudSelect>
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 2" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[1]">
-                                    @foreach (var type in _products)
-                                    {
-                                        if (models[1] == type.ProductId)
+                                    @if(models[0] == 0){
+                                        <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
+                                    }
+                                    else{
+                                        @foreach (var type in _products)
                                         {
-                                            <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            if (models[1] == type.ProductId)
+                                            {
+                                                <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            }
                                         }
+
                                     }
                                 </MudSelect>
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 3" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[2]">
-                                    @foreach (var type in _products)
-                                    {
-                                        if (models[2] == type.ProductId)
+                                    @if(models[0] == 0){
+                                        <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
+                                    }
+                                    else{
+                                        @foreach (var type in _products)
                                         {
-                                            <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            if (models[2] == type.ProductId)
+                                            {
+                                                <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            }
                                         }
+
                                     }
                                 </MudSelect>
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 4" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[3]">
-                                    @foreach (var type in _products)
-                                    {
-                                        if (models[3] == type.ProductId)
+                                    @if(models[0] == 0){
+                                        <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
+                                    }
+                                    else{
+                                        @foreach (var type in _products)
                                         {
-                                            <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            if (models[3] == type.ProductId)
+                                            {
+                                                <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            }
                                         }
+
                                     }
                                 </MudSelect>
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 5" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[4]">
-                                    @foreach (var type in _products)
-                                    {
-                                        if (models[4] == type.ProductId)
+                                        @if(models[0] == 0){
+                                        <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
+                                    }
+                                    else{
+                                        @foreach (var type in _products)
                                         {
-                                            <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            if (models[4] == type.ProductId)
+                                            {
+                                                <MudSelectItem Value="type.ProductId" Disabled=true>@($"{type.Code}")</MudSelectItem>
+                                            }
                                         }
+
                                     }
                                 </MudSelect>
                             </td>
@@ -350,19 +385,19 @@ else
                         </tr>
                         <tr>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[0]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                <MudTextField T="string" @bind-Value="cicles[0]" Label="Cicle 1" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[1]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                <MudTextField T="string" @bind-Value="cicles[1]" Label="Cicle 2" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[2]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                <MudTextField T="string" @bind-Value="cicles[2]" Label="Cicle 1" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[3]" Label="Cicle 2" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                <MudTextField T="string" @bind-Value="cicles[3]" Label="Cicle 2" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="cicles[4]" Label="Cicle 1" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                <MudTextField T="string" @bind-Value="cicles[4]" Label="Cicle 1" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                             </td>
                         </tr>
                     </tbody>
@@ -713,7 +748,7 @@ else
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
                             </td>
                         </tr>
                     <th>
@@ -742,14 +777,14 @@ else
                     </th>
                     <tr>
                         <td>
-                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Placeholder="@placeholder" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
+                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
                         </td>
                         <td>
-                            <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature"  Variant="Variant.Outlined" Margin="Margin.Dense" />
                             <MudText Style="text-align:center; font-weight:bold;">
                                 Firma del Operador
                             </MudText>
-                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Variant="Variant.Outlined" Margin="Margin.Dense" />
                         </td>
                     </tr>
 
