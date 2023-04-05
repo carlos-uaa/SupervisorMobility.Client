@@ -1,7 +1,7 @@
 ﻿using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 
-namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage
+namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.ProductsPage
 {
     public partial class CreateProductOnDistribution
     {
@@ -57,7 +57,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Create distribution
         async void CreateDistributionAsync()
         {
-            
+            _distribution.IsActive = true;
             var result = await ProductServices.CreateDistribution(ProductId, PlantId, AreaId, _distribution);
             
             if(result != null )

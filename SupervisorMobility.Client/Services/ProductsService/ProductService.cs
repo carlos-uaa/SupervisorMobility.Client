@@ -30,46 +30,12 @@ namespace SupervisorMobility.Client.Services.ProductsService
             return newProduct;
         }
 
-        //Create Distribution 
-        public async Task<Distribution> CreateDistribution(int productId, int plantId, int areaId, Distribution distribution)
-        {
-            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions?plantId={plantId}&areaId={areaId}", distribution);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
-                return newDistribution;
-            }
-            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
-
-            return null;
-        }
-        
-        public async Task<Distribution> AddDistribution(int productId, int plantId, int areaId, Distribution distribution)
-        {
-            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions/add?plantId={plantId}&areaId={areaId}", distribution);
-
-
-            if (response.IsSuccessStatusCode)
-            {
-                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
-                return newDistribution;
-            }
-            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
-
-            return null;
-        }
-
         // Delete product
         public async Task DeleteProduct(int id)
         {
             var response = await _http.DeleteAsync($"products/{id}");
         }
-        
-        public async Task DeleteDistribution(int productId, int distributionId)
-        {
-            var response = await _http.DeleteAsync($"products/{productId}/distributions/{distributionId}");
-        }
+      
        
 
         // Get product by Id
@@ -129,6 +95,69 @@ namespace SupervisorMobility.Client.Services.ProductsService
             }
 
             return false;
+        }
+
+        //get distribution
+        public async Task<Distribution> GetDistributionOnlyById(int productId, int distributionId)
+        {
+            var response = await _http.GetAsync($"products/{productId}/distributions/{distributionId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var distribution = JsonSerializer.Deserialize<Distribution>(content, _options);
+
+            return distribution;
+        }
+        //Create Distribution 
+        public async Task<Distribution> CreateDistribution(int productId, int plantId, int areaId, Distribution distribution)
+        {
+            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions/create?plantId={plantId}&areaId={areaId}", distribution);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
+                return newDistribution;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+            return null;
+        }
+
+        public async Task<Distribution> AddDistribution(int productId, int plantId, int areaId, Distribution distribution)
+        {
+            var response = await _http.PostAsJsonAsync<Distribution>($"products/{productId}/distributions/add?plantId={plantId}&areaId={areaId}", distribution);
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newDistribution = await response.Content.ReadFromJsonAsync<Distribution>();
+                return newDistribution;
+            }
+            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
+
+            return null;
+        }
+
+
+        public async Task<bool> UpdateDistributionForProduct(int productId, Distribution distribution)
+        {
+            var response = await _http.PutAsJsonAsync($"products/{productId}/distributions/{distribution.DistributionId}/update", distribution);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        public async Task DeleteDistribution(int productId, int distributionId)
+        {
+            var response = await _http.DeleteAsync($"products/{productId}/distributions/{distributionId}/remove");
         }
     }
 }

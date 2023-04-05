@@ -57,7 +57,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.ProductDistr
         // Create distribution
         async void CreateDistributionAsync()
         {
-            
+            _distribution.IsActive = true;
             var result = await ProductServices.CreateDistribution(ProductId, PlantId, AreaId, _distribution);
             
             if(result != null )

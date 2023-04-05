@@ -54,6 +54,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Create distribution
         async void CreateDistributionAsync()
         {
+            _distribution.IsActive = true;
             var result = await DistributionService.CreateDistribution(PlantId, AreaId, _distribution);
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
         }

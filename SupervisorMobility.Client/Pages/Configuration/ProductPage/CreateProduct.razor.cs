@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         // Create product
         async void CreateProductAsync()
         {
+            _product.IsActive = true;
             var result = await ProductService.CreateProduct(_product);
             NavigationManager.NavigateTo($"products");
         }

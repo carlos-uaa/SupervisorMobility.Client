@@ -52,6 +52,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void CreateNewAssyChartAsync()
         {
+            _newassychart.IsActive = true;
             _newassychart.CreationDate = DateTime.Now;
             var result = await AssyChartServices.CreateAssyChart(_newassychart);
             if(result != null)

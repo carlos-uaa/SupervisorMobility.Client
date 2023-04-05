@@ -59,6 +59,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Create operation
         async void CreateOperationAsync()
         {
+            _operation.IsActive = true;
             var result = await OperationService.CreateOperation(PlantId, AreaId, DistributionId, _operation);
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }

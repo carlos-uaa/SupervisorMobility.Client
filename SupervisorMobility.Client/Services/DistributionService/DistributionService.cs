@@ -54,7 +54,9 @@ namespace SupervisorMobility.Client.Services.DistributionService
             var distribution = JsonSerializer.Deserialize<Distribution>(content, _options);
 
             return distribution;
-        } 
+        }  
+       
+
         public async Task<Distribution> GetDistributionWithCollections(int plantId, int areaId, int distributionId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions/{distributionId}?includeCollections=true");
@@ -111,7 +113,9 @@ namespace SupervisorMobility.Client.Services.DistributionService
             }
 
             return false;
-        }
+        } 
+        
+     
         
         //Product
         public async Task<Product> CreateProduct(int plantId, int areaId, int distributionId, Product product)

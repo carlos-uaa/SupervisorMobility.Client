@@ -19,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Create plant
         async void CreatePlantAsync()
         {
+            _plant.IsActive = true;
             var result = await PlantService.CreatePlant(_plant);
             NavigationManager.NavigateTo($"plants");
         }
