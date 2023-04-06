@@ -3,6 +3,7 @@
     public interface IJobObservationService
     {
         // Get all job observations     
+        Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId);
         Task<List<JobObservation>> GetAllJobObservations();
         Task<List<JobObservation>> GetAllJobObservationsWithLup();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.JobObservationService
@@ -43,6 +44,20 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             var jobObservation = JsonSerializer.Deserialize<List<JobObservation>>(content, _options);
 
             return jobObservation;
+        }
+        public async Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId)
+        {
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var historyJobObservation = JsonSerializer.Deserialize<List<JobObservationVersion>>(content, _options);
+
+            return historyJobObservation;
         }
 
         public async Task<List<JobObservation>> GetAllJobObservationsWithLup()
