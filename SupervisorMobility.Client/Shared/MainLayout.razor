@@ -3,6 +3,7 @@
 @inject IUserService UsersService
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
+@inject INotificationService NotifyServices
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -27,27 +28,119 @@
             </MudMenuItem>
         </MudMenu>
         <MudSpacer />
-@*        <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-            <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="(() => GetSupervisor())">
-                Supervisor
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="(() => GetAdmin())">
-                Admin
-            </MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="(() => LogOut())">
-                Log out
-            </MudMenuItem>
+        @*        <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+        <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="(() => GetSupervisor())">
+        Supervisor
+        </MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="(() => GetAdmin())">
+        Admin
+        </MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="(() => LogOut())">
+        Log out
+        </MudMenuItem>
         </MudMenu>*@
-@*        <LoginDisplay />*@
+        @*        <LoginDisplay />*@
         <AuthorizeView>
             <Authorized>
+
+                @if (Notifications == null)
+                {
+
+                    <MudMenu AnchorOrigin="Origin.BottomCenter" Icon="@Icons.Material.Filled.Campaign">
+                        <MudMenuItem>
+                            <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+                        </MudMenuItem>
+                    </MudMenu>
+                }
+                else if (Notifications.Count == 0)
+                {
+                    <MudMenu AnchorOrigin="Origin.BottomCenter">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Campaign">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText>You don't have any notificatios... Yet</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Ok">Close</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudMenuItem>
+                    </MudMenu>
+
+                }
+                else
+                {
+
+                    <MudButton OnClick="@OpenDialogNotifications">
+                        <MudBadge Content="@Notifications.Count()" Overlap="true" Class="mx-6 my-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Campaign" Color="Color.Default" />
+                        </MudBadge>
+                    </MudButton>
+
+
+
+                    <MudDialog DisableSidePadding="true" @bind-IsVisible="NoifyDialog">
+                        <DialogContent>
+                            <MudContainer Style="max-height: 500px; overflow-y: scroll">
+
+                                @if (Notifications.Count == 0)
+                                {
+                                    <MudText>You don't have any notificatios... Yet</MudText>
+                                }
+                                else
+                                {
+                                    @foreach (var notification in Notifications)
+                                    {
+
+                                        <MudCard Elevation="3" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.subtitle1">Notification of @notification.MadeBy</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudCardContent>
+                                                    <MudText>
+                                                        Report about of: @notification.NotificationText
+
+                                                    </MudText>
+                                                </MudCardContent>
+                                                @*
+                                    <MudCardActions>
+                                    <MudSpacer />
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="@(() => NavToPir())">Rise a new PIR</MudButton>
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Check" Color="@Color.Success" Title="Mark as Read"
+                                    @onclick="@(() => updateStatus(notification))" />
+                                    <MudSpacer />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" />
+                                    <MudSpacer />
+                                    </MudCardActions>*@
+                                            </MudCardContent>
+                                        </MudCard>
+
+
+
+                                    }
+                                }
+                            </MudContainer>
+                        </DialogContent>
+                        <DialogActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok">Close</MudButton>
+                        </DialogActions>
+                    </MudDialog>
+                }
+
                 <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@context.User.Identity?.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                     <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
                         Log out
                     </MudMenuItem>
                 </MudMenu>
                 @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">
-                    @context.User.Identity?.Name
+                @context.User.Identity?.Name
                 </MudButton>
                 <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>*@
             </Authorized>
@@ -81,40 +174,45 @@
 
                 <MudText>Hello! Username, @(DateTime.Today.Year)</MudText>
 
-                <MudList Clickable="true" @onmouseover="@OnMouseOver">
-                    <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text="Need help navigating?" Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
-                        <NestedList>
+                    <MudList Clickable="true" @onmouseover="@OnMouseOver">
+                        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text="Need help navigating?" Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                            <NestedList>
 
-                            <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
-                                Guides
-                            </MudListItem>
-                        </NestedList>
+                                <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
+                                    Guides
+                                </MudListItem>
+                            </NestedList>
 
-                    </MudListItem>
-                </MudList>
-            </div>
-        </footer>
-    </MudMainContent>
-</MudLayout>
+                        </MudListItem>
+                    </MudList>
+                </div>
+            </footer>
+        </MudMainContent>
+    </MudLayout>
 
     @code {
+    //idk how this works but im add ~ Mika
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     //User
     public List<User> users;
     public User user = new();
 
+    //Notification
+    public List<Notification> Notifications { get; set; }
+
     private string json = string.Empty;
 
     bool _drawerOpen = true;
     bool _IsHovering = false;
-
+    bool NoifyDialog = false;
     [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
         users = await UsersService.GetUsers();
         AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
-        
+
         // Get the current authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
@@ -142,9 +240,9 @@
 
         var userId = currentUser.FindFirst("oid")?.Value;
 
-        foreach(var u in users)
+        foreach (var u in users)
         {
-            if(u.Name == currentUser.Identity?.Name)
+            if (u.Name == currentUser.Identity?.Name)
             {
                 user = u;
                 json = JsonSerializer.Serialize<User>(user);
@@ -152,7 +250,7 @@
             }
         }
 
-        
+        Notifications = await NotifyServices.GetAllNotifications();
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
         //await LocalStorage.SetItemAsync("user", userId);
@@ -174,6 +272,12 @@
             user.Name = "Log in";
         }
 
+    }
+
+    private void OpenDialogNotifications()
+    {
+        NoifyDialog = true;
+        StateHasChanged();
     }
 
     private async Task<bool> TryGetAsync()
@@ -220,7 +324,7 @@
 
     private async Task<bool> HasPropertyAsync() => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
-    
+
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
@@ -239,5 +343,12 @@
     {
         _IsHovering = false;
         //StateHasChanged();
+    }
+
+    //dialgo
+    private void Ok()
+    {
+        NoifyDialog = false;
+        StateHasChanged();
     }
 }
