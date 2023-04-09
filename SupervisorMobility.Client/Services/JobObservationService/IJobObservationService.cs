@@ -4,6 +4,8 @@
     {
         // Get all job observations     
         Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId);
+        Task<JobObservation> GetHistoryJobObservationWithLup(int jobObservationId, int HistoryId);
+
         Task<List<JobObservation>> GetAllJobObservations();
         Task<List<JobObservation>> GetAllJobObservationsWithLup();
 
