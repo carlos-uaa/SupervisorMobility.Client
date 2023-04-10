@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -73,10 +74,10 @@ builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
 
-    //var originalAuthority = options.ProviderOptions.Authentication.Authority;
-    //var loginPromptAuthority = $"{originalAuthority}?prompt=login";
-    //options.ProviderOptions.Authentication.Authority = loginPromptAuthority;
+    options.ProviderOptions.LoginMode = "login";
+    options.ProviderOptions.Cache.CacheLocation = "sessionStorage";
 });
+
 
 await builder.Build().RunAsync();
 

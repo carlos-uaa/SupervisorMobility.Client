@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -105,6 +106,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             // react to chip closed
         }
+
+        [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
         protected async override Task OnInitializedAsync()
         {
             logged = await HasPropertyAsync();
@@ -118,6 +122,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             else
             {
+                AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
+
+                // Get the current authentication state
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
                 route = "authenticationSign/login/" + JobObservationId;
                 _jobObservation.Supervisor = new();
                 //glosary
@@ -233,10 +242,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
         }
 
-        public async Task GoToJobObservation()
+        private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
         {
-            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}", true);
-            StateHasChanged();
+
+            // Get the current authentication state
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            // Get the user from the authentication state
+            var currentUser = authState.User;
+            Console.WriteLine(currentUser.Identity?.Name);
+
+            var userId = currentUser.FindFirst("oid")?.Value;
+        }
+        public void OnLogInSucceeded()
+        {
+            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}",true);
         }
 
         //Local storage user
@@ -738,6 +758,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             var fileName = namefile;
             var fileURL = urlroute;
             await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+
+        public void ShowDateMessage()
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"You can not change the date, when the job observation is finished", Severity.Info);
+        }
+
+        public void ShowHourMessage()
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"You can not change the hour, when the job observation is finished", Severity.Info);
         }
 
     }
