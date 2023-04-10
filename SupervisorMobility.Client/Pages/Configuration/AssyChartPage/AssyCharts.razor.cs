@@ -197,6 +197,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             StateHasChanged();
         }
+
+
         void CloseGos() => GosDialog = false;
 
         private async void OpenDialogCcp(string ruta)

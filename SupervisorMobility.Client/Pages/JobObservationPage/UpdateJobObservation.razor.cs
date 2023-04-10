@@ -119,7 +119,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
             }
-
             else
             {
                 AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
@@ -280,6 +279,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async Task<bool> HasPropertyAsync()
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
+        void history()
+        {
+            NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
+        }
 
         //Job observations
         private async void ShowAreas()
@@ -341,7 +344,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Justification = null;
             }
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Name);
 
             if (result)
             {

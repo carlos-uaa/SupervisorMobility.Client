@@ -3,6 +3,9 @@
     public interface IJobObservationService
     {
         // Get all job observations     
+        Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId);
+        Task<JobObservation> GetHistoryJobObservationWithLup(int jobObservationId, int HistoryId);
+
         Task<List<JobObservation>> GetAllJobObservations();
         Task<List<JobObservation>> GetAllJobObservationsWithLup();
 
@@ -14,7 +17,7 @@
         Task<JobObservation> CreateJobObservation(JobObservation jobObservation);
 
         // Update job observation
-        Task<bool> UpdateJobObservation(JobObservation jobObservation);
+        Task<bool> UpdateJobObservation(JobObservation jobObservation, string MadeBy = "");
 
         // Delete job observation
         Task DeleteJobObservation(int jobObservationId);

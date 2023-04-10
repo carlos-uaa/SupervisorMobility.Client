@@ -147,7 +147,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             // react to chip closed
         }
 
-
+        void history()
+        {
+            NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
+        }
 
 
         private string HOErute = "";

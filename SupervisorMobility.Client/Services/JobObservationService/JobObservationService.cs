@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.JobObservationService
@@ -41,6 +42,36 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             }
 
             var jobObservation = JsonSerializer.Deserialize<List<JobObservation>>(content, _options);
+
+            return jobObservation;
+        }
+        public async Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId)
+        {
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var historyJobObservation = JsonSerializer.Deserialize<List<JobObservationVersion>>(content, _options);
+
+            return historyJobObservation;
+        }
+
+
+        public async Task<JobObservation> GetHistoryJobObservationWithLup(int jobObservationId, int HistoryId)
+        {
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history/{HistoryId}/detail");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var jobObservation = JsonSerializer.Deserialize<JobObservation>(content, _options);
 
             return jobObservation;
         }
@@ -91,9 +122,10 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
-        public async Task<bool> UpdateJobObservation(JobObservation jobObservation)
+        public async Task<bool> UpdateJobObservation(JobObservation jobObservation, string MadeBy = "")
         {
-            var response = await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}", jobObservation);
+            var response = MadeBy != "" ? await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}?MadeBy={MadeBy}", jobObservation) : await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}", jobObservation);
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;

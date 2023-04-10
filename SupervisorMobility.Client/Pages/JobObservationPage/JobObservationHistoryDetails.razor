@@ -1,4 +1,4 @@
-﻿@page "/jobobservation/details/{jobobservationId:int}"
+﻿@page "/jobobservation/history/{jobobservationId:int}/details/{JobObservationVersionId:int}"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
@@ -25,7 +25,7 @@
 @inject NavigationManager NavigationManager
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Job Observation</PageTitle>
+<PageTitle>Supervisor Mobility | Job Version Details</PageTitle>
 
 @* Job Observation Form*@
 @*@if (_jobObservation.IsActive == true)
@@ -61,15 +61,15 @@ else
     <MudItem lg="10" md="12" sm="12" xs="12">
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">
-                Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
-                @if(_jobObservation.Type == 1){
+                Revision de Version de @_jobObservation.JobObservationId
+                @if (_jobObservation.Type == 1)
+                {
                     <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
                 }
-                else if(_jobObservation.Type == 2){
+                else if (_jobObservation.Type == 2)
+                {
                     <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
-                }
-
-                    <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3" OnClick="@history">History Versions</MudChip>
+                }        
 
             </MudText>
             <MudItem Style="text-align: end">
@@ -160,8 +160,8 @@ else
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
-                                <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly />
-                                <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" Class="pt-2" ReadOnly/>
+                                <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                                <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" />
                             </td>
                         </tr>
                         <tr>
@@ -172,14 +172,14 @@ else
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
-                                <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly/>
-                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly />
+                                <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" />
                             </td>
                         </tr>
                         <tr>
                             <td class="d-flex">
                                 @*Mud select of Distribution *@
-                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId">
+                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId">
                                     <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">@_jobObservation.Distribution?.Code - @_jobObservation.Distribution?.Description</MudSelectItem>
                                 </MudSelect>
                                 @*Mud select of Operations *@
@@ -284,10 +284,12 @@ else
                             <td>
                                 @*Mud select of Products*@
                                 <MudSelect T="int" Label="Product 1" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[0]">
-                                    @if(models[0] == 0){
+                                    @if (models[0] == 0)
+                                    {
                                         <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
                                     }
-                                    else{
+                                    else
+                                    {
                                         @foreach (var type in _products)
                                         {
                                             if (models[0] == type.ProductId)
@@ -301,10 +303,12 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 2" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[1]">
-                                    @if(models[0] == 0){
+                                    @if (models[0] == 0)
+                                    {
                                         <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
                                     }
-                                    else{
+                                    else
+                                    {
                                         @foreach (var type in _products)
                                         {
                                             if (models[1] == type.ProductId)
@@ -318,10 +322,12 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 3" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[2]">
-                                    @if(models[0] == 0){
+                                    @if (models[0] == 0)
+                                    {
                                         <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
                                     }
-                                    else{
+                                    else
+                                    {
                                         @foreach (var type in _products)
                                         {
                                             if (models[2] == type.ProductId)
@@ -335,10 +341,12 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 4" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[3]">
-                                    @if(models[0] == 0){
+                                    @if (models[0] == 0)
+                                    {
                                         <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
                                     }
-                                    else{
+                                    else
+                                    {
                                         @foreach (var type in _products)
                                         {
                                             if (models[3] == type.ProductId)
@@ -352,10 +360,12 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label="Product 5" Variant="Variant.Text" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models[4]">
-                                        @if(models[0] == 0){
+                                    @if (models[0] == 0)
+                                    {
                                         <MudSelectItem Disabled=true Value="0">Not selected</MudSelectItem>
                                     }
-                                    else{
+                                    else
+                                    {
                                         @foreach (var type in _products)
                                         {
                                             if (models[4] == type.ProductId)
@@ -783,7 +793,7 @@ else
                             <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
                         </td>
                         <td>
-                            <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature"  Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             <MudText Style="text-align:center; font-weight:bold;">
                                 Firma del Operador
                             </MudText>
@@ -803,7 +813,7 @@ else
         <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudText Typo="Typo.h6">
-                   GOS Rute: @GOSrute
+                    GOS Rute: @GOSrute
                 </MudText>
             </MudItem>
             @if (GosFilesInFolder != null)
@@ -930,7 +940,7 @@ else
                     </MudItem>
                 }
             }
-            
+
 
 
         </MudContainer>
@@ -946,7 +956,7 @@ else
         <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudText Typo="Typo.h6">
-                   CCP Rute: @CCPrute
+                    CCP Rute: @CCPrute
                 </MudText>
             </MudItem>
 
@@ -1229,3 +1239,213 @@ else
         <MudButton Color="Color.Info" OnClick="CloseHoe">Close</MudButton>
     </DialogActions>
 </MudDialog>
+
+@code{
+
+    [Parameter]
+    public int JobObservationId { get; set; }
+    [Parameter]
+    public int JobObservationVersionId { get; set; }
+    public JobObservation _jobObservation { get; set; } = new();
+    List<Product> _products { get; set; } = new();
+    public Lup lup { get; set; } = new();
+    //Lup Modal
+    private bool visible = false;
+    private int lupId;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+    public JobObservation _lupJobObservations { get; set; } = new();
+
+    private AssyChart _assychart { get; set; } = new AssyChart();
+
+    //Glosary
+    private List<Glosary> glosary = new();
+    private Dictionary<string, Glosary> _glosaryInfo;
+
+    //Objects
+    private bool dense = false;
+    private bool hover = false;
+    private bool ronly = false;
+
+    public string hour1 { get; set; }
+    public string hour2 { get; set; }
+    TimeSpan? endHour { get; set; }
+    TimeSpan? startHour { get; set; }
+
+    public int plantId;
+    public int areaId;
+    public int distributionId;
+    public int operationId;
+
+    public DateTime? dateStart = DateTime.Today;
+    public DateTime? dateEnd = DateTime.Today;
+
+    public string observer { get; set; } = "Juan";
+    public string operator1 { get; set; } = "Pedro";
+
+    int[] models = new int[5];
+    string[] cicles = new string[5];
+
+    private bool CcpDialog = false;
+    private bool HoeDialog = false;
+    private bool GosDialog = false;
+    private bool searchAssychart = false;
+
+    private CDMS_CCP_Document? CcpFilesInFolder;
+    private CDMS_HOE_Document? HoeFilesInFolder;
+    private CDMS_GOS_Document? GosFilesInFolder;
+
+    private bool folderError = false;
+    private string messageErrorFolders;
+
+    //Operator user
+    public List<User> users = new();
+    public List<User> operatorUsers = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _jobObservation.Supervisor = new();
+        _jobObservation.Operator = new();
+
+        glosary = await GlosaryService.GetGlosary();
+        _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+        _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+        _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+
+        _products = await ProductService.GetProducts();
+        var prod = _jobObservation.Models.Split('|');
+        models[0] = Int32.Parse(prod[0]);
+        models[1] = Int32.Parse(prod[1]);
+        models[2] = Int32.Parse(prod[2]);
+        models[3] = Int32.Parse(prod[3]);
+        models[4] = Int32.Parse(prod[4]);
+        cicles = _jobObservation.Cicles.Split('|');
+
+        startHour = _jobObservation.DateStart?.TimeOfDay;
+        endHour = _jobObservation.DateEnd?.TimeOfDay;
+        Console.WriteLine(startHour);
+
+        if (_jobObservation.PlantId != 0)
+        {
+            if (_jobObservation.AreaId != 0)
+            {
+                if (_jobObservation.DistributionId != 0)
+                {
+                    if (_jobObservation.DistributionId != 0)
+                    {
+
+                        try
+                        {
+                            _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                            if (_assychart == null)
+                                messageErrorFolders = "The folders with the information provided were not located.";
+                            else
+                                searchAssychart = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            messageErrorFolders = "The folders with the information provided were not located.";
+                        }
+
+                        if (_assychart == null)
+                            messageErrorFolders = "The folders with the information provided were not located.";
+                        else
+                            searchAssychart = true;
+
+                    }
+                    else
+                    {
+                        messageErrorFolders = "Job Observation does not contain a valid operation";
+                        Console.WriteLine("missing plant");
+                    }
+                }
+                else
+                {
+                    messageErrorFolders = "Job Observation does not contain a valid distribution";
+                    Console.WriteLine("missing plant");
+                }
+            }
+            else
+            {
+                messageErrorFolders = "Job Observation does not contain a valid area";
+                Console.WriteLine("missing plant");
+            }
+        }
+        else
+        {
+            messageErrorFolders = "Job Observation does not contain a valid plant";
+            Console.WriteLine("missing plant");
+        }
+
+    }
+
+    void Closed(MudChip chip)
+    {
+        // react to chip closed
+    }
+
+    private string HOErute = "";
+    private string CCPrute = "";
+    private string GOSrute = "";
+    private async void OpenDialogGOS(string ruta)
+    {
+        GOSrute = ruta;
+        GosDialog = true;
+        folderError = false;
+
+        Console.WriteLine($"gos {ruta}");
+
+        GosFilesInFolder = new CDMS_GOS_Document();
+
+        GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+        if (GosFilesInFolder == null)
+            folderError = true;
+
+
+        StateHasChanged();
+    }
+    void CloseGos() => GosDialog = false;
+
+    private async void OpenDialogCcp(string ruta)
+    {
+        CCPrute = ruta;
+        CcpDialog = true;
+        folderError = false;
+        Console.WriteLine($"Cpc {ruta}");
+
+        CcpFilesInFolder = new CDMS_CCP_Document();
+        CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
+        if (CcpFilesInFolder == null)
+            folderError = true;
+
+        StateHasChanged();
+    }
+    void CloseCcp() => CcpDialog = false;
+
+    private async void OpenDialogHoe(string ruta)
+    {
+        HOErute = ruta;
+        HoeDialog = true;
+        Console.WriteLine($"hoe {ruta}");
+
+        folderError = false;
+        HoeFilesInFolder = new CDMS_HOE_Document();
+        HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
+        if (HoeFilesInFolder == null)
+            folderError = true;
+
+        StateHasChanged();
+    }
+    void CloseHoe() => HoeDialog = false;
+
+
+    private async Task DownloadFileFromURL(string urlroute, string namefile)
+    {
+        var fileName = namefile;
+        var fileURL = urlroute;
+        await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+    }
+}
