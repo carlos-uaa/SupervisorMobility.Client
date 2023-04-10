@@ -17,7 +17,7 @@
         Task<JobObservation> CreateJobObservation(JobObservation jobObservation);
 
         // Update job observation
-        Task<bool> UpdateJobObservation(JobObservation jobObservation, string MadeBy = "");
+        Task<bool> UpdateJobObservation(JobObservation jobObservation, string MadeBy);
 
         // Delete job observation
         Task DeleteJobObservation(int jobObservationId);
