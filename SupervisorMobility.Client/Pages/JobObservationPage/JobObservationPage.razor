@@ -37,53 +37,67 @@
         <MudTable Items="_jobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
                 HorizontalScrollbar="true">
             <ToolBarContent>
-                <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
-                    @if(filters == false)
-                    {
-                        <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
-                    }
+                <MudTooltip Text="Show / Hide filters" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                    <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                </MudTooltip>
+                @if(filters == false)
+                {
                     <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                }
+                <MudSpacer />
                 @if(filters == true)
                 {
-                    <MudTextField @bind-Value="searchString" Placeholder="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2"></MudTextField>
+                    <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
                     <MudSelect T="int" Label="Distribution" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
-                    <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
-                    @foreach (var type in _distributions)
-                    {
-                        <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                    }
-                </MudSelect>
-                <MudSpacer />
-                <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="FilterOperations">
                         <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
-                    @foreach (var type in _operations)
-                    {
-                        <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                    }
-                </MudSelect>
-                <MudSpacer />
-                    <MudDatePicker @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 9vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2"/>
-                @*Mud select for Operator *@
-                <MudSelect T="int" Label="Operator"  Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@OperatorId">
-                        <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
-                    @foreach (var type in operatorUsers)
-                    {
-                        <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
-                    }
-                </MudSelect>
-                <MudSpacer />
-                    @*Mud select of Status *@
-                    <MudSelect T="int" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@StatusId">
-                        <MudSelectItem Value="0">All Status</MudSelectItem>
-                        <MudSelectItem Value="1">Planned</MudSelectItem>
-                        <MudSelectItem Value="2">In Progress</MudSelectItem>
-                        <MudSelectItem Value="3">Late</MudSelectItem>
-                        <MudSelectItem Value="4">Finalized</MudSelectItem>
+                        @foreach (var type in _distributions)
+                        {
+                            <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                        }
                     </MudSelect>
-               <MudSpacer />
-               <MudSpacer />
-               }
+                    <MudSpacer />
+                    @if (!operationFlag)
+                    {
+                        <MudTooltip Text="Select a distribution first" Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                            <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            </MudSelect>
+                        </MudTooltip>
+                    }
+                    else{
+                        <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                            <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">Not selected</MudSelectItem>
+                            @foreach (var type in _operations)
+                            {
+                                <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    <MudSpacer />
+                        <MudDatePicker Placeholder="dd/mm/yyyy" @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                    @*Mud select for Operator *@
+                    <MudSelect T="int" Label="Operator"  Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                        <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                        @foreach (var type in operatorUsers)
+                        {
+                            <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSpacer />
+                        @*Mud select of Status *@
+                            <MudSelect T="int" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@statusId" SelectedValuesChanged="Filters">
+                            <MudSelectItem Value="0" Disabled>Not selected</MudSelectItem>
+                            <MudSelectItem Value="1">Planned</MudSelectItem>
+                            <MudSelectItem Value="2">In Progress</MudSelectItem>
+                            <MudSelectItem Value="3">Late</MudSelectItem>
+                            <MudSelectItem Value="4">Finalized</MudSelectItem>
+                        </MudSelect>
+                    <MudSpacer />
+                    <MudTooltip Text="Clear filters" Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                        <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                    </MudTooltip>
+                }
             </ToolBarContent>
             <ColGroup>
                 <col style="width: 60px;" />
@@ -153,21 +167,64 @@
                 </PagerContent>
             </MudTable>
     </MudTabPanel>
-    <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalPlanned">
-        @if(_plannedJobObservation.Count > 0){
+        <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalPlanned" @onclick="(() => ClearStatus())">
             <MudTable Items="_plannedJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
                     HorizontalScrollbar="true">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Planned Job Observations</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                    <MudSpacer />
-                    <MudSpacer />
-                    <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">Calendar</MudButton>
-                    <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">Plan</MudButton>
-                    <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
-
-                </ToolBarContent>
+                    <ToolBarContent>
+                        <MudTooltip Text="Show / Hide filters" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label="Distribution" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text="Select a distribution first" Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                        <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                    </MudSelect>
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">Not selected</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder="dd/mm/yyyy" @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label="Operator" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text="Clear filters" Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    </ToolBarContent>
                 <ColGroup>
                     <col style="width: 60px;" />
                     <col />
@@ -235,27 +292,64 @@
                     <MudTablePager />
                 </PagerContent>
             </MudTable>
-        }
-        else
-        {
-            <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no planned job observations.</MudText>
-        }
     </MudTabPanel>
-    <MudTabPanel Icon="@Icons.Material.Filled.StopCircle" Text="@totalInProgress">
-        @if (_inProgressjobObservation.Count > 0)
-        {
-            <MudTable Items="_inProgressjobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+        <MudTabPanel Icon="@Icons.Material.Filled.StopCircle" Text="@totalInProgress" @onclick="(() => ClearStatus())">
+            <MudTable Items="_inProgressJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
                 HorizontalScrollbar="true">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h6">In Progress Job Observations</MudText>
+                    <MudTooltip Text="Show / Hide filters" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                    </MudTooltip>
+                    @if (filters == false)
+                    {
+                        <MudSpacer />
+                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                    }
                     <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                    <MudSpacer />
-                    <MudSpacer />
-                    <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">Calendar</MudButton>
-                    <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">Plan</MudButton>
-                    <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
-
+                    @if (filters == true)
+                    {
+                        <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                        <MudSelect T="int" Label="Distribution" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in _distributions)
+                            {
+                                <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        @if (!operationFlag)
+                        {
+                            <MudTooltip Text="Select a distribution first" Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">Not selected</MudSelectItem>
+                                @foreach (var type in _operations)
+                                {
+                                    <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        <MudSpacer />
+                        <MudDatePicker Placeholder="dd/mm/yyyy" @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                        @*Mud select for Operator *@
+                        <MudSelect T="int" Label="Operator" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in operatorUsers)
+                            {
+                                <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        <MudTooltip Text="Clear filters" Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                            <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style="width: 60px;" />
@@ -324,27 +418,64 @@
                     <MudTablePager />
                 </PagerContent>
             </MudTable>
-        }
-        else
-        {
-            <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no job observations in progress.</MudText>
-        }
     </MudTabPanel>
-    <MudTabPanel Icon="@Icons.Material.Filled.RemoveCircle" Text="@totalLate">
-    @if (_latejobObservation.Count > 0)
-        {
-            <MudTable Items="_latejobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+    <MudTabPanel Icon="@Icons.Material.Filled.RemoveCircle" Text="@totalLate" @onclick="(() => ClearStatus())">
+            <MudTable Items="_lateJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
                 HorizontalScrollbar="true">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h6">Late Job Observations</MudText>
+                    <MudTooltip Text="Show / Hide filters" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                    </MudTooltip>
+                    @if (filters == false)
+                    {
+                        <MudSpacer />
+                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                    }
                     <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                    <MudSpacer />
-                    <MudSpacer />
-                    <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">Calendar</MudButton>
-                    <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">Plan</MudButton>
-                    <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
-
+                    @if (filters == true)
+                    {
+                        <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                        <MudSelect T="int" Label="Distribution" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in _distributions)
+                            {
+                                <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        @if (!operationFlag)
+                        {
+                            <MudTooltip Text="Select a distribution first" Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">Not selected</MudSelectItem>
+                                @foreach (var type in _operations)
+                                {
+                                    <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        <MudSpacer />
+                        <MudDatePicker Placeholder="dd/mm/yyyy" @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                        @*Mud select for Operator *@
+                        <MudSelect T="int" Label="Operator" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in operatorUsers)
+                            {
+                                <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        <MudTooltip Text="Clear filters" Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                            <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style="width: 60px;" />
@@ -413,27 +544,64 @@
                     <MudTablePager />
                 </PagerContent>
             </MudTable>
-        }
-        else
-        {
-            <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no late job observations.</MudText>
-        }
     </MudTabPanel>
-    <MudTabPanel Icon="@Icons.Material.Filled.Circle" Text="@totalFinished">
-   @if (_finishedjobObservation.Count > 0)
-        {
-            <MudTable Items="_finishedjobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+        <MudTabPanel Icon="@Icons.Material.Filled.Circle" Text="@totalFinished" @onclick="(() => ClearStatus())">
+                <MudTable Items="_finishedJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
                 HorizontalScrollbar="true">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h6">Finished Job Observations</MudText>
+                    <MudTooltip Text="Show / Hide filters" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                    </MudTooltip>
+                    @if (filters == false)
+                    {
+                        <MudSpacer />
+                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                    }
                     <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                    <MudSpacer />
-                    <MudSpacer />
-                    <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">Calendar</MudButton>
-                    <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">Plan</MudButton>
-                    <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
-
+                    @if (filters == true)
+                    {
+                        <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                        <MudSelect T="int" Label="Distribution" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in _distributions)
+                            {
+                                <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        @if (!operationFlag)
+                        {
+                            <MudTooltip Text="Select a distribution first" Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label="Operation" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">Not selected</MudSelectItem>
+                                @foreach (var type in _operations)
+                                {
+                                    <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        <MudSpacer />
+                        <MudDatePicker Placeholder="dd/mm/yyyy" @bind-Date="@filterDate" Label="Date" Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                        @*Mud select for Operator *@
+                        <MudSelect T="int" Label="Operator" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                            <MudSelectItem Disabled="true" Value="0">Not selected</MudSelectItem>
+                            @foreach (var type in operatorUsers)
+                            {
+                                <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+                        <MudTooltip Text="Clear filters" Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                            <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style="width: 60px;" />
@@ -502,11 +670,6 @@
                     <MudTablePager />
                 </PagerContent>
             </MudTable>
-        }
-        else
-        {
-            <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are still no finished job observations.</MudText>
-        }
     </MudTabPanel>
 </MudTabs>
 

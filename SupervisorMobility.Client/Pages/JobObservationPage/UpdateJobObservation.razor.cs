@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -94,6 +95,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+        public string objectId = "";
 
         //Operator user
         public List<User> users = new();
@@ -105,6 +107,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             // react to chip closed
         }
+
+        [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
         protected async override Task OnInitializedAsync()
         {
             logged = await HasPropertyAsync();
@@ -117,6 +122,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             else
             {
+                AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
+
+                // Get the current authentication state
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
                 route = "authenticationSign/login/" + JobObservationId;
                 _jobObservation.Supervisor = new();
                 //glosary
@@ -232,17 +242,31 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
         }
 
-        public async Task GoToJobObservation()
+        private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
         {
-            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}", true);
-            StateHasChanged();
+
+            // Get the current authentication state
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            // Get the user from the authentication state
+            var currentUser = authState.User;
+            Console.WriteLine(currentUser.Identity?.Name);
+
+            var userId = currentUser.FindFirst("oid")?.Value;
+        }
+        public void OnLogInSucceeded()
+        {
+            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}",true);
         }
 
         //Local storage user
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
+            {
                 user = new();
+                objectId = "";
+            }
         }
 
         private async Task<bool> TryGetAsync()
@@ -252,6 +276,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
+                objectId = JsonSerializer.Deserialize<string>(json) ?? "";
             }
             return hasProperty;
         }
@@ -443,7 +470,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, "mika");
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+
 
             if (result)
             {
@@ -741,6 +769,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             var fileName = namefile;
             var fileURL = urlroute;
             await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+
+        public void ShowDateMessage()
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"You can not change the date, when the job observation is finished", Severity.Info);
+        }
+
+        public void ShowHourMessage()
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"You can not change the hour, when the job observation is finished", Severity.Info);
         }
 
     }

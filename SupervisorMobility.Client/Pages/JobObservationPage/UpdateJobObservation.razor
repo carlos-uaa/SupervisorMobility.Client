@@ -159,8 +159,14 @@
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
-                                <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
-                                <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" />
+                                @if(_jobObservation.Status == 4){
+                                    <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowDateMessage"/>
+                                        <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" Class="pt-2" ReadOnly PickerClosed="ShowDateMessage" />
+                                }
+                                else{
+                                    <MudDatePicker @bind-Date="_jobObservation.DateStart" Label="Fecha Inicio" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
+                                    <MudDatePicker @bind-Date="_jobObservation.DateEnd" Label="Fecha Termino" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.DateStart" Class="pt-2"/>
+                                }
                             </td>
                         </tr>
                         <tr>
@@ -175,14 +181,20 @@
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
-                                <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
-                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" />
+                                @if(_jobObservation.Status == 4){
+                                    <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
+                                    <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
+                                }
+                                else{
+                                    <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
+                                    <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
+                                }
                             </td>
                         </tr>
                         <tr>
                             <td class="d-flex">
                                 @*Mud select of Distribution *@
-                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
                                     <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
                                     @foreach (var type in _distributions)
                                     {
@@ -203,7 +215,7 @@
                                     <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observer" Class="mr-4" />
 
                                     @*Mud select for Operator *@
-                                    <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                    <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
                                         <MudSelectItem Disabled="true" Value="0">Select an Operator</MudSelectItem>
                                         @foreach (var type in operatorUsers)
                                         {
@@ -272,7 +284,7 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <MudTextField T="string" @bind-Value="_jobObservation.Justification" Label="Justification" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    <MudTextField T="string" @bind-Value="_jobObservation.Justification" Label="Justification" Placeholder="Write down the justification if the date is changed."  Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </td>
                         </tr>
                         <tr>
@@ -967,7 +979,7 @@
                                     <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => sign = !sign)">
                                         Sign in
                                         @if(sign){
-                                                <RemoteAuthenticatorView Action="login" OnLogInSucceeded="GoToJobObservation" />
+                                                <RemoteAuthenticatorView Action="login" OnLogInSucceeded="OnLogInSucceeded"/>
                                         }
                                     </MudButton>
                                     @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">

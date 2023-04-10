@@ -197,6 +197,7 @@
     //User
     public List<User> users;
     public User user = new();
+    public string objectId = string.Empty;
 
     //Notification
     public List<Notification> Notifications { get; set; }
@@ -245,12 +246,20 @@
             if (u.Name == currentUser.Identity?.Name)
             {
                 user = u;
+
                 json = JsonSerializer.Serialize<User>(user);
                 await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+
             }
         }
 
-        Notifications = await NotifyServices.GetAllNotificationsFromUser(user.UserId);
+        if(userId != null)
+        {
+            json = JsonSerializer.Serialize<string>(userId);
+            await js.InvokeVoidAsync("localStorage.setItem", "objectId", json);
+        }
+        Notifications = await NotifyServices.GetAllNotifications();
+
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
         //await LocalStorage.SetItemAsync("user", userId);
@@ -269,6 +278,7 @@
         if (!await TryGetAsync())
         {
             user = new();
+            objectId = string.Empty;
             user.Name = "Log in";
         }
 
@@ -287,6 +297,10 @@
         {
             json = await js.InvokeAsync<string>("localStorage.getItem", "user");
             user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            json = await js.InvokeAsync<string>("localStorage.getItem", "objectId");
+            objectId = JsonSerializer.Deserialize<string>(json) ?? string.Empty;
+
         }
         return hasProperty;
     }
@@ -316,8 +330,12 @@
 
     private async Task LogOut()
     {
+        await js.InvokeAsync<string>("localStorage.removeItem", "objectId");
         if (await HasPropertyAsync())
+        {
             await js.InvokeAsync<string>("localStorage.removeItem", "user");
+            
+        }
 
         user.Name = "Log in";
     }
