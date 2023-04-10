@@ -56,6 +56,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //User
         private string json = string.Empty;
         public User user = new();
+        public string objectId = "";
+
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -79,8 +81,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             {
 
                 await GetUserAsync();
+                await LateDates();
+                monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
+                GenerateCalendarHead();
+                GenerateCalendarBody();
 
-                if(user != null)
+                if (user != null)
                 {
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
@@ -104,7 +110,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
+            {
                 user = new();
+                objectId = "";
+            }
         }
 
         private async Task<bool> TryGetAsync()
@@ -114,6 +123,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             {
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
+                objectId = JsonSerializer.Deserialize<string>(json) ?? "";
             }
             return hasProperty;
         }
@@ -122,24 +134,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
-        protected async override void OnInitialized()
-        {
-            await LateDates();
-            monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
-        }
-
         //Change the status if the observation is late
         public async Task LateDates()
         {
             _jobObservation = await JobObservationService.GetAllJobObservations();
             foreach (var jobobs in _jobObservation)
             {
-                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 4)
+                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs, "Mika");
+                    await JobObservationService.UpdateJobObservation(jobobs, objectId);
                 }
             }
         }
