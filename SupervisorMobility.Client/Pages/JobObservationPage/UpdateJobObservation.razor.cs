@@ -95,6 +95,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+        public string objectId = "";
 
         //Operator user
         public List<User> users = new();
@@ -262,7 +263,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
+            {
                 user = new();
+                objectId = "";
+            }
         }
 
         private async Task<bool> TryGetAsync()
@@ -272,6 +276,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
+                objectId = JsonSerializer.Deserialize<string>(json) ?? "";
             }
             return hasProperty;
         }
@@ -463,7 +470,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
             if (result)
             {
