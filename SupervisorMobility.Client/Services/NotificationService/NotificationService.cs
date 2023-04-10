@@ -31,6 +31,20 @@ namespace SupervisorMobility.Client.Services.NotificationService
             var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
 
             return notifications;
+        } 
+        public async Task<List<Notification>> GetAllNotificationsFromUser(int userid)
+        {
+            var response = await _http.GetAsync($"notifications/{userid}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
+
+            return notifications;
         }
 
     }

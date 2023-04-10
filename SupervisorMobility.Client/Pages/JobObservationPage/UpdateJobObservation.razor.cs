@@ -443,7 +443,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Console.WriteLine(_jobObservation.DateFinalized);
             _jobObservation.Status = 4;
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, "mika");
 
             if (result)
             {
