@@ -146,7 +146,7 @@ namespace SupervisorMobility.Client.Shared
             jobObservations = await JobObservationService.GetAllJobObservations();
             foreach (var jobobs in jobObservations)
             {
-                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 4)
+                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
                     await JobObservationService.UpdateJobObservation(jobobs);

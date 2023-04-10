@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+﻿using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
@@ -122,12 +123,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             else
             {
-                AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
+                //AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
 
-                // Get the current authentication state
-                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                //// Get the current authentication state
+                //var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-                route = "authenticationSign/login/" + JobObservationId;
+                //route = "authenticationSign/login/" + JobObservationId;
                 _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
@@ -468,7 +469,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             _jobObservation.DateFinalized = DateTime.Now;
             Console.WriteLine(_jobObservation.DateFinalized);
-            _jobObservation.Status = 4;
+
+            if (_jobObservation.SsvSignature.IsNullOrEmpty())
+            {
+                _jobObservation.Status = 4;
+            }
+            else
+            {
+                _jobObservation.Status = 6;
+            }
+
 
             var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
@@ -486,7 +496,22 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
 
+        async void Reject()
+        {
+            _jobObservation.Status = 5;
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
+            if (result)
+            {
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Rejected", Severity.Info);
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
 
 
         //Lup

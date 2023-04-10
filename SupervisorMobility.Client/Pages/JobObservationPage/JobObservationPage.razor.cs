@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using System;
 using System.Runtime.InteropServices;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
@@ -57,6 +58,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+        public string objectId = "";
 
         //Operator user
         public List<User> users = new();
@@ -74,8 +76,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             else
             {
-                await LateDates();
 
+                await GetUserAsync();
+                await LateDates();
 
                 _jobObservation = await JobObservationService.GetAllJobObservations();
                 _filterJobObservation = _jobObservation;
@@ -86,7 +89,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         case 1: _plannedJobObservation.Add(jobobs); break;
                         case 2: _inProgressJobObservation.Add(jobobs); break;
                         case 3: _lateJobObservation.Add(jobobs); break;
-                        case 4: _finishedJobObservation.Add(jobobs); break;
+                        case 6: _finishedJobObservation.Add(jobobs); break;
                     }
                 }
 
@@ -100,7 +103,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 totalLate = "Late (" + _lateJobObservation.Count +")";
                 totalFinished = "Finished (" + _finishedJobObservation.Count +")";
 
-                await GetUserAsync();
 
                 if(user != null)
                 {
@@ -302,7 +304,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
+            {
                 user = new();
+                objectId = "";
+            }
         }
 
         private async Task<bool> TryGetAsync()
@@ -312,6 +317,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
+                objectId = JsonSerializer.Deserialize<string>(json) ?? "";
             }
             return hasProperty;
         }
@@ -325,10 +333,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation = await JobObservationService.GetAllJobObservations();
             foreach(var jobobs in _jobObservation)
             {
-                if(Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 4)
+                if(Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs);
+                    await JobObservationService.UpdateJobObservation(jobobs, objectId);
                 }
             }
         }
