@@ -371,7 +371,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Justification = null;
             }
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Name);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
             if (result)
             {
