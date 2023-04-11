@@ -109,6 +109,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             // react to chip closed
         }
 
+        //Change date
+        DateTime? changeStartDate = new();
+        DateTime? changeEndDate = new();
+        TimeSpan? changeStartHour { get; set; }
+        TimeSpan? changeEndHour { get; set; }
+
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
         protected async override Task OnInitializedAsync()
@@ -123,12 +129,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             else
             {
-                //AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
-
-                //// Get the current authentication state
-                //var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-                //route = "authenticationSign/login/" + JobObservationId;
+  
                 _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
@@ -138,9 +139,26 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
 
+                //Change date
 
-                startHour = _jobObservation.DateStart?.TimeOfDay;
-                endHour = _jobObservation.DateEnd?.TimeOfDay;
+                startHour = _jobObservation.StartDate?.TimeOfDay;
+                endHour = _jobObservation.EndDate?.TimeOfDay;
+
+
+                if(_jobObservation.EditStartDate != null)
+                {
+                    changeStartDate = _jobObservation.EditStartDate;
+                    changeEndDate = _jobObservation.EditEndDate;
+                    changeStartHour = _jobObservation.EditStartDate?.TimeOfDay;
+                    changeEndHour = _jobObservation.EditEndDate?.TimeOfDay;
+                }
+                else
+                {                
+                    changeStartDate = _jobObservation.StartDate;
+                    changeEndDate = _jobObservation.EndDate;
+                    changeStartHour = _jobObservation.StartDate?.TimeOfDay;
+                    changeEndHour = _jobObservation.EndDate?.TimeOfDay;
+                }
 
                 _plants = await PlantServices.GetPlants();
                 //_products = await ProductService.GetProducts();
@@ -176,7 +194,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -192,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
 
 
                 if (_jobObservation.PlantId != 0)
@@ -241,6 +259,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Console.WriteLine("missing plant");
                 }
             }
+
         }
 
         private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
@@ -315,8 +334,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async Task EditJobObservation()
         {
 
-            hour1 = _jobObservation.DateStart?.ToShortDateString() + $" {startHour}";
-            hour2 = _jobObservation.DateEnd?.ToShortDateString() + $" {endHour}";
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
             if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
             {
@@ -343,8 +362,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
-            _jobObservation.DateStart = newDate1;
-            _jobObservation.DateEnd = newDate2;
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
             _jobObservation.Status = 2;
 
             if (_jobObservation.Justification == "")
@@ -456,19 +475,47 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 StopTimer();
         }
 
-        public async void FinalizeJobObservation()
+        public async void FinishedJobObservation()
         {
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
-            if(_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
+            if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+            {
+                Console.WriteLine(newDate1);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date Start", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour1);
+            }
+
+
+            if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+            {
+                Console.WriteLine(newDate2);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date End", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour2);
+            }
+            if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Error in Operator Signature", Severity.Error);
                 return;
             }
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
 
-            _jobObservation.DateFinalized = DateTime.Now;
-            Console.WriteLine(_jobObservation.DateFinalized);
+            _jobObservation.FinishedDate = DateTime.Now;
+            Console.WriteLine(_jobObservation.FinishedDate);
 
             if (_jobObservation.SsvSignature.IsNullOrEmpty())
             {
@@ -488,7 +535,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finalized", Severity.Info);
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -499,6 +546,37 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         async void Reject()
         {
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
+
+            if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+            {
+                Console.WriteLine(newDate1);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date Start", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour1);
+            }
+
+
+            if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+            {
+                Console.WriteLine(newDate2);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date End", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour2);
+            }
+
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
+
             _jobObservation.Status = 5;
             var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
@@ -618,7 +696,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -634,7 +712,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
                 StateHasChanged();
 
                 Snackbar.Clear();
@@ -688,7 +766,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -704,7 +782,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
 
                 StateHasChanged();
 
@@ -800,15 +878,88 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"You can not change the date, when the job observation is finished", Severity.Info);
+            Snackbar.Add($"To change the date, press the button Change Date", Severity.Info);
         }
 
         public void ShowHourMessage()
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"You can not change the hour, when the job observation is finished", Severity.Info);
+            Snackbar.Add($"To change the hour, press the button Change Date", Severity.Info);
         }
 
+
+        //Change date modal and function
+        private bool visible = false;
+        private void OpenCommentDialog()
+        {
+            visible = true;
+        }
+        void Close() => visible = false;
+        private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        public async Task ChangeDate()
+        {
+
+            if(_jobObservation.Justification == null || _jobObservation.Justification == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"You need to add a comment", Severity.Error);
+                return;
+            }
+
+            hour1 = changeStartDate?.ToShortDateString() + $" {changeStartHour}";
+            hour2 = changeEndDate?.ToShortDateString() + $" {changeEndHour}";
+
+            if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+            {
+                Console.WriteLine(newDate1);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date Start", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour1);
+            }
+
+
+            if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+            {
+                Console.WriteLine(newDate2);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date End", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour2);
+            }
+
+            _jobObservation.EditStartDate = newDate1;
+            _jobObservation.EditEndDate = newDate2;
+
+            if (changeStartDate == _jobObservation.StartDate && changeEndDate == _jobObservation.EndDate)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"You need to change the date first", Severity.Error);
+                return;
+            }
+
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+
+            if (result)
+            {
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Date Changed in Job Observation {_jobObservation.JobObservationId}", Severity.Info);
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
     }
 }

@@ -136,8 +136,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             date = date.Replace("-", "/");
 
             _jobObservation.IsActive = true;
-            _jobObservation.DateStart = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _jobObservation.DateEnd = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.Option = 3;
 
             _plants = await PlantServices.GetPlants();
@@ -205,7 +205,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.DateStart?.ToShortDateString()).Date
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 
@@ -222,7 +222,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
             }
-            pastjobObservations = pastjobObservations.OrderBy(x => x.DateStart).ToList();
+            pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
             StateHasChanged();
         }
 
@@ -231,8 +231,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             //Planned
             _jobObservation.Type = 2;
             Console.WriteLine(startHour);
-            hour1 = _jobObservation.DateStart?.ToShortDateString() + $" {startHour}";
-            hour2 = _jobObservation.DateEnd?.ToShortDateString() + $" {endHour}";
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
             if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
             {
@@ -251,8 +251,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
  
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cicles= cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
-            _jobObservation.DateStart = newDate1;
-            _jobObservation.DateEnd = newDate2;
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
             _jobObservation.Status = 1;
 
             var result = await JobObservationService.CreateJobObservation(_jobObservation);

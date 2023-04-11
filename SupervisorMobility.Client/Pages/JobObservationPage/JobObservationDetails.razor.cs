@@ -65,6 +65,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public List<User> users = new();
         public List<User> operatorUsers = new();
 
+        //Edit Date
+        TimeSpan? changeStartHour { get; set; }
+        TimeSpan? changeEndHour { get; set; }
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -85,8 +89,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[4] = Int32.Parse(prod[4]);
             cicles = _jobObservation.Cicles.Split('|');
 
-            startHour = _jobObservation.DateStart?.TimeOfDay;
-            endHour = _jobObservation.DateEnd?.TimeOfDay;
+            startHour = _jobObservation.StartDate?.TimeOfDay;
+            endHour = _jobObservation.EndDate?.TimeOfDay;
+
+            changeStartHour = _jobObservation.EditStartDate?.TimeOfDay;
+            changeEndHour = _jobObservation.EditEndDate?.TimeOfDay;
             Console.WriteLine(startHour);
 
             if (_jobObservation.PlantId != 0)

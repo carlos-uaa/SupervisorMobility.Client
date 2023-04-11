@@ -57,20 +57,20 @@ namespace SupervisorMobility.Client.Shared
                     if(jobobs.Supervisor.Name == user.Name)
                     {
                         //yesterday
-                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                         {
                             lateObservations.Add(jobobs);
 
-                            lateObservations = lateObservations.OrderBy(x => x.DateStart).ToList();
+                            lateObservations = lateObservations.OrderBy(x => x.StartDate).ToList();
 
                         }
 
-                        if (Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date 
-                            && Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
+                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date 
+                            && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
                         {
 
                             //today
-                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                             {
                                 todayObservations.Add(jobobs);
                             }
@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Shared
                             else
                             {
                                 thisWeekObservations.Add(jobobs);
-                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.DateStart).ToList();
+                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.StartDate).ToList();
 
                             }
 
@@ -108,20 +108,20 @@ namespace SupervisorMobility.Client.Shared
                     if (jobobs.Supervisor.Name == user.Name)
                     {
                         //yesterday
-                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                         {
                             lateObservations.Add(jobobs);
 
-                            lateObservations = lateObservations.OrderBy(x => x.DateStart).ToList();
+                            lateObservations = lateObservations.OrderBy(x => x.StartDate).ToList();
 
                         }
 
-                        if (Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date
-                            && Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
+                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date
+                            && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
                         {
 
                             //today
-                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateStart?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date)
+                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                             {
                                 todayObservations.Add(jobobs);
                             }
@@ -129,7 +129,7 @@ namespace SupervisorMobility.Client.Shared
                             else
                             {
                                 thisWeekObservations.Add(jobobs);
-                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.DateStart).ToList();
+                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.StartDate).ToList();
 
                             }
 
@@ -146,7 +146,7 @@ namespace SupervisorMobility.Client.Shared
             jobObservations = await JobObservationService.GetAllJobObservations();
             foreach (var jobobs in jobObservations)
             {
-                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
+                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
                     await JobObservationService.UpdateJobObservation(jobobs, "Mika" );

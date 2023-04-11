@@ -140,7 +140,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             _jobObservation = await JobObservationService.GetAllJobObservations();
             foreach (var jobobs in _jobObservation)
             {
-                if (Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
+                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
                     await JobObservationService.UpdateJobObservation(jobobs, objectId);

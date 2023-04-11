@@ -40,11 +40,13 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? Type { get; set; }
 
         [Required]
-        public DateTime? DateStart { get; set; }
+        public DateTime? StartDate { get; set; }
         [Required]
-        public DateTime? DateEnd { get; set; }
+        public DateTime? EndDate { get; set; }
 
-        public DateTime? DateFinalized { get; set; }
+        public DateTime? EditStartDate { get; set; }
+        public DateTime? EditEndDate { get; set; }
+        public DateTime? FinishedDate { get; set; }
         public string? Justification { get; set; }
         public int? Status { get; set; }
 

@@ -212,11 +212,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (filterDate != null)
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _jobObservation = _jobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
             }
             if (idFilter != default(int))
             {
@@ -274,11 +274,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if(filterDate != null)
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.DateStart?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _jobObservation = _jobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
             }
             if(idFilter != default(int))
             {
@@ -333,7 +333,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation = await JobObservationService.GetAllJobObservations();
             foreach(var jobobs in _jobObservation)
             {
-                if(Convert.ToDateTime(jobobs.DateEnd?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
+                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
                     await JobObservationService.UpdateJobObservation(jobobs, objectId);
@@ -416,7 +416,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return true;
             if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.DateStart.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Operator.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
