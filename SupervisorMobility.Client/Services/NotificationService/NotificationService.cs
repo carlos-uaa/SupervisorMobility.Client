@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.NotificationService
 {
@@ -45,6 +46,22 @@ namespace SupervisorMobility.Client.Services.NotificationService
             var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
 
             return notifications;
+        }
+
+        public async Task<bool> DeleteNotification(int notifyId)
+        {
+            var response = await _http.DeleteAsync($"notifications/delete/{notifyId}");
+            return response.IsSuccessStatusCode;
+        }
+
+
+        public async Task<Notification> ReadNotification(int notifyId, Notification notify)
+        {
+
+            var response = await _http.PutAsJsonAsync($"notifications/read/{notifyId}", notify);
+
+            var notification = await response.Content.ReadFromJsonAsync<Notification>();
+            return notification;
         }
 
     }
