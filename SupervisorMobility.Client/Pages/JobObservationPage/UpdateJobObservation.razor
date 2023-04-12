@@ -48,15 +48,6 @@
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="10" md="12" sm="12" xs="12">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
-                    Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
-                    @if(_jobObservation.Type == 1){
-                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
-                    }
-                    else if(_jobObservation.Type == 2){
-                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
-                    }
-                </MudText>
 
                  <MudItem Class="d-flex justify-space-between pa-1 ma-1">
                         <MudItem Style="text-align: start">
@@ -64,10 +55,10 @@
                             {
                                 <MudItem Class="d-flex flex-column align-start justify-center pa-1 ma-1">
                                     <MudItem class="d-flex flex-column justify-center align-self-start">
-                                        <MudText Typo="Typo.h6" Class="align-item-center center">Related Documents</MudText>
+                                        <MudText Typo="Typo.h6" Class="align-item-center center pl-2">Related Documents</MudText>
                                     </MudItem>
 
-                                    <MudItem Class="d-flex flex-row align-start pa-2 ma-2">
+                                    <MudItem Class="d-flex flex-row align-start">
                                         @if (_assychart.GOS != "")
                                         {
                                             <MudButton @onclick="(() => OpenDialogGOS(_assychart.GOS))" Style="padding: 0px;" Color="Color.Error">
@@ -136,14 +127,22 @@
                         </MudItem>
                         <MudItem Class="d-flex flex-column align-end justify-center pa-1 ma-1">
                             <MudItem class="d-flex flex-column justify-center align-self-end">
-                                <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">Past Job Observation | Lup</MudButton>
+                                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3" OnClick="@history">History Versions</MudChip>
                             </MudItem>
                             <MudItem class="d-flex flex-column justify-center align-self-end">
-                                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3" OnClick="@history">History Versions</MudChip>
+                                <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">Past Job Observation | Lup</MudButton>
                             </MudItem>
                         </MudItem>
                  </MudItem>
-
+                <MudText Typo="Typo.h6" Class="mt-3">
+                    Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
+                    @if(_jobObservation.Type == 1){
+                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
+                    }
+                    else if(_jobObservation.Type == 2){
+                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                    }
+                </MudText>
             </MudItem>
             <MudItem Class="ml-2">
                 @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="@_jobObservation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
@@ -162,10 +161,8 @@
                                 </MudSelect>
                             </td>
                             <td class="d-flex">
-
-                                <MudDatePicker @bind-Date="_jobObservation.StartDate" Label="Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowDateMessage"/>
-                                <MudDatePicker @bind-Date="_jobObservation.EndDate" Label="End Date" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" ReadOnly PickerClosed="ShowDateMessage" />
-                                
+                                    <MudDatePicker @bind-Date="_jobObservation.StartDate" Label="Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowDateMessage"/>
+                                    <MudDatePicker @bind-Date="_jobObservation.EndDate" Label="End Date" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" ReadOnly PickerClosed="ShowDateMessage" />
                             </td>
                         </tr>
                         <tr>
@@ -182,7 +179,6 @@
                             <td class="d-flex">
                                 <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
                                 <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
-                                   
                             </td>
                         </tr>
                         <tr>
@@ -270,7 +266,7 @@
                             </td>
                         </tr>
                         @if(_jobObservation.Justification != "" && _jobObservation.Justification != null){
-                            <tr>
+@*                            <tr>
                                 <td colspan="2">
                                     <MudText Style="text-align:center; font-weight:bold;">
                                         New Date
@@ -279,14 +275,14 @@
                             </tr>
                             <tr>
                                 <td>
-                                        <MudDatePicker @bind-Date="changeStartDate" Label="New Start Date" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly />
-                                    <MudTimePicker Label="New Start hour" @bind-Time="changeStartHour" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly/>
+                                      <MudDatePicker @bind-Date="plannedStartDate" Label="New Start Date" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly />
+                                    <MudTimePicker Label="New Start hour" @bind-Time="plannedStartHour" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly/>
                                 </td>                          
                                 <td>
-                                    <MudDatePicker @bind-Date="changeEndDate" Label="New End Date" Color="Color.Primary" AdornmentColor="Color.Primary" MinDate="changeStartDate" Class="pt-2" ReadOnly/>
-                                    <MudTimePicker Label="New End hour" @bind-Time="changeEndHour" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly/>
+                                    <MudDatePicker @bind-Date="plannedEndDate" Label="New End Date" Color="Color.Primary" AdornmentColor="Color.Primary" MinDate="plannedStartDate" Class="pt-2" ReadOnly/>
+                                    <MudTimePicker Label="New End hour" @bind-Time="plannedEndHour" Color="Color.Primary" AdornmentColor="Color.Primary" Class="pt-2" ReadOnly/>
                                 </td>
-                            </tr>
+                            </tr>*@
                             <tr>
                                 <td colspan="2">
                                     <MudText Style="text-align:center; font-weight:bold;">
@@ -1019,7 +1015,9 @@
 
             <MudCardActions>
                 <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">On Hold</MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
+                @if(_jobObservation.Status == 1){
+                    <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
+                }
                 <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
                 <MudButton StartIcon="@Icons.Material.Filled.Circle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => FinishedJobObservation())">Finish</MudButton>
                 <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">Cancel</MudButton>
@@ -1043,12 +1041,12 @@
                 <tbody>
                     <tr>
                         <td> 
-                            <MudDatePicker @bind-Date="changeStartDate" Label="New Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
-                            <MudTimePicker Label="New Start hour" @bind-Time="changeStartHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
+                            <MudDatePicker @bind-Date="_jobObservation.StartDate" Label="New Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
+                            <MudTimePicker Label="New Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
                         </td>
                         <td>
-                                <MudDatePicker @bind-Date="changeEndDate" Label="New End Date" Color="Color.Info" AdornmentColor="Color.Info" MinDate="changeStartDate" Class="pt-2" />
-                            <MudTimePicker Label="New End hour" @bind-Time="changeEndHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
+                                <MudDatePicker @bind-Date="_jobObservation.EndDate" Label="New End Date" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                            <MudTimePicker Label="New End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
                         </td>
                     </tr>
                 </tbody>
