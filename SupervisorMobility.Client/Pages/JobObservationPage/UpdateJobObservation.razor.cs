@@ -110,10 +110,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
         //Change date
-        DateTime? changeStartDate = new();
-        DateTime? changeEndDate = new();
-        TimeSpan? changeStartHour { get; set; }
-        TimeSpan? changeEndHour { get; set; }
+        DateTime? plannedStartDate = new();
+        DateTime? plannedEndDate = new();
 
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
@@ -145,19 +143,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 endHour = _jobObservation.EndDate?.TimeOfDay;
 
 
-                if(_jobObservation.EditStartDate != null)
+                if(_jobObservation.PlannedStartDate != null)
                 {
-                    changeStartDate = _jobObservation.EditStartDate;
-                    changeEndDate = _jobObservation.EditEndDate;
-                    changeStartHour = _jobObservation.EditStartDate?.TimeOfDay;
-                    changeEndHour = _jobObservation.EditEndDate?.TimeOfDay;
+                    plannedStartDate = _jobObservation.PlannedStartDate;
+                    plannedEndDate = _jobObservation.PlannedEndDate;
                 }
                 else
                 {                
-                    changeStartDate = _jobObservation.StartDate;
-                    changeEndDate = _jobObservation.EndDate;
-                    changeStartHour = _jobObservation.StartDate?.TimeOfDay;
-                    changeEndHour = _jobObservation.EndDate?.TimeOfDay;
+                    plannedStartDate = _jobObservation.StartDate;
+                    plannedEndDate = _jobObservation.EndDate;
                 }
 
                 _plants = await PlantServices.GetPlants();
@@ -909,8 +903,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
-            hour1 = changeStartDate?.ToShortDateString() + $" {changeStartHour}";
-            hour2 = changeEndDate?.ToShortDateString() + $" {changeEndHour}";
+            _jobObservation.PlannedStartDate = plannedStartDate;
+            _jobObservation.PlannedEndDate = plannedEndDate;
+
+
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
             if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
             {
@@ -937,10 +935,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Console.WriteLine("Unable to parse '{0}'", hour2);
             }
 
-            _jobObservation.EditStartDate = newDate1;
-            _jobObservation.EditEndDate = newDate2;
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
 
-            if (changeStartDate == _jobObservation.StartDate && changeEndDate == _jobObservation.EndDate)
+            Console.WriteLine("AAAAAA");
+            Console.WriteLine(_jobObservation.StartDate);
+            Console.WriteLine(_jobObservation.EndDate);
+
+
+            if (plannedStartDate == _jobObservation.StartDate && plannedEndDate == _jobObservation.EndDate)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;

@@ -92,8 +92,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             startHour = _jobObservation.StartDate?.TimeOfDay;
             endHour = _jobObservation.EndDate?.TimeOfDay;
 
-            changeStartHour = _jobObservation.EditStartDate?.TimeOfDay;
-            changeEndHour = _jobObservation.EditEndDate?.TimeOfDay;
+            changeStartHour = _jobObservation.PlannedStartDate?.TimeOfDay;
+            changeEndHour = _jobObservation.PlannedEndDate?.TimeOfDay;
             Console.WriteLine(startHour);
 
             if (_jobObservation.PlantId != 0)
