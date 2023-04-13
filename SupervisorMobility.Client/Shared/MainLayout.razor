@@ -4,6 +4,7 @@
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
 @inject INotificationService NotifyServices
+@inject IAttendanceService AttendanceServices
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -426,7 +427,8 @@
     bool _IsHovering = false;
     bool NoifyDialog = false;
     [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-    private Timer timer;
+    private Timer Notificationtimer;
+    private Timer attendanceTimer;
 
 
     protected async override Task OnInitializedAsync()
@@ -457,6 +459,11 @@
         await updatenotifications();
     } 
 
+    private async void GetAttendance(object state)
+    {
+        await AttendanceServices.AssignEmployes();
+    } 
+
     private async Task updatenotifications()
     {
         AllNotifications.Clear();
@@ -481,7 +488,8 @@
 
     public void Dispose()
     {
-        timer.Dispose();
+        Notificationtimer.Dispose();
+        attendanceTimer.Dispose();
     }
 
 
@@ -524,7 +532,8 @@
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
         }
 
-        timer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
 
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
