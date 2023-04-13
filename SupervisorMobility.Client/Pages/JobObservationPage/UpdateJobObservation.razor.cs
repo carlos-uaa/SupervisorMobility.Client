@@ -291,7 +291,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "ADuser");
                 objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
             return hasProperty;

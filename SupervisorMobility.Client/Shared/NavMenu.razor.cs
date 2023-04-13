@@ -31,7 +31,12 @@ namespace SupervisorMobility.Client.Shared
         //User
         private string json = string.Empty;
         public User user = new();
-        public ADuser aDuser = new();
+        public ADuser aDuser = new ADuser()
+        {
+            name = "S.M. System",
+            email = "SupervisorMobility@non-replay.com",
+            oid = ""
+        };
 
         //Past job observation
         public List<JobObservation> jobObservations = new();
@@ -43,7 +48,6 @@ namespace SupervisorMobility.Client.Shared
 
         protected async override Task OnInitializedAsync()
         {
-
             await LateDates();
 
             //user
@@ -51,11 +55,12 @@ namespace SupervisorMobility.Client.Shared
 
             if (user != null)
             {
+
                 jobObservations = await JobObservationService.GetAllJobObservations();
 
-                foreach(var jobobs in jobObservations)
+                foreach (var jobobs in jobObservations)
                 {
-                    if(jobobs.Supervisor.Name == user.Name)
+                    if (jobobs.Supervisor.Name == user.Name)
                     {
                         //yesterday
                         if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
@@ -66,7 +71,7 @@ namespace SupervisorMobility.Client.Shared
 
                         }
 
-                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date 
+                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date
                             && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
                         {
 
@@ -169,7 +174,7 @@ namespace SupervisorMobility.Client.Shared
             {
                 json = await js.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
-                
+
                 json = await js.InvokeAsync<string>("localStorage.getItem", "ADuser");
                 aDuser = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
