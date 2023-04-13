@@ -333,10 +333,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation = await JobObservationService.GetAllJobObservations();
             foreach(var jobobs in _jobObservation)
             {
-                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
+                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
                 {
                     jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs, objectId);
+                    ADuser aDuser = new ADuser()
+                    {
+                        name = "S.M. System",
+                        email = "SupervisorMobility@non-replay.com",
+                        oid = ""
+                    };
+                    await JobObservationService.UpdateJobObservation(jobobs, aDuser);
                 }
             }
         }
