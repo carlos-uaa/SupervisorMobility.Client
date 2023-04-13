@@ -56,7 +56,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //User
         private string json = string.Empty;
         public User user = new();
-        public string objectId = "";
+        public ADuser objectId = new();
 
 
         // Breadcrumb links
@@ -112,7 +112,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             if (!await TryGetAsync())
             {
                 user = new();
-                objectId = "";
+                objectId = new();
             }
         }
 
@@ -125,7 +125,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
 
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "objectId");
-                objectId = JsonSerializer.Deserialize<string>(json) ?? "";
+                objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
             return hasProperty;
         }

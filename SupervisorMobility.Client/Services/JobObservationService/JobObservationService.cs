@@ -122,9 +122,16 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
-        public async Task<bool> UpdateJobObservation(JobObservation jobObservation, string MadeBy = "")
+        public async Task<bool> UpdateJobObservation(JobObservation jobObservation, ADuser MadeBy)
         {
-            var response = MadeBy != "" ? await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}?MadeBy={MadeBy}", jobObservation) : await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}", jobObservation);
+            RequestJobObservationADuser requestJobObservationADuser = new RequestJobObservationADuser() { 
+                JobObservation = jobObservation,
+                ADuser = MadeBy
+            };
+
+
+
+        var response = await _http.PutAsJsonAsync($"jobobservations/{jobObservation.JobObservationId}", requestJobObservationADuser);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -134,5 +141,5 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return false;
         }
 
-    }
+}
 }

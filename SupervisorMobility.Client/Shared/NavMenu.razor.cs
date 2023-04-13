@@ -31,6 +31,7 @@ namespace SupervisorMobility.Client.Shared
         //User
         private string json = string.Empty;
         public User user = new();
+        public ADuser aDuser = new();
 
         //Past job observation
         public List<JobObservation> jobObservations = new();
@@ -149,7 +150,7 @@ namespace SupervisorMobility.Client.Shared
                 if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6)
                 {
                     jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs, "Mika" );
+                    await JobObservationService.UpdateJobObservation(jobobs, aDuser);
                 }
             }
         }
@@ -168,6 +169,9 @@ namespace SupervisorMobility.Client.Shared
             {
                 json = await js.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
+                
+                json = await js.InvokeAsync<string>("localStorage.getItem", "ADuser");
+                aDuser = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
             return hasProperty;
         }

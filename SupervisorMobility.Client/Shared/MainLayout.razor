@@ -450,7 +450,6 @@
 
         //json = JsonSerializer.Serialize<User>(user);
         //await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-        timer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
     }
 
     private async void GetNotifications(object state)
@@ -497,6 +496,16 @@
 
         var userId = currentUser.FindFirst("oid")?.Value;
 
+    
+
+        ADuser auser = new ADuser()
+            {
+                email = currentUser.FindFirst("preferred_username").Value,
+                name = currentUser.FindFirst("name").Value,
+                oid = currentUser.FindFirst("oid").Value.ToString()
+            };
+
+
         foreach (var u in users)
         {
             if (u.Name == currentUser.Identity?.Name)
@@ -511,9 +520,11 @@
 
         if (userId != null)
         {
-            json = JsonSerializer.Serialize<string>(userId);
-            await js.InvokeVoidAsync("localStorage.setItem", "objectId", json);
+            json = JsonSerializer.Serialize<ADuser>(auser);
+            await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
         }
+
+        timer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
 
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
