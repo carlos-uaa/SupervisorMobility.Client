@@ -1,0 +1,199 @@
+﻿@page "/attendance"
+
+@inject IJSRuntime JS
+@inject IAttendanceService AttendanceServices
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Configuration</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+@if(peopleList == null)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td> <MudSkeleton SkeletonType="SkeletonType.Circle"/> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td  ><MudSkeleton SkeletonType="SkeletonType.Circle"/> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td> <MudSkeleton SkeletonType="SkeletonType.Circle"/> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td  ><MudSkeleton SkeletonType="SkeletonType.Circle"/> </td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}else if (peopleList.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">No Personal Found</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudSpacer />
+                
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+}
+else
+{
+
+    @if (onSaveUpdate)
+    {
+        <MudItem class="d-flex justify-center align-self-center">
+            <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+        </MudItem>
+    }
+    else
+    {
+        <MudTable Items="peopleList" T="Attendance" Height="55vh" FixedHeader=true Class="styled-table table-striped"
+          SortLabel="Sort By" Filter="new Func<Attendance,bool>(FilterFunc)"
+          HorizontalScrollbar="true">
+            <ToolBarContent>
+                <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                    <MudItem class="d-flex justify-center align-self-center ">
+                        <MudText Typo="Typo.h6" Class="align-item-center center">Personal</MudText>
+                    </MudItem><MudSpacer />
+                    <MudItem Class="d-flex">
+                        <MudSpacer />
+                        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        <MudSpacer />
+                        <MudButton OnClick="UpdateList">
+                            <MudText>Save Attendance</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.SaveAs" aria-label="Save" Color="Color.Primary"></MudIcon>
+                        </MudButton>
+                        <MudSpacer />
+                    </MudItem>
+                </MudGrid>
+            </ToolBarContent>
+
+
+
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Payroll)">Payroll</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Area.Description)">Area</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Group.Description)">Group</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Name)">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Compas)">Compas</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Station)">Station</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Payroll">
+                    <MudText Align="Align.Center">@context.Payroll</MudText>
+                </MudTd>
+                <MudTd DataLabel="Area">
+                    <MudText Align="Align.Center">@context.Area.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Group">
+                    <MudText Align="Align.Center">@context.Group.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <MudText Align="Align.Center">@context.Name</MudText>
+                </MudTd>
+                <MudTd DataLabel="Compas">
+                    <MudSwitch @bind-Checked="@context.Compas" Color="Color.Tertiary">@(context.Compas ? "Present" : "Absent")</MudSwitch>
+                    </MudTd>
+                    <MudTd DataLabel="Station">
+                        <MudSwitch @bind-Checked="@context.Station" Color="Color.Tertiary">@(context.Station ? "Assigned" : "Unallocated")</MudSwitch>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+    }
+        
+
+    
+
+}
+
+
+@code {
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Attendance", href: "", disabled: true)
+        };
+
+    List<Attendance>? peopleList = null;
+    string searchString = "";
+    bool onSaveUpdate = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+        peopleList = await AttendanceServices.GetAttendanceList();
+    }
+
+    private async void UpdateList()
+    {
+        onSaveUpdate = true;
+        var result = await AttendanceServices.UpdateList(peopleList);
+        if (result != null)
+            peopleList = result;
+        else
+            await JS.InvokeVoidAsync("alert", "Error on update, please call your admin!"); // Alert
+        onSaveUpdate = false;
+
+        await Task.Delay(500);
+
+        StateHasChanged();
+    }
+
+
+    private bool FilterFunc(Attendance element)
+    {
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Payroll.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Group!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Area!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Name} {element.Payroll} {element.Area?.Description} {element.Group?.Description}".Contains(searchString))
+            return true;
+        return false;
+    }
+
+}

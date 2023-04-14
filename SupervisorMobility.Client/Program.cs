@@ -22,6 +22,7 @@ global using SupervisorMobility.Client.Services.FileUploadAndDownloadService;
 global using SupervisorMobility.Client.Services.UserService;
 global using SupervisorMobility.Client.Services.BridgeCDMSService;
 global using SupervisorMobility.Client.Services.NotificationService;
+global using SupervisorMobility.Client.Services.AttendanceService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 

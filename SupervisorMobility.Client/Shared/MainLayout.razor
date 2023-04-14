@@ -4,6 +4,7 @@
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
 @inject INotificationService NotifyServices
+@inject IAttendanceService AttendanceServices
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -63,7 +64,7 @@
                             else if (AllNotifications.Count == 0)
                             {
 
-                                <MudCard Elevation="3" Class="ma-1" Style="background-color:#FFB6C1;max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                     <MudCardHeader>
                                        </MudCardHeader>
                                     <MudCardContent>
@@ -80,7 +81,7 @@
                                         {
                                             @foreach (var notification in NewNotifications)
                                             {
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color:#55F48B; max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -137,7 +138,7 @@
                                         {
                                             @foreach (var notification in ReadNotifications)
                                             {
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color: #C3F3E8; max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -191,7 +192,7 @@
                                             @if (notification.IsAccepted && notification.IsActive)
                                             {
                                                 // accepted=true active=true
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color:#8BC34A ; max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -232,7 +233,7 @@
                                             else if (!notification.IsAccepted && notification.IsActive)
                                             {
                                                  // accepted=false active=true
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color: #BDBDBD ; max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -269,7 +270,7 @@
                                             else if (notification.IsActive && !notification.IsAccepted)
                                             {
                                                  // accepted=true active=false
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color:#FFCDD2 ;max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -303,7 +304,7 @@
                                             else
                                             {
                                                  // accepted=false active=false
-                                                <MudCard Elevation="3" Class="ma-1" Style="background-color:#757575 ;max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
                                                         <CardHeaderContent>
                                                             <MudText Typo="Typo.h6">Notification of: </MudText>
@@ -426,7 +427,8 @@
     bool _IsHovering = false;
     bool NoifyDialog = false;
     [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-    private Timer timer;
+    private Timer Notificationtimer;
+    private Timer attendanceTimer;
 
 
     protected async override Task OnInitializedAsync()
@@ -457,6 +459,11 @@
         await updatenotifications();
     } 
 
+    private async void GetAttendance(object state)
+    {
+        await AttendanceServices.AssignEmployes();
+    } 
+
     private async Task updatenotifications()
     {
         AllNotifications.Clear();
@@ -474,14 +481,15 @@
                 ReadNotifications.Add(notify);
             }
         }
-
+        StateHasChanged();
     }
 
 
 
     public void Dispose()
     {
-        timer.Dispose();
+        Notificationtimer.Dispose();
+        attendanceTimer.Dispose();
     }
 
 
@@ -524,7 +532,8 @@
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
         }
 
-        timer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
 
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");

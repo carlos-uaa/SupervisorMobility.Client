@@ -7,7 +7,7 @@ namespace SupervisorMobility.Client.Data.Entities
     {
         public int UserId { get; set; }
         
-        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a payroll number")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please indicate a payroll number")]
         public int Payroll { get; set; }
         [Required]
       

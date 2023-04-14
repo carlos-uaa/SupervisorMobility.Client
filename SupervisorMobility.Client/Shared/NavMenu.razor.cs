@@ -126,20 +126,16 @@ namespace SupervisorMobility.Client.Shared
                             && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
                         {
 
-                            //today
+                            
                             if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                             {
                                 todayObservations.Add(jobobs);
                             }
-                            //this week
                             else
                             {
                                 thisWeekObservations.Add(jobobs);
                                 thisWeekObservations = thisWeekObservations.OrderBy(x => x.StartDate).ToList();
-
                             }
-
-
 
                         }
                     }
