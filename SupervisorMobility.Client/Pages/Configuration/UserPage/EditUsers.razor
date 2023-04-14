@@ -78,7 +78,7 @@
                                         <MudSwitch Class="ma-1" Label="Is Active?" @bind-Checked="_user.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                     </MudItem>
 
-                                    @if (_user.IsOperator)
+                                    @if (_user.UserType == 4)
                                     {
                                         <MudItem class="d-flex flex-column justify-center align-self-center">
                                             <MudText Typo="Typo.h6">Payroll</MudText>
@@ -91,7 +91,7 @@
                                     <MudItem>
                                         <MudText Typo="Typo.h6">Permissions</MudText>
                                     </MudItem>
-                                    <MudItem class="d-flex d-flex-column justify-center">
+                                    @*<MudItem class="d-flex d-flex-column justify-center">
                                         @if (_user.IsAdmin)
                                         {
                                             <MudPaper Elevation="0">
@@ -108,7 +108,7 @@
 
                                         }
 
-                                        @if (_user.IsOperator)
+                                        @if (user.UserType == 4)
                                         {
                                             <MudPaper Elevation="0">
                                                 <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
@@ -119,8 +119,8 @@
                                     <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
                                             <MudSwitch Class="ma-1" Label="Is Admin?" @bind-Checked="_user.IsAdmin" Color="Color.Primary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(1))" />
                                             <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Secondary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(2))" />
-                                            <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="_user.IsOperator" Color="Color.Info" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(3))" />
-                                    </MudItem>
+                                            <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="user.UserType == 4" Color="Color.Info" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(3))" />
+                                    </MudItem>*@
 
                                 </MudItem>
 
@@ -244,16 +244,7 @@ else
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
 
-    private async Task CambiarEstadoSwitch(int switchNumber)
-    {
-        _isAnySwitchActive = true;
-
-        _user.IsAdmin = (switchNumber == 1);
-        _user.IsSupervisor = (switchNumber == 2);
-        _user.IsOperator = (switchNumber == 3);
-
-        await JS.InvokeVoidAsync("resetSwitches", switchNumber);
-    }
+ 
 
     private async void UpdateUserAsync()
     {

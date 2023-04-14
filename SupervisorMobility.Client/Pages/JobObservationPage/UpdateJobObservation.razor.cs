@@ -181,7 +181,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 users = await UsersService.GetUsers();
                 foreach (var operatorUser in users)
                 {
-                    if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.IsOperator)
+                    if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.UserType == 4)
                     {
                         operatorUsers.Add(operatorUser);
                     }
