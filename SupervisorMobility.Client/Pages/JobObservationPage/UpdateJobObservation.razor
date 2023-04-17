@@ -152,7 +152,7 @@
                                 HorizontalScrollbar="true">
                     <tbody>
                         <tr>
-                            <td>
+                            <td style="width:50%">
                                 @*Mud select of Plants *@
                                 <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
                                     <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
@@ -178,9 +178,10 @@
                                     }
                                 </MudSelect>
                             </td>
-                            <td class="d-flex">
-                                <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
-                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
+                            <td>
+                                <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observer" Class="mr-4" />
+@*                              <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly PickerClosed="ShowHourMessage"/>
+                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly PickerClosed="ShowHourMessage"/>*@
                             </td>
                         </tr>
                         <tr>
@@ -203,8 +204,8 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <div class="d-flex">
-                                    <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observer" Class="mr-4" />
+@*                                <div class="d-flex">*@                                    
+                                    
 
                                     @*Mud select for Operator *@
                                     <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
@@ -214,30 +215,9 @@
                                             <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
                                         }
                                     </MudSelect>
-                                </div>
+@*                                </div>*@
                             </td>
                         </tr>
-                        @*        <tr>
-                        <td colspan="2">
-                        <MudText Style="text-align:center; font-weight:bold;">
-                        Planned Date
-                        </MudText>
-                        </td>
-                        </tr>
-                        <tr>
-                        <td>
-                        <div class="d-flex">
-                        <MudDatePicker @bind-Date="_jobObservation.StartDate" Label="Fecha Inicio" Color="Color.Warning" AdornmentColor="Color.Warning" Class="mr-4" />
-                        <MudDatePicker @bind-Date="_jobObservation.EndDate" Label="Fecha Termino" Color="Color.Warning" AdornmentColor="Color.Warning" MinDate="_jobObservation.StartDate" />
-                        </div>
-                        </td>
-                        <td>
-                        <div class="d-flex">
-                        <MudTimePicker Label="End hour" @bind-Time="startHour" Color="Color.Warning" AdornmentColor="Color.Warning" Class="mr-4" />
-                        <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Warning" AdornmentColor="Color.Warning" />
-                        </div>
-                        </td>
-                        </tr>*@
                         <tr>
                             <td colspan="2" style="text-align: center;">
                                 <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" style="width:100%;">
@@ -985,26 +965,17 @@
                         </td>
                         <td>
                             @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
-                            <AuthorizeView Context="activeUser">
-                                <Authorized>
-                                    <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => sign = !sign)">
-                                        Sign in
-                                        @if(sign){
-                                                <RemoteAuthenticatorView Action="login" OnLogInSucceeded="OnLogInSucceeded"/>
-                                        }
-                                    </MudButton>
-                                    @*<MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Style="color:white">
-                                        @context.User.Identity?.Name
-                                    </MudButton>
-                                    <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>*@
-                                </Authorized>
-                                <NotAuthorized>
-                                    <MudButton Class="mr-10" Color="Color.Inherit" Style="color:white" Href="authentication/login">
-                                        Sign in
-                                    </MudButton>
-                                    @*<a href="authentication/login">Log in</a>*@
-                                </NotAuthorized>
-                            </AuthorizeView>
+                            @if(_jobObservation.SsvSignature == "" || _jobObservation.SsvSignature == null)
+                            {
+                                <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => OpenSignComment())">
+                                    Sign in
+                                </MudButton>
+                            }
+                            else{
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                                    Signed!
+                                </MudChip>
+                            }
                             <MudText Style="text-align:center; font-weight:bold;">
                                 Firma del Operador
                             </MudText>
@@ -1021,12 +992,29 @@
                     <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
                 }
                 <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Circle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => FinishedJobObservation())">Finish</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">Under Review</MudButton>
                 <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">Cancel</MudButton>
             </MudCardActions>
         </MudItem>
     </MudGrid>
 </EditForm>
+
+@*Sign observation modal*@
+    <MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+            <MudText Typo="Typo.h6">Confirm</MudText>
+            <MudText Class="mt-4 mb-4"> <span style="color: #2196f3; text-align:justify">@objectId.name</span>,
+                are you sure you want to sign the job observation from this account?
+            </MudText>
+            <MudText Class="mt-4 mb-4">
+                Once signed, it cannot be modified.
+            </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseSign" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton @onclick="(() => SignDate())" Color="Color.Info" StartIcon="@Icons.Material.Filled.Circle" Variant="Variant.Filled">Finished</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @*Change Date modal*@
     <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogCommentOptions">

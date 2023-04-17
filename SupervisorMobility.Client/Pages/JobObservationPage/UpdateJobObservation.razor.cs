@@ -477,7 +477,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 StopTimer();
         }
 
-        public async void FinishedJobObservation()
+        public async void UnderReviewJobObservation()
         {
             hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
             hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
@@ -974,152 +974,71 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         }
 
 
-        //private static IPublicClientApplication _clientApp;
+        //Change date modal and function
+        private bool visibleSign = false;
+        private void OpenSignComment()
+        {
+            visibleSign = true;
+        }
+        void CloseSign() => visibleSign = false;
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true};
 
-        //public async Task<string> GetATokenForGraph()
-        //{
-        //    string[] scopes = new string[] { "user.read" };
+        public async Task SignDate()
+        {
 
-        //    if (_clientApp == null)
-        //    {
-        //        _clientApp = PublicClientApplicationBuilder
-        //            .Create("7a184926-2f58-4f9c-872c-97d54d825912")
-        //            .WithAuthority("https://login.microsoftonline.com/84539953-c856-42b8-a26c-a60e5362d3e4")
-        //            .WithRedirectUri("http://localhost")
-        //            .Build();
-        //    }
+            if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is Missing", Severity.Error);
+                return;
+            }
 
-        //    var accounts = await _clientApp.GetAccountsAsync();
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
-        //    AuthenticationResult result = null;
-
-        //    if (accounts.Any())
-        //    {
-        //        try
-        //        {
-        //            result = await _clientApp.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).ExecuteAsync();
-        //        }
-        //        catch (MsalUiRequiredException)
-        //        {
-        //            result = await _clientApp.AcquireTokenInteractive(scopes).ExecuteAsync();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        try
-        //        {
-        //            string password = "Casa8228";
-        //            result = await _clientApp.AcquireTokenByUsernamePassword(scopes, "pmunoz@vscodegruposincocom.onmicrosoft.com", password).ExecuteAsync();
-
-        //            Console.WriteLine(result);
-        //        }
-        //        catch (MsalException)
-        //        {
-        //            // See details below
-        //        }
-        //    }
-
-        //    return result.AccessToken;
-        //}
+            if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+            {
+                Console.WriteLine(newDate1);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date Start", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour1);
+            }
 
 
+            if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+            {
+                Console.WriteLine(newDate2);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Date End", Severity.Error);
+                Console.WriteLine("Unable to parse '{0}'", hour2);
+            }
 
+            _jobObservation.StartDate = newDate1;
+            _jobObservation.EndDate = newDate2;
+            _jobObservation.SsvSignature = "Signed";
+            _jobObservation.Status = 6;
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
-        //static async Task GetATokenForGraph()
-        //{
-        //    string authority = "https://login.microsoftonline.com/84539953-c856-42b8-a26c-a60e5362d3e4";
-        //    string[] scopes = new string[] { "user.read" };
-        //    IPublicClientApplication app;
-        //    app = PublicClientApplicationBuilder.Create("7a184926-2f58-4f9c-872c-97d54d825912")
-        //          .WithAuthority(authority)
-        //          .Build();
-        //    var accounts = await app.GetAccountsAsync();
+            if (result)
+            {
 
-        //    AuthenticationResult result = null;
-        //    if (accounts.Any())
-        //    {
-        //        result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-        //                          .ExecuteAsync();
-        //    }
-        //    else
-        //    {
-        //        try
-        //        {
-        //            string password = "YourPassword";
-        //            result = await app.AcquireTokenByUsernamePassword(scopes, "pmunoz@vscodegruposincocom.onmicrosoft.com", password).ExecuteAsync();
-
-        //        }
-        //        catch (MsalException)
-        //        {
-        //            // See details below
-        //        }
-        //    }
-        //    Console.WriteLine(result.Account.Username);
-        //}
-
-
-        //public async Task GetATokenForGraph()
-        //{
-        //    string username = "pmunoz@vscodegruposincocom.onmicrosoft.com";
-        //    string password = "Casa8228";
-        //    string[] scopes = { "user.read" }; // Scopes que se requieren para acceder a los datos del usuario
-        //    IPublicClientApplication app;
-        //    app = PublicClientApplicationBuilder.Create("7a184926-2f58-4f9c-872c-97d54d825912")
-        //        .WithAuthority("https://login.microsoftonline.com/84539953-c856-42b8-a26c-a60e5362d3e4")
-        //        .Build();
-
-        //    try
-        //    {
-        //        var result = await app.AcquireTokenByUsernamePassword(scopes, username, password)
-        //                  .ExecuteAsync();
-
-        //        // Si el token de acceso se ha obtenido correctamente, entonces se devuelve el token
-        //    }
-        //    catch (MsalServiceException ex)
-        //    {
-        //        // Si se produce una excepción al obtener el token de acceso, entonces el usuario es inválido
-        //    }
-        //}
-
-        //public async Task GetATokenForGraph()
-        //{
-        //    string username = "pmunoz@vscodegruposincocom.onmicrosoft.com";
-        //    string password = "Casa8228";
-        //    try
-        //    {
-        //        var result = await JSRuntime.InvokeAsync<string>("getToken", username, password);
-        //        Console.WriteLine(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Manejar la excepción aquí
-        //        Console.WriteLine(ex);
-        //    }
-        //}
-
-        //public async Task GetATokenForGraph()
-        //{
-        //    string[] scopes = { "user.read" }; // Scopes que se requieren para acceder a los datos del usuario
-        //    IPublicClientApplication app;
-        //    app = PublicClientApplicationBuilder.Create("7a184926-2f58-4f9c-872c-97d54d825912")
-        //        .WithAuthority("https://login.microsoftonline.com/84539953-c856-42b8-a26c-a60e5362d3e4")
-        //        .Build();
-
-        //    try
-        //    {
-        //        var result = await app.AcquireTokenByDeviceCode(scopes, deviceCodeResult =>
-        //        {
-        //            Console.WriteLine(deviceCodeResult.Message);
-        //            return Task.FromResult(0);
-        //        }).ExecuteAsync();
-
-        //        // Si el token de acceso se ha obtenido correctamente, entonces se devuelve el token
-        //    }
-        //    catch (MsalServiceException ex)
-        //    {
-        //        // Si se produce una excepción al obtener el token de acceso, entonces el usuario es inválido
-        //    }
-        //}
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
 
     }
 }
