@@ -83,39 +83,26 @@
                                             {
                                                 <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-                                                                        <MudMenuItem>
-                                                                            <MudIconButton Icon="@Icons.Material.Filled.Check" Color="@Color.Success" Title="Mark as Read"
-                                                                               @onclick="@(() => updateStatus(notification))" />
-                                                                        </MudMenuItem>
-                                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                    <MudText Typo="Typo.body2">->Mark as Read</MudText>
-                                                                    <MudText Typo="Typo.body2">->Delete</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
+                                                      
                                                     </MudCardHeader>
                                                     <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
+                                                        <div class="card work">
+                                                            <div class="img-section">
+                                                                <img src="Images/newnotification.png" Height="100" Width="100" />
+                                                            </div>
+                                                            <div class="card-desc">
+                                                                <div class="card-header">
+                                                                    <div class="card-title">Play</div>
+                                                                    <div class="card-menu">
+                                                                        <div class="dot"></div>
+                                                                        <div class="dot"></div>
+                                                                        <div class="dot"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-time">32hrs</div>
+                                                                <p class="recent">Last Week-36hrs</p>
+                                                            </div>
+                                                        </div>
                                                     </MudCardContent>
                                                 </MudCard>
                                             }
@@ -488,8 +475,17 @@
 
     public void Dispose()
     {
-        Notificationtimer.Dispose();
-        attendanceTimer.Dispose();
+        if(Notificationtimer != null)
+        {
+            Notificationtimer.Dispose();
+        }
+
+        if(attendanceTimer != null)
+        {
+            attendanceTimer.Dispose();
+
+        }
+
     }
 
 
@@ -504,7 +500,7 @@
 
         var userId = currentUser.FindFirst("oid")?.Value;
 
-    
+
 
         ADuser auser = new ADuser()
             {
@@ -531,6 +527,8 @@
             json = JsonSerializer.Serialize<ADuser>(auser);
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
         }
+
+        Dispose();
 
         Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
         attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
