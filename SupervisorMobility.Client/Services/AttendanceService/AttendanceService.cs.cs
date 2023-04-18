@@ -21,45 +21,99 @@ namespace SupervisorMobility.Client.Services.AttendanceService
         }
         public async Task<List<Attendance>> GetAttendanceList()
         {
-            var response = await _http.GetAsync($"Attendance");
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                throw new ApplicationException(content);
+                var response = await _http.GetAsync($"Attendance");
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //var result = await response.Content.ReadFromJsonAsync<List<Attendance>>();
+                    var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
+
+                    return attendanceslist;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error Bar Result: {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
+            return null;
 
-            return attendanceslist;
         }
         public async Task<List<Attendance>> AssignEmployes()
         {
-            var response = await _http.GetAsync($"Attendance/Assign");
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+        
+            try
             {
-                throw new ApplicationException(content);
+                var response = await _http.GetAsync($"Attendance/Assign");
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //var result = await response.Content.ReadFromJsonAsync<List<Attendance>>();
+                    var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
+
+                    return attendanceslist;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error Bar Result: {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
+            return null;
 
-            return attendanceslist;
+
         }
         public async Task<List<Attendance>> UpdateList(List<Attendance> list)
         {
-            var response = await _http.PostAsJsonAsync($"Attendance/updatelist", list);
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+           
+            try
             {
-                throw new ApplicationException(content);
+                var response = await _http.PostAsJsonAsync($"Attendance/updatelist", list);
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //var result = await response.Content.ReadFromJsonAsync<List<Attendance>>();
+                    var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
+
+                    return attendanceslist;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", $"Error Bar Result: {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            var attendanceslist = JsonSerializer.Deserialize<List<Attendance>>(content, _options);
-
-            return attendanceslist;
+            return null;
         }
     }
     
