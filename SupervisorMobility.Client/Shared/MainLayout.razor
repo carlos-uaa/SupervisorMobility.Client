@@ -81,26 +81,34 @@
                                         {
                                             @foreach (var notification in NewNotifications)
                                             {
-                                                <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                      
-                                                    </MudCardHeader>
+                                                <MudCard Elevation="1" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
                                                     <MudCardContent>
                                                         <div class="card work">
                                                             <div class="img-section">
-                                                                <img src="Images/newnotification.png" Height="100" Width="100" />
+                                                                <MudImage Src="Images/newnotification.png" Height="40" Width="40" Class="mb-16"></MudImage>
                                                             </div>
                                                             <div class="card-desc">
                                                                 <div class="card-header">
-                                                                    <div class="card-title">Play</div>
-                                                                    <div class="card-menu">
-                                                                        <div class="dot"></div>
-                                                                        <div class="dot"></div>
-                                                                        <div class="dot"></div>
-                                                                    </div>
+                                                                    <div class="card-title">@notification.NotificationType</div>
+                                                                    
                                                                 </div>
-                                                                <div class="card-time">32hrs</div>
-                                                                <p class="recent">Last Week-36hrs</p>
+                                                                <div class="card-time">@notification.NotificationText</div>
+                                                                <p class="recent">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</p>
+                                                                <div class="lock-notify">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-unlock-notify" />
+                                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-lock-notify" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="foot-section">
+                                                                <MudItem>
+                                                                    <MudIconButton Icon="@Icons.Material.Filled.Check" Title="Mark as Read" 
+                                                                   @onclick="@(() => updateStatus(notification))" />Mark as Read
+                                                                </MudItem>
+                                                                <MudItem>
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" />
+                                                                    Delete Notification
+                                                                </MudItem>
+
                                                             </div>
                                                         </div>
                                                     </MudCardContent>
@@ -212,7 +220,7 @@
                                                         </MudCardContent>
                                                         <MudCardActions>
                                                             Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                                            <MudText Color="Color.Info">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
                                                         </MudCardActions>
                                                     </MudCardContent>
                                                 </MudCard>
@@ -371,7 +379,6 @@
             <div class="lock">
                 <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-unlock" />
                 <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-lock" />
-
             </div>
 
             <div class="footersep">
@@ -421,7 +428,6 @@
     protected async override Task OnInitializedAsync()
     {
         await TryGetAsync();
-
 
         users = await UsersService.GetUsers();
         AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
@@ -576,6 +582,12 @@
             objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
 
         }
+
+        Dispose();
+
+        Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+
         return hasProperty;
     }
 
