@@ -15,8 +15,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string date { get; set; }
         public string hour1 { get; set; }
         public string hour2 { get; set; }
-        TimeSpan? startHour = new TimeSpan(12, 00, 00);
-        TimeSpan? endHour = new TimeSpan(13, 00, 00);
+        TimeSpan? startHour = new TimeSpan(00, 00, 00);
+        TimeSpan? endHour = new TimeSpan(00, 00, 00);
         DateTime newDate1;
         DateTime newDate2;
 
@@ -138,7 +138,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.IsActive = true;
             _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _jobObservation.Option = 3;
+            _jobObservation.Option = 1;
 
             _plants = await PlantServices.GetPlants();
             //_products = await ProductService.GetProducts();
