@@ -91,37 +91,38 @@
                                     <MudItem>
                                         <MudText Typo="Typo.h6">Permissions</MudText>
                                     </MudItem>
-                                    @*<MudItem class="d-flex d-flex-column justify-center">
-                                        @if (_user.IsAdmin)
+                                    <MudItem class="d-flex d-flex-column justify-center">
+                                        @switch (_user.UserType)
                                         {
-                                            <MudPaper Elevation="0">
-                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
-                                            </MudPaper>
-
-                                        }
-
-                                        @if (_user.IsSupervisor)
-                                        {
-                                            <MudPaper Elevation="0">
-                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
-                                            </MudPaper>
-
-                                        }
-
-                                        @if (user.UserType == 4)
-                                        {
-                                            <MudPaper Elevation="0">
-                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
-                                            </MudPaper>
-
+                                            case 1:
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                </MudPaper>
+                                                break;
+                                            case 2:
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                </MudPaper>
+                                                break;
+                                            case 3:
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                </MudPaper>
+                                                break;
+                                            case 4:
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                </MudPaper>
+                                                break;
                                         }
                                     </MudItem>
+                                   
                                     <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
-                                            <MudSwitch Class="ma-1" Label="Is Admin?" @bind-Checked="_user.IsAdmin" Color="Color.Primary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(1))" />
-                                            <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="_user.IsSupervisor" Color="Color.Secondary" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(2))" />
-                                            <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="user.UserType == 4" Color="Color.Info" UnCheckedColor="Color.Dark" onclick="@(() => CambiarEstadoSwitch(3))" />
-                                    </MudItem>*@
-
+                                        <MudSwitch Class="ma-1" Label="Is Admin?" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="Is SeniorSupervisor?" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                    </MudItem>
                                 </MudItem>
 
 
@@ -223,6 +224,12 @@ else
     private bool showui = false;
     private bool _isAnySwitchActive = false;
 
+    private bool IsAdmin = false;
+    private bool IsSeniorSupervisor = false;
+    private bool IsSupervisor = false;
+    private bool IsOperator = false;
+
+
     List<Plant> _plants { get; set; } = new();
     List<Area> _areas = new();
     List<Group> _groups { get; set; } = new();
@@ -236,6 +243,11 @@ else
         _plants = await PlantServices.GetPlants();
         _areas = await AreaServices.GetAreas(_user.PlantId);
         _groups = await GroupServices.GetGroups();
+
+        IsAdmin = (_user.UserType == 1) ;
+        IsSeniorSupervisor = (_user.UserType == 2);
+        IsSupervisor = (_user.UserType == 3);
+        IsOperator = (_user.UserType == 4);
     }
 
     private async void ShowAreas()
@@ -244,7 +256,21 @@ else
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
 
- 
+    private void setActiveUser(int switchNumber)
+    {
+        IsAdmin = ((switchNumber == 1) && !IsAdmin) ? true : false;
+        IsSeniorSupervisor = (switchNumber == 2) && !IsSeniorSupervisor ? true : false;
+        IsSupervisor = ((switchNumber == 3) && !IsSupervisor) ? true : false;
+        IsOperator = ((switchNumber == 4) && !IsOperator) ? true : false;
+
+        if (!IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator)
+            _user.UserType = 0;
+        else
+            _user.UserType = switchNumber;
+
+
+        StateHasChanged();
+    }
 
     private async void UpdateUserAsync()
     {
