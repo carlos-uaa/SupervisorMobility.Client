@@ -965,15 +965,20 @@
                         </td>
                         <td>
                             @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
-                            @if(_jobObservation.SsvSignature == "" || _jobObservation.SsvSignature == null)
+                            @if((_jobObservation.SsvSignature != "Signed" || _jobObservation.SsvSignature == null) && user.UserType == 2)
                             {
                                 <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => OpenSignComment())">
-                                    Sign in
+                                    Sign it
                                 </MudButton>
                             }
-                            else{
+                            else if(_jobObservation.SsvSignature == "Signed"){
                                 <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
                                     Signed!
+                                </MudChip>
+                            }
+                            else{
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                    Unsigned
                                 </MudChip>
                             }
                             <MudText Style="text-align:center; font-weight:bold;">
@@ -987,13 +992,24 @@
             </MudItem>
 
             <MudCardActions>
-                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">On Hold</MudButton>
-                @if(_jobObservation.Status == 1){
-                    <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
+                @if(_jobObservation.Status != 6){
+                    if(user.UserType == 1 || user.UserType == 3){
+                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">On Hold</MudButton>
+                    }
+                    if((_jobObservation.Status == 1 || _jobObservation.Status == 3) || user.UserType == 1){
+                        <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
+                    }
+                    if(user.UserType == 1 || user.UserType == 2){
+                        <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
+                    }
+                    if(user.UserType == 1 || user.UserType == 4 || user.UserType == 3){
+                        <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">Under Review</MudButton>
+                    }
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">Cancel</MudButton>
                 }
-                <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">Under Review</MudButton>
-                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">Cancel</MudButton>
+                else{
+                    <MudButton Variant="Variant.Filled" Class="ml-auto" @onclick="(() => CancelUpdateJobObservation())">Go back</MudButton>
+                }
             </MudCardActions>
         </MudItem>
     </MudGrid>
