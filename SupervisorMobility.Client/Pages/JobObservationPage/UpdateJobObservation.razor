@@ -40,7 +40,7 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 @* Job Observation Form*@
-<EditForm Model="_jobObservation" OnValidSubmit="EditJobObservation">
+<EditForm Model="_jobObservation" OnValidSubmit="SaveProgressJobObservation">
     <DataAnnotationsValidator />
     <MudItem Style="text-align: end">
 
@@ -965,7 +965,7 @@
                         </td>
                         <td>
                             @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
-                            @if((_jobObservation.SsvSignature != "Signed" || _jobObservation.SsvSignature == null) && user.UserType == 2)
+                            @if((_jobObservation.SsvSignature != "Signed" || _jobObservation.SsvSignature == null) && (user.UserType == 1 || user.UserType == 2))
                             {
                                 <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor"  Color="Color.Info" @onclick="(() => OpenSignComment())">
                                     Sign it
@@ -992,15 +992,14 @@
             </MudItem>
 
             <MudCardActions>
+                <MudItem Class="ml-auto">
+
                 @if(_jobObservation.Status != 6){
                     if(user.UserType == 1 || user.UserType == 3){
-                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">On Hold</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save Progress</MudButton>
                     }
-                    if((_jobObservation.Status == 1 || _jobObservation.Status == 3) || user.UserType == 1){
+                    if((_jobObservation.Status == 1 || _jobObservation.Status == 3) && user.UserType != 4){
                         <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">Change Date</MudButton>
-                    }
-                    if(user.UserType == 1 || user.UserType == 2){
-                        <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
                     }
                     if(user.UserType == 1 || user.UserType == 4 || user.UserType == 3){
                         <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">Under Review</MudButton>
@@ -1010,6 +1009,7 @@
                 else{
                     <MudButton Variant="Variant.Filled" Class="ml-auto" @onclick="(() => CancelUpdateJobObservation())">Go back</MudButton>
                 }
+                </MudItem>
             </MudCardActions>
         </MudItem>
     </MudGrid>
@@ -1028,6 +1028,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseSign" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Cancel" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Reject())">Reject</MudButton>
         <MudButton @onclick="(() => SignDate())" Color="Color.Info" StartIcon="@Icons.Material.Filled.Circle" Variant="Variant.Filled">Finished</MudButton>
     </DialogActions>
 </MudDialog>
