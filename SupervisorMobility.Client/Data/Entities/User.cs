@@ -10,10 +10,16 @@ namespace SupervisorMobility.Client.Data.Entities
         [Range(0, int.MaxValue, ErrorMessage = "Please indicate a payroll number")]
         public int Payroll { get; set; }
         [Required]
-      
+
+        public string? ObjectId { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string ObjectId { get; set; }
+        public string? Email { get; set; } = string.Empty;
         public int UserType { get; set; }
+
+        public int? SuperiorId { get; set; }
+        public User? Superior { get; set; }
+
+        public ICollection<User> Subordinates { get; set; } 
 
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdated { get; set; }
@@ -27,7 +33,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int GroupId { get; set; }
         public Group? Group { get; set; }
 
-      
-
+        public int? DistributionId { get; set; }
+        public Distribution? Distribution { get; set; }
     }
 }
