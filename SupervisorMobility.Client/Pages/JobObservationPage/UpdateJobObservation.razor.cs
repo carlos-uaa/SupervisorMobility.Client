@@ -382,6 +382,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
+            if(_jobObservation.Status == 3)
+            {
+                _jobObservation.Status = 1;
+            }
+
             var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
 
             if (result)
@@ -401,7 +406,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async Task SaveProgressJobObservation()
         {
 
-            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+            startHour = DateTime.Now.TimeOfDay;
+            
+            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
             hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
             if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
@@ -655,8 +662,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
 
 
+            endHour = DateTime.Now.TimeOfDay;
+
             hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
+            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour?.ToString("hh\\:mm\\:ss")}";
 
             if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
             {

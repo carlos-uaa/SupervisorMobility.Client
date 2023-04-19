@@ -254,6 +254,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.Cicles= cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
             _jobObservation.StartDate = newDate1;
             _jobObservation.EndDate = newDate2;
+
+            _jobObservation.PlannedStartDate = newDate1;
+            _jobObservation.PlannedEndDate = newDate2;
+
             _jobObservation.Status = 1;
 
             var result = await JobObservationService.CreateJobObservation(_jobObservation);
