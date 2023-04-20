@@ -45,7 +45,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             return jobObservation;
         }
-        public async Task<List<JobObservationVersion>> GetHistoryJobObservations(int jobObservationId)
+        public async Task<List<JobObservationVersion>> GetAllHistoryJobObservations(int jobObservationId)
         {
             var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history");
             var content = await response.Content.ReadAsStringAsync();
@@ -61,7 +61,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
         }
 
 
-        public async Task<JobObservation> GetHistoryJobObservationWithLup(int jobObservationId, int HistoryId)
+        public async Task<JobObservationVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId)
         {
             var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history/{HistoryId}/detail");
             var content = await response.Content.ReadAsStringAsync();
@@ -71,7 +71,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<JobObservation>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<JobObservationVersion>(content, _options);
 
             return jobObservation;
         }
