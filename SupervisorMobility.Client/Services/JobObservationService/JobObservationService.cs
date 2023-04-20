@@ -76,7 +76,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
-        public async Task<List<JobObservation>> GetAllJobObservationWithLup()
+        public async Task<List<JobObservation>> GetAllJobObservationsWithLup()
         {
             var response = await _http.GetAsync($"jobobservations?IncludeLup=true");
             var content = await response.Content.ReadAsStringAsync();

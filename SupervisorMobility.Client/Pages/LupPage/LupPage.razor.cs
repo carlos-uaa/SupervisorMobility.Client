@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
                 await GetUserAsync();
 
-                jobObservationList = await JobObservationServices.GetAllJobObservationWithLup();
+                jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
                 foreach (var jobObs in jobObservationList)
                 {
                     if (jobObs.Lup.Count > 0)
