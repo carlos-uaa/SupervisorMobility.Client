@@ -114,89 +114,255 @@
 
                         </MudItem>
 
-                        @if (_user.UserType != 0)
+                        @if (_user.UserType != 0 && _user.PlantId != 0 && _user.AreaId != 0)
                         {
                             <MudItem>
                                 <MudItem>
                                     <MudText Typo="Typo.h6">Hierarchy tree</MudText>
                                 </MudItem>
-                                <MudItem>
-
-                                    @if (_user.Subordinates != null && _user.Subordinates.Count > 0)
+                                <MudItem Class="d-flex flex-column justify-center ma-1">
+                                    @if (_user.Superior != null)
                                     {
-                                        <MudItem>
-                                            <MudText Typo="Typo.h6">Subordinates</MudText>
+                                        <MudItem class="d-flex d-flex-column justify-center">
+                                            <MudText Typo="Typo.h6">Superior</MudText>
                                         </MudItem>
+                                        <MudItem class="d-flex d-flex-column justify-center">
 
-                                        @foreach (var item in _user.Subordinates)
-                                        {
-                                            <MudCard Elevation="3" Class="m-3" Style="width: 300px;">
-                                                <div class="d-flex justify-content-between">
-                                                    <div class="text-uppercase font-weight-bold">@item.UserType</div>
-                                                    
-                                                </div>
+                                            <MudCard Elevation="1" Class="m-3" Style="width: 300px;">
+                                                <MudCardHeader>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.subtitle1">Superior</MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSuperior())" />
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
                                                 <MudCardContent>
-                                                    <div class="font-weight-bold">@item.Name</div>
-                                                    <div class="font-weight-light">@item.ObjectId</div>
+                                                    <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2">Name:</MudText>@_user.Superior.Name</div>
+                                                    <div class="font-weight-light"><MudText Typo="Typo.subtitle2">Group:</MudText>@_user.Superior.Group?.Description</div>
                                                 </MudCardContent>
+                                                <div class="d-flex justify-content-between justify-center">
+                                                    @switch (_user.Superior.UserType)
+                                                    {
+                                                        case 1:
+                                                            <MudPaper Elevation="0">
+                                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                            </MudPaper>
+                                                            break;
+                                                        case 2:
+                                                            <MudPaper Elevation="0">
+                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                            </MudPaper>
+                                                            break;
+                                                        case 3:
+                                                            <MudPaper Elevation="0">
+                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                            </MudPaper>
+                                                            break;
+                                                        case 4:
+                                                            <MudPaper Elevation="0">
+                                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                            </MudPaper>
+                                                            break;
+                                                    }
+                                                </div>
                                                 <MudCardActions>
-                                                    <div class="text-danger">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSeniorSupervisor(item))" />
-                                                    </div>
+
                                                 </MudCardActions>
                                             </MudCard>
-                                        }
+
+                                        </MudItem>
 
                                     }
                                     else
                                     {
-                                        <MudItem>
-                                            <MudText Typo="Typo.h6">No Subordinates</MudText>
-                                        </MudItem>
+                                        @if (_user.UserType != 1 && _user.UserType != 2)
+                                        {
+                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                <MudText Typo="Typo.h6">Superior</MudText>
+                                            </MudItem>
+                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                <MudAlert Severity="Severity.Info">
+                                                    <MudText Typo="Typo.h6">without Superiors Yet...</MudText>
+                                                    </MudAlert>
+
+                                               
+                                            </MudItem>
+                                        }
+                                    }
+                                </MudItem>
+                                <MudItem class="d-flex d-flex-column justify-center ma-1">
+                                    @if (!superior)
+                                    {
+                                        @switch (_user.UserType)
+                                        {
+                                            case 3:
+                                                @if (SeniorsSupervisors.Count > 0)
+                                                {
+                                                    <MudItem Class="d-flex d-flex-row">
+                                                        <MudSelect T="User" Label="Supervisors" Placeholder="Select  Supervisor" @bind-Value="@_user.Superior" SelectedValuesChanged="SetSupervisor" For="@(() => _user.Superior)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                            <MudSelectItem Disabled="true" Value="selectedSeniorSupervisor">Select a Supervisor</MudSelectItem>
+                                                            @foreach (var SS in SeniorsSupervisors)
+                                                            {
+                                                                @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                                {
+                                                                    <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Group?.Description}")</MudSelectItem>
+                                                                }
+                                                            }
+                                                        </MudSelect>
+                                                    </MudItem>
+                                                }
+                                                break;
+                                            case 4:
+                                                @if (Supervisors.Count > 0)
+                                                {
+                                                    <MudItem Class="d-flex d-flex-row">
+                                                        <MudSelect T="User" Label="Supervisors" Placeholder="Select a Supervisor" @bind-Value="@_user.Superior" For="@(() => _user.Superior)" SelectedValuesChanged="SetSupervisor" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                            <MudSelectItem Disabled="true" Value="selectedSupervisor">Select Supervisor</MudSelectItem>
+                                                            @foreach (var SS in Supervisors)
+                                                            {
+                                                                @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                                {
+                                                                    <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Group?.Description}")</MudSelectItem>
+                                                                }
+                                                            }
+                                                        </MudSelect>
+                                                    </MudItem>
+                                                }
+                                                break;
+                                        }
                                     }
 
                                 </MudItem>
-                                <MudItem class="d-flex d-flex-column justify-center">
 
+                                <MudItem Class="d-flex flex-column justify-center ma-1">
+                                    @if (_user.Subordinates != null && _user.Subordinates.Count > 0)
+                                    {
+                                        <MudItem class="d-flex d-flex-column justify-center">
+                                            <MudText Typo="Typo.h6">Subordinates</MudText>
+                                        </MudItem>
+                                        <MudItem class="d-flex d-flex-column justify-center">
+                                            @foreach (var item in _user.Subordinates)
+                                            {
+                                                <MudCard Elevation="1" Class="m-3" Style="width: 300px;">
+                                                    <MudCardHeader>
+                                                        <CardHeaderContent>
+                                                            <MudText Typo="Typo.subtitle1"></MudText>
+                                                        </CardHeaderContent>
+                                                        <CardHeaderActions>
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSeniorSupervisor(item))" />
+                                                        </CardHeaderActions>
+                                                    </MudCardHeader>
+                                                    <MudCardContent>
+                                                        <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2">Name:</MudText>@item.Name</div>
+                                                        <div class="font-weight-light"><MudText Typo="Typo.subtitle2">Group:</MudText>@item.Group?.Description</div>
+                                                    </MudCardContent>
+                                                    <div class="d-flex justify-content-between justify-center">
+                                                        @switch (item.UserType)
+                                                        {
+                                                            case 1:
+                                                                <MudPaper Elevation="0">
+                                                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                                </MudPaper>
+                                                                break;
+                                                            case 2:
+                                                                <MudPaper Elevation="0">
+                                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                                </MudPaper>
+                                                                break;
+                                                            case 3:
+                                                                <MudPaper Elevation="0">
+                                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                                </MudPaper>
+                                                                break;
+                                                            case 4:
+                                                                <MudPaper Elevation="0">
+                                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                                </MudPaper>
+                                                                break;
+                                                        }
+                                                    </div>
+                                                    <MudCardActions>
+
+                                                    </MudCardActions>
+                                                </MudCard>
+                                            }
+                                        </MudItem>
+
+                                    }
+                                    else
+                                    {
+                                        @if (_user.UserType != 4)
+                                        {
+                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                <MudText Typo="Typo.h6">Subordinates</MudText>
+                                            </MudItem>
+                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                <MudAlert Severity="Severity.Info"><MudText Typo="Typo.h6">without  Subordinates Yet...</MudText></MudAlert>
+                                                
+                                            </MudItem>
+                                        }
+                                    }
+                                </MudItem>
+                                <MudItem class="d-flex d-flex-column justify-center ma-1">
                                     @switch (_user.UserType)
                                     {
-
-                                        case 2:
+                                        case 1:
                                             @if (SeniorsSupervisors.Count > 0)
                                             {
-
                                                 <MudItem Class="d-flex d-flex-row">
-                                                    <MudSelect T="User" Label="Supervisors" Variant="Variant.Text" Placeholder="Select a subordinate supervisor" Class="mt-3" AnchorOrigin="Origin.BottomCenter">
-                                                        <MudSelectItem Disabled="true" Value="new User()">Select a subordinate supervisoro</MudSelectItem>
+                                                    <MudSelect T="User" Label="Senior Supervisors" Placeholder="Select a subordinate SSV" @bind-Value="@selectedSeniorSupervisor" For="@(() => selectedSeniorSupervisor)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                        <MudSelectItem Disabled="true" Value="selectedSeniorSupervisor">Select a subordinate SSV</MudSelectItem>
                                                         @foreach (var SS in SeniorsSupervisors)
                                                         {
-                                                            <MudSelectItem Value="SS">@($"{SS.Name} - {SS.ObjectId}")</MudSelectItem>
+                                                            @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                            {
+                                                                <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Group?.Description}")</MudSelectItem>
+                                                            }
                                                         }
                                                     </MudSelect>
-                                                    <MudButton OnClick="@(() => AddSeniorSupervisor(selectedSeniorSupervisor))">Add subordinate supervisor</MudButton>
-
+                                                    <MudButton OnClick="@(() => AddSeniorSupervisor(selectedSeniorSupervisor))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large">Add subordinate</MudButton>
                                                 </MudItem>
-
                                             }
-                                            else
+                                            break;
+                                        case 2:
+                                            @if (Supervisors.Count > 0)
                                             {
-                                                <MudItem>
-                                                    <MudText Typo="Typo.subtitle2">No SS</MudText>
+                                                <MudItem Class="d-flex d-flex-row">
+                                                    <MudSelect T="User" Label="Supervisors" Placeholder="Select a subordinate Supervisor" @bind-Value="@selectedSupervisor" For="@(() => selectedSupervisor)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                        <MudSelectItem Disabled="true" Value="selectedSupervisor">Select a subordinate Supervisor</MudSelectItem>
+                                                        @foreach (var SS in Supervisors)
+                                                        {
+                                                            @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                            {
+                                                                <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Group?.Description}")</MudSelectItem>
+                                                            }
+                                                        }
+                                                    </MudSelect>
+                                                    <MudButton Class="my-2" OnClick="@(() => AddSupervisor(selectedSupervisor))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large">Add subordinate</MudButton>
                                                 </MudItem>
                                             }
-
-
                                             break;
                                         case 3:
-
-                                            break;
-                                        case 4:
-
+                                            @if (Operators.Count > 0)
+                                            {
+                                                <MudItem Class="d-flex d-flex-row">
+                                                    <MudSelect T="User" Label="Supervisors" Placeholder="Select a subordinate Operator" @bind-Value="@selectedOperator" For="@(() => selectedOperator)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                        <MudSelectItem Disabled="true" Value="selectedSupervisor">Select a subordinate Operator</MudSelectItem>
+                                                        @foreach (var SS in Operators)
+                                                        {
+                                                            @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                            {
+                                                                <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Group?.Description}")</MudSelectItem>
+                                                            }
+                                                        }
+                                                    </MudSelect>
+                                                    <MudButton OnClick="@(() => AddOperator(selectedOperator))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large">Add subordinate</MudButton>
+                                                </MudItem>
+                                            }
                                             break;
                                     }
-
                                 </MudItem>
-
                             </MudItem>
                         }
 
@@ -244,7 +410,7 @@
     {
         _plants = await PlantServices.GetPlants();
         _groups = await GroupServices.GetGroups();
-        _allUsers = await UserServices.GetUsers();
+        _allUsers = await UserServices.GetUsersWhitCollections();
 
         foreach (User item in _allUsers)
         {
@@ -261,7 +427,6 @@
                     break;
             }
         }
-
     }
 
     private async void ShowAreas()
@@ -269,8 +434,8 @@
         _user.AreaId = 0;
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
-    private bool _isAnySwitchActive = false;
 
+    private bool superior = false;
     private bool IsAdmin = false;
     private bool IsSeniorSupervisor = false;
     private bool IsSupervisor = false;
@@ -288,17 +453,58 @@
         else
             _user.UserType = switchNumber;
 
+        if (switchNumber == 1 || switchNumber == 2)
+            DeleteSuperior();
+
+        if (_user.Subordinates != null)
+        {
+            _user.Subordinates.Clear();
+            SeniorsSupervisors.Clear();
+            Supervisors.Clear();
+            Operators.Clear();
+
+            foreach (User item in _allUsers)
+            {
+                switch (item.UserType)
+                {
+                    case 2:
+                        SeniorsSupervisors.Add(item);
+                        break;
+                    case 3:
+                        Supervisors.Add(item);
+                        break;
+                    case 4:
+                        Operators.Add(item);
+                        break;
+                }
+            }
+        }
+
+
 
         StateHasChanged();
+    }
+
+    private void SetSupervisor(){
+        superior = true;
+        StateHasChanged();
+    }
+
+    private void DeleteSuperior()
+    {
+        _user.Superior = null;
+        superior = false;
+
+        StateHasChanged();
+
     }
 
     private void DeleteSeniorSupervisor(User selection)
     {
-        SeniorsSupervisors.Remove(selection);
+        _user.Subordinates.Remove(selection);
         SeniorsSupervisors.Add(selection);
         StateHasChanged();
     }
-
 
     private void AddSeniorSupervisor(User selection)
     {
@@ -315,6 +521,59 @@
             SeniorsSupervisors.Remove(selection);
 
             selectedSeniorSupervisor = new User();
+        }
+        StateHasChanged();
+    }
+
+
+    private void DeleteSupervisor(User selection)
+    {
+        _user.Subordinates.Remove(selection);
+        Supervisors.Add(selection);
+        StateHasChanged();
+    }
+
+    private void AddSupervisor(User selection)
+    {
+        if (_user.Subordinates == null)
+        {
+            _user.Subordinates = new List<User>();
+        }
+
+
+        if (selectedSupervisor != null && !_user.Subordinates.Contains(selection))
+        {
+            _user.Subordinates.Add(selection);
+
+            Supervisors.Remove(selection);
+
+            selectedSupervisor = new User();
+        }
+        StateHasChanged();
+    }
+
+    private void DeleteOperator(User selection)
+    {
+        _user.Subordinates.Remove(selection);
+        Operators.Add(selection);
+        StateHasChanged();
+    }
+
+    private void AddOperator(User selection)
+    {
+        if (_user.Subordinates == null)
+        {
+            _user.Subordinates = new List<User>();
+        }
+
+
+        if (selectedOperator != null && !_user.Subordinates.Contains(selection))
+        {
+            _user.Subordinates.Add(selection);
+
+            Operators.Remove(selection);
+
+            selectedOperator = new User();
         }
         StateHasChanged();
     }
