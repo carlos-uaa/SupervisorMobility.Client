@@ -22,12 +22,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool ronly = false;
         private string searchString = "";
 
-        //Filters
-        public List<JobObservation> _filterJobObservation { get; set; } = new();
-        public List<JobObservation> _filterPlannedJobObservation { get; set; } = new();
-        public List<JobObservation> _filterInProgressJobObservation { get; set; } = new();
-        public List<JobObservation> _filterLateJobObservation { get; set; } = new();
-        public List<JobObservation> _filterFinishedJobObservation { get; set; } = new();
         public Color color = Color.Default;
         public bool filters = false;
         List<Distribution> _distributions = new();
@@ -40,11 +34,24 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public int operatorId;
         public int statusId;
         public int idFilter;
-        // Objects
+
+        //Filters
+        public List<JobObservation> _filterJobObservation { get; set; } = new();
+        public List<JobObservation> _filterPlannedJobObservation { get; set; } = new();
+        public List<JobObservation> _filterInProgressJobObservation { get; set; } = new();
+        public List<JobObservation> _filterLateJobObservation { get; set; } = new();
+        public List<JobObservation> _filterUnderReviewJobObservation { get; set; } = new();
+        public List<JobObservation> _filterRejectedJobObservation { get; set; } = new();
+        public List<JobObservation> _filterFinishedJobObservation { get; set; } = new();
+
+
+        //Job observations status lists.
         public List<JobObservation> _jobObservation { get; set; } = new();
         public List<JobObservation> _plannedJobObservation { get; set; } = new();
         public List<JobObservation> _inProgressJobObservation { get; set; } = new();
         public List<JobObservation> _lateJobObservation { get; set; } = new();
+        public List<JobObservation> _underReviewJobObservation { get; set; } = new();
+        public List<JobObservation> _rejectedJobObservation { get; set; } = new();
         public List<JobObservation> _finishedJobObservation { get; set; } = new();
 
 
@@ -52,6 +59,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string totalPlanned;
         public string totalInProgress;
         public string totalLate;
+        public string totalUnderReview;
+        public string totalRejected;
         public string totalFinished;
 
         //User
@@ -89,6 +98,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         case 1: _plannedJobObservation.Add(jobobs); break;
                         case 2: _inProgressJobObservation.Add(jobobs); break;
                         case 3: _lateJobObservation.Add(jobobs); break;
+                        case 4: _underReviewJobObservation.Add(jobobs); break;
+                        case 5: _rejectedJobObservation.Add(jobobs); break;
                         case 6: _finishedJobObservation.Add(jobobs); break;
                     }
                 }
@@ -96,11 +107,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _filterPlannedJobObservation = _plannedJobObservation;
                 _filterInProgressJobObservation = _inProgressJobObservation;
                 _filterLateJobObservation= _lateJobObservation;
+                _filterUnderReviewJobObservation = _underReviewJobObservation;
+                _filterRejectedJobObservation = _rejectedJobObservation;
                 _filterFinishedJobObservation= _finishedJobObservation;
+
 
                 totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
                 totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
                 totalLate = "Late (" + _lateJobObservation.Count +")";
+                totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+                totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
                 totalFinished = "Finished (" + _finishedJobObservation.Count +")";
 
 
@@ -131,6 +147,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _plannedJobObservation= _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
+            _underReviewJobObservation= _filterUnderReviewJobObservation;
+            _rejectedJobObservation= _filterRejectedJobObservation;
             _finishedJobObservation= _filterFinishedJobObservation;
 
             idFilter = new();
@@ -156,16 +174,19 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public void ClearFilters()
         {
             _jobObservation = _filterJobObservation;
-            _jobObservation = _filterJobObservation;
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
+            _underReviewJobObservation = _filterUnderReviewJobObservation;
+            _rejectedJobObservation = _filterRejectedJobObservation;
             _finishedJobObservation = _filterFinishedJobObservation;
 
 
             totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
             totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
             totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
             totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
 
             idFilter = new();
@@ -185,6 +206,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
+            _underReviewJobObservation = _filterUnderReviewJobObservation;
+            _rejectedJobObservation = _filterRejectedJobObservation;
             _finishedJobObservation = _filterFinishedJobObservation;
 
             operationFlag = true;
@@ -193,13 +216,19 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+            _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+            _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _finishedJobObservation = _filterFinishedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+
+
             if (statusId != default(int))
             {
                 _jobObservation = _jobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
             }
             if (operatorId != default(int))
@@ -208,6 +237,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
             }
             if (filterDate != null)
@@ -216,6 +247,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
             }
             if (idFilter != default(int))
@@ -224,12 +257,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
             }
 
             totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
             totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
             totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
             totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
         }
 
@@ -239,6 +276,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
+            _underReviewJobObservation = _filterUnderReviewJobObservation;
+            _rejectedJobObservation = _filterRejectedJobObservation;
             _finishedJobObservation = _filterFinishedJobObservation;
 
             if (distributionId != default(int)) {
@@ -246,6 +285,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             }
             if (operationId!= default(int))
@@ -254,6 +295,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
             }
             if (statusId != default(int))
@@ -262,6 +305,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
             }
             if (operatorId != default(int))
@@ -270,6 +315,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
             }
             if(filterDate != null)
@@ -278,6 +325,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
             }
             if(idFilter != default(int))
@@ -286,12 +335,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
             }
 
             totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
             totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
             totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
             totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
         }
 
@@ -359,6 +412,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _plannedJobObservation.Clear();
                 _inProgressJobObservation.Clear();
                 _lateJobObservation.Clear();
+                _underReviewJobObservation.Clear();
+                _rejectedJobObservation.Clear();
                 _finishedJobObservation.Clear();
 
                 foreach (var jobobs in _jobObservation)
@@ -368,15 +423,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         case 1: _plannedJobObservation.Add(jobobs); break;
                         case 2: _inProgressJobObservation.Add(jobobs); break;
                         case 3: _lateJobObservation.Add(jobobs); break;
-                        case 4: _finishedJobObservation.Add(jobobs); break;
+                        case 4: _underReviewJobObservation.Add(jobobs); break;
+                        case 5: _rejectedJobObservation.Add(jobobs); break;
+                        case 6: _finishedJobObservation.Add(jobobs); break;
                     }
                 }
+
 
                 totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
                 totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
                 totalLate = "Late (" + _lateJobObservation.Count + ")";
+                totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+                totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
                 totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
-                    
+
                 StateHasChanged();
             }
         }
