@@ -40,124 +40,114 @@ else
         <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
     </MudText>
 }*@
-<MudText>
-    @switch(_jobObservation.Status)
-    {
-        case 1:
-            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">Planned</MudChip>
-            break;
-        case 2:
-            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">In Progress</MudChip>
-            break;
-        case 3:
-            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Late</MudChip>
-            break;
-        case 4:
-                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">Under Review</MudChip>
-            break;
-        case 5:
-                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">Rejected</MudChip>
-            break;
-        case 6:
-            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Finished</MudChip>
-            break;
-    }
-</MudText>
 <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
     <MudItem lg="10" md="12" sm="12" xs="12">
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-            <MudText Typo="Typo.h6">
-                Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
-               
-                <MudItem Class="d-flex justify-space-between pa-1 ma-1">
-                    <MudItem Style="text-align: start">
-                        @if (searchAssychart)
+            <MudItem Class="d-flex justify-space-between pa-1 ma-1 mt-6">
+                <MudItem Style="text-align: start">
+                    @if (searchAssychart)
+                    {
+                        <MudItem Class="d-flex flex-row align-start justify-center">
+
+                            @if (_assychart.GOS != "")
+                            {
+                                <MudButton @onclick="(() => OpenDialogGOS(_assychart.GOS))" Style="padding: 0px;" Color="Color.Error">
+                                    <MudTooltip Text="Open GOS Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(_assychart.GOS))">
+                                        <MudTooltip Text="@_assychart.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.GOS.Split('/').Last()</MudChip>
+                                        </MudTooltip>
+                                    </MudTooltip>
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">No GOS Path</MudAlert>
+                            }
+
+                            @if (_assychart.CCP != "")
+                            {
+                                <MudButton @onclick="(() => OpenDialogCcp(_assychart.CCP))" Style="padding: 0px;" Color="Color.Error">
+                                    <MudTooltip Text="Open CCP Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(_assychart.CCP))">
+                                        <MudTooltip Text="@_assychart.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.CCP.Split('/').Last()</MudChip>
+                                        </MudTooltip>
+                                    </MudTooltip>
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">No CCP Path</MudAlert>
+                            }
+
+                            @if (_assychart.HOE != "")
+                            {
+                                <MudButton @onclick="(() => OpenDialogHoe(_assychart.HOE))" Style="padding: 0px;" Color="Color.Error">
+                                    <MudTooltip Text="Open HOE Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(_assychart.HOE))">
+                                        <MudTooltip Text="@_assychart.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.HOE.Split('§').Last()</MudChip>
+                                        </MudTooltip>
+                                    </MudTooltip>
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">No HOE Path</MudAlert>
+                            }
+
+                        </MudItem>
+                    }
+                    else
+                    {
+                        if (messageErrorFolders != "")
                         {
-                            <MudItem Class="d-flex flex-column align-start justify-center pa-1 ma-1">
-                                <MudItem class="">
-                                    <MudText Typo="Typo.h6" Class="align-item-center center">Related Documents</MudText>
-                                </MudItem>
-
-                                <MudItem Class="d-flex flex-row align-start justify-center pa-2 ma-2">
-
-                                    @if (_assychart.GOS != "")
-                                    {
-                                        <MudButton @onclick="(() => OpenDialogGOS(_assychart.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                            <MudTooltip Text="Open GOS Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(_assychart.GOS))">
-                                                <MudTooltip Text="@_assychart.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@_assychart.GOS.Split('/').Last()</MudChip>
-                                                </MudTooltip>
-                                            </MudTooltip>
-                                        </MudButton>
-                                    }
-                                    else
-                                    {
-                                        <MudAlert Severity="Severity.Info">No GOS Path</MudAlert>
-                                    }
-
-                                    @if (_assychart.CCP != "")
-                                    {
-                                        <MudButton @onclick="(() => OpenDialogCcp(_assychart.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                            <MudTooltip Text="Open CCP Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(_assychart.CCP))">
-                                                <MudTooltip Text="@_assychart.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@_assychart.CCP.Split('/').Last()</MudChip>
-                                                </MudTooltip>
-                                            </MudTooltip>
-                                        </MudButton>
-                                    }
-                                    else
-                                    {
-                                        <MudAlert Severity="Severity.Info">No CCP Path</MudAlert>
-                                    }
-
-                                    @if (_assychart.HOE != "")
-                                    {
-                                        <MudButton @onclick="(() => OpenDialogHoe(_assychart.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                            <MudTooltip Text="Open HOE Folder" Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(_assychart.HOE))">
-                                                <MudTooltip Text="@_assychart.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Style="font-size: 10px">@_assychart.HOE.Split('§').Last()</MudChip>
-                                                </MudTooltip>
-                                            </MudTooltip>
-                                        </MudButton>
-                                    }
-                                    else
-                                    {
-                                        <MudAlert Severity="Severity.Info">No HOE Path</MudAlert>
-                                    }
-
-                                </MudItem>
+                            <MudItem class="d-flex flex-column justify-center align-self-start">
+                                <MudText Typo="Typo.h6" Class="align-item-center center">@messageErrorFolders</MudText>
                             </MudItem>
                         }
                         else
                         {
-                            if (messageErrorFolders != "")
-                            {
-                                <MudItem class="d-flex flex-column justify-center align-self-start">
-                                    <MudText Typo="Typo.h6" Class="align-item-center center">@messageErrorFolders</MudText>
-                                </MudItem>
-                            }
-                            else
-                            {
-                                <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
-                            }
-
-                        }
-                    </MudItem>
-                    <MudItem Style="text-align: end">
-                        @if (_jobObservation.Type == 1)
-                        {
-                            <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
-                        }
-                        else if (_jobObservation.Type == 2)
-                        {
-                            <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+                            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
                         }
 
-                        <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3" OnClick="@history">History Versions</MudChip>
-                    </MudItem>
+                    }
                 </MudItem>
-
-            </MudText>
+            <MudItem Style="text-align: end">
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3" OnClick="@history" Icon="@Icons.Material.Filled.History">History Versions</MudChip>
+                    @switch(_jobObservation.Status)
+                    {
+                        case 1:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Style="cursor:pointer">Planned</MudChip>
+                            break;
+                        case 2:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info"  Style="cursor:pointer">In Progress</MudChip>
+                            break;
+                        case 3:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">Late</MudChip>
+                            break;
+                        case 4:
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">Under Review</MudChip>
+                            break;
+                        case 5:
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">Rejected</MudChip>
+                            break;
+                        case 6:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">Finished</MudChip>
+                            break;
+                    }
+            </MudItem>
+        </MudItem>
+        <MudText Typo="Typo.h6" Class="mt-5">
+            Tarjeta de Observación de Operación Cíclica @_jobObservation.JobObservationId
+            @if (_jobObservation.Type == 1)
+            {
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Planned</MudChip>
+            }
+            else if (_jobObservation.Type == 2)
+            {
+                <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+            }
+                
+        </MudText>
         </MudItem>
         <MudPaper Class="" Elevation="0">
             <MudItem Class="ml-2">
