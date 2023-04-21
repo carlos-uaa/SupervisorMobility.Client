@@ -112,6 +112,7 @@ else
             <HeaderContent>
                 <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Payroll)">Payroll</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Area?.Description)">Area</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Distribution?.Description)">Area</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Group?.Description)">Group</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Name)">Name</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Compas)">Compas</MudTableSortLabel></MudTh>
@@ -123,6 +124,9 @@ else
                 </MudTd>
                 <MudTd DataLabel="Area">
                     <MudText Align="Align.Center">@context.User?.Area.Description</MudText>
+                </MudTd>
+                <MudTd DataLabel="Distribution">
+                    <MudText Align="Align.Center">@context.User?.Distribution.Description</MudText>
                 </MudTd>
                 <MudTd DataLabel="Group">
                     <MudText Align="Align.Center">@context.User?.Group.Description</MudText>
@@ -160,9 +164,24 @@ else
     string searchString = "";
     bool onSaveUpdate = false;
 
+    private string json = string.Empty;
+    public User user = new();
+
     protected async override Task OnInitializedAsync()
     {
-        peopleList = await AttendanceServices.GetAttendanceList();
+        try
+        {
+            json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            peopleList = await AttendanceServices.GetAttendanceList(user.UserId);
+
+        }catch (Exception ex)
+        {
+            
+        }
+
+        
     }
 
     private async void UpdateList()

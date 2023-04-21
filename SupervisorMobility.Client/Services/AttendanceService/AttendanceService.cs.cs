@@ -19,11 +19,11 @@ namespace SupervisorMobility.Client.Services.AttendanceService
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
-        public async Task<List<Attendance>> GetAttendanceList()
+        public async Task<List<Attendance>> GetAttendanceList(int superiorId)
         {
             try
             {
-                var response = await _http.GetAsync($"Attendance");
+                var response = await _http.GetAsync($"Attendance?idsuperior={superiorId}");
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
