@@ -3,6 +3,7 @@
 @inject IFileUploadAndDownloadService FileUpDoServices
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
+@inject IDistributionService DistributionsServices
 @inject IUserService UserServices
 @inject IGroupService GroupServices
 @inject NavigationManager NavigationManager
@@ -37,19 +38,30 @@
                     </MudCardHeader>
                     <MudCardContent>
 
-                        <MudItem Class="d-flex d-flex-row">
+                        @if (_user.UserType != 4)
+                        {
+                             <MudItem Class="d-flex d-flex-row">
                             <MudTextField Label="Azure ID" @bind-Value="@_user.ObjectId" For="@(() => _user.ObjectId)" />
                             <MudTooltip Text="Object Id of Active Directory">
                                 <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" />
                             </MudTooltip>
                         </MudItem>
+                        }
 
-
+                       
                         <MudTextField Label="User Name" @bind-Value="@_user.Name" For="@(() => _user.Name)" />
 
                         @if (_user.UserType == 4)
                         {
                             <MudTextField Label="User Payroll Number" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" />
+                        }
+
+                        @if (_user.UserType != 4 && _user.UserType != 0)
+                        {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField Mask="@emailMask" Label="Email Address" HelperText="@emailMask.Mask"
+                                          @bind-Value="@_user.Email" For="@(() => _user.Email)" Variant="@Variant.Text" Clearable />
+                            </MudItem>
                         }
 
                         @*Mud select of Plants *@
@@ -68,7 +80,15 @@
                                 <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                             }
                         </MudSelect>
-                        @*Mud select of Areas *@
+                        @*Mud select of Distribution *@
+                        <MudSelect T="int?" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.DistributionId" For="@(() => _user.DistributionId)">
+                            <MudSelectItem Disabled="true" Value="0">Select an Distribution</MudSelectItem>
+                            @foreach (var type in _distributions)
+                            {
+                                <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                         @*Mud select of Group *@
                         <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_user.GroupId" For="@(() => _user.GroupId)">
                             <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
                             @foreach (var type in _groups)
@@ -76,6 +96,7 @@
                                 <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                             }
                         </MudSelect>
+
                         <MudItem>
                             <MudItem>
                                 <MudText Typo="Typo.h6">Permissions</MudText>
@@ -391,6 +412,8 @@
             new BreadcrumbItem("Create Users", href: "", disabled: true),
         };
 
+    public IMask emailMask = RegexMask.Email();
+
     private User _user = new User();
     private User selectedSeniorSupervisor = new User();
     private User selectedSupervisor = new User();
@@ -403,6 +426,7 @@
 
     List<Plant> _plants { get; set; } = new();
     List<Area> _areas = new();
+    List<Distribution> _distributions = new();
     List<Group> _groups { get; set; } = new();
 
 
@@ -432,8 +456,16 @@
     private async void ShowAreas()
     {
         _user.AreaId = 0;
+        _user.DistributionId = 0;
         _areas = await AreaServices.GetAreas(_user.PlantId);
     }
+
+    private async void ShowDistributions()
+    {
+        _user.DistributionId = 0;
+        _distributions = await DistributionsServices.GetDistributions(_user.PlantId, _user.AreaId);
+    }
+
 
     private bool superior = false;
     private bool IsAdmin = false;
@@ -486,15 +518,16 @@
     }
 
     private void SetSupervisor(){
+        _user.SuperiorId = _user.Superior.SuperiorId;
         superior = true;
         StateHasChanged();
     }
 
     private void DeleteSuperior()
     {
+        _user.SuperiorId = null;
         _user.Superior = null;
         superior = false;
-
         StateHasChanged();
 
     }
