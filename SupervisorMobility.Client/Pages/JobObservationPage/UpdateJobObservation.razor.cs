@@ -264,24 +264,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         }
 
-        //User 
-        private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
-        {
-
-            // Get the current authentication state
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-            // Get the user from the authentication state
-            var currentUser = authState.User;
-            Console.WriteLine(currentUser.Identity?.Name);
-
-            var userId = currentUser.FindFirst("oid")?.Value;
-        }
-        public void OnLogInSucceeded()
-        {
-            NavigationManager.NavigateTo($"/jobobservation/updatejobobservation/{JobObservationId}",true);
-        }
-
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
