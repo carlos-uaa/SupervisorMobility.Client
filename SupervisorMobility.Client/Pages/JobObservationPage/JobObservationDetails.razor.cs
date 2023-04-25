@@ -47,7 +47,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string operator1 { get; set; } = "Pedro";
 
         int[] models = new int[5];
-        string[] cicles = new string[5];
+        string[] cycles = new string[5];
 
         private bool CcpDialog = false;
         private bool HoeDialog = false;
@@ -87,7 +87,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             models[2] = Int32.Parse(prod[2]);
             models[3] = Int32.Parse(prod[3]);
             models[4] = Int32.Parse(prod[4]);
-            cicles = _jobObservation.Cicles.Split('|');
+            cycles = _jobObservation.Cicles.Split('|');
 
             startHour = _jobObservation.StartDate?.TimeOfDay;
             endHour = _jobObservation.EndDate?.TimeOfDay;
