@@ -317,10 +317,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
-            _jobObservation.PlannedStartDate = plannedStartDate;
-            _jobObservation.PlannedEndDate = plannedEndDate;
-
-
             hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
             hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
@@ -351,6 +347,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             _jobObservation.StartDate = newDate1;
             _jobObservation.EndDate = newDate2;
+
+            _jobObservation.PlannedStartDate = newDate1;
+            _jobObservation.PlannedEndDate = newDate2;
 
             Console.WriteLine(_jobObservation.StartDate);
             Console.WriteLine(_jobObservation.EndDate);
@@ -387,6 +386,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         //In progress
         private async Task SaveProgressJobObservation()
         {
+            if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                return;
+            }
 
             startHour = DateTime.Now.TimeOfDay;
             
@@ -956,50 +962,45 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         async Task DeleteLup(int lupId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this lup?");
+            await LupService.DeleteLup(lupId);
 
-            if (confirm)
+            _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+
+            await GetUserAsync();
+
+            pastjobObservations = new();
+            pastLup = new();
+            if (user != null)
             {
-                await LupService.DeleteLup(lupId);
+                pastJobs = await JobObservationService.GetAllJobObservations();
 
-                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
-
-                await GetUserAsync();
-
-                pastjobObservations = new();
-                pastLup = new();
-                if (user != null)
+                foreach (var job in pastJobs)
                 {
-                    pastJobs = await JobObservationService.GetAllJobObservations();
-
-                    foreach (var job in pastJobs)
+                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        foreach (var lups in pastJob.Lup)
                         {
-
-                            pastjobObservations.Add(job);
-
-                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
-                            foreach (var lups in pastJob.Lup)
-                            {
-                                pastLup.Add(lups);
-                            }
+                            pastLup.Add(lups);
                         }
-
                     }
 
                 }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
-
-                StateHasChanged();
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Lup Deleted", Severity.Info);
-
 
             }
+            pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
+
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Lup Deleted", Severity.Info);
+            visibleDelete = false;
+
+            StateHasChanged();
         }
 
         void GoToJobObservation(int jobObservationId)
@@ -1096,6 +1097,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Snackbar.Add($"To change the hour, press the button Change Date", Severity.Info);
         }
 
+
+        //Delete lup
+        private bool visibleDelete = false;
+        public int deleteLupId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteLupId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
 
     }
 }

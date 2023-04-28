@@ -24,8 +24,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
         public Dictionary<string, Glosary> _glosaryInfo { get; set; }
 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>{
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
+            new BreadcrumbItem("Home", href: "/", disabled:false),
+            new BreadcrumbItem("Configuration", href: "/configuration", disabled:false),
             new BreadcrumbItem("Glosary", href: "", disabled: true)
         };
 

@@ -403,42 +403,39 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         async Task DeleteJobObservation(int jobObservationId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this job observation?");
+            _jobObservation.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
+            await JobObservationService.DeleteJobObservation(jobObservationId);
+            _plannedJobObservation.Clear();
+            _inProgressJobObservation.Clear();
+            _lateJobObservation.Clear();
+            _underReviewJobObservation.Clear();
+            _rejectedJobObservation.Clear();
+            _finishedJobObservation.Clear();
 
-            if (confirm)
+            foreach (var jobobs in _jobObservation)
             {
-                _jobObservation.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
-                await JobObservationService.DeleteJobObservation(jobObservationId);
-                _plannedJobObservation.Clear();
-                _inProgressJobObservation.Clear();
-                _lateJobObservation.Clear();
-                _underReviewJobObservation.Clear();
-                _rejectedJobObservation.Clear();
-                _finishedJobObservation.Clear();
-
-                foreach (var jobobs in _jobObservation)
+                switch (jobobs.Status)
                 {
-                    switch (jobobs.Status)
-                    {
-                        case 1: _plannedJobObservation.Add(jobobs); break;
-                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                        case 3: _lateJobObservation.Add(jobobs); break;
-                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                        case 6: _finishedJobObservation.Add(jobobs); break;
-                    }
+                    case 1: _plannedJobObservation.Add(jobobs); break;
+                    case 2: _inProgressJobObservation.Add(jobobs); break;
+                    case 3: _lateJobObservation.Add(jobobs); break;
+                    case 4: _underReviewJobObservation.Add(jobobs); break;
+                    case 5: _rejectedJobObservation.Add(jobobs); break;
+                    case 6: _finishedJobObservation.Add(jobobs); break;
                 }
-
-
-                totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-                totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-                totalLate = "Late (" + _lateJobObservation.Count + ")";
-                totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-                totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-                totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
-
-                StateHasChanged();
             }
+
+
+            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+            totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
+            visibleDelete = false;
+
+            StateHasChanged();
         }
 
         void EditJobObservation(int jobObservationId)
@@ -497,6 +494,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"Select a Distribution first", Severity.Error);
         }
+
+        //Delete Job observation
+        private bool visibleDelete = false;
+        public int deleteJobObservationId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteJobObservationId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
 
     }
 }

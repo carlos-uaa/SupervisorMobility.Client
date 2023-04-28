@@ -43,308 +43,18 @@
         @*        <LoginDisplay />*@
         <AuthorizeView>
             <Authorized>
-
-                <MudButton OnClick="@OpenDialogNotifications">
-                    <MudBadge Content="@NewNotifications.Count()" Overlap="true" Class="mx-6 my-4">
-                        <MudIcon Icon="@Icons.Material.Filled.Campaign" Color="Color.Default" />
-                    </MudBadge>
-                </MudButton>
-                <MudDialog DisableSidePadding="true" @bind-IsVisible="NoifyDialog" Options="dialogOptions">
-                    <DialogContent>
-                        <MudContainer Class="gap-4">
-
-                            @if (AllNotifications == null)
-                            {
-                                <MudMenu AnchorOrigin="Origin.BottomCenter" Icon="@Icons.Material.Filled.Campaign">
-                                    <MudMenuItem>
-                                        <MudProgressCircular Indeterminate="true"></MudProgressCircular>
-                                    </MudMenuItem>
-                                </MudMenu>
-                            }
-                            else if (AllNotifications.Count == 0)
-                            {
-
-                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                    <MudCardHeader>
-                                       </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText>You don't have any notificatios... Yet</MudText>
-                                    </MudCardContent>
-                                </MudCard>
-                            }
-                            else
-                            {
-                                <MudTabs Outlined="true">
-                            
-                                    <MudTabPanel Text="New" BadgeData="@NewNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailUnread" >
-                                        @if (NewNotifications.Count > 0)
-                                        {
-                                            @foreach (var notification in NewNotifications)
-                                            {
-                                                <MudCard Elevation="1" Class="ma-1" Style="max-height: 650px; min-height: ; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardContent>
-                                                        <div class="card work">
-                                                            <div class="img-section">
-                                                                <MudImage Src="Images/newnotification.png" Height="40" Width="40" Class="mb-16"></MudImage>
-                                                            </div>
-                                                            <div class="card-desc">
-                                                                <div class="card-header">
-                                                                    <div class="card-title">@notification.NotificationType</div>
-                                                                    
-                                                                </div>
-                                                                <div class="card-time">@notification.NotificationText</div>
-                                                                <p class="recent">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</p>
-                                                                <div class="lock-notify">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-unlock-notify" />
-                                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-lock-notify" />
-                                                                </div>
-                                                            </div>
-                                                            <div class="foot-section">
-                                                                <MudItem Class="d-flex justify-center">
-                                                                    <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Check" Title="Mark as Read" Class="full"
-                                                                       @onclick="@(() => updateStatus(notification))">Mark as Read</MudButton>
-                                                                </MudItem>
-                                                                <MudItem Class="d-flex justify-center">
-                                                                    <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">Delete Notification</MudButton>
-                                                                    
-                                                                </MudItem>
-
-                                                            </div>
-                                                        </div>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                <MudCardHeader>
-                                                </MudCardHeader>
-                                                <MudCardContent>
-                                                    <MudText>You don't have any new notifications... Yet</MudText>
-                                                </MudCardContent>
-                                            </MudCard>
-                                        }
-
-
-                                    </MudTabPanel>
-                                    <MudTabPanel Text="Read" BadgeData="@ReadNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailRead">
-                                        @if (ReadNotifications.Count > 0)
-                                        {
-                                            @foreach (var notification in ReadNotifications)
-                                            {
-                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-
-                                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                    <MudText Typo="Typo.body2">->Delete</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                <MudCardHeader>
-                                                </MudCardHeader>
-                                                <MudCardContent>
-                                                    <MudText>You don't have any read notifications... Yet</MudText>
-                                                </MudCardContent>
-                                            </MudCard>
-                                        }
-
-
-                                    </MudTabPanel>
-                                    <MudTabPanel Text="All" BadgeData="@AllNotifications.Count" Icon="@Icons.Material.Filled.MarkunreadMailbox">
-                                        @foreach (var notification in AllNotifications)
-                                        {
-                                            @if (notification.IsAccepted && notification.IsActive)
-                                            {
-                                                // accepted=true active=true
-                                                <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-                                                                        <MudMenuItem>
-                                                                            <MudIconButton Icon="@Icons.Material.Filled.Check" Color="@Color.Success" Title="Mark as Read"
-                                                                               @onclick="@(() => updateStatus(notification))" />
-                                                                        </MudMenuItem>
-                                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                    <MudText Typo="Typo.body2">->Mark as Read</MudText>
-                                                                    <MudText Typo="Typo.body2">->Delete</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-                                            else if (!notification.IsAccepted && notification.IsActive)
-                                            {
-                                                 // accepted=false active=true
-                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-
-                                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                    <MudText Typo="Typo.body2">->Delete</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-                                            else if (notification.IsActive && !notification.IsAccepted)
-                                            {
-                                                 // accepted=true active=false
-                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-                                            else
-                                            {
-                                                 // accepted=false active=false
-                                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
-                                                    <MudCardHeader>
-                                                        <CardHeaderContent>
-                                                            <MudText Typo="Typo.h6">Notification of: </MudText>
-                                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
-                                                        </CardHeaderContent>
-                                                        <CardHeaderActions>
-                                                            <MudTooltip Placement="Placement.Right">
-                                                                <ChildContent>
-                                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
-                                                                    </MudMenu>
-                                                                </ChildContent>
-                                                                <TooltipContent>
-                                                                    <MudText Typo="Typo.h6">Options</MudText>
-                                                                </TooltipContent>
-                                                            </MudTooltip>
-                                                        </CardHeaderActions>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                        <MudCardContent>
-                                                            <MudText>
-                                                                Report about of: @notification.NotificationText
-                                                            </MudText>
-                                                        </MudCardContent>
-                                                        <MudCardActions>
-                                                            Made By: @notification.MadeBy
-                                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                                        </MudCardActions>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            }
-
-                                        }
-                                    </MudTabPanel>
-                                
-                                
-                                </MudTabs>
-
-                            }
-                        </MudContainer>
-                    </DialogContent>
-                    <DialogActions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok">Close</MudButton>
-                    </DialogActions>
-                </MudDialog>
-
+                @if(NewNotifications.Count > 0){
+                    <MudButton OnClick="@OpenDialogNotifications" Class="mr-10 pt-4">
+                        <MudBadge Content="@NewNotifications.Count()" Overlap="true" Color="Color.Error">
+                            <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Style="color: white" />
+                        </MudBadge>
+                    </MudButton>
+                }
+                else{
+                    <MudButton OnClick="@OpenDialogNotifications" Class="mr-10">
+                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Style="color: white"/>
+                    </MudButton>
+                }
 
                 <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@context.User.Identity?.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                     <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
@@ -401,7 +111,305 @@
         </MudMainContent>
     </MudLayout>
 
-    @code {
+
+    <MudDialog DisableSidePadding="true" @bind-IsVisible="NoifyDialog" Options="dialogOptions" >
+        <DialogContent>
+            <MudContainer Class="gap-4" Style="max-height: 75vh; min-height:50vh; overflow-y: scroll">
+
+                @if (AllNotifications == null)
+            {
+                <MudMenu AnchorOrigin="Origin.BottomCenter" Icon="@Icons.Material.Filled.Campaign">
+                    <MudMenuItem>
+                        <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+                    </MudMenuItem>
+                </MudMenu>
+            }
+            else if (AllNotifications.Count == 0)
+            {
+
+                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                    <MudCardHeader>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText>You don't have any notificatios... Yet</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+            else
+            {
+                <MudTabs Outlined="true">
+
+                    <MudTabPanel Text="New" BadgeData="@NewNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailUnread">
+                        @if (NewNotifications.Count > 0)
+                        {
+                            @foreach (var notification in NewNotifications)
+                            {
+                                <MudCard Elevation="1" Class="ma-1" Style="max-height: 650px; min-height: ; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardContent >
+                                        <div class="card work">
+                                            <div class="img-section">
+                                                <MudImage Src="Images/newnotification.png" Height="25" Width="25" Class="mb-16 ml-2 mt-2"></MudImage>
+                                            </div>
+                                            <div class="card-desc">
+                                                <div class="card-header">
+                                                    <div class="card-title">@notification.NotificationType</div>
+
+                                                </div>
+                                                <div class="card-time">@notification.NotificationText</div>
+                                                <p class="recent">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</p>
+                                                <div class="lock-notify">
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-unlock-notify" />
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-lock-notify" />
+                                                </div>
+                                            </div>
+                                            <div class="foot-section">
+                                                <MudItem Class="d-flex justify-center">
+                                                    <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Check" Title="Mark as Read" Class="full"
+                                                   @onclick="@(() => updateStatus(notification))">Mark as Read</MudButton>
+                                                </MudItem>
+                                                <MudItem Class="d-flex justify-center">
+                                                    <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">Delete Notification</MudButton>
+
+                                                </MudItem>
+
+                                            </div>
+                                        </div>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                        }
+                        else
+                        {
+                            <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                <MudCardHeader>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudText>You don't have any new notifications... Yet</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+
+
+                    </MudTabPanel>
+                    <MudTabPanel Text="Read" BadgeData="@ReadNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailRead">
+                        @if (ReadNotifications.Count > 0)
+                        {
+                            @foreach (var notification in ReadNotifications)
+                            {
+                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Notification of: </MudText>
+                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudTooltip Placement="Placement.Right">
+                                                <ChildContent>
+                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
+
+                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
+                                                    </MudMenu>
+                                                </ChildContent>
+                                                <TooltipContent>
+                                                    <MudText Typo="Typo.h6">Options</MudText>
+                                                    <MudText Typo="Typo.body2">->Delete</MudText>
+                                                </TooltipContent>
+                                            </MudTooltip>
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudCardContent>
+                                            <MudText>
+                                                Report about of: @notification.NotificationText
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            Made By: @notification.MadeBy
+                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                        </MudCardActions>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                        }
+                        else
+                        {
+                            <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                <MudCardHeader>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudText>You don't have any read notifications... Yet</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+
+
+                    </MudTabPanel>
+                    <MudTabPanel Text="All" BadgeData="@AllNotifications.Count" Icon="@Icons.Material.Filled.MarkunreadMailbox">
+                        @foreach (var notification in AllNotifications)
+                        {
+                            @if (notification.IsAccepted && notification.IsActive)
+                            {
+                                // accepted=true active=true
+                                <MudCard Elevation="3" Class="ma-1" Style=" max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Notification of: </MudText>
+                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudTooltip Placement="Placement.Right">
+                                                <ChildContent>
+                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
+                                                        <MudMenuItem>
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Check" Color="@Color.Success" Title="Mark as Read"
+                                                               @onclick="@(() => updateStatus(notification))" />
+                                                        </MudMenuItem>
+                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
+                                                    </MudMenu>
+                                                </ChildContent>
+                                                <TooltipContent>
+                                                    <MudText Typo="Typo.h6">Options</MudText>
+                                                    <MudText Typo="Typo.body2">->Mark as Read</MudText>
+                                                    <MudText Typo="Typo.body2">->Delete</MudText>
+                                                </TooltipContent>
+                                            </MudTooltip>
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudCardContent>
+                                            <MudText>
+                                                Report about of: @notification.NotificationText
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            Made By: @notification.MadeBy
+                                            <MudText Color="Color.Info">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                        </MudCardActions>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            else if (!notification.IsAccepted && notification.IsActive)
+                            {
+                                // accepted=false active=true
+                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Notification of: </MudText>
+                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudTooltip Placement="Placement.Right">
+                                                <ChildContent>
+                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
+
+                                                        <MudMenuItem><MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))" /></MudMenuItem>
+                                                    </MudMenu>
+                                                </ChildContent>
+                                                <TooltipContent>
+                                                    <MudText Typo="Typo.h6">Options</MudText>
+                                                    <MudText Typo="Typo.body2">->Delete</MudText>
+                                                </TooltipContent>
+                                            </MudTooltip>
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudCardContent>
+                                            <MudText>
+                                                Report about of: @notification.NotificationText
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            Made By: @notification.MadeBy
+                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                        </MudCardActions>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            else if (notification.IsActive && !notification.IsAccepted)
+                            {
+                                // accepted=true active=false
+                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Notification of: </MudText>
+                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudTooltip Placement="Placement.Right">
+                                                <ChildContent>
+                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
+                                                    </MudMenu>
+                                                </ChildContent>
+                                                <TooltipContent>
+                                                    <MudText Typo="Typo.h6">Options</MudText>
+                                                </TooltipContent>
+                                            </MudTooltip>
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudCardContent>
+                                            <MudText>
+                                                Report about of: @notification.NotificationText
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            Made By: @notification.MadeBy
+                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                        </MudCardActions>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                            else
+                            {
+                                // accepted=false active=false
+                                <MudCard Elevation="3" Class="ma-1" Style="max-height: 500px; overflow-y: scroll; max-width: 800px; overflow-x: scroll">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Notification of: </MudText>
+                                            <MudText Typo="Typo.subtitle2">@notification.NotificationType</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudTooltip Placement="Placement.Right">
+                                                <ChildContent>
+                                                    <MudMenu StartIcon="@Icons.Material.Filled.Workspaces" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Variant="Variant.Filled">
+                                                    </MudMenu>
+                                                </ChildContent>
+                                                <TooltipContent>
+                                                    <MudText Typo="Typo.h6">Options</MudText>
+                                                </TooltipContent>
+                                            </MudTooltip>
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudCardContent>
+                                            <MudText>
+                                                Report about of: @notification.NotificationText
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions>
+                                            Made By: @notification.MadeBy
+                                            <MudText Color="Color.Info"> ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                        </MudCardActions>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+
+                        }
+                    </MudTabPanel>
+
+
+                </MudTabs>
+
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
     //idk how this works but im add ~ Mika
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
@@ -441,14 +449,13 @@
             await LogOut();
         }
 
-
-
         //await GetUserAsync();
         //users = await UsersService.GetUsers();
         //user = users.FirstOrDefault()!;
 
         //json = JsonSerializer.Serialize<User>(user);
         //await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+
     }
 
     private async void GetNotifications(object state)

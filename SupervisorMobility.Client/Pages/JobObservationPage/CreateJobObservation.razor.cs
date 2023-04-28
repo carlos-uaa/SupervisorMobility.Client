@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise.Extensions;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
@@ -228,7 +229,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async Task CreateNewJobObservation()
         {
-            //Planned
+            if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                return;
+            }
+
+            //Eventual
             _jobObservation.Type = 2;
             Console.WriteLine(startHour);
             hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";

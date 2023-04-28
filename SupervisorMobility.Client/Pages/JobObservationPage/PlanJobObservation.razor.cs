@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise.Extensions;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
@@ -227,6 +228,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async Task PlanNewJobObservation()
         {
+            if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                return;
+            }
+
             //Planned
             _jobObservation.Type = 1;
 
@@ -250,7 +259,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Console.WriteLine("Unable to parse '{0}'", hour2);
  
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cicles = cycles[0] + "|" + cycles + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.StartDate = newDate1;
             _jobObservation.EndDate = newDate2;
 

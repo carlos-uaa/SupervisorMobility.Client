@@ -45,13 +45,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Delete area
         async Task DeleteArea(int areaId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this area?");
+            _areas.RemoveAll(area => area.AreaId == areaId);
+            await AreaService.DeleteArea(PlantId, areaId);
 
-            if (confirm)
-            {
-                _areas.RemoveAll(area => area.AreaId == areaId);
-                await AreaService.DeleteArea(PlantId, areaId);
-            }
+            visibleDelete = false;
         }
 
         // Update area
@@ -59,5 +56,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         {
             NavigationManager.NavigateTo($"plants/{plantId}/updatearea/{areaId}");
         }
+
+
+        //Delete Area 
+        private bool visibleDelete = false;
+        public int deleteAreaId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteAreaId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
     }
 }

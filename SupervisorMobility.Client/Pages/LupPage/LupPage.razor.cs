@@ -109,32 +109,29 @@ namespace SupervisorMobility.Client.Pages.LupPage
         // Delete product
         async Task DeleteLup(int lupId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this lup?");
+            _lup.RemoveAll(l => l.LupId == lupId);
+            await LupServices.DeleteLup(lupId);
 
-            if (confirm)
+            _lup = await LupServices.GetAllLup();
+            _lupS.Clear();
+            _lupQ.Clear();
+            _lupD.Clear();
+            _lupC.Clear();
+            _lupOther.Clear();
+
+            foreach (var lup in _lup)
             {
-                _lup.RemoveAll(l => l.LupId == lupId);
-                await LupServices.DeleteLup(lupId);
-
-                _lup = await LupServices.GetAllLup();
-                _lupS.Clear();
-                _lupQ.Clear();
-                _lupD.Clear();
-                _lupC.Clear();
-                _lupOther.Clear();
-
-                foreach (var lup in _lup)
+                switch (lup.Pillar)
                 {
-                    switch (lup.Pillar)
-                    {
-                        case 1: _lupS.Add(lup); break;
-                        case 2: _lupQ.Add(lup); break;
-                        case 3: _lupD.Add(lup); break;
-                        case 4: _lupC.Add(lup); break;
-                        case 5: _lupOther.Add(lup); break;
-                    }
+                    case 1: _lupS.Add(lup); break;
+                    case 2: _lupQ.Add(lup); break;
+                    case 3: _lupD.Add(lup); break;
+                    case 4: _lupC.Add(lup); break;
+                    case 5: _lupOther.Add(lup); break;
                 }
             }
+            visibleDelete = false;
+
         }
 
         // Update product
@@ -169,5 +166,17 @@ namespace SupervisorMobility.Client.Pages.LupPage
         }
         void Close() => visible = false;
 
+
+
+        //Delete lup
+        private bool visibleDelete = false;
+        public int deleteLupId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteLupId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
     }
 }

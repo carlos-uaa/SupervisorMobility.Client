@@ -43,13 +43,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Delete plant
         async Task DeletePlant(int plantId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this plant?");
+            _plants.RemoveAll(plant => plant.PlantId == plantId);
+            await PlantService.DeletePlant(plantId);
 
-            if (confirm)
-            {
-                _plants.RemoveAll(plant => plant.PlantId == plantId);
-                await PlantService.DeletePlant(plantId);
-            }
+            visibleDelete = false;
         }
 
         // Plant details
@@ -80,5 +77,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 return true;
             return false;
         }
+
+
+        //Delete Plant 
+        private bool visibleDelete = false;
+        public int deletePlantId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deletePlantId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
     }
 }

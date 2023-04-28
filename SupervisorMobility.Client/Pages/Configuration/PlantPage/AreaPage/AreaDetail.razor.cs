@@ -50,13 +50,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         // Delete distribution
         async Task DeleteDistribution(int distributionId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this distribution?");
+            _distributions.RemoveAll(distribution => distribution.DistributionId == distributionId);
+            await DistributionService.DeleteDistribution(PlantId, AreaId, distributionId);
 
-            if (confirm)
-            {
-                _distributions.RemoveAll(distribution => distribution.DistributionId == distributionId);
-                await DistributionService.DeleteDistribution(PlantId, AreaId, distributionId);
-            }
+            visibleDelete = false;
         }
 
         // Distribution details
@@ -70,5 +67,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         {
             NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/updatedistribution/{distributionId}");
         }
+
+        //Delete Distribution 
+        private bool visibleDelete = false;
+        public int deleteDistributionId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteDistributionId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
     }
 }
