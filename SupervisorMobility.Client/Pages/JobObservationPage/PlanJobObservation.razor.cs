@@ -104,11 +104,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (user != null)
             {
                 _plants = await PlantServices.GetPlants();
-                _jobObservation.PlantId = user.PlantId;
+                _jobObservation.PlantId = (int)user.PlantId;
 
-                _jobObservation.AreaId = user.AreaId;
+                _jobObservation.AreaId = (int)user.AreaId;
 
-                _areas = await AreaServices.GetAreas(user.PlantId);
+                _areas = await AreaServices.GetAreas((int)user.PlantId);
                 _jobObservation.SupervisorId = user.UserId;
                 _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
 

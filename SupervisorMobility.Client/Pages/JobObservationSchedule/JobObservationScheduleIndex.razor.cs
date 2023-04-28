@@ -90,10 +90,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 {
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
-                    plantId = user.PlantId;
+                    plantId = (int)user.PlantId;
                 
-                    areaId = user.AreaId;
-                    groupId= user.GroupId;
+                    areaId = (int)user.AreaId;
+                    groupId= (int)user.GroupId;
 
                     _areas = await AreaServices.GetAreas(plantId);
                     supervisor = user.Name;

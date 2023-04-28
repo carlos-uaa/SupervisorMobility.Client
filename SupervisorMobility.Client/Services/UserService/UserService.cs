@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
+using System.ComponentModel;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace SupervisorMobility.Client.Services.UserService
 {
@@ -17,7 +19,12 @@ namespace SupervisorMobility.Client.Services.UserService
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
-            _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _options = new JsonSerializerOptions { 
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
+            };
+            _options.Converters.Add(new IntToStringConverter());
         }
 
        
@@ -72,6 +79,32 @@ namespace SupervisorMobility.Client.Services.UserService
 
             return null;
         }  
+        //get User by objectid
+        public async Task<User> GetUserWhitObjectId(string ObjectId)
+        {
+            var response = await _http.GetAsync($"Users/ByObjectId?ObjectId={ObjectId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<User>();
+                return content;
+            }
+
+            return null;
+        }   
+        //get User by objectid whitr collection
+        public async Task<User> GetUserWhitObjectIdAndCollections(string ObjectId)
+        {
+            var response = await _http.GetAsync($"Users/ByObjectId?ObjectId={ObjectId}&collections=true");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<User>();
+                return content;
+            }
+
+            return null;
+        }  
+
+
         public async Task<User> GetUserAndCollection(int UserId)
         {
             var response = await _http.GetAsync($"Users/{UserId}?collections=true");
@@ -89,14 +122,26 @@ namespace SupervisorMobility.Client.Services.UserService
 
         public async Task<List<User>> GetUsers()
         {
-            var response = await _http.GetAsync("Users");
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+          
+            try
             {
-                var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+                var response = await _http.GetAsync("Users");
 
-                return UsersList;
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
             }
 
             return null;
@@ -104,18 +149,29 @@ namespace SupervisorMobility.Client.Services.UserService
         } 
         public async Task<List<User>> GetUsersWhitCollections()
         {
-            var response = await _http.GetAsync("Users?collections=true");
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+            
+            try
             {
-                var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+                var response = await _http.GetAsync("Users?collections=true");
 
-                return UsersList;
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
             }
-
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+            
             return null;
-
            
         }
         //delete User
