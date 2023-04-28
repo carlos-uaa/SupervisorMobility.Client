@@ -63,7 +63,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string areaOther;
 
         int[] models = new int[5];
-        string[] cicles = new string[5];
+        string[] cycles = new string[5];
 
         //timer
         const string DEFAULT_TIME = "00:00:00.000";
@@ -176,7 +176,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 models[2] = Int32.Parse(prod[2]);
                 models[3] = Int32.Parse(prod[3]);
                 models[4] = Int32.Parse(prod[4]);
-                cicles = _jobObservation.Cicles.Split('|');
+                cycles = _jobObservation.Cicles.Split('|');
 
                 users = await UsersService.GetUsers();
                 foreach (var operatorUser in users)
@@ -418,7 +418,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Console.WriteLine("Unable to parse '{0}'", hour2);
             }
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cicles = cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
+            _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.StartDate = newDate1;
             _jobObservation.EndDate = newDate2;
             _jobObservation.Status = 2;
@@ -733,15 +733,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cicles[0] = centiseconds.ToString(); break;
+                    cycles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = centiseconds.ToString(); break;
+                    cycles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = centiseconds.ToString(); break;
+                    cycles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = centiseconds.ToString(); break;
+                    cycles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = centiseconds.ToString(); break;
+                    cycles[4] = centiseconds.ToString(); break;
             }
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0, 12);
@@ -773,15 +773,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cicles[0] = centiseconds.ToString(); break;
+                    cycles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = centiseconds.ToString(); break;
+                    cycles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = centiseconds.ToString(); break;
+                    cycles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = centiseconds.ToString(); break;
+                    cycles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = centiseconds.ToString(); break;
+                    cycles[4] = centiseconds.ToString(); break;
             }
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");

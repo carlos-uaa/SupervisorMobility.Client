@@ -39,7 +39,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string areaOther;
 
         int[] models = new int[5];
-        string[] cicles = new string[5] { "", "", "", "", "" };
+        string[] cycles = new string[5] { "", "", "", "", "" };
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
@@ -250,7 +250,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 Console.WriteLine("Unable to parse '{0}'", hour2);
  
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cicles= cicles[0] + "|" + cicles[1] + "|" + cicles[2] + "|" + cicles[3] + "|" + cicles[4];
+            _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.StartDate = newDate1;
             _jobObservation.EndDate = newDate2;
 
@@ -317,15 +317,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cicles[0] = centiseconds.ToString(); break;
+                    cycles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = centiseconds.ToString(); break;
+                    cycles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = centiseconds.ToString(); break;
+                    cycles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = centiseconds.ToString(); break;
+                    cycles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = centiseconds.ToString(); break;
+                    cycles[4] = centiseconds.ToString(); break;
             }
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0,12);
@@ -357,15 +357,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cicles[0] = centiseconds.ToString(); break;
+                    cycles[0] = centiseconds.ToString(); break;
                 case 2:
-                    cicles[1] = centiseconds.ToString(); break;
+                    cycles[1] = centiseconds.ToString(); break;
                 case 3:
-                    cicles[2] = centiseconds.ToString(); break;
+                    cycles[2] = centiseconds.ToString(); break;
                 case 4:
-                    cicles[3] = centiseconds.ToString(); break;
+                    cycles[3] = centiseconds.ToString(); break;
                 case 5:
-                    cicles[4] = centiseconds.ToString(); break;
+                    cycles[4] = centiseconds.ToString(); break;
             }
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
