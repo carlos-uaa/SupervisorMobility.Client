@@ -48,53 +48,53 @@ namespace SupervisorMobility.Client.Shared
 
         protected async override Task OnInitializedAsync()
         {
-            await LateDates();
+            //await LateDates();
 
             //user
-            await GetUserAsync();
+            //await GetUserAsync();
 
-            if (user != null)
-            {
+            //if (user != null)
+            //{
 
-                jobObservations = await JobObservationService.GetAllJobObservations();
+            //    jobObservations = await JobObservationService.GetAllJobObservations();
 
-                foreach (var jobobs in jobObservations)
-                {
-                    if (jobobs.Supervisor.Name == user.Name)
-                    {
-                        //yesterday
-                        if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
-                        {
-                            lateObservations.Add(jobobs);
+            //    foreach (var jobobs in jobObservations)
+            //    {
+            //        if (jobobs.Supervisor.Name == user.Name)
+            //        {
+            //            //yesterday
+            //            if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+            //            {
+            //                lateObservations.Add(jobobs);
 
-                            lateObservations = lateObservations.OrderBy(x => x.StartDate).ToList();
+            //                lateObservations = lateObservations.OrderBy(x => x.StartDate).ToList();
 
-                        }
+            //            }
 
-                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date
-                            && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
-                        {
+            //            if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= Convert.ToDateTime(today.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date
+            //                && Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(thisWeek.ToShortDateString()).Date)
+            //            {
 
-                            //today
-                            if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
-                            {
-                                todayObservations.Add(jobobs);
-                            }
-                            //this week
-                            else
-                            {
-                                thisWeekObservations.Add(jobobs);
-                                thisWeekObservations = thisWeekObservations.OrderBy(x => x.StartDate).ToList();
+            //                //today
+            //                if (Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(today.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+            //                {
+            //                    todayObservations.Add(jobobs);
+            //                }
+            //                //this week
+            //                else
+            //                {
+            //                    thisWeekObservations.Add(jobobs);
+            //                    thisWeekObservations = thisWeekObservations.OrderBy(x => x.StartDate).ToList();
 
-                            }
+            //                }
 
 
 
-                        }
-                    }
-                }
+            //            }
+            //        }
+            //    }
 
-            }
+            //}
 
         }
 

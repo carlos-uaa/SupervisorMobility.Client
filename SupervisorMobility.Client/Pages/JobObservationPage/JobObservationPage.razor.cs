@@ -122,7 +122,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 if(user != null)
                 {
-                    _distributions = await DistributionService.GetDistributionsWithCollections(user.PlantId, user.AreaId);
+                    _distributions = await DistributionService.GetDistributionsWithCollections((int)user.PlantId, (int)user.AreaId);
 
                 }
 

@@ -83,6 +83,7 @@ builder.Services.AddMsalAuthentication(options =>
 });
 
 
+
 await builder.Build().RunAsync();
 
 public class CustomHttpClientService

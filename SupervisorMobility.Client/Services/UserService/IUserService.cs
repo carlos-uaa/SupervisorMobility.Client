@@ -14,6 +14,8 @@ namespace SupervisorMobility.Client.Services.UserService
         Task<List<User>> GetUsers();
         Task<List<User>> GetUsersWhitCollections();
         Task<User> GetUser(int UserId);
+        Task<User> GetUserWhitObjectId(string ObjectId);
+        Task<User> GetUserWhitObjectIdAndCollections(string ObjectId);
         Task<User> GetUserAndCollection(int UserId);
 
         //UPDATE

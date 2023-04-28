@@ -430,7 +430,7 @@
 
         //await TryGetAsync();
 
-        users = await UsersService.GetUsers();
+        //users = await UsersService.GetUsers();
         AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
 
         // Get the current authentication state
@@ -501,7 +501,6 @@
 
     private async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
     {
-
         // Get the current authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
@@ -509,7 +508,15 @@
         var currentUser = authState.User;
 
         var userId = currentUser.FindFirst("oid")?.Value;
+        
+        //get user by objectid
+        user = await UsersService.GetUserWhitObjectId(userId);
 
+        if (user != null)
+        {
+            json = JsonSerializer.Serialize<User>(user);
+            await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+        }
 
 
         ADuser auser = new ADuser()
@@ -520,17 +527,8 @@
             };
 
 
-        foreach (var u in users)
-        {
-            if (u.Name == currentUser.Identity?.Name)
-            {
-                user = u;
-
-                json = JsonSerializer.Serialize<User>(user);
-                await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-
-            }
-        }
+     
+        
 
         if (userId != null)
         {
