@@ -78,13 +78,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         
         async Task DeleteProduct(int productId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this product?");
+            _distribution.Products.RemoveAll(product => product.ProductId == productId);
+            await DistributionService.DeleteProductFromDistribution(PlantId, AreaId, DistributionId, productId);
 
-            if (confirm)
-            {
-                _distribution.Products.RemoveAll(product => product.ProductId == productId);
-                await DistributionService.DeleteProductFromDistribution(PlantId, AreaId, DistributionId, productId);
-            }
+            visibleDeleteProduct = false;
         }
 
         // Update operation
@@ -144,5 +141,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         }
         void CloseDeleteModal() => visibleDelete = false;
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
+        //Delete Operation 
+        private bool visibleDeleteProduct = false;
+        public int deleteProductId = 0;
+        private void OpenDeleteProductDialog(int deleteId)
+        {
+            deleteProductId = deleteId;
+            visibleDeleteProduct = true;
+        }
+        void CloseDeleteProductModal() => visibleDeleteProduct = false;
+        private DialogOptions dialogDeleteProductOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
     }
 }

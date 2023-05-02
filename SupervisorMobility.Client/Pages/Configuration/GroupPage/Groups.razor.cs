@@ -32,13 +32,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
         // Delete group
         async Task DeleteGroup(int groupId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this group?");
-
-            if (confirm)
-            {
-                _groups.RemoveAll(group => group.GroupId == groupId);
-                await GroupService.DeleteGroup(groupId);
-            }
+            _groups.RemoveAll(group => group.GroupId == groupId);
+            await GroupService.DeleteGroup(groupId);
+            
+            visibleDelete = false;
         }
 
         // Update group
@@ -62,5 +59,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
                 return true;
             return false;
         }
+
+
+        //Delete Group
+        private bool visibleDelete = false;
+        public int deleteGroupId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteGroupId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
     }
 }

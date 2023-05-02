@@ -134,13 +134,13 @@
                                 }
                             </MudSelect>
                             @*Mud select of Areas *@
-                            <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                            @*<MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
                                 <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                                 @foreach (var type in _areas)
                                 {
                                     <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                                 }
-                            </MudSelect>
+                            </MudSelect>*@
 
                             <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxGroup" For="@(() => auxGroup)">
                                 <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
@@ -150,7 +150,27 @@
                                 }
                             </MudSelect>
                         }
-                        else if (_user.UserType > 2)
+                        else if(_user.UserType == 3 && LogedUser.UserType == 2){
+                            <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
+                            if(LogedUser.Areas != null){
+                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                    <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                    @foreach (var type in LogedUser.Areas)
+                                    {
+                                    <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">
+                                    <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
+                                </MudAlert>
+                            }
+
+                            <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
+                        }
+                        else if (_user.UserType == 4)
                         {
                             <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
                             <MudTextField @bind-Value="areaInfo" Label="Area" ReadOnly="true" Variant="Variant.Outlined" />
@@ -309,7 +329,9 @@
                                                         <MudText Typo="Typo.subtitle1"> Superior </MudText>
                                                     </CardHeaderContent>
                                                     <CardHeaderActions>
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveSuperiorUser())" />
+                                                        @if(LogedUser.UserType != 2){
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveSuperiorUser())" />
+                                                        }
                                                     </CardHeaderActions>
                                                 </MudCardHeader>
                                                 <MudCardContent>
@@ -980,6 +1002,18 @@
             auxPlant = (int)LogedUser.PlantId;
             auxArea = (int)LogedUser.AreaId;
             auxGroup = (int)LogedUser.GroupId;
+
+            _user.SuperiorId = LogedUser.UserId;
+            _user.Superior = LogedUser;
+            superior = true;
+
+            _user.PlantId = _user.Superior?.PlantId;
+            _user.AreaId = _user.Superior?.AreaId;
+            _user.GroupId = _user.Superior?.GroupId;
+
+            plantInfo = _user.Superior?.Plant?.Description;
+            areaInfo = _user.Superior?.Area?.Description;
+            grupInfo = _user.Superior?.Group?.Description;
         }
         else
         {
@@ -1001,31 +1035,33 @@
         _user.SuperiorId = _user.Superior.SuperiorId;
         superior = true;
 
+
         //Idemtificar user
         switch (_user.UserType)
         {
             case 2: break;
             case 3: 
                 _user.PlantId =  _user.Superior?.PlantId;
-                _user.AreaId =  _user.Superior?.AreaId;
                 _user.GroupId =  _user.Superior?.GroupId;
 
                 auxPlant =  (int)_user.Superior?.PlantId;
-                auxArea=  (int)_user.Superior?.AreaId;
                 auxGroup = (int)_user.Superior?.GroupId;
 
                 plantInfo = _user.Superior?.Plant?.Description;
-                areaInfo = _user.Superior?.Area?.Description;
                 grupInfo = _user.Superior?.Group?.Description;
 
                 break;
             case 4: 
                 _user.PlantId =  _user.Superior?.PlantId;
-                _user.AreaId =  _user.Superior?.AreaId;
+                //agrega el area
                 _user.GroupId =  _user.Superior?.GroupId;
 
+                auxPlant =  (int)_user.Superior?.PlantId;
+                //agrega el area
+                auxGroup = (int)_user.Superior?.GroupId;
+
                 plantInfo = _user.Superior?.Plant?.Description;
-                areaInfo = _user.Superior?.Area?.Description;
+                //agrega el area
                 grupInfo = _user.Superior?.Group?.Description;
                 break;
         }
@@ -1039,6 +1075,14 @@
         _user.SuperiorId = null;
         _user.Superior = null;
         superior = false;
+
+        switch(LogedUser.UserType){
+            case 2:
+            plantInfo = "";
+            grupInfo = "";
+            break;
+        }
+
         StateHasChanged();
 
     }
@@ -1116,6 +1160,9 @@
 
         if (selectedSupervisorOfList != null && !_user.Subordinates.Contains(selection))
         {
+
+
+
             _user.Subordinates.Add(selection);
 
             Supervisors.Remove(selection);

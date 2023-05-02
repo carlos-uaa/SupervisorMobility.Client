@@ -32,13 +32,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
         // Delete job observation type
         async Task DeleteJobObservationType(int jobObservationTypeId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this job observation type?");
 
-            if (confirm)
-            {
-                _jobObservationTypes.RemoveAll(jobObservationType => jobObservationType.JobObservationTypeId == jobObservationTypeId);
-                await JobObservationTypeService.DeleteJobObservationType(jobObservationTypeId);
-            }
+            _jobObservationTypes.RemoveAll(jobObservationType => jobObservationType.JobObservationTypeId == jobObservationTypeId);
+            await JobObservationTypeService.DeleteJobObservationType(jobObservationTypeId);
+
+            visibleDelete = false;
         }
 
         // Update job observation type
@@ -63,5 +61,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
                 return true;
             return false;
         }
+
+
+        //Delete Product
+        private bool visibleDelete = false;
+        public int deleteJobObservationTypetId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteJobObservationTypetId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
     }
 }
