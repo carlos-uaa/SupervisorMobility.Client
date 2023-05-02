@@ -78,42 +78,14 @@
 
 
                         </MudItem>
-                        <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
-                            <MudStack Style="width: 80%">
-                                <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
-                                               @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
-                                    <ButtonTemplate Context="DragAndDrop">
-                                        <MudPaper Height="200px" Outlined="true" Class="@DragClass">
-                                            <MudText Typo="Typo.h6">Drag and drop file Xlsx/CSV here or click</MudText>
-                                            @foreach (var file in fileNames)
-                                            {
-                                                <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
-                                                    <MudText Typo="Typo.h6">@file.message</MudText>
-
-                                                    @switch (file.ftype)
-                                                    {
-                                                        case "xls":
-                                                            <img src="Images/xls.png" Height="70" Width="70" />
-                                                            break;
-                                                        case "csv":
-                                                            <img src="Images/csv.png" Height="70" Width="70" />
-                                                            break;
-                                                        default:
-                                                            <img src="Images/error.png" Height="70" Width="70" />
-                                                            break;
-                                                    }
-
-                                                    <MudChip Color="Color.Info" Text="@file.name" />
-                                                </MudItem>
-                                            }
-                                        </MudPaper>
-                                    </ButtonTemplate>
-                                </MudFileUpload>
-                            </MudStack>
-                        </MudItem>
                     </MudTabPanel>
+               
                     <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's">
-                        <MudSelect T="User" Label="Supervisors"  Placeholder="Select Supervisor" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                        
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors">
+Select SSV
+<MudSelect T="User" Label="Supervisors"  Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
                             @foreach (var SS in _allUsers)
                             {
@@ -124,11 +96,17 @@
                             }
                         </MudSelect>
                     </MudTabPanel>
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors">
-
-                    </MudTabPanel>
                     <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators">
-
+                        <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a Supervisor </MudSelectItem>
+                            @foreach (var SS in _allUsers)
+                            {
+                                @if (SS.UserType == 3)
+                                {
+                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>
@@ -136,6 +114,43 @@
     </MudGrid>
 </MudContainer>
 
+@*Unique File Uploader*@
+<MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+    <MudStack Style="width: 80%">
+        <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                       @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+            <ButtonTemplate Context="DragAndDrop">
+                <MudPaper Height="200px" Outlined="true" Class="@DragClass">
+                    <MudText Typo="Typo.h6">Drag and drop file Xlsx/CSV here or click</MudText>
+                    @foreach (var file in fileNames)
+                    {
+                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                            <MudText Typo="Typo.h6">@file.message</MudText>
+
+                            @switch (file.ftype)
+                            {
+                                case "xls":
+                                    <img src="Images/xls.png" Height="70" Width="70" />
+                                    break;
+                                case "csv":
+                                    <img src="Images/csv.png" Height="70" Width="70" />
+                                    break;
+                                default:
+                                    <img src="Images/error.png" Height="70" Width="70" />
+                                    break;
+                            }
+
+                            <MudChip Color="Color.Info" Text="@file.name" />
+                        </MudItem>
+                    }
+                </MudPaper>
+            </ButtonTemplate>
+        </MudFileUpload>
+    </MudStack>
+</MudItem>
+
+
+@*Tabla unica para cualquier tipo de usuario *@
 <MudContainer Fixed="true" Class="py-10">
     <MudGrid Class="d-flex flex-column align-center justify-center">
         <MudItem Class="d-flex flex-column align-center justify-center">
