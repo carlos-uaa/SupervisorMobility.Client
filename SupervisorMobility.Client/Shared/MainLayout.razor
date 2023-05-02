@@ -516,17 +516,20 @@
 
         var userId = currentUser.FindFirst("oid")?.Value;
         
-        //get user by objectid
-        user = await UsersService.GetUserWhitObjectId(userId);
-
-        if (user != null)
+        if (userId != null)
         {
-            json = JsonSerializer.Serialize<User>(user);
-            await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-        }
+
+            //get user by objectid
+            user = await UsersService.GetUserWhitObjectIdAndCollections(userId);
+
+            if (user != null)
+            {
+                json = JsonSerializer.Serialize<User>(user);
+                await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+            }
 
 
-        ADuser auser = new ADuser()
+            ADuser auser = new ADuser()
             {
                 email = currentUser.FindFirst("preferred_username").Value,
                 name = currentUser.FindFirst("name").Value,
@@ -534,21 +537,17 @@
             };
 
 
-     
-        
-
-        if (userId != null)
-        {
             json = JsonSerializer.Serialize<ADuser>(auser);
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
-        }
+            
+            Dispose();
 
-        Dispose();
-
-        Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
-        attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+            Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+            attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
 
         
+        }
+
 
         // Do something with the user
         //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");

@@ -33,13 +33,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         // Delete support document type
         async Task DeleteSupportDocumentType(int supportDocumentTypeId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this support document type?");
+            _supportDocumentTypes.RemoveAll(supportDocumentType => supportDocumentType.SupportDocumentTypeId == supportDocumentTypeId);
+            await SupportDocumentTypeService.DeleteSupportDocumentType(supportDocumentTypeId);
 
-            if (confirm)
-            {
-                _supportDocumentTypes.RemoveAll(supportDocumentType => supportDocumentType.SupportDocumentTypeId == supportDocumentTypeId);
-                await SupportDocumentTypeService.DeleteSupportDocumentType(supportDocumentTypeId);
-            }
+            visibleDelete = false;
         }
 
         // Update support document type
@@ -64,5 +61,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
                 return true;
             return false;
         }
+
+
+        //Delete Document Type
+        private bool visibleDelete = false;
+        public int deleteDocumentTypeId = 0;
+        private void OpenDeleteDialog(int deleteId)
+        {
+            deleteDocumentTypeId = deleteId;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
     }
 }
