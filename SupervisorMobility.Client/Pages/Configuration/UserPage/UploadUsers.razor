@@ -38,80 +38,119 @@
             </MudItem>
             <MudItem Class="d-flex flex-column align-center justify-center">
                 @*File Upload*@
-                <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
 
-                    <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
-                    @if(showResume)
-                    {
-                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
-                            <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-                                <MudItem style="text-align:center">
-                                    <img src="Images/useradd.png" Height="100" Width="100" />
-                                    <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersCreated </MudText>
-                                </MudItem>
-                            </MudPaper>
-                            <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-                                <MudItem style="text-align:center">
-                                    <img src="Images/userexist.png" Height="100" Width="100" />
-                                    <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
-                                </MudItem>
-                            </MudPaper>
-                        </MudPaper>
-                    }
-                    else
-                    {
-                        if (activeUpload)
-                        {
-                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                        }
-                    }
+                <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users">
 
+                        <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
 
-                    @if(onloadfile)
-                    {
-                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                    }
-
-
-                </MudItem>
-                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
-                    <MudStack Style="width: 80%">
-                        <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
-                                       @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
-                            <ButtonTemplate Context="DragAndDrop">
-                                <MudPaper Height="200px" Outlined="true" Class="@DragClass">
-                                    <MudText Typo="Typo.h6">Drag and drop file Xlsx/CSV here or click</MudText>
-                                    @foreach (var file in fileNames)
-                                    {
-                                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
-                                            <MudText Typo="Typo.h6">@file.message</MudText>
-
-                                            @switch (file.ftype)
-                                            {
-                                                case "xls":
-                                                    <img src="Images/xls.png" Height="70" Width="70" />
-                                                    break;
-                                                case "csv":
-                                                    <img src="Images/csv.png" Height="70" Width="70" />
-                                                    break;
-                                                default:
-                                                    <img src="Images/error.png" Height="70" Width="70" />
-                                                    break;
-                                            }
-
-                                            <MudChip Color="Color.Info" Text="@file.name" />
+                            <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
+                            @if (showResume)
+                            {
+                                <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                                        <MudItem style="text-align:center">
+                                            <img src="Images/useradd.png" Height="100" Width="100" />
+                                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersCreated </MudText>
                                         </MudItem>
-                                    }
+                                    </MudPaper>
+                                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                                        <MudItem style="text-align:center">
+                                            <img src="Images/userexist.png" Height="100" Width="100" />
+                                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
+                                        </MudItem>
+                                    </MudPaper>
                                 </MudPaper>
-                            </ButtonTemplate>
-                        </MudFileUpload>
-                    </MudStack>
-                </MudItem>
+                            }
+                            else
+                            {
+                                if (activeUpload)
+                                {
+                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                }
+                            }
+
+
+                            @if (onloadfile)
+                            {
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                            }
+
+
+                        </MudItem>
+                    </MudTabPanel>
+               
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's">
+                        
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors">
+Select SSV
+<MudSelect T="User" Label="Supervisors"  Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
+                            @foreach (var SS in _allUsers)
+                            {
+                                @if (SS.UserType == 2)
+                                {
+                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators">
+                        <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a Supervisor </MudSelectItem>
+                            @foreach (var SS in _allUsers)
+                            {
+                                @if (SS.UserType == 3)
+                                {
+                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudTabPanel>
+                </MudTabs>
             </MudItem>
         </MudItem>
     </MudGrid>
 </MudContainer>
 
+@*Unique File Uploader*@
+<MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+    <MudStack Style="width: 80%">
+        <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                       @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+            <ButtonTemplate Context="DragAndDrop">
+                <MudPaper Height="200px" Outlined="true" Class="@DragClass">
+                    <MudText Typo="Typo.h6">Drag and drop file Xlsx/CSV here or click</MudText>
+                    @foreach (var file in fileNames)
+                    {
+                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                            <MudText Typo="Typo.h6">@file.message</MudText>
+
+                            @switch (file.ftype)
+                            {
+                                case "xls":
+                                    <img src="Images/xls.png" Height="70" Width="70" />
+                                    break;
+                                case "csv":
+                                    <img src="Images/csv.png" Height="70" Width="70" />
+                                    break;
+                                default:
+                                    <img src="Images/error.png" Height="70" Width="70" />
+                                    break;
+                            }
+
+                            <MudChip Color="Color.Info" Text="@file.name" />
+                        </MudItem>
+                    }
+                </MudPaper>
+            </ButtonTemplate>
+        </MudFileUpload>
+    </MudStack>
+</MudItem>
+
+
+@*Tabla unica para cualquier tipo de usuario *@
 <MudContainer Fixed="true" Class="py-10">
     <MudGrid Class="d-flex flex-column align-center justify-center">
         <MudItem Class="d-flex flex-column align-center justify-center">
@@ -159,19 +198,19 @@
                         <MudTd DataLabel="Permissions">
                             <MudText Align="Align.Center">
                                 @*@if(context.IsAdmin){
-                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
 
-                                }
+                            }
 
-                                @if(context.IsSupervisor){
-                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                            @if(context.IsSupervisor){
+                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
 
-                                }
+                            }
 
-                                @if(context.IsOperator){
-                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                            @if(context.IsOperator){
+                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
 
-                                }*@
+                            }*@
 
 
                             </MudText>
@@ -226,7 +265,8 @@
     private List<List<Area>> _areas = new List<List<Area>>();
     private List<Data.Entities.Group> _groups = new List<Data.Entities.Group>();
 
-
+    private List<User> _allUsers = new List<User>();
+    private User selectedSSVOfList = new();
     protected async override Task OnInitializedAsync()
     {
         _plants = await PlantsServices.GetPlants();
@@ -237,6 +277,8 @@
         }
 
         _groups = await GroupServices.GetGroups();
+
+        _allUsers = await UsersServices.GetUsersWhitCollections();
     }
 
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
