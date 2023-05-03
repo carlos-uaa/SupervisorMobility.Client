@@ -28,7 +28,7 @@
         <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
             <MudImage Src="Images/userup.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
         </MudItem>
-        <MudItem id="Upload" xs="10" xl="10" class="d-flex flex-column">
+        <MudItem id="Upload" xs="9" xl="9" class="d-flex flex-column">
             <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
 
                 <MudSpacer />
@@ -40,7 +40,7 @@
                 @*File Upload*@
 
                 <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users">
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users" OnClick="() => AssignType(1)">
 
                         <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
 
@@ -79,13 +79,13 @@
 
                         </MudItem>
                     </MudTabPanel>
-               
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's">
-                        
+
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's" OnClick="() => AssignType(2)">
+
                     </MudTabPanel>
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors">
-Select SSV
-<MudSelect T="User" Label="Supervisors"  Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors" OnClick="() => AssignType(3)">
+                        Select SSV
+                        <MudSelect T="User" Label="Supervisors" Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
                             @foreach (var SS in _allUsers)
                             {
@@ -96,7 +96,7 @@ Select SSV
                             }
                         </MudSelect>
                     </MudTabPanel>
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators">
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators" OnClick="() => AssignType(4)">
                         <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a Supervisor </MudSelectItem>
                             @foreach (var SS in _allUsers)
@@ -111,6 +111,49 @@ Select SSV
                 </MudTabs>
             </MudItem>
         </MudItem>
+        <MudItem xs="2" xl="2" class="align-center justify-center mud-width-full">
+            @switch (uploadtype)
+            {
+                case 1:
+                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                       Target="_blank"
+                       Variant="Variant.Outlined"
+                       EndIcon="@Icons.Material.Filled.FileDownload"
+                       Color="Color.Primary" FullWidth="true">
+                        <b>All Upload Format</b>
+                    </MudButton>
+                    break;
+                case 2:
+                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                       Target="_blank"
+                       Variant="Variant.Outlined"
+                       EndIcon="@Icons.Material.Filled.FileDownload"
+                       Color="Color.Primary" FullWidth="true">
+                        <b>SSV Format</b>
+                    </MudButton>
+                    break;
+                case 3:
+                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                       Target="_blank"
+                       Variant="Variant.Outlined"
+                       EndIcon="@Icons.Material.Filled.FileDownload"
+                       Color="Color.Primary" FullWidth="true">
+                        <b>Supervisors Format</b>
+                    </MudButton>
+                    break;
+                case 4:
+                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                       Target="_blank"
+                       Variant="Variant.Outlined"
+                       EndIcon="@Icons.Material.Filled.FileDownload"
+                       Color="Color.Primary" FullWidth="true">
+                        <b>Operators Format</b>
+                    </MudButton>
+                    break;
+            }
+        </MudItem>
+
+
     </MudGrid>
 </MudContainer>
 
@@ -173,31 +216,110 @@ Select SSV
                         <MudSpacer />
                     </ToolBarContent>
                     <HeaderContent>
+
+                        @if (uploadtype > 1 && uploadtype < 6)
+                        {
+                            <MudTh>Object Id</MudTh>
+                        }
+
+                        @if (uploadtype > 5 || uploadtype < 2)
+                        {
+                            <MudTh>Payroll</MudTh>
+                        }
+
                         <MudTh>User Name</MudTh>
-                        <MudTh>User Payroll</MudTh>
+
+
+
+                        @if (uploadtype > 1 && uploadtype < 6)
+                        {
+                            <MudTh>Email</MudTh>
+
+                        }
+
                         <MudTh>Plant</MudTh>
-                        <MudTh>Area</MudTh>
+                        @if (uploadtype > 1 && uploadtype < 4)
+                        {
+                            <MudTh>Areas Manage</MudTh>
+
+                        }
+                        else
+                        {
+                            <MudTh>Area</MudTh>
+                        }
+
                         <MudTh>Grup</MudTh>
-                        <MudTh>Permissions</MudTh>
+
+                        @if (uploadtype == 1)
+                        {
+                            <MudTh>Role</MudTh>
+                        }
+
+
+
+
                     </HeaderContent>
                     <RowTemplate>
+                        @if (uploadtype > 1 && uploadtype < 6)
+                        {
+                            <MudTd DataLabel="ObjectId">
+                                <MudText Align="Align.Center">@context.ObjectId</MudText>
+                            </MudTd>
+                        }
+
+                        @if (uploadtype > 5 || uploadtype < 2)
+                        {
+                            <MudTd DataLabel="Payroll">
+                                <MudText Align="Align.Center">@context.Payroll</MudText>
+                            </MudTd>
+                        }
 
                         <MudTd DataLabel=" Name">
                             <MudText Align="Align.Center">@context.Name</MudText>
                         </MudTd>
-                        <MudTd DataLabel="Payroll">
-                            <MudText Align="Align.Center">@context.Payroll</MudText>
-                        </MudTd>
+
+
+                        @if (uploadtype > 1 && uploadtype < 6)
+                        {
+                           
+                            <MudTd DataLabel="Email">
+                                <MudText Align="Align.Center">@context.Email</MudText>
+                            </MudTd>
+                        }
+
                         <MudTd DataLabel="Plant">
                             <MudText Align="Align.Center">@context.Plant?.Description</MudText>
-                        </MudTd> <MudTd DataLabel="Area">
-                            <MudText Align="Align.Center">@context.Area?.Description</MudText>
-                        </MudTd> <MudTd DataLabel="Group">
+                        </MudTd>
+                        @if (uploadtype > 1 && uploadtype < 4)
+                        {
+                            <MudTh>Areas Manage</MudTh>
+                            <MudTd DataLabel="Area">
+                                @if (context.Areas?.Count > 0)
+                                {
+                                    @foreach (var item in context.Areas)
+                                    {
+                                        <MudText Align="Align.Center">@item.Description</MudText>
+                                    }
+                                }
+
+                            </MudTd>
+                        }
+                        else
+                        {
+                            <MudTd DataLabel="Area">
+                                <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                            </MudTd>
+                        }
+
+                        <MudTd DataLabel="Group">
                             <MudText Align="Align.Center">@context.Group?.Description</MudText>
                         </MudTd>
-                        <MudTd DataLabel="Permissions">
-                            <MudText Align="Align.Center">
-                                @*@if(context.IsAdmin){
+
+                        @if (uploadtype == 1)
+                        {
+                            <MudTd DataLabel="Permissions">
+                                <MudText Align="Align.Center">
+                                    @*@if(context.IsAdmin){
                             <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
 
                             }
@@ -213,8 +335,16 @@ Select SSV
                             }*@
 
 
-                            </MudText>
-                        </MudTd>
+                                </MudText>
+                            </MudTd>
+                        }
+
+
+
+
+
+                       
+                        
                     </RowTemplate>
                     <PagerContent>
                         <MudTablePager />
@@ -244,6 +374,8 @@ Select SSV
         public string message { get; set; }
     }
 
+
+    private int uploadtype = 1;
     private string FileName;
 
     private string ErrorMessageToDisplay;
@@ -290,6 +422,11 @@ Select SSV
         };
 
 
+    private void AssignType(int value)
+    {
+        uploadtype = value;
+        StateHasChanged();
+    }
 
     private async void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -348,7 +485,22 @@ Select SSV
             {
                 try
                 {
-                    DataInDocument = await GetDataTableFromExcel(e.File);
+                    switch (uploadtype)
+                    {
+                        case 1:
+                            break;
+                            DataInDocument = await GetDataTableFromExcel(e.File);
+                        case 2:
+                            break;
+                            DataInDocument = await GetDataTableFromExcelSSV(e.File);
+                        case 3:
+                            break;
+                            DataInDocument = await GetDataTableFromExcelSupervisors(e.File);
+                        case 4:
+                            break;
+                            DataInDocument = await GetDataTableFromExcelOperators(e.File);
+                    }
+
                     isOkFile = true;
                     fileNames.Add(new FileToDisplay() { name = FileName, ftype = "xls" });
 
@@ -372,116 +524,221 @@ Select SSV
             }
 
 
-            foreach (string[] row in DataInDocument)
+            switch (uploadtype)
             {
+                case 1:
+                    dataToShowInTable = CreateUsersAllArray(DataInDocument);
+                    break;
+                case 2:
+                    dataToShowInTable = CreateUsersSSV(DataInDocument);
+                    break;
+                case 3:
+                    dataToShowInTable = CreateUsersSupervisors(DataInDocument);
+                    break;
+                case 4:
+                    dataToShowInTable = CreateUsersOperators(DataInDocument);
+                    break;
+            }
+        }
+        onloadfile = false;
+        StateHasChanged();
+    }
+
+    public List<User> CreateUsersAllArray(List<string[]> DataInDocument)
+    {
+        List<User> ListtoReturn = new List<User>();
+        foreach (string[] row in DataInDocument)
+        {
+            try
+            {
+                var ToInsertIntoList = new User();
+                ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
+                ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
+                if (ToInsertIntoList.Payroll == -1)
+                {
+                    showTableInUI = false;
+
+                    ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
+                    break;
+                }
+
+                ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+                if (ToInsertIntoList.Name == "")
+                {
+                    showTableInUI = false;
+
+                    ErrorMessageToDisplay = "Document Incomplet fields in Name";
+                    break;
+                }
+
+
+                ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
+                ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+
+                //ToInsertIntoList.IsAdmin = row[6] != "" ? bool.Parse(row[6]) : false;
+                //ToInsertIntoList.IsSupervisor = row[7] != "" ? bool.Parse(row[7]) : false;
+                //ToInsertIntoList.IsOperator = row[8] != "" ? bool.Parse(row[8]) : false;
+
                 try
                 {
-                    var ToInsertIntoList = new User();
-                    ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
-                    ToInsertIntoList.Payroll = row[1] != "" ? int.Parse(row[1]) : -1;
-                    if (ToInsertIntoList.Payroll == -1)
-                    {
-                        showTableInUI = false;
+                    ToInsertIntoList.CreatedDate = row[9] != "" ? DateTime.Parse(row[9]) : DateTime.Now;
 
-                        ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
-                        break;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    ToInsertIntoList.CreatedDate = DateTime.Now;
 
-                    ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
-                    if (ToInsertIntoList.Name == "")
-                    {
-                        showTableInUI = false;
+                }
 
-                        ErrorMessageToDisplay = "Document Incomplet fields in Name";
-                        break;
-                    }
-
-
-                    ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
-                    ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
-                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
-
-                    //ToInsertIntoList.IsAdmin = row[6] != "" ? bool.Parse(row[6]) : false;
-                    //ToInsertIntoList.IsSupervisor = row[7] != "" ? bool.Parse(row[7]) : false;
-                    //ToInsertIntoList.IsOperator = row[8] != "" ? bool.Parse(row[8]) : false;
-
-                    try
-                    {
-                        ToInsertIntoList.CreatedDate = row[9] != "" ? DateTime.Parse(row[9]) : DateTime.Now;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.CreatedDate = DateTime.Now;
-
-                    }
-
-                    try
-                    {
-                        ToInsertIntoList.LastUpdated = row[10] != "" ? DateTime.Parse(row[10]) : DateTime.Now;
-
-
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.LastUpdated = DateTime.Now;
-
-                    }
-
-                    try
-                    {
-                        ToInsertIntoList.DisabledDate = row[11] != "" ? DateTime.Parse(row[11]) : DateTime.Now;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        ToInsertIntoList.DisabledDate = DateTime.Now;
-
-                    }
-
-
-                    ToInsertIntoList.IsActive = row[12] != "" ? bool.Parse(row[12]) : true;
-
-                    try
-                    {
-                        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
-                        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
-                        ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
-                    }
-                    catch (Exception ex)
-                    {
-                        showTableInUI = false;
-                        if (ToInsertIntoList.AreaId == -1)
-                        {
-                            ErrorMessageToDisplay = "Document Incomplet fields in Area";
-                        }
-
-                        if (ToInsertIntoList.PlantId == -1)
-                        {
-                            ErrorMessageToDisplay = "Document Incomplet fields in Plant";
-                        }
-
-                        if (ToInsertIntoList.GroupId == -1)
-                        {
-                            ErrorMessageToDisplay = "Document Incomplet fields in Group";
-                        }
-                        Console.WriteLine($"{ex.Message}");
-                    }
-
-                    dataToShowInTable.Add(ToInsertIntoList);
+                try
+                {
+                    ToInsertIntoList.LastUpdated = row[10] != "" ? DateTime.Parse(row[10]) : DateTime.Now;
 
 
                 }
                 catch (Exception ex)
                 {
+                    ToInsertIntoList.LastUpdated = DateTime.Now;
 
-                    Console.WriteLine($"{ex.Message}");
-                    showTableInUI = false;
                 }
+
+                try
+                {
+                    ToInsertIntoList.DisabledDate = row[11] != "" ? DateTime.Parse(row[11]) : DateTime.Now;
+
+                }
+                catch (Exception ex)
+                {
+                    ToInsertIntoList.DisabledDate = DateTime.Now;
+
+                }
+
+
+                ToInsertIntoList.IsActive = row[12] != "" ? bool.Parse(row[12]) : true;
+
+                try
+                {
+                    ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+                    ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                    ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
+                }
+                catch (Exception ex)
+                {
+                    showTableInUI = false;
+                    if (ToInsertIntoList.AreaId == -1)
+                    {
+                        ErrorMessageToDisplay = "Document Incomplet fields in Area";
+                    }
+
+                    if (ToInsertIntoList.PlantId == -1)
+                    {
+                        ErrorMessageToDisplay = "Document Incomplet fields in Plant";
+                    }
+
+                    if (ToInsertIntoList.GroupId == -1)
+                    {
+                        ErrorMessageToDisplay = "Document Incomplet fields in Group";
+                    }
+                    Console.WriteLine($"{ex.Message}");
+                }
+
+                ListtoReturn.Add(ToInsertIntoList);
+
+
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"{ex.Message}");
+                showTableInUI = false;
             }
         }
-        onloadfile = false;
-        StateHasChanged();
+
+        return ListtoReturn;
+    }
+
+    public List<User> CreateUsersSSV(List<string[]> DataInDocument)
+    {
+        List<User> ListtoReturn = new List<User>();
+        foreach (string[] row in DataInDocument)
+        {
+            try
+            {
+                var ToInsertIntoList = new User();
+                ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
+                ToInsertIntoList.ObjectId = row[1] != "" ? row[1] : "";
+                ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+                ToInsertIntoList.Email = row[3] != "" ? row[3] : "";
+                ToInsertIntoList.PlantId = row[4] != "" ? int.Parse(row[4]) : -1;
+
+                try
+                {
+                    ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                try
+                {
+                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                try
+                {
+                    string[] SplitedAreas = row[6].Split(';');
+
+                    if (ToInsertIntoList.Areas != null)
+                    {
+                        foreach (var item in SplitedAreas)
+                        {
+                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                        }
+                    }
+                    else
+                    {
+                        ToInsertIntoList.Areas = new List<Area>;
+                        foreach (var item in SplitedAreas)
+                        {
+                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Splite Areas");
+                }
+
+
+                ListtoReturn.Add(ToInsertIntoList);
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"{ex.Message}");
+                showTableInUI = false;
+            }
+        }
+
+        return ListtoReturn;
+    }
+
+    public List<User> CreateUsersSupervisors(List<string[]> DataInDocument)
+    {
+
+        return null;
+    }
+    public List<User> CreateUsersOperators(List<string[]> DataInDocument)
+    {
+
+        return null;
     }
 
     public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
@@ -529,6 +786,146 @@ Select SSV
         }
         return DataToReturn;
     }
+
+    public static async Task<List<string[]>> GetDataTableFromExcelSSV(IBrowserFile file)
+    {
+        List<string[]> DataToReturn = new List<string[]>();
+        List<string> RowsInFile = new List<string>();
+        using (MemoryStream memStream = new MemoryStream())
+        {
+            await file.OpenReadStream(file.Size).CopyToAsync(memStream);
+            using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
+            {
+                //Read the first Sheet from Excel file.
+                IXLWorksheet workSheet = workBook.Worksheet(1);
+
+                workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("G").Style.Font.Underline = XLFontUnderlineValues.Single;
+                bool firstRow = true;
+                //Loop through the Worksheet rows.
+                foreach (IXLRow row in workSheet.Rows())
+                {
+                    if (firstRow)
+                    {
+                        firstRow = false;
+                    }
+                    else
+                    {
+                        if (!row.IsEmpty())
+                        {
+                            RowsInFile.Clear();
+
+                            foreach (IXLCell cell in row.Cells())
+                            {
+                                string toinsert = cell.Value.ToString();
+
+                                RowsInFile.Add(toinsert);
+                            }
+                            DataToReturn.Add(RowsInFile.ToArray());
+                        }
+                    }
+
+                }
+            }
+        }
+        return DataToReturn;
+    }
+
+    public static async Task<List<string[]>> GetDataTableFromExcelSupervisors(IBrowserFile file)
+    {
+        List<string[]> DataToReturn = new List<string[]>();
+        List<string> RowsInFile = new List<string>();
+        using (MemoryStream memStream = new MemoryStream())
+        {
+            await file.OpenReadStream(file.Size).CopyToAsync(memStream);
+            using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
+            {
+                //Read the first Sheet from Excel file.
+                IXLWorksheet workSheet = workBook.Worksheet(1);
+
+                workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("F").Style.Font.Underline = XLFontUnderlineValues.Single;
+                bool firstRow = true;
+                //Loop through the Worksheet rows.
+                foreach (IXLRow row in workSheet.Rows())
+                {
+                    if (firstRow)
+                    {
+                        firstRow = false;
+                    }
+                    else
+                    {
+                        if (!row.IsEmpty())
+                        {
+                            RowsInFile.Clear();
+
+                            foreach (IXLCell cell in row.Cells())
+                            {
+                                string toinsert = cell.Value.ToString();
+
+                                RowsInFile.Add(toinsert);
+                            }
+                            DataToReturn.Add(RowsInFile.ToArray());
+                        }
+                    }
+
+                }
+            }
+        }
+        return DataToReturn;
+    }
+
+    public static async Task<List<string[]>> GetDataTableFromExcelOperators(IBrowserFile file)
+    {
+        List<string[]> DataToReturn = new List<string[]>();
+        List<string> RowsInFile = new List<string>();
+        using (MemoryStream memStream = new MemoryStream())
+        {
+            await file.OpenReadStream(file.Size).CopyToAsync(memStream);
+            using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
+            {
+                //Read the first Sheet from Excel file.
+                IXLWorksheet workSheet = workBook.Worksheet(1);
+
+                workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
+                bool firstRow = true;
+                //Loop through the Worksheet rows.
+                foreach (IXLRow row in workSheet.Rows())
+                {
+                    if (firstRow)
+                    {
+                        firstRow = false;
+                    }
+                    else
+                    {
+                        if (!row.IsEmpty())
+                        {
+                            RowsInFile.Clear();
+
+                            foreach (IXLCell cell in row.Cells())
+                            {
+                                string toinsert = cell.Value.ToString();
+
+                                RowsInFile.Add(toinsert);
+                            }
+                            DataToReturn.Add(RowsInFile.ToArray());
+                        }
+                    }
+
+                }
+            }
+        }
+        return DataToReturn;
+    }
+
 
     private string[] SplitCSV(string input)
     {
