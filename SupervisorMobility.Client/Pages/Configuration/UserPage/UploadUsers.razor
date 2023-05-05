@@ -355,9 +355,25 @@
                                 </MudTd>
                                 break;
                             case 5:
-                                <MudTd DataLabel="Superior Supervisor">
-                                    <MudText Align="Align.Center">@context.Superior?.Name</MudText>
-                                </MudTd>
+                                @if (@context.Superior is null)
+                                {
+                                    <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                        <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
+                                        @foreach (var SS in _allUsers)
+                                        {
+                                            @if (SS.UserType == 3)
+                                            {
+                                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Superior SSV">
+                                        <MudText Align="Align.Center">@context.Superior?.Name</MudText>
+                                    </MudTd>
+                                }
                                 break;
                             case 6:
                                 <MudTd DataLabel="Superior SSV">
@@ -807,6 +823,7 @@
                 ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
                 ToInsertIntoList.Email = row[3] != "" ? row[3] : "";
                 ToInsertIntoList.PlantId = row[4] != "" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
 
                 try
                 {
@@ -814,15 +831,16 @@
                 }
                 catch (Exception ex)
                 {
-
+                    Console.WriteLine("Ex to try assign plant from list to user in SSV")
                 }
 
                 try
                 {
-                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+                    ToInsertIntoList.Group = _groups.Find(e => e.GroupId == ToInsertIntoList.GroupId);
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine("Ex to try assign group from list to user in SSV")
 
                 }
 
