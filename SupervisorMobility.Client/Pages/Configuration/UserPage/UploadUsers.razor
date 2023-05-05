@@ -40,6 +40,8 @@
                 @*File Upload*@
 
                 <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                    @*All Upload*@
+
                     <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users" OnClick="() => AssignType(1)">
 
                         <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
@@ -79,34 +81,56 @@
 
                         </MudItem>
                     </MudTabPanel>
+                    @*SSV Upload*@
 
                     <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's" OnClick="() => AssignType(2)">
 
                     </MudTabPanel>
+                    @*SUPERVISORS Upload*@
                     <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors" OnClick="() => AssignType(3)">
-                        Select SSV
-                        <MudSelect T="User" Label="Supervisors" Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
-                            @foreach (var SS in _allUsers)
-                            {
-                                @if (SS.UserType == 2)
-                                {
-                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
+                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                            @*Add To SSV Upload*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Supervisors" OnClick="() => AssignType(3)">
+                            </MudTabPanel>
+                            @*Add Supervisors to SSV*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To SSV's" OnClick="() => AssignType(4)">
+
+                                <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
+                                    @foreach (var SS in _allUsers)
+                                    {
+                                        @if (SS.UserType == 2)
+                                        {
+                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            </MudTabPanel>
+                        </MudTabs>
                     </MudTabPanel>
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators" OnClick="() => AssignType(4)">
-                        <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a Supervisor </MudSelectItem>
-                            @foreach (var SS in _allUsers)
-                            {
-                                @if (SS.UserType == 3)
-                                {
-                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
+                    @*Operators Upload Upload*@
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators" OnClick="() => AssignType(5)">
+                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                            @*Add Operators Upload*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Operators" OnClick="() => AssignType(5)">
+                            </MudTabPanel>
+                            @*Add Supervisors to SSV*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To Supervisor" OnClick="() => AssignType(6)">
+
+                                <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> Select a Supervisor </MudSelectItem>
+                                    @foreach (var SS in _allUsers)
+                                    {
+                                        @if (SS.UserType == 3)
+                                        {
+                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            </MudTabPanel>
+                        </MudTabs>
+
+
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>
@@ -133,6 +157,7 @@
                     </MudButton>
                     break;
                 case 3:
+                case 4:
                     <MudButton Href="https://github.com/MudBlazor/MudBlazor"
                        Target="_blank"
                        Variant="Variant.Outlined"
@@ -141,7 +166,8 @@
                         <b>Supervisors Format</b>
                     </MudButton>
                     break;
-                case 4:
+                case 5:
+                case 6:
                     <MudButton Href="https://github.com/MudBlazor/MudBlazor"
                        Target="_blank"
                        Variant="Variant.Outlined"
@@ -217,12 +243,12 @@
                     </ToolBarContent>
                     <HeaderContent>
 
-                        @if (uploadtype > 1 && uploadtype < 6)
+                        @if (uploadtype > 1 && uploadtype < 5)
                         {
                             <MudTh>Object Id</MudTh>
                         }
 
-                        @if (uploadtype > 5 || uploadtype < 2)
+                        @if (uploadtype > 4)
                         {
                             <MudTh>Payroll</MudTh>
                         }
@@ -231,24 +257,40 @@
 
 
 
-                        @if (uploadtype > 1 && uploadtype < 6)
+                        @if (uploadtype > 1 && uploadtype < 5)
                         {
                             <MudTh>Email</MudTh>
+                        }
+
+                        @if (uploadtype > 2)
+                        {
+                            <MudTh>Superior</MudTh>
 
                         }
 
                         <MudTh>Plant</MudTh>
-                        @if (uploadtype > 1 && uploadtype < 4)
+
+                        @if (uploadtype > 1 && uploadtype < 3)
                         {
                             <MudTh>Areas Manage</MudTh>
-
+                        }
+                        else if (uploadtype > 2 && uploadtype < 5)
+                        {
+                            <MudTh>Assigned Area</MudTh>
                         }
                         else
                         {
                             <MudTh>Area</MudTh>
                         }
 
-                        <MudTh>Grup</MudTh>
+
+                        @if (uploadtype > 4)
+                        {
+                            <MudTh>Distribution</MudTh>
+                        }
+
+
+                        <MudTh>Group</MudTh>
 
                         @if (uploadtype == 1)
                         {
@@ -256,18 +298,16 @@
                         }
 
 
-
-
                     </HeaderContent>
                     <RowTemplate>
-                        @if (uploadtype > 1 && uploadtype < 6)
+                        @if (uploadtype > 1 && uploadtype < 5)
                         {
                             <MudTd DataLabel="ObjectId">
                                 <MudText Align="Align.Center">@context.ObjectId</MudText>
                             </MudTd>
                         }
 
-                        @if (uploadtype > 5 || uploadtype < 2)
+                        @if (uploadtype > 4)
                         {
                             <MudTd DataLabel="Payroll">
                                 <MudText Align="Align.Center">@context.Payroll</MudText>
@@ -278,21 +318,62 @@
                             <MudText Align="Align.Center">@context.Name</MudText>
                         </MudTd>
 
-
-                        @if (uploadtype > 1 && uploadtype < 6)
+                        @if (uploadtype > 1 && uploadtype < 5)
                         {
-                           
                             <MudTd DataLabel="Email">
                                 <MudText Align="Align.Center">@context.Email</MudText>
                             </MudTd>
                         }
 
+                        @switch (uploadtype)
+                        {
+                            case 3:
+                                @if (@context.Superior is null)
+                                {
+                                    <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateContextItem(@context))"  Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                        <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
+                                        @foreach (var SS in _allUsers)
+                                        {
+                                            @if (SS.UserType == 2)
+                                            {
+                                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Superior SSV">
+                                        <MudText Align="Align.Center">@context.Superior?.Name</MudText>
+                                    </MudTd>
+                                }
+
+                                break;
+                            case 4:
+                                <MudTd DataLabel="Superior SSV">
+                                    <MudText Align="Align.Center">@selectedSSVOfList?.Name</MudText>
+                                </MudTd>
+                                break;
+                            case 5:
+                                <MudTd DataLabel="Superior Supervisor">
+                                    <MudText Align="Align.Center">@context.Superior?.Name</MudText>
+                                </MudTd>
+                                break;
+                            case 6:
+                                <MudTd DataLabel="Superior SSV">
+                                    <MudText Align="Align.Center">@context.Superior?.Name</MudText>
+
+                                </MudTd>
+                                break;
+
+                        }
+
                         <MudTd DataLabel="Plant">
                             <MudText Align="Align.Center">@context.Plant?.Description</MudText>
                         </MudTd>
-                        @if (uploadtype > 1 && uploadtype < 4)
+
+                        @if (uploadtype > 1 && uploadtype < 3)
                         {
-                            <MudTh>Areas Manage</MudTh>
                             <MudTd DataLabel="Area">
                                 @if (context.Areas?.Count > 0)
                                 {
@@ -303,6 +384,41 @@
                                 }
 
                             </MudTd>
+
+                        }
+                        else if (uploadtype > 2 && uploadtype < 5)
+                        {
+                            @if (context.Area != null)
+                            {
+                                <MudTd DataLabel="Assigned Area">
+                                    <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                                </MudTd>
+                            }
+                            else
+                            {
+                                @if (@context.Superior is null)
+                                {
+                                    <MudTd DataLabel="Assigned Area">
+                                        <MudText Align="Align.Center">Please Select a Superior</MudText>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Assigned Area">
+                                        @if (_areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)] is not null)
+                                        {
+                                            <MudSelect T="Area" Label="SSV" Placeholder="Assign Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" >
+                                                <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
+                                                @foreach (var item in _areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)])
+                                                {
+                                                     <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                    </MudTd>
+                                }
+
+                            }
                         }
                         else
                         {
@@ -310,6 +426,14 @@
                                 <MudText Align="Align.Center">@context.Area?.Description</MudText>
                             </MudTd>
                         }
+
+                        @if (uploadtype > 4)
+                        {
+                            <MudTd DataLabel="Distribution">
+                                <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                            </MudTd>
+                        }
+
 
                         <MudTd DataLabel="Group">
                             <MudText Align="Align.Center">@context.Group?.Description</MudText>
@@ -339,12 +463,6 @@
                             </MudTd>
                         }
 
-
-
-
-
-                       
-                        
                     </RowTemplate>
                     <PagerContent>
                         <MudTablePager />
@@ -399,6 +517,7 @@
 
     private List<User> _allUsers = new List<User>();
     private User selectedSSVOfList = new();
+    private User selectedSupervisorOfList = new();
     protected async override Task OnInitializedAsync()
     {
         _plants = await PlantsServices.GetPlants();
@@ -422,11 +541,24 @@
         };
 
 
-    private void AssignType(int value)
+    private async void AssignType(int value)
     {
         uploadtype = value;
+        await CancelFunction();
         StateHasChanged();
     }
+
+    private void UpdateContextItem(User ItemContext)
+    {
+        ItemContext.PlantId = ItemContext.Superior?.PlantId;
+        ItemContext.GroupId = ItemContext.Superior?.GroupId;
+
+        ItemContext.Group = ItemContext.Superior?.Group;
+        ItemContext.Plant = ItemContext.Superior?.Plant;
+
+        StateHasChanged();
+    }
+
 
     private async void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -488,17 +620,19 @@
                     switch (uploadtype)
                     {
                         case 1:
-                            break;
                             DataInDocument = await GetDataTableFromExcel(e.File);
+                            break;
                         case 2:
-                            break;
                             DataInDocument = await GetDataTableFromExcelSSV(e.File);
+                            break;
                         case 3:
-                            break;
-                            DataInDocument = await GetDataTableFromExcelSupervisors(e.File);
                         case 4:
+                            DataInDocument = await GetDataTableFromExcelSupervisors(e.File);
                             break;
+                        case 5:
+                        case 6:
                             DataInDocument = await GetDataTableFromExcelOperators(e.File);
+                            break;
                     }
 
                     isOkFile = true;
@@ -533,9 +667,11 @@
                     dataToShowInTable = CreateUsersSSV(DataInDocument);
                     break;
                 case 3:
+                case 4:
                     dataToShowInTable = CreateUsersSupervisors(DataInDocument);
                     break;
-                case 4:
+                case 5:
+                case 6:
                     dataToShowInTable = CreateUsersOperators(DataInDocument);
                     break;
             }
@@ -732,8 +868,64 @@
 
     public List<User> CreateUsersSupervisors(List<string[]> DataInDocument)
     {
+        List<User> ListtoReturn = new List<User>();
+        foreach (string[] row in DataInDocument)
+        {
+            try
+            {
+                var ToInsertIntoList = new User();
+                ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
+                ToInsertIntoList.ObjectId = row[1] != "" ? row[1] : "";
+                ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
+                ToInsertIntoList.Email = row[3] != "" ? row[3] : "";
 
-        return null;
+                ToInsertIntoList.SuperiorId = row[4] != "" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.AreaId = row[5] != "" ? int.Parse(row[5]) : -1;
+
+
+                try
+                {
+                    if (ToInsertIntoList.SuperiorId != -1)
+                    {
+                        ToInsertIntoList.Superior = _allUsers.Find(u => u.UserId == ToInsertIntoList.SuperiorId);
+
+                        ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
+                        ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+
+                        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+                        ToInsertIntoList.Group = _groups.Find(e => e.GroupId == ToInsertIntoList.GroupId);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error in try to assign info from supperior");
+                }
+
+                try
+                {
+                    if (ToInsertIntoList.AreaId != -1)
+                    {
+                        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error in try to assign area");
+                }
+
+                ListtoReturn.Add(ToInsertIntoList);
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"{ex.Message}");
+                showTableInUI = false;
+            }
+        }
+
+        return ListtoReturn;
     }
     public List<User> CreateUsersOperators(List<string[]> DataInDocument)
     {
