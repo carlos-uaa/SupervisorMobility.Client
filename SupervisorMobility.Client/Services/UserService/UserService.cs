@@ -190,5 +190,70 @@ namespace SupervisorMobility.Client.Services.UserService
 
             return false;
         }
+
+        //USERS FORMATS
+        public async Task DownloadAllUsersFormat()
+        {
+            var response = await _http.GetAsync($"Users/Bulk/DownloadAllUsersFormat");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "AllUsersFormat.xlsx", streamRef);
+            }
+        }
+
+        public async Task DownloadSSVFormat()
+        {
+            var response = await _http.GetAsync($"Users/Bulk/DownloadSSVFormat");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "SSVFormat.xlsx", streamRef);
+            }
+        }
+
+        public async Task DownloadSupervisorsFormat()
+        {
+            var response = await _http.GetAsync($"Users/Bulk/DownloadSupervisorFormat");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "SupervisorFormat.xlsx", streamRef);
+            }
+        }
+
+        public async Task DownloadOperatorsFormat()
+        {
+            var response = await _http.GetAsync($"Users/Bulk/DownloadOperatorsFormat");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "OperatorsFormat.xlsx", streamRef);
+            }
+        }
     }
 }

@@ -24,5 +24,10 @@ namespace SupervisorMobility.Client.Services.UserService
         //DELETE
         Task DeleteUser(int UserId);
 
+        //UsersFormat
+        Task DownloadAllUsersFormat();
+        Task DownloadSSVFormat();
+        Task DownloadSupervisorsFormat();
+        Task DownloadOperatorsFormat();
     }
 }

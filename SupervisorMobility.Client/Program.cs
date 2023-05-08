@@ -90,16 +90,23 @@ public class CustomHttpClientService
 {
     private readonly HttpClient _apiHttpClient;
     private readonly HttpClient _bridgeHttpClient;
+    private readonly HttpClient _ADHttpClint;
 
     public CustomHttpClientService()
     {
+
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
         _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
+        _ADHttpClint = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
         //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
         //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
     }
 
-    public HttpClient GetApiHttpClient()
+    public HttpClient GetADHttpClient()
+    {
+        return _ADHttpClint;
+    }
+        public HttpClient GetApiHttpClient()
     {
         return _apiHttpClient;
     }
