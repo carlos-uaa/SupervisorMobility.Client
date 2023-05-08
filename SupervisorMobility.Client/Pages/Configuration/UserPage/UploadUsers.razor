@@ -139,7 +139,7 @@
             @switch (uploadtype)
             {
                 case 1:
-                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                    <MudButton OnClick="DownloadAllFormat"
                        Target="_blank"
                        Variant="Variant.Outlined"
                        EndIcon="@Icons.Material.Filled.FileDownload"
@@ -148,7 +148,7 @@
                     </MudButton>
                     break;
                 case 2:
-                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                    <MudButton OnClick="DownloadSSVFormat"
                        Target="_blank"
                        Variant="Variant.Outlined"
                        EndIcon="@Icons.Material.Filled.FileDownload"
@@ -158,7 +158,7 @@
                     break;
                 case 3:
                 case 4:
-                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                    <MudButton OnClick="DownloadSupervisorsFormat"
                        Target="_blank"
                        Variant="Variant.Outlined"
                        EndIcon="@Icons.Material.Filled.FileDownload"
@@ -168,7 +168,7 @@
                     break;
                 case 5:
                 case 6:
-                    <MudButton Href="https://github.com/MudBlazor/MudBlazor"
+                    <MudButton OnClick="DownloadOperatorsFormat"
                        Target="_blank"
                        Variant="Variant.Outlined"
                        EndIcon="@Icons.Material.Filled.FileDownload"
@@ -621,6 +621,9 @@
                     {
                         case 1:
                             DataInDocument = await GetDataTableFromExcel(e.File);
+                            string[] line = DataInDocument[0];
+                            Console.WriteLine(line[0]);
+                            DataInDocument.RemoveAt(0);
                             break;
                         case 2:
                             DataInDocument = await GetDataTableFromExcelSSV(e.File);
@@ -645,36 +648,66 @@
                 }
             }
 
-            showTableInUI = true;
-
-            foreach (string[] row in DataInDocument)
-            {
-                Console.WriteLine("Linea");
-
-                foreach (var item in row)
-                {
-                    Console.WriteLine(item);
-                }
-            }
-
-
             switch (uploadtype)
             {
                 case 1:
-                    dataToShowInTable = CreateUsersAllArray(DataInDocument);
+                    string[] lineall = DataInDocument[0];
+                    if (lineall[0] != "UserId")
+                    {
+                        isOkFile = false;
+                        showTableInUI = false;
+                        ErrorMessageToDisplay = "This document does not belong to this section. ";
+                    }else{
+                        dataToShowInTable = CreateUsersAllArray(DataInDocument);
+
+                    }
                     break;
                 case 2:
-                    dataToShowInTable = CreateUsersSSV(DataInDocument);
+                    string[] lineSSV = DataInDocument[0];
+                    if (lineSSV[0] != "UserId SSV")
+                    {
+                        isOkFile = false;
+                        showTableInUI = false;
+                        ErrorMessageToDisplay = "This document does not belong to this section. ";
+                    }
+                    else
+                    {
+                        dataToShowInTable = CreateUsersSSV(DataInDocument);
+                    }
                     break;
                 case 3:
                 case 4:
-                    dataToShowInTable = CreateUsersSupervisors(DataInDocument);
+                    string[] lineSup = DataInDocument[0];
+                    if (lineSup[0] != "UserId Supervisor")
+                    {
+                        isOkFile = false;
+                        showTableInUI = false;
+                        ErrorMessageToDisplay = "This document does not belong to this section. ";
+                    }
+                    else
+                    {
+                        dataToShowInTable = CreateUsersSupervisors(DataInDocument);
+
+                    }
                     break;
                 case 5:
                 case 6:
-                    dataToShowInTable = CreateUsersOperators(DataInDocument);
+                    string[] lineOpe = DataInDocument[0];
+                    if (lineOpe[0] != "UserId Operator")
+                    {
+                        isOkFile = false;
+                        showTableInUI = false;
+                        ErrorMessageToDisplay = "This document does not belong to this section. ";
+                    }
+                    else
+                    {
+                        dataToShowInTable = CreateUsersOperators(DataInDocument);
+
+                    }
                     break;
             }
+
+           
         }
         onloadfile = false;
         StateHasChanged();
@@ -953,12 +986,7 @@
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    if (firstRow)
-                    {
-                        firstRow = false;
-                    }
-                    else
-                    {
+                    
                         if (!row.IsEmpty())
                         {
                             RowsInFile.Clear();
@@ -971,7 +999,7 @@
                             }
                             DataToReturn.Add(RowsInFile.ToArray());
                         }
-                    }
+                    
 
                 }
             }
@@ -999,12 +1027,7 @@
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    if (firstRow)
-                    {
-                        firstRow = false;
-                    }
-                    else
-                    {
+                    
                         if (!row.IsEmpty())
                         {
                             RowsInFile.Clear();
@@ -1017,7 +1040,7 @@
                             }
                             DataToReturn.Add(RowsInFile.ToArray());
                         }
-                    }
+                    
 
                 }
             }
@@ -1046,12 +1069,7 @@
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    if (firstRow)
-                    {
-                        firstRow = false;
-                    }
-                    else
-                    {
+                    
                         if (!row.IsEmpty())
                         {
                             RowsInFile.Clear();
@@ -1064,7 +1082,7 @@
                             }
                             DataToReturn.Add(RowsInFile.ToArray());
                         }
-                    }
+                    
 
                 }
             }
@@ -1092,12 +1110,7 @@
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    if (firstRow)
-                    {
-                        firstRow = false;
-                    }
-                    else
-                    {
+                   
                         if (!row.IsEmpty())
                         {
                             RowsInFile.Clear();
@@ -1110,7 +1123,7 @@
                             }
                             DataToReturn.Add(RowsInFile.ToArray());
                         }
-                    }
+                    
 
                 }
             }
@@ -1228,6 +1241,28 @@
 
 
     }
+
+    private async Task DownloadAllFormat()
+    {
+        await UsersServices.DownloadAllUsersFormat();
+    }
+
+    private async Task DownloadSSVFormat()
+    {
+        await UsersServices.DownloadSSVFormat();
+    }
+
+    private async Task DownloadSupervisorsFormat()
+    {
+        await UsersServices.DownloadSupervisorsFormat();
+    }
+
+    private async Task DownloadOperatorsFormat()
+    {
+        await UsersServices.DownloadOperatorsFormat();
+    }
+
+
 
 
 
