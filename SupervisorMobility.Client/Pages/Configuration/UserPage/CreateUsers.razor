@@ -150,12 +150,36 @@
                                 }
                             </MudSelect>
                         }
+                        else if(_user.UserType == 3 && LogedUser.UserType == 1){
+                            <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
+                            if(_user.Superior != null)
+                            {
+                                if(_user.Superior.Areas != null){
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                        @foreach (var type in _user.Superior.Areas)
+                                        {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
+                                    </MudAlert>
+                                }
+                                
+                            }
+
+                            <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
+                        }
                         else if(_user.UserType == 3 && LogedUser.UserType == 2){
                             <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
                             if(LogedUser.Areas != null){
-                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
                                     <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
-                                    @foreach (var type in LogedUser.Areas)
+                                @foreach (var type in LogedUser.Areas)
                                     {
                                     <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                                     }
@@ -167,7 +191,6 @@
                                     <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
                                 </MudAlert>
                             }
-
                             <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
                         }
                         else if (_user.UserType == 4)
@@ -537,7 +560,7 @@
                                                         {
                                                             <MudItem class="d-flex flex-column justify-center">
                                                                 <MudAlert Severity="Severity.Info">
-                                                                    <MudText Style="font-weight: bold;">This plant does not have Operators...</MudText>
+                                                                    <MudText Style="font-weight: bold;">This plant / area does not have Operators...</MudText>
                                                                 </MudAlert>
                                                             </MudItem>
                                                         }
@@ -762,7 +785,7 @@
                                                 @if (Operators?.Count > 0 && auxPlant != 0)
                                                 {
                                                     <MudSelect T="User" Label="Operators" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="Select Supervisor" @bind-Value="@selectedOperatorOfList" For="@(() => selectedOperatorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                        <MudSelectItem Disabled="true" Value="selectedOperatorOfList"> Select a Operator</MudSelectItem>
+                                                        <MudSelectItem Disabled="true" Value="selectedOperatorOfList"> Select an Operator</MudSelectItem>
                                                         @foreach (var SS in Operators)
                                                         {
                                                             @if (LogedUser.UserType == 1)
@@ -889,8 +912,8 @@
                             Supervisors.Add(item);
                         break;
                     case 4:
-                        if (item.PlantId == auxPlant)
-                            Operators.Add(item);
+                        //if (item.PlantId == auxPlant)
+                            //Operators.Add(item);
                         break;
                 }
             }
@@ -942,6 +965,14 @@
     private async void ShowDistributionInvokeByAreasSelector()
     {
         _user.DistributionId = 0;
+        Operators.Clear();
+
+
+        foreach (User item in _allUsers)
+        {
+            if (item.AreaId == auxArea && item.PlantId == auxPlant)
+                Operators.Add(item);
+        }
 
         if (auxPlant != 0 && auxArea != 0)
         {
@@ -990,7 +1021,7 @@
         IsSupervisor = switchNumber == 3 && !IsSupervisor;
         IsOperator = switchNumber == 4 && !IsOperator;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : switchNumber;
+        _user.UserTypce = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : switchNumber;
 
         if (switchNumber == 1 || switchNumber == 2)
         {
