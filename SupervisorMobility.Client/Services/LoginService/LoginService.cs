@@ -6,6 +6,8 @@ using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Net.Http.Json;
+using System.Net;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Services.LoginService
 {
@@ -46,11 +48,19 @@ namespace SupervisorMobility.Client.Services.LoginService
             var content = new StringContent(json, Encoding.UTF8, "application/json"); 
 
             var response = await _httpAD.PostAsync("", content);
-            
+
+            if(response.StatusCode != HttpStatusCode.OK)
+            {
+                return null;
+            }
+
             try
             {
-                var result = await response.Content.ReadFromJsonAsync<AD_User>(); // Leemos la respuesta
-                return result;
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>(); // Leemos la respuesta
+
+
+                    Console.WriteLine($"{result.response.cn}, {result.response.dn}, {result.response.sAMAccountName}, {result.response.userPrincipalName}");
+                    return result.response;
             }catch(Exception ex)
             {
                 return null;
