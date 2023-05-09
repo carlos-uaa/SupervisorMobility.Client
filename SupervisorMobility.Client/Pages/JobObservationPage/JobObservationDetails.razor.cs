@@ -54,9 +54,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool GosDialog = false;
         private bool searchAssychart = false;
 
-        private CDMS_CCP_Document? CcpFilesInFolder;
-        private CDMS_HOE_Document? HoeFilesInFolder;
-        private CDMS_GOS_Document? GosFilesInFolder;
+        private CDMS_CCP_Archives? CcpFilesInFolder;
+        private CDMS_HOE_Archives? HoeFilesInFolder;
+        private CDMS_GOS_Archives? GosFilesInFolder;
 
         private bool folderError = false;
         private string messageErrorFolders;
@@ -112,7 +112,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                                     messageErrorFolders = "The folders with the information provided were not located.";
                                 else
                                     searchAssychart = true;
-                            }catch( Exception ex)
+                            }
+                            catch (Exception ex)
                             {
                                 messageErrorFolders = "The folders with the information provided were not located.";
                             }
@@ -171,7 +172,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             Console.WriteLine($"gos {ruta}");
 
-            GosFilesInFolder = new CDMS_GOS_Document();
+            GosFilesInFolder = new CDMS_GOS_Archives();
 
             GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
             if (GosFilesInFolder == null)
@@ -189,7 +190,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             folderError = false;
             Console.WriteLine($"Cpc {ruta}");
 
-            CcpFilesInFolder = new CDMS_CCP_Document();
+            CcpFilesInFolder = new CDMS_CCP_Archives();
             CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
             if (CcpFilesInFolder == null)
                 folderError = true;
@@ -205,7 +206,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             Console.WriteLine($"hoe {ruta}");
 
             folderError = false;
-            HoeFilesInFolder = new CDMS_HOE_Document();
+            HoeFilesInFolder = new CDMS_HOE_Archives();
             HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
             if (HoeFilesInFolder == null)
                 folderError = true;
@@ -220,6 +221,75 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             var fileName = namefile;
             var fileURL = urlroute;
             await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+
+        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
+        {
+            var fileName = namefile;
+            var fileURL = urlroute;
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
+        {
+
+            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
+
+            if (DownloadLink is not null)
+            {
+                var fileName = namefile;
+                var fileURL = DownloadLink?.operation.URL;
+
+                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+
+                try
+                {
+                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+                    if (result == "File downloaded successfully")
+                    {
+                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
+                        if (DeleteTemp is not null)
+                        {
+                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+                }
+            }
+        }
+        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
+        {
+            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
+
+            if (DownloadLink is not null)
+            {
+                var fileName = namefile;
+                var fileURL = DownloadLink?.operation.URL;
+
+                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+
+                try
+                {
+                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+                    if (result == "File downloaded successfully")
+                    {
+                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
+                        if (DeleteTemp is not null)
+                        {
+                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+                }
+            }
+
         }
     }
 }

@@ -74,9 +74,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         TreeItemData SelectedNodeGOS { get; set; }
         TreeItemData SelectedNodeHOE { get; set; }
 
-        CDMS_GOS_Folder GOSFolders { get ; set; } = new  CDMS_GOS_Folder();
-        CDMS_CCP_Folder CCPFolders { get ; set; } = new CDMS_CCP_Folder();
-        CDMS_HOE_Folder HOEFolders { get ; set; } = new CDMS_HOE_Folder();
+        CDMS_GOS_Directory GOSFolders { get ; set; } = new  CDMS_GOS_Directory();
+        CDMS_CCP_Directory CCPFolders { get ; set; } = new CDMS_CCP_Directory();
+        CDMS_HOE_Directory HOEFolders { get ; set; } = new CDMS_HOE_Directory();
 
         private bool folderCCPError = false;
         private bool folderHOEError = false;
