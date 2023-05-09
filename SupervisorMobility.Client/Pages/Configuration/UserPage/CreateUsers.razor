@@ -896,30 +896,36 @@
         SeniorsSupervisors.Clear();
         Supervisors.Clear();
         Operators.Clear();
-        if (LogedUser.UserType != 1)
-        {
-            //Se muestra usuarios en base a la planta
-            foreach (User item in _allUsers)
-            {
-                switch (item.UserType)
-                {
-                    case 2:
-                        if (item.PlantId == auxPlant)
-                            SeniorsSupervisors.Add(item);
-                        break;
-                    case 3:
-                        if (item.PlantId == auxPlant)
-                            Supervisors.Add(item);
-                        break;
-                    case 4:
-                        //if (item.PlantId == auxPlant)
-                            //Operators.Add(item);
-                        break;
-                }
-            }
-        }
-        else
-        {
+        //if (LogedUser.UserType != 1)
+        //{
+        //    //Se muestra usuarios en base a la planta
+        //    foreach (User item in _allUsers)
+        //    {
+        //        switch (item.UserType)
+        //        {
+        //            case 2:
+
+
+        //                //if (item.PlantId == auxPlant){
+        //                //    SeniorsSupervisors.Add(item);
+        //                //}
+                          
+        //                break;
+        //            case 3:
+
+        //                if (item.PlantId == auxPlant)
+        //                    Supervisors.Add(item);
+        //                break;
+        //            case 4:
+
+        //                //if (item.PlantId == auxPlant)
+        //                //    Operators.Add(item);
+        //                break;
+        //        }
+        //    }
+        //}
+        //else
+        //{
             //El admin accesa a todo
             foreach (User item in _allUsers)
             {
@@ -936,7 +942,7 @@
                         break;
                 }
             }
-        }
+        //}
 
         auxArea = 0;
         auxDistribution = 0;
@@ -970,7 +976,7 @@
 
         foreach (User item in _allUsers)
         {
-            if (item.AreaId == auxArea && item.PlantId == auxPlant)
+            if (item.AreaId == auxArea && item.PlantId == auxPlant && item.UserType == 4 && item.GroupId == auxGroup)
                 Operators.Add(item);
         }
 
@@ -1014,43 +1020,69 @@
 
 
 
-    private void setActiveUser(int switchNumber)
+    private void setActiveUser(int userType)
     {
-        IsAdmin = switchNumber == 1 && !IsAdmin;
-        IsSeniorSupervisor = switchNumber == 2 && !IsSeniorSupervisor;
-        IsSupervisor = switchNumber == 3 && !IsSupervisor;
-        IsOperator = switchNumber == 4 && !IsOperator;
+        IsAdmin = userType == 1 && !IsAdmin;
+        IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
+        IsSupervisor = userType == 3 && !IsSupervisor;
+        IsOperator = userType == 4 && !IsOperator;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : switchNumber;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
 
-        if (switchNumber == 1 || switchNumber == 2)
+        switch (userType)
         {
-            RemoveSuperiorUser();
-        }
+            case 1: RemoveSuperiorUser(); break;
+            case 2: RemoveSuperiorUser(); break;
+            case 3: 
+                if(LogedUser.UserType == 2){
+                    auxPlant = (int)LogedUser.PlantId;
+                    auxArea = (int)LogedUser.AreaId;
+                    auxGroup = (int)LogedUser.GroupId;
 
-        if (switchNumber >= 3 && LogedUser.UserType != 1)
-        {
-            auxPlant = (int)LogedUser.PlantId;
-            auxArea = (int)LogedUser.AreaId;
-            auxGroup = (int)LogedUser.GroupId;
+                    _user.SuperiorId = LogedUser.UserId;
+                    _user.Superior = LogedUser;
+                    superior = true;
 
-            _user.SuperiorId = LogedUser.UserId;
-            _user.Superior = LogedUser;
-            superior = true;
+                    _user.PlantId = _user.Superior?.PlantId;
+                    _user.AreaId = _user.Superior?.AreaId;
+                    _user.GroupId = _user.Superior?.GroupId;
 
-            _user.PlantId = _user.Superior?.PlantId;
-            _user.AreaId = _user.Superior?.AreaId;
-            _user.GroupId = _user.Superior?.GroupId;
+                    plantInfo = _user.Superior?.Plant?.Description;
+                    areaInfo = _user.Superior?.Area?.Description;
+                    grupInfo = _user.Superior?.Group?.Description;
+                }
+                else
+                {
+                    auxPlant = 0;
+                    auxArea = 0;
+                    _user.GroupId = 0;
+                }
+                break;
+            case 4:
+                if(LogedUser.UserType == 3){
+                    auxPlant = (int)LogedUser.PlantId;
+                    auxArea = (int)LogedUser.AreaId;
+                    auxGroup = (int)LogedUser.GroupId;
 
-            plantInfo = _user.Superior?.Plant?.Description;
-            areaInfo = _user.Superior?.Area?.Description;
-            grupInfo = _user.Superior?.Group?.Description;
-        }
-        else
-        {
-            auxPlant = 0;
-            auxArea = 0;
-            _user.GroupId = 0;
+                    _user.SuperiorId = LogedUser.UserId;
+                    _user.Superior = LogedUser;
+                    superior = true;
+
+                    _user.PlantId = _user.Superior?.PlantId;
+                    _user.AreaId = _user.Superior?.AreaId;
+                    _user.GroupId = _user.Superior?.GroupId;
+
+                    plantInfo = _user.Superior?.Plant?.Description;
+                    areaInfo = _user.Superior?.Area?.Description;
+                    grupInfo = _user.Superior?.Group?.Description;
+                }
+                else{
+                    auxPlant = 0;
+                    auxArea = 0;
+                    _user.GroupId = 0;
+                }
+                break;
+            
         }
 
         _user.Subordinates?.Clear();
