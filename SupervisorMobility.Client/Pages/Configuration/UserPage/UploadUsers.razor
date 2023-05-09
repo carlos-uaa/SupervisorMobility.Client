@@ -621,9 +621,6 @@
                     {
                         case 1:
                             DataInDocument = await GetDataTableFromExcel(e.File);
-                            string[] line = DataInDocument[0];
-                            Console.WriteLine(line[0]);
-                            DataInDocument.RemoveAt(0);
                             break;
                         case 2:
                             DataInDocument = await GetDataTableFromExcelSSV(e.File);
@@ -658,9 +655,9 @@
                         showTableInUI = false;
                         ErrorMessageToDisplay = "This document does not belong to this section. ";
                     }else{
+                        isOkFile = true;
                         dataToShowInTable = CreateUsersAllArray(DataInDocument);
-
-                    }
+                    } 
                     break;
                 case 2:
                     string[] lineSSV = DataInDocument[0];
@@ -672,6 +669,7 @@
                     }
                     else
                     {
+                        isOkFile = true;
                         dataToShowInTable = CreateUsersSSV(DataInDocument);
                     }
                     break;
@@ -686,8 +684,8 @@
                     }
                     else
                     {
+                        isOkFile = true;
                         dataToShowInTable = CreateUsersSupervisors(DataInDocument);
-
                     }
                     break;
                 case 5:
@@ -701,14 +699,21 @@
                     }
                     else
                     {
+                        isOkFile = true;
                         dataToShowInTable = CreateUsersOperators(DataInDocument);
-
                     }
                     break;
             }
 
-           
+            if (isOkFile)
+            {
+                ErrorMessageToDisplay = "";
+                showTableInUI = true;
+            }
         }
+
+
+
         onloadfile = false;
         StateHasChanged();
     }
@@ -818,7 +823,6 @@
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine($"{ex.Message}");
                 showTableInUI = false;
             }

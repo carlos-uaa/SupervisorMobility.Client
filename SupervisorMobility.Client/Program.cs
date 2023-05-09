@@ -97,8 +97,8 @@ public class CustomHttpClientService
 
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
         //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
+        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
         _ADHttpClint = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
     }
 
