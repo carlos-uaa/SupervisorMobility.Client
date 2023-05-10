@@ -10,6 +10,7 @@ global using SupervisorMobility.Client.Services.GroupService;
 global using SupervisorMobility.Client.Services.GlosaryService;
 global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
+global using SupervisorMobility.Client.Services.LoginService;
 global using SupervisorMobility.Client.Services.LupService;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IGlosaryService, GlosaryService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
@@ -94,12 +96,12 @@ public class CustomHttpClientService
 
     public CustomHttpClientService()
     {
-        _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
-        _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
-        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
-        //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
+        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
+        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
+        //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
+        _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
+        _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
     }
 
     public HttpClient GetADHttpClient()
