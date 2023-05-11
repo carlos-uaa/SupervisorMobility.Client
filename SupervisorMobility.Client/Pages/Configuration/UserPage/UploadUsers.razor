@@ -23,167 +23,163 @@
 
 
 
-<MudContainer Fixed="true" Class="py-3">
-    <MudGrid>
-        <MudItem xs="1" xl="1" class="align-center justify-center mud-width-full">
-            <MudImage Src="Images/userup.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+<MudContainer Fixed="true" Class="py-2 d-flex flex-row align-center justify-center">
+
+    <MudItem class="align-center justify-center">
+        <MudImage Src="Images/userup.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+    </MudItem>
+    <MudItem id="Upload" class="d-flex flex-column ma-5">
+        <MudItem Class="d-flex flex-row align-center justify-center">
+            <MudSpacer />
+            <MudText Typo="Typo.h6">Upload Users</MudText>
+            <MudSpacer />
         </MudItem>
-        <MudItem id="Upload" xs="9" xl="9" class="d-flex flex-column">
-            <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
-
-                <MudSpacer />
-                <MudText Typo="Typo.h6">Upload Users</MudText>
-                <MudSpacer />
-
-            </MudItem>
-            <MudItem Class="d-flex flex-column align-center justify-center">
-                @*File Upload*@
-
-                <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                    @*All Upload*@
-
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users" OnClick="() => AssignType(1)">
-
-                        <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
-
-                            <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
-                            @if (showResume)
-                            {
-                                <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
-                                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-                                        <MudItem style="text-align:center">
-                                            <img src="Images/useradd.png" Height="100" Width="100" />
-                                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersCreated </MudText>
-                                        </MudItem>
-                                    </MudPaper>
-                                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
-                                        <MudItem style="text-align:center">
-                                            <img src="Images/userexist.png" Height="100" Width="100" />
-                                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
-                                        </MudItem>
-                                    </MudPaper>
-                                </MudPaper>
-                            }
-                            else
-                            {
-                                if (activeUpload)
-                                {
-                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                                }
-                            }
 
 
-                            @if (onloadfile)
-                            {
-                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                            }
+        @*ErrorMsg, Resume and animation Upload File*@
+        <MudItem Class="d-flex flex-column align-center justify-center mud-width-full">
 
-
-                        </MudItem>
-                    </MudTabPanel>
-                    @*SSV Upload*@
-
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload SSV's" OnClick="() => AssignType(2)">
-
-                    </MudTabPanel>
-                    @*SUPERVISORS Upload*@
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Supervisors" OnClick="() => AssignType(3)">
-                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                            @*Add To SSV Upload*@
-                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Supervisors" OnClick="() => AssignType(3)">
-                            </MudTabPanel>
-                            @*Add Supervisors to SSV*@
-                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To SSV's" OnClick="() => AssignType(4)">
-
-                                <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                    <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
-                                    @foreach (var SS in _allUsers)
-                                    {
-                                        @if (SS.UserType == 2)
-                                        {
-                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                        }
-                                    }
-                                </MudSelect>
-                            </MudTabPanel>
-                        </MudTabs>
-                    </MudTabPanel>
-                    @*Operators Upload Upload*@
-                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Upload Operators" OnClick="() => AssignType(5)">
-                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                            @*Add Operators Upload*@
-                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Operators" OnClick="() => AssignType(5)">
-                            </MudTabPanel>
-                            @*Add Supervisors to SSV*@
-                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To Supervisor" OnClick="() => AssignType(6)">
-
-                                <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> Select a Supervisor </MudSelectItem>
-                                    @foreach (var SS in _allUsers)
-                                    {
-                                        @if (SS.UserType == 3)
-                                        {
-                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                        }
-                                    }
-                                </MudSelect>
-                            </MudTabPanel>
-                        </MudTabs>
-
-
-                    </MudTabPanel>
-                </MudTabs>
-            </MudItem>
-        </MudItem>
-        <MudItem xs="2" xl="2" class="align-center justify-center mud-width-full">
-            @switch (uploadtype)
+            <MudText Typo="Typo.h6" Color="Color.Info" Class="py-5">@ErrorMessageToDisplay </MudText>
+            @if (showResume)
             {
-                case 1:
-                    <MudButton OnClick="DownloadAllFormat"
-                       Target="_blank"
-                       Variant="Variant.Outlined"
-                       EndIcon="@Icons.Material.Filled.FileDownload"
-                       Color="Color.Primary" FullWidth="true">
-                        <b>All Upload Format</b>
-                    </MudButton>
-                    break;
-                case 2:
-                    <MudButton OnClick="DownloadSSVFormat"
-                       Target="_blank"
-                       Variant="Variant.Outlined"
-                       EndIcon="@Icons.Material.Filled.FileDownload"
-                       Color="Color.Primary" FullWidth="true">
-                        <b>SSV Format</b>
-                    </MudButton>
-                    break;
-                case 3:
-                case 4:
-                    <MudButton OnClick="DownloadSupervisorsFormat"
-                       Target="_blank"
-                       Variant="Variant.Outlined"
-                       EndIcon="@Icons.Material.Filled.FileDownload"
-                       Color="Color.Primary" FullWidth="true">
-                        <b>Supervisors Format</b>
-                    </MudButton>
-                    break;
-                case 5:
-                case 6:
-                    <MudButton OnClick="DownloadOperatorsFormat"
-                       Target="_blank"
-                       Variant="Variant.Outlined"
-                       EndIcon="@Icons.Material.Filled.FileDownload"
-                       Color="Color.Primary" FullWidth="true">
-                        <b>Operators Format</b>
-                    </MudButton>
-                    break;
+                <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                        <MudItem style="text-align:center">
+                            <img src="Images/useradd.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersCreated </MudText>
+                        </MudItem>
+                    </MudPaper>
+                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                        <MudItem style="text-align:center">
+                            <img src="Images/userexist.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
+                        </MudItem>
+                    </MudPaper>
+                </MudPaper>
             }
+            else
+            {
+                if (activeUpload)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                }
+            }
+
+
+            @if (onloadfile)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+            }
+
+
         </MudItem>
+        <MudItem Class="d-flex flex-column align-center justify-center my-3">
+
+            @*Principal TABS*@
+            <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                @*All Upload*@
+                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Type Users" OnClick="() => AssignType(1)">
+                </MudTabPanel>
+                @*SSV Upload*@
+                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="SSV's" OnClick="() => AssignType(2)">
+
+                </MudTabPanel>
+                @*SUPERVISORS Upload*@
+                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Supervisors" OnClick="() => AssignType(3)">
+                    <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                        @*Add To SSV Upload*@
+                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Supervisors" OnClick="() => AssignType(3)">
+                        </MudTabPanel>
+                        @*Add Supervisors to SSV*@
+                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To SSV's" OnClick="() => AssignType(4)">
+
+                            <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Disabled="true" Value="selectedSSVOfList"> Select a SSV  </MudSelectItem>
+                                @foreach (var SS in _allUsers)
+                                {
+                                    @if (SS.UserType == 2)
+                                    {
+                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        </MudTabPanel>
+                    </MudTabs>
+                </MudTabPanel>
+                @*Operators Upload Upload*@
+                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Operators" OnClick="() => AssignType(5)">
+                    <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                        @*Add Operators Upload*@
+                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Operators" OnClick="() => AssignType(5)">
+                        </MudTabPanel>
+                        @*Add Supervisors to SSV*@
+                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To Supervisor" OnClick="() => AssignType(6)">
+
+                            <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> Select a Supervisor </MudSelectItem>
+                                @foreach (var SS in _allUsers)
+                                {
+                                    @if (SS.UserType == 3)
+                                    {
+                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        </MudTabPanel>
+                    </MudTabs>
 
 
-    </MudGrid>
+                </MudTabPanel>
+            </MudTabs>
+        </MudItem>
+    </MudItem>
+    <MudItem class="align-center justify-center mud-width-full">
+        @switch (uploadtype)
+        {
+            case 1:
+                <MudButton OnClick="DownloadAllFormat"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary" FullWidth="true">
+                    <b>All Upload Format</b>
+                </MudButton>
+                break;
+            case 2:
+                <MudButton OnClick="DownloadSSVFormat"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary" FullWidth="true">
+                    <b>SSV Format</b>
+                </MudButton>
+                break;
+            case 3:
+            case 4:
+                <MudButton OnClick="DownloadSupervisorsFormat"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary" FullWidth="true">
+                    <b>Supervisors Format</b>
+                </MudButton>
+                break;
+            case 5:
+            case 6:
+                <MudButton OnClick="DownloadOperatorsFormat"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary" FullWidth="true">
+                    <b>Operators Format</b>
+                </MudButton>
+                break;
+        }
+    </MudItem>
+
 </MudContainer>
 
-@*Unique File Uploader*@
+@*File Upload*@
 <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
     <MudStack Style="width: 80%">
         <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
@@ -243,10 +239,7 @@
                     </ToolBarContent>
                     <HeaderContent>
 
-                        @if (uploadtype > 1 && uploadtype < 5)
-                        {
-                            <MudTh>Object Id</MudTh>
-                        }
+
 
                         @if (uploadtype > 4)
                         {
@@ -300,12 +293,6 @@
 
                     </HeaderContent>
                     <RowTemplate>
-                        @if (uploadtype > 1 && uploadtype < 5)
-                        {
-                            <MudTd DataLabel="ObjectId">
-                                <MudText Align="Align.Center">@context.ObjectId</MudText>
-                            </MudTd>
-                        }
 
                         @if (uploadtype > 4)
                         {
@@ -328,31 +315,47 @@
                         @switch (uploadtype)
                         {
                             case 3:
-                                @if (@context.Superior is null)
+
+                                @if (context.SuperiorId != -1)
                                 {
-                                    <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateContextItem(@context))"  Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                        <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
-                                        @foreach (var SS in _allUsers)
-                                        {
-                                            @if (SS.UserType == 2)
+                                    <MudTd DataLabel="Superior SSV">
+                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                            <MudTextField @bind-Value="@context.Superior.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                        </MudItem>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                     <MudTd DataLabel="Superior SSV">
+
+                                        <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                            <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
+                                            @foreach (var SS in _allUsers)
                                             {
-                                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                @if (SS.UserType == 2)
+                                                {
+                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                }
                                             }
-                                        }
-                                    </MudSelect>
+                                        </MudSelect>
+                                    </MudTd>
+                                    
+                                }
+
+                    break;
+                            case 4:
+                                @if (selectedSSVOfList is null)
+                                {
+                                    <MudTd DataLabel="Superior SSV">
+                                        <MudText Align="Align.Center">Please Select Superior of List</MudText>
+                                    </MudTd>
                                 }
                                 else
                                 {
                                     <MudTd DataLabel="Superior SSV">
-                                        <MudText Align="Align.Center">@context.Superior?.Name</MudText>
+                                        <MudText Align="Align.Center">@selectedSSVOfList?.Name</MudText>
                                     </MudTd>
                                 }
-
-                                break;
-                            case 4:
-                                <MudTd DataLabel="Superior SSV">
-                                    <MudText Align="Align.Center">@selectedSSVOfList?.Name</MudText>
-                                </MudTd>
                                 break;
                             case 5:
                                 <MudTd DataLabel="Superior Supervisor">
@@ -360,21 +363,41 @@
                                 </MudTd>
                                 break;
                             case 6:
-                                <MudTd DataLabel="Superior SSV">
+                                <MudTd DataLabel="Superior Supervisor">
                                     <MudText Align="Align.Center">@context.Superior?.Name</MudText>
-
                                 </MudTd>
                                 break;
 
                         }
 
                         <MudTd DataLabel="Plant">
-                            <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+                            @if (context.Plant is null)
+                            {
+                                <MudSelect SelectedValuesChanged="@(() => updateSelectPlantContextItem(context))" T="Plant" Label="Plant" Placeholder="Assign Plant" @bind-Value="@context.Plant" For="@(() => @context.Plant)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="@context.Plant"> Assign Plant  </MudSelectItem>
+                                    @foreach (var item in _plants)
+                                    {
+                                        <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+
+                                <MudItem Class="d-flex justify-content-center align-items-center">
+
+                                    <MudTextField @bind-Value="@context.Plant.Description" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
+
+
+                                </MudItem>
+
+                            }
+
                         </MudTd>
 
                         @if (uploadtype > 1 && uploadtype < 3)
                         {
-                            <MudTd DataLabel="Area">
+                            <MudTd DataLabel="Areas Manage">
                                 @if (context.Areas?.Count > 0)
                                 {
                                     @foreach (var item in context.Areas)
@@ -382,9 +405,11 @@
                                         <MudText Align="Align.Center">@item.Description</MudText>
                                     }
                                 }
-
+                                else
+                                {
+                                    //Dialog para añadir areas maybe
+                                }
                             </MudTd>
-
                         }
                         else if (uploadtype > 2 && uploadtype < 5)
                         {
@@ -407,11 +432,11 @@
                                     <MudTd DataLabel="Assigned Area">
                                         @if (_areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)] is not null)
                                         {
-                                            <MudSelect T="Area" Label="SSV" Placeholder="Assign Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" >
+                                            <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                 <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
                                                 @foreach (var item in _areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)])
                                                 {
-                                                     <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                    <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
                                                 }
                                             </MudSelect>
                                         }
@@ -437,6 +462,24 @@
 
                         <MudTd DataLabel="Group">
                             <MudText Align="Align.Center">@context.Group?.Description</MudText>
+
+                            @if (context.Group is null)
+                            {
+                                <MudSelect SelectedValuesChanged="@(() => updateSelectGroupContextItem(@context))" T="Data.Entities.Group" Label="Group" Placeholder="Select Group" @bind-Value="@context.Group" For="@(() => @context.Group)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="@context.Group"> Assign Group  </MudSelectItem>
+                                    @foreach (var item in _groups)
+                                    {
+                                        <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudItem Class="d-flex justify-content-center align-items-center">
+                                    <MudTextField @bind-Value="@context.Group.Description" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedGroupContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                </MudItem>
+                            }
+
                         </MudTd>
 
                         @if (uploadtype == 1)
@@ -474,7 +517,22 @@
 </MudContainer>
 <MudSpacer></MudSpacer>
 
+<MudDialog DisableSidePadding="false" @bind-IsVisible="AreasManagerVisibleDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Area Manager
+                </MudText>
+            </MudItem>
 
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="CloseDialog">Close</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 
@@ -501,6 +559,8 @@
     private IBrowserFile? FileSource;
     private bool ToCreate = false;
     private bool onloadfile = false;
+    private bool AreasManagerVisibleDialog = false;
+
 
     private bool showResume = false;
     private bool activeUpload = false;
@@ -530,6 +590,9 @@
         _groups = await GroupServices.GetGroups();
 
         _allUsers = await UsersServices.GetUsersWhitCollections();
+
+        selectedSSVOfList = null;
+        selectedSupervisorOfList = null;
     }
 
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -548,7 +611,7 @@
         StateHasChanged();
     }
 
-    private void UpdateContextItem(User ItemContext)
+    private void UpdateSelectSuperiorContextItem(User ItemContext)
     {
         ItemContext.PlantId = ItemContext.Superior?.PlantId;
         ItemContext.GroupId = ItemContext.Superior?.GroupId;
@@ -556,6 +619,53 @@
         ItemContext.Group = ItemContext.Superior?.Group;
         ItemContext.Plant = ItemContext.Superior?.Plant;
 
+        StateHasChanged();
+    }
+
+    private void RemoveSelectedSuperiorContextItem(User ItemContext)
+    {
+        switch (uploadtype)
+        {
+            case 3:
+            case 5:
+                ItemContext.Superior = null;
+                ItemContext.SuperiorId = null;
+                ItemContext.Plant = null;
+                ItemContext.PlantId = null;
+                ItemContext.Area = null;
+                ItemContext.AreaId = null;
+                ItemContext.Group = null;
+                ItemContext.GroupId = null;
+                break;
+        }
+
+        StateHasChanged();
+    }
+
+
+    private void updateSelectPlantContextItem(User ItemContext)
+    {
+        ItemContext.PlantId = ItemContext.Plant?.PlantId;
+        StateHasChanged();
+    }
+
+    private void RemoveSelectedPlantContextItem(User ItemContext)
+    {
+        ItemContext.PlantId = null;
+        ItemContext.Plant = null;
+        StateHasChanged();
+    }
+
+    private void updateSelectGroupContextItem(User ItemContext)
+    {
+        ItemContext.GroupId = ItemContext.Group?.GroupId;
+        StateHasChanged();
+    }
+
+    private void RemoveSelectedGroupContextItem(User ItemContext)
+    {
+        ItemContext.GroupId = null;
+        ItemContext.Group = null;
         StateHasChanged();
     }
 
@@ -644,7 +754,7 @@
                     Console.WriteLine(ex.ToString());
                 }
             }
-
+            showTableInUI = true;
             switch (uploadtype)
             {
                 case 1:
@@ -654,10 +764,13 @@
                         isOkFile = false;
                         showTableInUI = false;
                         ErrorMessageToDisplay = "This document does not belong to this section. ";
-                    }else{
+                    }
+                    else
+                    {
+                        DataInDocument.RemoveAt(0);
                         isOkFile = true;
                         dataToShowInTable = CreateUsersAllArray(DataInDocument);
-                    } 
+                    }
                     break;
                 case 2:
                     string[] lineSSV = DataInDocument[0];
@@ -669,6 +782,7 @@
                     }
                     else
                     {
+                        DataInDocument.RemoveAt(0);
                         isOkFile = true;
                         dataToShowInTable = CreateUsersSSV(DataInDocument);
                     }
@@ -685,6 +799,7 @@
                     else
                     {
                         isOkFile = true;
+                        DataInDocument.RemoveAt(0);
                         dataToShowInTable = CreateUsersSupervisors(DataInDocument);
                     }
                     break;
@@ -700,6 +815,7 @@
                     else
                     {
                         isOkFile = true;
+                        DataInDocument.RemoveAt(0);
                         dataToShowInTable = CreateUsersOperators(DataInDocument);
                     }
                     break;
@@ -708,7 +824,6 @@
             if (isOkFile)
             {
                 ErrorMessageToDisplay = "";
-                showTableInUI = true;
             }
         }
 
@@ -840,10 +955,11 @@
             {
                 var ToInsertIntoList = new User();
                 ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
-                ToInsertIntoList.ObjectId = row[1] != "" ? row[1] : "";
-                ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
-                ToInsertIntoList.Email = row[3] != "" ? row[3] : "";
-                ToInsertIntoList.PlantId = row[4] != "" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.Name = row[1] != "" ? row[1] : "";
+                ToInsertIntoList.Email = row[2] != "" ? row[2] : "";
+                ToInsertIntoList.PlantId = row[3] != "" ? int.Parse(row[3]) : -1;
+                ToInsertIntoList.GroupId = row[4] != "" ? int.Parse(row[4]) : -1;
+                string[]? SplitedAreas = row[5] != "" ? row[5].Split(',') : null;
 
                 try
                 {
@@ -851,21 +967,21 @@
                 }
                 catch (Exception ex)
                 {
-
+                    Console.WriteLine($"Error assign plant to:{ToInsertIntoList.Name}");
                 }
 
                 try
                 {
-                    ToInsertIntoList.GroupId = row[5] != "" ? int.Parse(row[5]) : -1;
+                    ToInsertIntoList.Group = _groups.Find(e => e.GroupId == ToInsertIntoList.GroupId);
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($"Error assign group to:{ToInsertIntoList.Name}");
 
                 }
 
                 try
                 {
-                    string[] SplitedAreas = row[6].Split(';');
 
                     if (ToInsertIntoList.Areas != null)
                     {
@@ -886,7 +1002,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error Splite Areas");
+                    Console.WriteLine($"Error Splite Areas of :{ToInsertIntoList.Name}");
                 }
 
 
@@ -912,12 +1028,11 @@
             {
                 var ToInsertIntoList = new User();
                 ToInsertIntoList.UserId = row[0] != "" ? int.Parse(row[0]) : -1;
-                ToInsertIntoList.ObjectId = row[1] != "" ? row[1] : "";
-                ToInsertIntoList.Name = row[2] != "" ? row[2] : "";
-                ToInsertIntoList.Email = row[3] != "" ? row[3] : "";
+                ToInsertIntoList.Name = row[1] != "" ? row[1] : "";
+                ToInsertIntoList.Email = row[2] != "" ? row[2] : "";
 
-                ToInsertIntoList.SuperiorId = row[4] != "" ? int.Parse(row[4]) : -1;
-                ToInsertIntoList.AreaId = row[5] != "" ? int.Parse(row[5]) : -1;
+                ToInsertIntoList.SuperiorId = row[3] != "" ? int.Parse(row[3]) : -1;
+                ToInsertIntoList.AreaId = row[4] != "" ? int.Parse(row[4]) : -1;
 
 
                 try
@@ -931,6 +1046,10 @@
 
                         ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
                         ToInsertIntoList.Group = _groups.Find(e => e.GroupId == ToInsertIntoList.GroupId);
+                    }
+                    else
+                    {
+                        ToInsertIntoList.Superior = null;
                     }
 
                 }
@@ -990,20 +1109,26 @@
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    
-                        if (!row.IsEmpty())
+
+                    if (!row.IsEmpty())
+                    {
+                        RowsInFile.Clear();
+
+                        foreach (IXLCell cell in row.Cells())
                         {
-                            RowsInFile.Clear();
+                            string toinsert = "";
 
-                            foreach (IXLCell cell in row.Cells())
+                            // Verificar si la celda no está vacía antes de obtener su valor
+                            if (!cell.IsEmpty())
                             {
-                                string toinsert = cell.Value.ToString();
-
-                                RowsInFile.Add(toinsert);
+                                toinsert = cell.Value.ToString();
                             }
-                            DataToReturn.Add(RowsInFile.ToArray());
+
+                            RowsInFile.Add(toinsert);
                         }
-                    
+                        DataToReturn.Add(RowsInFile.ToArray());
+                    }
+
 
                 }
             }
@@ -1025,27 +1150,31 @@
 
                 workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("C").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
-                workSheet.Column("G").Style.Font.Underline = XLFontUnderlineValues.Single;
-                bool firstRow = true;
-                //Loop through the Worksheet rows.
+                workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("F").Style.Font.Underline = XLFontUnderlineValues.Single;
+
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    
-                        if (!row.IsEmpty())
+                    if (!row.IsEmpty())
+                    {
+                        RowsInFile.Clear();
+
+                        foreach (IXLCell cell in row.Cells())
                         {
-                            RowsInFile.Clear();
+                            string toinsert = "";
 
-                            foreach (IXLCell cell in row.Cells())
+                            // Verificar si la celda no está vacía antes de obtener su valor
+                            if (!cell.IsEmpty())
                             {
-                                string toinsert = cell.Value.ToString();
+                                toinsert = cell.Value.ToString();
+                            };
 
-                                RowsInFile.Add(toinsert);
-                            }
-                            DataToReturn.Add(RowsInFile.ToArray());
+                            RowsInFile.Add(toinsert);
                         }
-                    
-
+                        DataToReturn.Add(RowsInFile.ToArray());
+                    }
                 }
             }
         }
@@ -1066,28 +1195,31 @@
 
                 workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("C").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("F").Style.Font.Underline = XLFontUnderlineValues.Single;
-                bool firstRow = true;
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                    
-                        if (!row.IsEmpty())
+                    if (!row.IsEmpty())
+                    {
+                        RowsInFile.Clear();
+
+                        foreach (IXLCell cell in row.Cells())
                         {
-                            RowsInFile.Clear();
+                            string toinsert = "";
 
-                            foreach (IXLCell cell in row.Cells())
+                            // Verificar si la celda no está vacía antes de obtener su valor
+                            if (!cell.IsEmpty())
                             {
-                                string toinsert = cell.Value.ToString();
-
-                                RowsInFile.Add(toinsert);
+                                toinsert = cell.Value.ToString();
                             }
-                            DataToReturn.Add(RowsInFile.ToArray());
-                        }
-                    
 
+                            RowsInFile.Add(toinsert);
+                        }
+                        DataToReturn.Add(RowsInFile.ToArray());
+                    }
                 }
             }
         }
@@ -1108,26 +1240,33 @@
 
                 workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
+                workSheet.Column("C").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
                 workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
                 bool firstRow = true;
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
-                   
-                        if (!row.IsEmpty())
+
+                    if (!row.IsEmpty())
+                    {
+                        RowsInFile.Clear();
+
+                        foreach (IXLCell cell in row.Cells())
                         {
-                            RowsInFile.Clear();
+                            string toinsert = "";
 
-                            foreach (IXLCell cell in row.Cells())
+                            // Verificar si la celda no está vacía antes de obtener su valor
+                            if (!cell.IsEmpty())
                             {
-                                string toinsert = cell.Value.ToString();
-
-                                RowsInFile.Add(toinsert);
+                                toinsert = cell.Value.ToString();
                             }
-                            DataToReturn.Add(RowsInFile.ToArray());
+
+                            RowsInFile.Add(toinsert);
                         }
-                    
+                        DataToReturn.Add(RowsInFile.ToArray());
+                    }
+
 
                 }
             }
@@ -1266,6 +1405,15 @@
         await UsersServices.DownloadOperatorsFormat();
     }
 
+    private async void OpenDialog(User ContextItem)
+    {
+        AreasManagerVisibleDialog = true;
+
+        StateHasChanged();
+    }
+    void CloseDialog() => AreasManagerVisibleDialog = false;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
 
 
