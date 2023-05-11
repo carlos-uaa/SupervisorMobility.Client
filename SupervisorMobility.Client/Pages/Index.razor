@@ -2,11 +2,14 @@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 
+@inject IJSRuntime js
 @inject ILoginService UserLoginService
+@inject IUserService UsersService
 @inject ISnackbar Snackbar
+@inject GlobalDataService GlobalData;
 
-@*@if(logged)
-{*@
+@if(logged)
+{
     @*Title*@
     <PageTitle>Supervisor Mobility | Home</PageTitle>
     @*Breadcrumb links*@
@@ -66,42 +69,44 @@
             </MudPaper>
         </MudItem>
     </MudGrid>
-@*}
+}
 else{
-    @*Title
+    @*Title*@
     <PageTitle>Supervisor Mobility | Login</PageTitle>
-    @*Breadcrumb links
+@*Breadcrumb links*@
     <MudBreadcrumbs Class="mb-10" Items="_login">
         <ItemTemplate Context="item">
             <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
         </ItemTemplate>
     </MudBreadcrumbs>
-    @* Login Form
+    @* Login Form*@
     <EditForm Model="_userLogin" OnValidSubmit="Login">
         <DataAnnotationsValidator />
         <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
-            <MudSimpleTable Style="overflow-x: auto;" Bordered=true Outlined=false Elevation="3">
+            <MudSimpleTable Style="overflow-x: auto;" Bordered=true Outlined=false Elevation="0">
                 <tbody>
                     <tr>
                         <td style="text-align:center">
                             <MudItem Style="text-align:center">
                                 <MudImage Src="Images/logo.png" Alt="Logo image" Style="max-height: 110px" Fluid=true Class="align-center justify-center"> </MudImage>
                             </MudItem>
-                            <MudTextField @bind-Value="_userLogin.Username" Class="mt-10 pl-10 pr-10" Label="Username" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Person" OnAdornmentClick="OpenDeleteDialog" ></MudTextField>
-                            <ValidationMessage For="@(() => _userLogin.Username)" style="color: red; font-size: 12px"/>
-                            <MudTextField @bind-Value="_userLogin.Password" Class="mt-5 pl-10 pr-10" Label="Password" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" ></MudTextField>
-                            <ValidationMessage For="@(() => _userLogin.Password)" style="color: red; font-size: 12px"/>
-                            <MudButton Disabled="@_processing" Class="mt-10 mb-10" Variant="Variant.Filled" Color="Color.Info" ButtonType="ButtonType.Submit">
-                                @if (_processing)
-                                {
-                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                                    <MudText Class="ms-2">Authenticating</MudText>
-                                }
-                                else
-                                {
-                                    <MudText>Sign in</MudText>
-                                }
-                            </MudButton>
+                            <MudPaper Elevation="3">
+                                <MudTextField @bind-Value="_userLogin.Username" Class="mt-10 pl-10 pr-10" Label="Username" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Person" OnAdornmentClick="OpenDeleteDialog" ></MudTextField>
+                                <ValidationMessage For="@(() => _userLogin.Username)" style="color: red; font-size: 12px"/>
+                                <MudTextField @bind-Value="_userLogin.Password" Class="mt-5 pl-10 pr-10" Label="Password" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" ></MudTextField>
+                                <ValidationMessage For="@(() => _userLogin.Password)" style="color: red; font-size: 12px"/>
+                                <MudButton Disabled="@_processing" Class="mt-10 mb-10" Variant="Variant.Filled" Color="Color.Info" ButtonType="ButtonType.Submit">
+                                    @if (_processing)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">Authenticating</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Sign in</MudText>
+                                    }
+                                </MudButton>
+                            </MudPaper>
                         </td>  
                     </tr>
                 </tbody>
@@ -111,7 +116,7 @@ else{
 }
 
 
-@*Delete observation modal
+@*Delete observation modal*@
 <MudDialog @bind-IsVisible="visibleText" Options="dialogTextOptions">
     <DialogContent>
         <MudText Typo="Typo.h6">Help</MudText>
@@ -122,4 +127,4 @@ else{
     <DialogActions>
         <MudButton OnClick="CloseModal" Variant="Variant.Filled">Accept</MudButton>
     </DialogActions>
-</MudDialog>*@
+</MudDialog>

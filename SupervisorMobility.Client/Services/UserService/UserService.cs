@@ -102,8 +102,20 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return null;
-        }  
+        }
 
+        //Get User by email with collections
+        public async Task<User> GetUserByEmailWithCollections(string email)
+        {
+            var response = await _http.GetAsync($"Users/ByEmail?Email={email}&collections=true");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<User>();
+                return content;
+            }
+
+            return null;
+        }
 
         public async Task<User> GetUserAndCollection(int UserId)
         {

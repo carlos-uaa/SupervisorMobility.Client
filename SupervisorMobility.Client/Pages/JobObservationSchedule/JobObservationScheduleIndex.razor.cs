@@ -56,7 +56,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //User
         private string json = string.Empty;
         public User user = new();
-        public ADuser objectId = new();
 
 
         // Breadcrumb links
@@ -112,7 +111,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             if (!await TryGetAsync())
             {
                 user = new();
-                objectId = new();
             }
         }
 
@@ -124,8 +122,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "ADuser");
-                objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
             return hasProperty;
         }
@@ -143,13 +139,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
                 {
                     jobobs.Status = 3;
-                    ADuser aDuser = new ADuser()
-                    {
-                        name = "S.M. System",
-                        email = "SupervisorMobility@non-replay.com",
-                        oid = ""
-                    };
-                    await JobObservationService.UpdateJobObservation(jobobs, aDuser);
+
+                    await JobObservationService.UpdateJobObservation(jobobs, user.Email);
                 }
             }
         }

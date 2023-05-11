@@ -5,6 +5,7 @@
 @inject NavigationManager NavigationManager
 @inject INotificationService NotifyServices
 @inject IAttendanceService AttendanceServices
+@inject GlobalDataService GlobalData;
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -68,7 +69,7 @@
                 </MudButton>
             </NotAuthorized>
         </AuthorizeView>*@
-        @if (!loged)
+@*        @if (!loged)
         {
             <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="Login" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                 <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="LogInAsAdmin">
@@ -79,6 +80,20 @@
         else
         {
             <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="Supervisor Admin" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
+                    Log out
+                </MudMenuItem>
+            </MudMenu>
+        }*@
+        @if(GlobalData.LoggedUser == "Log in")
+        {
+            <MudButton Class="mr-10" Color="Color.Inherit" Style="color:white" Href="/">
+                Log in
+            </MudButton>
+        }
+        else
+        {
+            <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@GlobalData.LoggedUser" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                 <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
                     Log out
                 </MudMenuItem>
@@ -443,10 +458,16 @@
     private Timer Notificationtimer;
     private Timer attendanceTimer;
 
-    private bool loged;
+    private bool logged = false;
 
     protected async override Task OnInitializedAsync()
     {
+
+        logged = await HasPropertyAsync();
+        if (logged)
+        {
+            GlobalData.LoggedUser = user.Name;
+        }
 
         //await TryGetAsync();
 
@@ -474,37 +495,37 @@
 
     }
 
-    private async Task LogInAsAdmin()
-    {
-        var userId = 1;
-        //get admin user by objectid
-        user = await UsersService.GetUserAndCollection(userId);
+    //private async Task LogInAsAdmin()
+    //{
+    //    var userId = 1;
+    //    //get admin user by objectid
+    //    user = await UsersService.GetUserAndCollection(userId);
 
-        if (user != null)
-        {
-            json = JsonSerializer.Serialize<User>(user);
-            await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-        }
-
-
-        ADuser auser = new ADuser()
-            {
-                email = "",
-                name = "SupervisorAdmin",
-                oid = "4f54e317-1ab9-45ec-9b72-7d1910a0cc88"
-            };
+    //    if (user != null)
+    //    {
+    //        json = JsonSerializer.Serialize<User>(user);
+    //        await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+    //    }
 
 
-        json = JsonSerializer.Serialize<ADuser>(auser);
-        await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
+    //    ADuser auser = new ADuser()
+    //        {
+    //            email = "",
+    //            name = "SupervisorAdmin",
+    //            oid = "4f54e317-1ab9-45ec-9b72-7d1910a0cc88"
+    //        };
 
-        Dispose();
 
-        Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
-        attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+    //    json = JsonSerializer.Serialize<ADuser>(auser);
+    //    await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
 
-        loged = true;
-    }
+    //    Dispose();
+
+    //    Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+    //    attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+
+    //    loged = true;
+    //}
 
     private async void GetNotifications(object state)
     {
@@ -563,7 +584,7 @@
         var currentUser = authState.User;
 
         var userId = currentUser.FindFirst("oid")?.Value;
-        
+
         if (userId != null)
         {
 
@@ -587,13 +608,13 @@
 
             json = JsonSerializer.Serialize<ADuser>(auser);
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
-            
+
             Dispose();
 
             Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
             attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
 
-        
+
         }
 
 
@@ -606,7 +627,7 @@
     {
         await LogOut();
         await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        Navigation.NavigateTo("/", true);
     }
 
     //Local storage user
@@ -615,7 +636,6 @@
         if (!await TryGetAsync())
         {
             user = new();
-            objectId = new();
             user.Name = "Log in";
         }
 
@@ -636,9 +656,6 @@
             json = await js.InvokeAsync<string>("localStorage.getItem", "user");
             user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-            json = await js.InvokeAsync<string>("localStorage.getItem", "ADuser");
-            objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
-
             Dispose();
 
             Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
@@ -648,32 +665,31 @@
         return hasProperty;
     }
 
-    private async Task GetSupervisor()
-    {
+    //private async Task GetSupervisor()
+    //{
 
-        await LogOut();
-        users = await UsersService.GetUsers();
-        user = users.FirstOrDefault()!;
+    //    await LogOut();
+    //    users = await UsersService.GetUsers();
+    //    user = users.FirstOrDefault()!;
 
-        json = JsonSerializer.Serialize<User>(user);
-        await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-        NavigationManager.NavigateTo($"/", true);
-    }
+    //    json = JsonSerializer.Serialize<User>(user);
+    //    await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+    //    NavigationManager.NavigateTo($"/", true);
+    //}
 
-    private async Task GetAdmin()
-    {
-        await LogOut();
-        users = await UsersService.GetUsers();
-        user = users.LastOrDefault()!;
+    //private async Task GetAdmin()
+    //{
+    //    await LogOut();
+    //    users = await UsersService.GetUsers();
+    //    user = users.LastOrDefault()!;
 
-        json = JsonSerializer.Serialize<User>(user);
-        await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-        NavigationManager.NavigateTo($"/", true);
-    }
+    //    json = JsonSerializer.Serialize<User>(user);
+    //    await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+    //    NavigationManager.NavigateTo($"/", true);
+    //}
 
     private async Task LogOut()
     {
-        await js.InvokeAsync<string>("localStorage.removeItem", "ADuser");
         if (await HasPropertyAsync())
         {
             await js.InvokeAsync<string>("localStorage.removeItem", "user");
@@ -681,6 +697,7 @@
         }
 
         user.Name = "Log in";
+        GlobalData.LoggedUser = "Log in";
     }
 
     private async Task<bool> HasPropertyAsync() => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
