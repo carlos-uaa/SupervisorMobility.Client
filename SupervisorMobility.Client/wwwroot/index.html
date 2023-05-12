@@ -11,6 +11,8 @@
     <link href="/css/calendar.css" rel="stylesheet">
     <link href="css/notificationStyle.css" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <!-- Estilos modificados para evitar que suba las areas al cargar usuarios -->
+    <link href="css/UploadUsers.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -94,6 +96,38 @@
             }
             prevScrollpos = currentScrollPos;
         }
+    </script>  
+    <script>
+        // Seleccionar el botón activador y la sección expandible
+        const activador = document.querySelector('.activador');
+        const seccionExpandible = document.querySelector('.mud-expand-panel.mud-panel-expanded');
+
+        // Función para actualizar la posición de la sección expandible
+        function actualizarPosicion() {
+            // Obtener la posición actual del botón activador
+            const posicionActivador = activador.getBoundingClientRect();
+
+            // Determinar la posición deseada para la sección expandible
+            let posicionDeseada = 'abajo';
+            if (posicionActivador.top < (window.innerHeight / 2)) {
+                posicionDeseada = 'arriba';
+            }
+
+            // Actualizar las propiedades CSS de la sección expandible
+            if (posicionDeseada === 'arriba') {
+                seccionExpandible.style.bottom = `${window.innerHeight - posicionActivador.top}px`;
+                seccionExpandible.style.top = 'auto';
+            } else {
+                seccionExpandible.style.top = `${posicionActivador.bottom}px`;
+                seccionExpandible.style.bottom = 'auto';
+            }
+        }
+
+        // Actualizar la posición inicialmente
+        actualizarPosicion();
+
+        // Actualizar la posición al cambiar el tamaño de la ventana
+        window.addEventListener('resize', actualizarPosicion);
     </script>
 
     
