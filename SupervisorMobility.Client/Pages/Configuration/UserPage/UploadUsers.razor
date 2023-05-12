@@ -360,14 +360,49 @@
                                 }
                                 break;
                             case 5:
-                                <MudTd DataLabel="Superior Supervisor">
-                                    <MudText Align="Align.Center">@context.Superior?.Name</MudText>
-                                </MudTd>
+                                
+                                @if (@context.Superior is null)
+                                {
+                                    <MudTd DataLabel="Superior Supervisor">
+
+                                        <MudSelect T="User" Label="Supervisor" Placeholder="Select Supervisor" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                            <MudSelectItem Disabled="true" Value="@context.Superior"> Select a Supervisor  </MudSelectItem>
+                                            @foreach (var SS in _allUsers)
+                                            {
+                                                @if (SS.UserType == 3)
+                                                {
+                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Superior Supervisor">
+                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                            <MudTextField @bind-Value="@context.Superior.Name" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                        </MudItem>
+                                    </MudTd>
+
+
+                                }
+
+
                                 break;
                             case 6:
-                                <MudTd DataLabel="Superior Supervisor">
-                                    <MudText Align="Align.Center">@context.Superior?.Name</MudText>
-                                </MudTd>
+                                 @if (selectedSupervisorOfList is null)
+                                {
+                                    <MudTd DataLabel="Supervisor">
+                                        <MudText Align="Align.Center">Please Select Superior of List</MudText>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Supervisor">
+                                        <MudText Align="Align.Center">@selectedSupervisorOfList?.Name</MudText>
+                                    </MudTd>
+                                }
                                 break;
 
                         }
@@ -385,7 +420,6 @@
                             }
                             else
                             {
-
                                 <MudItem Class="d-flex justify-content-center align-items-center">
                                     <MudTextField @bind-Value="@context.Plant.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
                                 </MudItem>
@@ -465,15 +499,20 @@
                                     else
                                     {
                                         <MudTd DataLabel="Assigned Area">
-                                            @if (_areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)] is not null)
+                                            @if (context.Superior.Areas is not null)
                                             {
-                                                <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                               if(context.Superior.Areas.Count > 0 ){
+                                                    <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                     <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
-                                                    @foreach (var item in _areas[_plants.FindIndex(e => e.PlantId == context.Superior.PlantId)])
+                                                        @foreach (var item in context.Superior.Areas)
                                                     {
                                                         <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
                                                     }
-                                                </MudSelect>
+                                                    </MudSelect>
+                                                }
+                                                else{
+                                                    <MudText Typo="Typo.button">no areas to show</MudText>
+                                                }
                                             }
                                         </MudTd>
                                     }
@@ -488,15 +527,20 @@
                                     else
                                     {
                                         <MudTd DataLabel="Assigned Area">
-                                            @if (_areas[_plants.FindIndex(e => e.PlantId == selectedSSVOfList.PlantId)] is not null)
+                                            @if (selectedSSVOfList.Areas is not null)
                                             {
-                                                <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                if(selectedSSVOfList.Areas.Count > 0 ){
+                                                    <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                     <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
-                                                    @foreach (var item in _areas[_plants.FindIndex(e => e.PlantId == selectedSSVOfList.PlantId)])
+                                                    @foreach (var item in selectedSSVOfList.Areas)
                                                     {
                                                         <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
                                                     }
-                                                </MudSelect>
+                                                    </MudSelect>
+                                                }
+                                                else{
+                                                <MudText Typo="Typo.button">no areas to show</MudText>
+                                                }
                                             }
                                         </MudTd>
                                     }
@@ -600,46 +644,48 @@
                 </MudText>
             </MudItem>
 
-            @if (AuxDialogUser.Areas is not null && AuxDialogUser.Areas?.ToList().Count > 0)
-            {
-                <MudItem class="d-flex flex-column justify-center ma-1">
-                    <MudItem class="d-flex d-flex-column justify-center">
-                        @foreach (var itemArea in AuxDialogUser.Areas)
-                        {
-                            <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
-                                    </CardHeaderContent>
-                                    <CardHeaderActions>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItemList(itemArea)" />
-                                    </CardHeaderActions>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
-                                    <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
-                                </MudCardContent>
-                                <MudCardActions></MudCardActions>
-                            </MudCard>
-                        }
-                    </MudItem>
-                </MudItem>
-            }
-            @if (_areasManager?.Count > 0 && AuxDialogUser.PlantId != 0)
-            {
-                <MudItem class="d-flex d-flex-column justify-center ma-1">
-                    <MudItem Class="d-flex d-flex-row">
-                        <MudSelect T="Area" Label="Areas" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="Select Area" @bind-Value="@selectedAreaOfList" For="@(() => selectedAreaOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem Disabled="true" Value="selectedAreaOfList"> Select Area </MudSelectItem>
-                            @foreach (var areaItem in _areasManager)
+            <MudItem Class="d-flex flex-column justify-center ma-1">
+                @if (AuxDialogUser.Areas is not null && AuxDialogUser.Areas?.ToList().Count > 0)
+                {
+                    <MudItem class="d-flex flex-column justify-center ma-1">
+                        <MudItem class="d-flex d-flex-column justify-center">
+                            @foreach (var itemArea in AuxDialogUser.Areas)
                             {
-                                <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
+                                <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItemList(itemArea)" />
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
+                                        <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
+                                    </MudCardContent>
+                                    <MudCardActions></MudCardActions>
+                                </MudCard>
                             }
-                        </MudSelect>
-                        <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToItemContextList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Area </MudButton>
+                        </MudItem>
                     </MudItem>
-                </MudItem>
-            }
+                }
+                @if (_areasManager?.Count > 0 && AuxDialogUser.PlantId != 0)
+                {
+                    <MudItem class="d-flex d-flex-column justify-center ma-1">
+                        <MudItem Class="d-flex d-flex-row">
+                            <MudSelect T="Area" Label="Areas" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="Select Area" @bind-Value="@selectedAreaOfList" For="@(() => selectedAreaOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Disabled="true" Value="selectedAreaOfList"> Select Area </MudSelectItem>
+                                @foreach (var areaItem in _areasManager)
+                                {
+                                    <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToItemContextList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Area </MudButton>
+                        </MudItem>
+                    </MudItem>
+                }
+           </MudItem>
 
         </MudContainer>
     </DialogContent>
@@ -1067,6 +1113,16 @@
                         isOkFile = true;
                         DataInDocument.RemoveAt(0);
                         dataToShowInTable = CreateUsersSupervisors(DataInDocument);
+                        if (uploadtype == 5)
+                            foreach (User element in dataToShowInTable)
+                            {
+                                element.Superior = selectedSSVOfList != null ? selectedSSVOfList : null;
+                                element.SuperiorId = selectedSSVOfList != null ? selectedSSVOfList.UserId : null;
+                                element.PlantId = selectedSSVOfList != null ? selectedSSVOfList.PlantId : null;
+                                element.Plant = selectedSSVOfList != null ? selectedSSVOfList.Plant : null;
+                                element.GroupId = selectedSSVOfList != null ? selectedSSVOfList.GroupId : null;
+                                element.Group = selectedSSVOfList != null ? selectedSSVOfList.Group : null;
+                            }
                     }
                     break;
                 case 5:
@@ -1083,6 +1139,17 @@
                         isOkFile = true;
                         DataInDocument.RemoveAt(0);
                         dataToShowInTable = CreateUsersOperators(DataInDocument);
+                        
+                        if(uploadtype == 6)
+                        foreach (User element in dataToShowInTable)
+                        {
+                            element.Superior = selectedSupervisorOfList != null ? selectedSupervisorOfList : null;
+                            element.SuperiorId = selectedSupervisorOfList != null ? selectedSupervisorOfList.UserId : null;
+                            element.PlantId = selectedSupervisorOfList != null ? selectedSupervisorOfList.PlantId : null;
+                            element.Plant = selectedSupervisorOfList != null ? selectedSupervisorOfList.Plant : null;
+                            element.GroupId = selectedSupervisorOfList != null ? selectedSupervisorOfList.GroupId : null;
+                            element.Group = selectedSupervisorOfList != null ?  selectedSupervisorOfList.Group : null;
+                        }
                     }
                     break;
             }
@@ -1354,8 +1421,8 @@
         List<User> ListtoReturn = new List<User>();
         foreach (string[] row in DataInDocument)
         {
-            try
-            {
+            //try
+            //{
                 var ToInsertIntoList = new User();
                 ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
                 ToInsertIntoList.Payroll = row[1] != "§" ? int.Parse(row[0]) : -1;
@@ -1425,13 +1492,13 @@
                 }
 
                 ListtoReturn.Add(ToInsertIntoList);
-            }
-            catch (Exception ex)
-            {
+            //}
+            //catch (Exception ex)
+            //{
 
-                Console.WriteLine($"{ex.Message}");
-                showTableInUI = false;
-            }
+            //    Console.WriteLine($" general exepction: {ex.Message}");
+            //    showTableInUI = false;
+            //}
         }
 
         return ListtoReturn;
