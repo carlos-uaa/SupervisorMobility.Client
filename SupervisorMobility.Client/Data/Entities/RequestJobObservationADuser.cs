@@ -3,6 +3,6 @@
     public class RequestJobObservationADuser
     {
        public JobObservation JobObservation { get; set; }
-       public ADuser ADuser { get; set; }  
+       public string LoggedUser { get; set; }  
     }
 }

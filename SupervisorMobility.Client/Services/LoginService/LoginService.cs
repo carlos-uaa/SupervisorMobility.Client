@@ -47,15 +47,15 @@ namespace SupervisorMobility.Client.Services.LoginService
 
             var content = new StringContent(json, Encoding.UTF8, "application/json"); 
 
-            var response = await _httpAD.PostAsync("", content);
-
-            if(response.StatusCode != HttpStatusCode.OK)
-            {
-                return null;
-            }
-
             try
             {
+                var response = await _httpAD.PostAsync("", content);
+
+                if(response.StatusCode != HttpStatusCode.OK)
+                {
+                    return null;
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>(); // Leemos la respuesta
 
 
@@ -63,6 +63,7 @@ namespace SupervisorMobility.Client.Services.LoginService
                     return result.response;
             }catch(Exception ex)
             {
+                Console.WriteLine("Error: " + ex.ToString());
                 return null;
             }
 

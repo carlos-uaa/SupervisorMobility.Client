@@ -122,11 +122,11 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return jobObservation;
         }
 
-        public async Task<bool> UpdateJobObservation(JobObservation jobObservation, ADuser MadeBy)
+        public async Task<bool> UpdateJobObservation(JobObservation jobObservation, string loggedUser)
         {
             RequestJobObservationADuser requestJobObservationADuser = new RequestJobObservationADuser() { 
                 JobObservation = jobObservation,
-                ADuser = MadeBy
+                LoggedUser = loggedUser
             };
 
 

@@ -1,5 +1,9 @@
 ﻿using Blazorise.Extensions;
+using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.UserService;
+using System;
 using System.Text.RegularExpressions;
 
 namespace SupervisorMobility.Client.Pages
@@ -12,93 +16,153 @@ namespace SupervisorMobility.Client.Pages
             new BreadcrumbItem("Home", href: "#", disabled: true)
         };
 
-        //private List<BreadcrumbItem> _login = new List<BreadcrumbItem>
-        //{
-        //    new BreadcrumbItem("Login", href: "#", disabled: true)
-        //};
+        private List<BreadcrumbItem> _login = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Login", href: "#", disabled: true)
+        };
 
-        //public bool logged = false;
+        public bool logged = false;
 
-        //private bool _processing = false;
-        //public string username;
-        //public string password;
+        private bool _processing = false;
+        public string username;
+        public string password;
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
 
-        //public UserLogin _userLogin = new();
+        public UserLogin _userLogin = new();
 
-        //async Task ProcessSomething()
-        //{
-        //    _processing = true;
-        //    await Task.Delay(2000);
-        //    _processing = false;
-        //}
-        //protected async override Task OnInitializedAsync()
-        //{
-            
-        
-        //}
-        //public double? Amount { get; set; }
-        //public int? Weight { get; set; }
-        //public string Password { get; set; } = "superstrong123";
+        async Task ProcessSomething()
+        {
+            _processing = true;
+            await Task.Delay(2000);
+            _processing = false;
+        }
 
-        //bool isShow;
-        //InputType PasswordInput = InputType.Password;
-        //string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+        public double? Amount { get; set; }
+        public int? Weight { get; set; }
+        public string Password { get; set; } = "superstrong123";
 
-        //void ButtonTestclick()
-        //{
-        //    if(isShow)
-        //    {
-        //        isShow = false;
-        //        PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
-        //        PasswordInput = InputType.Password;
-        //    }
-        //    else
-        //    {
-        //        isShow = true;
-        //        PasswordInputIcon = Icons.Material.Filled.Visibility;
-        //        PasswordInput = InputType.Text;
-        //    }
-        //}
+        bool isShow;
+        InputType PasswordInput = InputType.Password;
+        string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
 
 
-        //private async Task Login()
-        //{
+        protected async override Task OnInitializedAsync()
+        {
+            logged = await HasPropertyAsync();
+            if (logged)
+            {
 
-        //    _processing = true;
-        //    var result = await UserLoginService.LoginAD(_userLogin.Username, _userLogin.Password);
+                await GetUserAsync();
+                GlobalData.LoggedUser = user.Name;
+                StateHasChanged();
+            }
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+            {
+                user = new();
+            }
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await js.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            }
+            return hasProperty;
+        }
 
 
-        //    if(result != null)
-        //    {
-        //        Snackbar.Clear();
-        //        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //        Snackbar.Add($"Welcome Back {result.displayName}", Severity.Info);
-        //        logged = true;
-        //    }
-        //    else
-        //    {
-        //        Snackbar.Clear();
-        //        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //        Snackbar.Add($"Error with username / password does not match", Severity.Error);
-        //    }
-        //    _processing = false;
+        void ButtonTestclick()
+        {
+            if (isShow)
+            {
+                isShow = false;
+                PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+                PasswordInput = InputType.Password;
+            }
+            else
+            {
+                isShow = true;
+                PasswordInputIcon = Icons.Material.Filled.Visibility;
+                PasswordInput = InputType.Text;
+            }
+        }
 
-        //}
 
-        //public void ShowText()
-        //{
+        private async Task Login()
+        {
 
-        //}
+            _processing = true;
+            var result = await UserLoginService.LoginAD(_userLogin.Username, _userLogin.Password);
 
-        ////Delete Job observation
-        //private bool visibleText = false;
-        //private void OpenDeleteDialog()
-        //{
-        //    visibleText = true;
-        //}
-        //void CloseModal() => visibleText = false;
-        //private DialogOptions dialogTextOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
+            if (result != null)
+            {
+
+                
+                user = await UsersService.GetUserByEmailWithCollections(result.userPrincipalName);
+
+                Console.WriteLine("aaaaa");
+                Console.WriteLine(user.Name);
+
+                if(user != null)
+                {
+
+                    GlobalData.LoggedUser = user.Name;
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Welcome Back {user.Name}", Severity.Info);
+                    logged = true;
+
+                    json = JsonSerializer.Serialize<User>(user);
+                    await js.InvokeVoidAsync("localStorage.setItem", "user", json);
+
+                    StateHasChanged();
+
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"User not found, please contact your administrator", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error with username / password does not match", Severity.Error);
+            }
+            _processing = false;
+
+        }
+
+        public void ShowText()
+        {
+
+        }
+
+        //Delete Job observation
+        private bool visibleText = false;
+        private void OpenDeleteDialog()
+        {
+            visibleText = true;
+        }
+        void CloseModal() => visibleText = false;
+        private DialogOptions dialogTextOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
 
     }
 }

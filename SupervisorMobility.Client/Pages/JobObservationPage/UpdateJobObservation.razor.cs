@@ -104,7 +104,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
-        public ADuser objectId = new();
 
         //Operator user
         public List<User> users = new();
@@ -269,7 +268,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (!await TryGetAsync())
             {
                 user = new();
-                objectId = new();
             }
         }
 
@@ -281,8 +279,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "ADuser");
-                objectId = JsonSerializer.Deserialize<ADuser>(json) ?? new();
             }
             return hasProperty;
         }
@@ -368,7 +364,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Status = 1;
             }
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
             if (result)
             {
@@ -434,7 +430,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Justification = null;
             }
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
             if (result)
             {
@@ -526,7 +522,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
 
 
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
 
             if (result)
@@ -605,7 +601,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.EndDate = newDate2;
 
             _jobObservation.Status = 5;
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
             if (result)
             {
@@ -684,7 +680,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.EndDate = newDate2;
             _jobObservation.SsvSignature = "Signed";
             _jobObservation.Status = 6;
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, objectId);
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
             if (result)
             {

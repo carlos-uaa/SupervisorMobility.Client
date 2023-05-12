@@ -352,7 +352,7 @@
                                                         <MudText Typo="Typo.subtitle1"> Superior </MudText>
                                                     </CardHeaderContent>
                                                     <CardHeaderActions>
-                                                        @if(LogedUser.UserType != 2){
+                                                        @if(!(LogedUser.UserType == 2 && _user.UserType == 3)){
                                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveSuperiorUser())" />
                                                         }
                                                     </CardHeaderActions>
@@ -449,9 +449,9 @@
                                                                 {
                                                                     <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area.Description}-{SS.Group?.Description}") </MudSelectItem>
                                                                 }
-                                                                else
+                                                                else if(LogedUser.UserType == 2)
                                                                 {
-                                                                    @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                                    @if (SS.PlantId == LogedUser.PlantId && LogedUser.Areas?.ToList().FindIndex(s => s.AreaId == SS.AreaId) != -1)
                                                                     {
                                                                         <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area.Description}-{SS.Group?.Description}") </MudSelectItem>
                                                                     }
@@ -551,7 +551,7 @@
                                                             {
                                                                 <MudItem class="d-flex flex-column justify-center">
                                                                     <MudAlert Severity="Severity.Info">
-                                                                        <MudText Style="font-weight: bold;">Please Select Superior first.....</MudText>
+                                                                        <MudText Style="font-weight: bold;">Please Select Superior first...</MudText>
                                                                     </MudAlert>
                                                                 </MudItem>
                                                             }
@@ -909,7 +909,7 @@
         //                //if (item.PlantId == auxPlant){
         //                //    SeniorsSupervisors.Add(item);
         //                //}
-                          
+
         //                break;
         //            case 3:
 
@@ -926,22 +926,22 @@
         //}
         //else
         //{
-            //El admin accesa a todo
-            foreach (User item in _allUsers)
+        //El admin accesa a todo
+        foreach (User item in _allUsers)
+        {
+            switch (item.UserType)
             {
-                switch (item.UserType)
-                {
-                    case 2:
-                        SeniorsSupervisors.Add(item);
-                        break;
-                    case 3:
-                        Supervisors.Add(item);
-                        break;
-                    case 4:
-                        Operators.Add(item);
-                        break;
-                }
+                case 2:
+                    SeniorsSupervisors.Add(item);
+                    break;
+                case 3:
+                    Supervisors.Add(item);
+                    break;
+                case 4:
+                    Operators.Add(item);
+                    break;
             }
+        }
         //}
 
         auxArea = 0;
@@ -1020,7 +1020,7 @@
 
 
 
-    private void setActiveUser(int userType)
+    private async Task setActiveUser(int userType)
     {
         IsAdmin = userType == 1 && !IsAdmin;
         IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
@@ -1028,6 +1028,11 @@
         IsOperator = userType == 4 && !IsOperator;
 
         _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
+
+        _user.Subordinates?.Clear();
+        _user.Areas?.Clear();
+
+        ShowAreasInvokeByPlantSelector();
 
         switch (userType)
         {
@@ -1050,6 +1055,8 @@
                     plantInfo = _user.Superior?.Plant?.Description;
                     areaInfo = _user.Superior?.Area?.Description;
                     grupInfo = _user.Superior?.Group?.Description;
+
+
                 }
                 else
                 {
@@ -1075,6 +1082,11 @@
                     plantInfo = _user.Superior?.Plant?.Description;
                     areaInfo = _user.Superior?.Area?.Description;
                     grupInfo = _user.Superior?.Group?.Description;
+
+                    if (auxPlant != 0 && auxArea != 0)
+                    {
+                        _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                    }
                 }
                 else{
                     auxPlant = 0;
@@ -1082,18 +1094,14 @@
                     _user.GroupId = 0;
                 }
                 break;
-            
+
         }
 
-        _user.Subordinates?.Clear();
-        _user.Areas?.Clear();
-
-        ShowAreasInvokeByPlantSelector();
 
         StateHasChanged();
     }
 
-    private void SetSuperiorToUser()
+    private async Task SetSuperiorToUser()
     {
         _user.SuperiorId = _user.Superior.SuperiorId;
         superior = true;
@@ -1117,15 +1125,23 @@
             case 4: 
                 _user.PlantId =  _user.Superior?.PlantId;
                 //agrega el area
+                _user.AreaId = _user.Superior?.AreaId;
                 _user.GroupId =  _user.Superior?.GroupId;
 
                 auxPlant =  (int)_user.Superior?.PlantId;
                 //agrega el area
+                auxArea = (int)_user.Superior?.AreaId;
                 auxGroup = (int)_user.Superior?.GroupId;
 
                 plantInfo = _user.Superior?.Plant?.Description;
                 //agrega el area
+                areaInfo = _user.Superior?.Area?.Description;
                 grupInfo = _user.Superior?.Group?.Description;
+
+                if (auxPlant != 0 && auxArea != 0)
+                {
+                    _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                }
                 break;
         }
 
@@ -1140,9 +1156,11 @@
         superior = false;
 
         switch(LogedUser.UserType){
+            case 1:
             case 2:
-            plantInfo = "";
-            grupInfo = "";
+                areaInfo = "";
+                plantInfo = "";
+                grupInfo = "";
             break;
         }
 

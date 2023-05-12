@@ -7,6 +7,7 @@ global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.DistributionService;
 global using SupervisorMobility.Client.Services.GroupService;
+global using SupervisorMobility.Client.Services.GlobalDataService;
 global using SupervisorMobility.Client.Services.GlosaryService;
 global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
@@ -31,7 +32,7 @@ using MudBlazor.Services;
 using SupervisorMobility.Client;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
-
+using SupervisorMobility.Client.Services.GlobalDataService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -39,6 +40,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Services
 builder.Services.AddMudServices();
+builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IGuideService, GuideService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
