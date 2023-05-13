@@ -104,6 +104,7 @@ namespace SupervisorMobility.Client.Shared
             lateObservations.Clear();
             todayObservations.Clear();
             thisWeekObservations.Clear();
+            StateHasChanged();
 
             if (user != null)
             {
@@ -140,6 +141,7 @@ namespace SupervisorMobility.Client.Shared
                         }
                     }
                 }
+                StateHasChanged();
 
             }
         }
@@ -171,8 +173,7 @@ namespace SupervisorMobility.Client.Shared
                 json = await js.InvokeAsync<string>("localStorage.getItem", "user");
                 user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-                json = await js.InvokeAsync<string>("localStorage.getItem", "ADuser");
-                aDuser = JsonSerializer.Deserialize<ADuser>(json) ?? new();
+
             }
             return hasProperty;
         }
