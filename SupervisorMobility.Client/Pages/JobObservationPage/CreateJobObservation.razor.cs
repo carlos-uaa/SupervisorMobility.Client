@@ -239,68 +239,142 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             //Eventual
             _jobObservation.Type = 2;
-            Console.WriteLine(startHour);
-            hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-            hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
-            if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+            if (CultureInfo.CurrentCulture.Name == "en-US")
             {
-                Console.WriteLine(newDate1);
-            }
-            else
-                Console.WriteLine("Unable to parse '{0}'", hour1);
+                var formatedStartDate = _jobObservation.StartDate;
+                var formatedEndDate = _jobObservation.EndDate;
+
+                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                var EnglishEndDate = formatedEndDate?.Month.ToString() + "/" + formatedEndDate?.Day.ToString() + "/" + formatedEndDate?.Year.ToString();
+                _jobObservation.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+                _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
 
 
-            if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-            {
-                Console.WriteLine(newDate2);
-            }
-            else
-                Console.WriteLine("Unable to parse '{0}'", hour2);
- 
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.StartDate = newDate1;
-            _jobObservation.EndDate = newDate2;
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
-            _jobObservation.PlannedStartDate = newDate1;
-            _jobObservation.PlannedEndDate = newDate2;
-
-
-            _jobObservation.Status = 1;
-
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
-            if (result != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Job Observation Created", Severity.Info);
-
-                if(_tempLup.Count > 0)
+                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
                 {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach(var temp in _tempLup)
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    Console.WriteLine("Unable to parse '{0}'", hour1);
+
+
+                if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+                {
+                    Console.WriteLine(newDate2);
+                }
+                else
+                    Console.WriteLine("Unable to parse '{0}'", hour2);
+
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.StartDate = newDate1;
+                _jobObservation.EndDate = newDate2;
+
+                _jobObservation.PlannedStartDate = newDate1;
+                _jobObservation.PlannedEndDate = newDate2;
+
+
+                _jobObservation.Status = 1;
+
+                var result = await JobObservationService.CreateJobObservation(_jobObservation);
+                if (result != null)
+                {
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Job Observation Created", Severity.Info);
+
+                    if (_tempLup.Count > 0)
                     {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
+                        _jobObservations = await JobObservationService.GetAllJobObservations();
+                        foreach (var temp in _tempLup)
                         {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
+                            temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                            var result2 = await LupService.CreateLup(temp);
+                            if (result2 != null)
+                            {
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Error in Lup", Severity.Error);
+                            }
                         }
                     }
-                }
 
-                NavigationManager.NavigateTo("/jobobservation");
+                    NavigationManager.NavigateTo("/jobobservation");
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
             }
             else
-                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+            {
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    Console.WriteLine("Unable to parse '{0}'", hour1);
+
+
+                if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+                {
+                    Console.WriteLine(newDate2);
+                }
+                else
+                    Console.WriteLine("Unable to parse '{0}'", hour2);
+
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.StartDate = newDate1;
+                _jobObservation.EndDate = newDate2;
+
+                _jobObservation.PlannedStartDate = newDate1;
+                _jobObservation.PlannedEndDate = newDate2;
+
+
+                _jobObservation.Status = 1;
+
+                var result = await JobObservationService.CreateJobObservation(_jobObservation);
+                if (result != null)
+                {
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Job Observation Created", Severity.Info);
+
+                    if (_tempLup.Count > 0)
+                    {
+                        _jobObservations = await JobObservationService.GetAllJobObservations();
+                        foreach (var temp in _tempLup)
+                        {
+                            temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                            var result2 = await LupService.CreateLup(temp);
+                            if (result2 != null)
+                            {
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Error in Lup", Severity.Error);
+                            }
+                        }
+                    }
+
+                    NavigationManager.NavigateTo("/jobobservation");
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+            }
         }
 
         void CancelCreateJobObservation()

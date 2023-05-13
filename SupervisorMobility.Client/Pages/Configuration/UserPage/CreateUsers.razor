@@ -42,6 +42,18 @@
                             <MudItem>
                                 <MudText Typo="Typo.h6">Permissions</MudText>
                             </MudItem>
+                            <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
+                                @if (LogedUser.UserType <= 1)
+                                {
+                                    <MudSwitch Class="ma-1" Label="Admin" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
+                                    <MudSwitch Class="ma-1" Label="Senior Supervisor" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
+                                }
+                                @if (LogedUser.UserType <= 2)
+                                {
+                                    <MudSwitch Class="ma-1" Label="Supervisor" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
+                                }
+                                <MudSwitch Class="ma-1" Label="Operator" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Info" />
+                            </MudItem>
                             <MudItem class="d-flex d-flex-column justify-center">
                                 @switch (_user.UserType)
                                 {
@@ -67,18 +79,6 @@
                                         break;
                                 }
                             </MudItem>
-                            <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
-                                @if (LogedUser.UserType <= 1)
-                                {
-                                    <MudSwitch Class="ma-1" Label="Is Admin?" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
-                                    <MudSwitch Class="ma-1" Label="Is SeniorSupervisor?" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
-                                }
-                                @if (LogedUser.UserType <= 2)
-                                {
-                                    <MudSwitch Class="ma-1" Label="Is Supervisor?" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
-                                }
-                                <MudSwitch Class="ma-1" Label="Is Operator?" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
-                            </MudItem>
 
                         </MudItem>
 
@@ -88,7 +88,7 @@
                                 <MudText Typo="Typo.h6">General Info</MudText>
                             </MudItem>
                         }
-                        @if (_user.UserType != 4 && _user.UserType > 0)
+@*                        @if (_user.UserType != 4 && _user.UserType > 0)
                         {
                             <MudItem Class="d-flex d-flex-row">
                                 <MudTextField Label="Azure ID" @bind-Value="@_user.ObjectId" For="@(() => _user.ObjectId)" />
@@ -96,7 +96,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" />
                                 </MudTooltip>
                             </MudItem>
-                        }
+                        }*@
                         @if (_user.UserType > 0)
                         {
 
@@ -815,8 +815,12 @@
 
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Create User</MudButton>
-                        <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">Cancel Creation</MudButton>
+                        <MudItem Class="ml-auto">
+                            @if(_user.UserType != 0){
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info">Create User</MudButton>
+                            }
+                            <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">Cancel Creation</MudButton>
+                        </MudItem>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -1022,6 +1026,19 @@
 
     private async Task setActiveUser(int userType)
     {
+        _user = new();
+        auxPlant = 0;
+        auxArea = 0;
+        auxGroup = 0;
+        plantInfo = "";
+        areaInfo = "";
+        grupInfo = "";
+        selectedSeniorSupervisorOfList = new User();
+        selectedSupervisorOfList = new User();
+        selectedOperatorOfList = new User();
+        selectedAreaOfList = new Area();
+
+
         IsAdmin = userType == 1 && !IsAdmin;
         IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
         IsSupervisor = userType == 3 && !IsSupervisor;
@@ -1029,8 +1046,6 @@
 
         _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
 
-        _user.Subordinates?.Clear();
-        _user.Areas?.Clear();
 
         ShowAreasInvokeByPlantSelector();
 
