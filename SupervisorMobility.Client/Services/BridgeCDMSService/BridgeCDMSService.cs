@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.JSInterop;
+using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities.CDMS;
+using System;
 using System.IO;
 using System.Net.Http.Json;
 
@@ -70,6 +72,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (response.IsSuccessStatusCode)
                 {
+
                     var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Archives>();
                     return result;
                 }
@@ -81,6 +84,36 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+
+                var response = await _httpBridge.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                // Deserializar el contenido en un objeto JObject
+                var responseObject = JObject.Parse(contentString);
+
+                // Acceder a la propiedad "operation" del objeto JObject
+                var operation = (string)responseObject["operation"];
+
+                if (operation == "NO FILES IN DIRECTORY")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_CCP_Archives toreturn = new CDMS_CCP_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }
+                else if (operation == "NO FILES OR DIRECTORIES")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_CCP_Archives toreturn = new CDMS_CCP_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }
             }
 
             return null;
@@ -215,6 +248,36 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             {
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+
+                var response = await _httpBridge.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                // Deserializar el contenido en un objeto JObject
+                var responseObject = JObject.Parse(contentString);
+
+                // Acceder a la propiedad "operation" del objeto JObject
+                var operation = (string)responseObject["operation"];
+
+                if (operation == "NO FILES IN DIRECTORY")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_HOE_Archives toreturn = new CDMS_HOE_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }
+                else if (operation == "NO FILES OR DIRECTORIES")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_HOE_Archives toreturn = new CDMS_HOE_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }
+            }
 
             return null;
         }
@@ -309,6 +372,35 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+
+                var response = await _httpBridge.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                // Deserializar el contenido en un objeto JObject
+                var responseObject = JObject.Parse(contentString);
+
+                // Acceder a la propiedad "operation" del objeto JObject
+                var operation = (string)responseObject["operation"];
+
+                if (operation == "NO FILES IN DIRECTORY")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_GOS_Archives toreturn = new CDMS_GOS_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }else if(operation == "NO FILES OR DIRECTORIES")
+                {
+                    Console.WriteLine($"No Files or Directories");
+                    CDMS_GOS_Archives toreturn = new CDMS_GOS_Archives();
+                    toreturn.success = false;
+                    toreturn.message = operation;
+                    return toreturn;
+                }
             }
 
             return null;

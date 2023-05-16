@@ -7,6 +7,7 @@
 @inject IProductService ProductServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
+@inject IDialogService DialogService
 @inject IBridgeCDMSService CDMSServices
 
 
@@ -65,6 +66,25 @@
                         }
                     </MudSelect>
 
+                    @*Operation *@
+                    <MudSelect T="int" Label="Operation" Placeholder="Select a Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.OperationId" For="@(() => _newassychart.OperationId)">
+                        <MudSelectItem Disabled="true" Value="0">Select a Operation</MudSelectItem>
+                        @foreach (var type in _distributionValues.Operations)
+                        {
+                            <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @*Mud select of Model/Product *@
+                    <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.ProductId" For="@(() => @_newassychart.ProductId)">
+                        <MudSelectItem Disabled="true" Value="@_newassychart.ProductId">Select a Product</MudSelectItem>
+                        @foreach (var type in _distributionValues.Products)
+                        {
+                            <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <br>
+                    <br>
 
                     @*GOS*@
 
@@ -147,15 +167,9 @@
                         @if (rootNodeHOE.TreeItems.Count > 0)
                         {
                             <MudPaper Width="600px" Elevation="0">
-                                @if (SelectedNodeHOE is not null)
-                                {
+                                
                                     <MudTextField Label="Selected HOE Folder" ReadOnly="true" Value="@_newassychart.HOE.Replace('§', ' ')" />
-                                }
-                                else
-                                {
-                                    <MudText>Selected HOE Folder</MudText>
-                                }
-
+                               
                                 <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems">
                                     <ItemTemplate>
                                         <MudTreeViewItem Value="@OtherContext" @onclick="@(() => { @_newassychart.HOE = OtherContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre.Split('§').Last()" EndTextTypo="@Typo.caption" />
@@ -180,23 +194,6 @@
 
 
 
-                    @*Operation *@
-                    <MudSelect T="int" Label="Operation" Placeholder="Select a Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.OperationId" For="@(() => _newassychart.OperationId)">
-                        <MudSelectItem Disabled="true" Value="0">Select a Operation</MudSelectItem>
-                        @foreach (var type in _distributionValues.Operations)
-                        {
-                            <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                        }
-                    </MudSelect>
-
-                    @*Mud select of Model/Product *@
-                    <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_newassychart.ProductId" For="@(() => @_newassychart.ProductId)">
-                        <MudSelectItem Disabled="true" Value="@_newassychart.ProductId">Select a Product</MudSelectItem>
-                        @foreach (var type in _distributionValues.Products)
-                        {
-                            <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                        }
-                    </MudSelect>
 
 
                     @* Is Active *@
@@ -211,3 +208,33 @@
         </MudItem>
     </MudGrid>
 </EditForm>
+
+<MudMessageBox @ref="GOSmbox" Title="Notice GOS Path" >
+    <MessageContent>
+        The provided path `@_newassychart.GOS`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+    <MudMessageBox @ref="HOEmbox" Title="Notice HOE Path" >
+    <MessageContent>
+        The provided path `@_newassychart.HOE.Replace('§', ' ')`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="CCPmbox" Title="Notice CCP Path" >
+    <MessageContent>
+        The provided path `@_newassychart.CCP`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>

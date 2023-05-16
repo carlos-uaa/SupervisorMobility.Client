@@ -9,6 +9,8 @@
 @inject IAssyChartService AssyChartServices
 @inject IProductService ProductServices
 @inject IJSRuntime JsRuntime
+@inject IBridgeCDMSService CDMSServices
+
 @inject NavigationManager NavigationManager
 
 
@@ -56,7 +58,7 @@
 
                     @*Mud select of Distributions *@
 
-                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.DistributionId" For="@(() => @_assychart.DistributionId)">
+                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.DistributionId" For="@(() => @_assychart.DistributionId)" SelectedValuesChanged="UpdateOperationProducts">
                         <MudSelectItem Disabled="true" Value="@_assychart.DistributionId">Select a Distribution</MudSelectItem>
                         @foreach (var type in _distributions)
                         {
@@ -64,37 +66,16 @@
                         }
                     </MudSelect>
 
-                    @*GOS*@
-                    <MudSelect Label="GOS" Variant="Variant.Text" Placeholder="Select a GOS" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.GOS" For="@(() => @_assychart.GOS)">
-                        <MudSelectItem Disabled="true" Value="@_assychart.GOS">Select a GOS</MudSelectItem>
-                        @foreach (string type in _gos)
-                        {
-                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
-
-                        }
-                    </MudSelect>
-                    @*CCP*@
-                    <MudSelect T="string" Label="CCP" Variant="Variant.Text" Placeholder="Select a CCP" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.CCP" For="@(() => @_assychart.CCP)">
-                        <MudSelectItem Disabled="true" Value="@_assychart.CCP">Select a CCP</MudSelectItem>
-                        @foreach (var type in _ccp)
-                        {
-                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
-                        }
-                    </MudSelect>
-                    @*HOE*@
-                    <MudSelect Label="Hoe" Variant="Variant.Text" Placeholder="Select a HOE" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.HOE" For="@(() => @_assychart.HOE)">
-                        <MudSelectItem Disabled="true" Value="@_assychart.HOE">Select a Hoe</MudSelectItem>
-                        @foreach (var type in _hoe)
-                        {
-                            <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
-                        }
-                    </MudSelect>
-
                     @*Operation*@
-                    <MudCardContent>
-                       
-                    
-                    </MudCardContent>
+                    @*Operation *@
+                    <MudSelect T="int" Label="Operation" Placeholder="Select a Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.OperationId" For="@(() => _assychart.OperationId)">
+                        <MudSelectItem Disabled="true" Value="0">Select a Operation</MudSelectItem>
+                        @foreach (var type in _distributionValues.Operations)
+                        {
+                            <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+
 
                     @*Mud select of Model/Product *@
                     <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.ProductId" For="@(() => @_assychart.ProductId)">
@@ -104,10 +85,125 @@
                             <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                         }
                     </MudSelect>
+                    <br/>
+                    <br/>
+                    <br/>
+
+
+                    @*GOS*@
+
+                    @if (GOSFolders != null)
+                    {
+                        @if (rootNodeGOS.TreeItems.Count > 0)
+                        {
+                            <MudPaper Width="600px" Elevation="0">
+                                <MudTextField Label="Selected GOS Folder" ReadOnly="true"
+                                      @bind-Value="@_assychart.GOS" For="@(() => @_assychart.GOS)" />
+                                <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
+                                    <ItemTemplate>
+                                        <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @_assychart.GOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
+                                    </ItemTemplate>
+                                </MudTreeView>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading GOS Directory...</MudAlert>
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        }
+                    }
+                    else
+                    {
+                        if (folderGOSError)
+                        {
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                        }
+                    }
+
+
+                    @*CCP*@
+
+                    @if (CCPFolders != null)
+                    {
+                        @if (rootNodeCCP.TreeItems.Count > 0)
+                        {
+
+                            <MudPaper Width="600px" Elevation="0">
+                                <MudTextField Label="Selected CCP Folder" ReadOnly="true"
+                                      @bind-Value="@_assychart.CCP" For="@(() => @_assychart.CCP)" />
+                                <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
+                                    <ItemTemplate>
+                                        <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @_assychart.CCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
+                                    </ItemTemplate>
+                                </MudTreeView>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading CCP Directory...</MudAlert>
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        }
+                    }
+                    else
+                    {
+                        if (folderCCPError)
+                        {
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                        }
+                    }
+
+
+
+
+
+                    @*    <MudSelect Label="CCP" Variant="Variant.Text" Placeholder="Select a CCP" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.CCP" For="@(() => _assychart.CCP)">
+                    <MudSelectItem Disabled="true" Value="@_assychart.GOS">Select a CCP</MudSelectItem>
+                    @foreach (var type in _ccp)
+                    {
+                    <MudSelectItem Value="type">@($"{type}")</MudSelectItem>
+                    }
+                    </MudSelect>*@
+
+                    @*HOE*@
+
+                    @if (HOEFolders != null)
+                    {
+                        @if (rootNodeHOE.TreeItems.Count > 0)
+                        {
+                            <MudPaper Width="600px" Elevation="0">
+                               
+                                    <MudTextField Label="Selected CCP Folder" ReadOnly="true"
+                                      Value="@_assychart.HOE.Replace('§', ' ')" For="@(() => @_assychart.HOE)" />
+                                
+
+                                <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems">
+                                    <ItemTemplate>
+                                        <MudTreeViewItem Value="@OtherContext" @onclick="@(() => { @_assychart.HOE = OtherContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre.Split('§').Last()" EndTextTypo="@Typo.caption" />
+                                    </ItemTemplate>
+                                </MudTreeView>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading HOE Directory..</MudAlert>
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        }
+
+                    }
+                    else
+                    {
+                        if (folderHOEError)
+                        {
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                        }
+                    }
+                   
+
+                  
 
 
                     @* Is Active *@
-                    <MudSwitch Class="mt-3" Label="Assy Chart Is active?" @bind-Checked="@_assychart.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    @*<MudSwitch Class="mt-3" Label="Assy Chart Is active?" @bind-Checked="@_assychart.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
                 </MudCardContent>
 
                 <MudCardActions>
@@ -118,3 +214,33 @@
         </MudItem>
     </MudGrid>
 </EditForm>
+
+<MudMessageBox @ref="GOSmbox" Title="Notice GOS Path">
+    <MessageContent>
+        The provided path `@_assychart.GOS`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="HOEmbox" Title="Notice HOE Path">
+    <MessageContent>
+        The provided path `@_assychart.HOE.Replace('§', ' ')`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="CCPmbox" Title="Notice CCP Path">
+    <MessageContent>
+        The provided path `@_assychart.CCP`  is not a final directory. <br>
+        <b><i>Please provide a valid path</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
