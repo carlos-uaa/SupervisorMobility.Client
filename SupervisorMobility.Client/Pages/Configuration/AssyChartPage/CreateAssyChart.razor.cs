@@ -14,6 +14,33 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         List<Product> _products = new();
         List<Distribution> _distributions { get; set; } = new();
 
+        bool isGosFolder = false;
+        bool isCcpFolder = false;
+        bool isHoeFolder = false;
+        private CDMS_CCP_Archives? CcpFilesInFolder;
+        private CDMS_HOE_Archives? HoeFilesInFolder;
+        private CDMS_GOS_Archives? GosFilesInFolder;
+
+
+        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
+        TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
+        TreeItemData rootNodeHOE { get; set; } = new TreeItemData();
+        TreeItemData SelectedNodeCCP { get; set; }
+        TreeItemData SelectedNodeGOS { get; set; }
+        TreeItemData SelectedNodeHOE { get; set; }
+
+        CDMS_GOS_Directory GOSFolders { get; set; } = new CDMS_GOS_Directory();
+        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
+        CDMS_HOE_Directory HOEFolders { get; set; } = new CDMS_HOE_Directory();
+
+        private bool folderCCPError = false;
+        private bool folderHOEError = false;
+        private bool folderGOSError = false;
+
+        MudMessageBox HOEmbox { get; set; }
+        MudMessageBox CCPmbox { get; set; }
+        MudMessageBox GOSmbox { get; set; }
+
 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -54,11 +81,62 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             _newassychart.IsActive = true;
             _newassychart.CreationDate = DateTime.Now;
-            var result = await AssyChartServices.CreateAssyChart(_newassychart);
-            if(result != null)
-                NavigationManager.NavigateTo("/assychart");
+
+            GosFilesInFolder = new CDMS_GOS_Archives();
+
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(_newassychart.GOS);
+            if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            {
+                isGosFolder = false;
+                bool msgGOSBox = await OpenMessageGOS();
+
+            }
             else
-                await JsRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+            {
+                isGosFolder = true;
+            }
+
+            CcpFilesInFolder = new CDMS_CCP_Archives();
+
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(_newassychart.CCP);
+            if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            {
+                isCcpFolder = false;
+                bool msgCCPBox = await OpenMessageCCP();
+            }
+            else
+            {
+                isCcpFolder = true;
+            }
+
+            HoeFilesInFolder = new CDMS_HOE_Archives();
+
+            HoeFilesInFolder = await CDMSServices.GetFilesHOE(_newassychart.HOE);
+            if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+            {
+                isHoeFolder = false;
+                bool msgHOEBox = await OpenMessageHOE();
+
+            }
+            else
+            {
+                isHoeFolder = true;
+            }
+
+
+
+            if (isGosFolder && isCcpFolder && isHoeFolder)
+            {
+                var result = await AssyChartServices.CreateAssyChart(_newassychart);
+
+                if (result != null)
+                    NavigationManager.NavigateTo("/assychart");
+                else
+                    await JsRuntime.InvokeVoidAsync("alert", "Fail to create Assy Chart, contact admin!"); // Alert
+            }
+
+
+            
         }
 
         void CancelCreateAssyChart()
@@ -66,21 +144,26 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             NavigationManager.NavigateTo("/assychart");
         }
 
-    
-        TreeItemData rootNodeCCP { get; set; }= new TreeItemData();
-        TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
-        TreeItemData rootNodeHOE { get; set; } = new TreeItemData();
-        TreeItemData SelectedNodeCCP { get; set; }
-        TreeItemData SelectedNodeGOS { get; set; }
-        TreeItemData SelectedNodeHOE { get; set; }
 
-        CDMS_GOS_Directory GOSFolders { get ; set; } = new  CDMS_GOS_Directory();
-        CDMS_CCP_Directory CCPFolders { get ; set; } = new CDMS_CCP_Directory();
-        CDMS_HOE_Directory HOEFolders { get ; set; } = new CDMS_HOE_Directory();
+        private async Task<bool> OpenMessageHOE()
+        {
+            bool? result = await HOEmbox.Show();
 
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
+            return result == null ? false : true;
+        }
+        private async Task<bool> OpenMessageCCP()
+        {
+            bool? result = await CCPmbox.Show();
+
+            return result == null ? false : true;
+        }
+        private async Task<bool> OpenMessageGOS()
+        {
+            bool? result = await GOSmbox.Show();
+
+            return result == null ? false : true;
+        }
+
 
 
         protected override async void OnInitialized()
@@ -240,7 +323,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             // Imprimir el árbol
             return root;
-        } public TreeItemData ConstruirArbolGOS(List<FolderGOS> elementos)
+        }
+        public TreeItemData ConstruirArbolGOS(List<FolderGOS> elementos)
         {
             TreeItemData root = new TreeItemData { Nombre = "Raíz", Ruta = "", EsDirectorio = true };
             root.TreeItems = new HashSet<TreeItemData>();

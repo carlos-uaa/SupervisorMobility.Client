@@ -184,9 +184,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         
         private async void OpenDialogGOS(string ruta)
         {
+            folderError = true;
             GOSrute = ruta;
             GosDialog = true;
-            folderError = false;
 
             Console.WriteLine($"gos {ruta}");
 
@@ -194,7 +194,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
             if (GosFilesInFolder == null)
+            {
                 folderError = true;
+            }else
+            {
+                folderError = false;
+            }
 
 
             StateHasChanged();
@@ -205,15 +210,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         private async void OpenDialogCcp(string ruta)
         {
+            folderError = true;
             CCPrute= ruta;
             CcpDialog = true;
-            folderError = false;
             Console.WriteLine($"Cpc {ruta}");
 
             CcpFilesInFolder = new CDMS_CCP_Archives();
             CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
             if (CcpFilesInFolder == null)
                 folderError = true;
+            else
+                folderError = false;
 
             StateHasChanged();
         }
@@ -221,15 +228,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         private async void OpenDialogHoe(string ruta)
         {
+            folderError = true;
+
             HOErute = ruta;
             HoeDialog = true;
             Console.WriteLine($"hoe {ruta}");
-
-            folderError = false;
             HoeFilesInFolder = new CDMS_HOE_Archives();
             HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
             if (HoeFilesInFolder == null)
                 folderError = true;
+            else
+                folderError = false;
 
             StateHasChanged();
         }
