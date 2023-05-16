@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
@@ -436,16 +437,43 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         void CreateJobObservation()
         {
-            var date = DateTime.Now.ToShortDateString();
-            date = date.Replace("/", "-");
-            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                var formatedDate = date;
+
+                var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+                var dateString = EnglishDate.Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/createjobobservation/{dateString}");
+            }
+            else
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+                var dateString = date.ToShortDateString().Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/createjobobservation/{dateString}");
+            }
         }
 
         void PlanJobObservation()
         {
-            var date = DateTime.Now.ToShortDateString();
-            date = date.Replace("/", "-");
-            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{date}");
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+                var formatedDate = date;
+
+                var EnglishDate =  formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+                var dateString = EnglishDate.Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+            }
+            else
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+                var dateString = date.ToShortDateString().Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+            }
         }
 
         public bool flagJob = false;
