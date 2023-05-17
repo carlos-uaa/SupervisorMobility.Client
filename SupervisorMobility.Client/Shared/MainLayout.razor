@@ -42,6 +42,7 @@
         </MudMenuItem>
         </MudMenu>*@
         @*        <LoginDisplay />*@
+        @*AAD user*@
 @*        <AuthorizeView>
             <Authorized>
                 @if(NewNotifications.Count > 0){
@@ -69,7 +70,9 @@
                 </MudButton>
             </NotAuthorized>
         </AuthorizeView>*@
-        @if (!logged)
+
+        @*Admin User*@
+@*        @if (!logged)
         {
             <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="Login" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                 <MudMenuItem Icon="@Icons.Material.Filled.Person" IconColor="Color.Info" @onclick="LogInAsAdmin">
@@ -79,13 +82,29 @@
         }
         else
         {
+            @if (NewNotifications.Count > 0)
+            {
+                <MudButton OnClick="@OpenDialogNotifications" Class="mr-10 pt-4">
+                    <MudBadge Content="@NewNotifications.Count()" Overlap="true" Color="Color.Error">
+                        <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Style="color: white" />
+                    </MudBadge>
+                </MudButton>
+            }
+            else
+            {
+                <MudButton OnClick="@OpenDialogNotifications" Class="mr-10">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Style="color: white" />
+                </MudButton>
+            }
             <MudMenu Class="mr-10" StartIcon="@Icons.Material.Filled.Person" Label="@user.Name" Color="Color.Inherit" Style="color:white" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                 <MudMenuItem Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" @onclick="BeginLogout">
                     Log out
                 </MudMenuItem>
             </MudMenu>
-        }
-@*        @if(GlobalData.LoggedUser == "Log in")
+        }*@
+
+        @*AD user*@
+        @if(GlobalData.LoggedUser == "Log in")
         {
             <MudButton Class="mr-10" Color="Color.Inherit" Style="color:white" Href="/">
                 Log in
@@ -98,7 +117,7 @@
                     Log out
                 </MudMenuItem>
             </MudMenu>
-        }*@
+        }
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -467,7 +486,7 @@
         if (logged)
         {
             await GetUserAsync();
-            //GlobalData.LoggedUser = user.Name;
+            GlobalData.LoggedUser = user.Name;
             StateHasChanged();
         }
         else{
