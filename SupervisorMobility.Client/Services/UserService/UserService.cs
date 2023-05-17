@@ -1,5 +1,7 @@
-﻿using Microsoft.JSInterop;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.JSInterop;
 using System.ComponentModel;
+using System.IO;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
@@ -41,7 +43,39 @@ namespace SupervisorMobility.Client.Services.UserService
             {
                 await _js.InvokeVoidAsync("alert", $"Error Upload Useres error: {response.Content.ReadAsStringAsync().Result}");
             }
+            return null;
+        }
 
+
+        public async Task<UsersUploadResult> UploadUsers(List<User> UsersToUpload)
+        {
+            var response = await _http.PostAsJsonAsync("Users/MasiveUpload", UsersToUpload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UsersUploadResult>();
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Useres error: {response.Content.ReadAsStringAsync().Result}");
+            }
+            return null;
+        }
+
+        public async Task<UsersUploadResult> UploadUsersToSuperior(List<User> UsersToUpload, User Superior)
+        {
+            var response = await _http.PostAsJsonAsync($"Users/MasiveUpload/Superior/{Superior.UserId}", UsersToUpload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UsersUploadResult>();
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Useres error: {response.Content.ReadAsStringAsync().Result}");
+            }
             return null;
         }
 
@@ -267,5 +301,7 @@ namespace SupervisorMobility.Client.Services.UserService
                 await _js.InvokeVoidAsync("downloadFileFromStream", "OperatorsFormat.xlsx", streamRef);
             }
         }
+
+        
     }
 }

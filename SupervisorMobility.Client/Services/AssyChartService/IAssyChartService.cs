@@ -24,6 +24,7 @@
 
         //DELETE
         Task DeleteAssyChart(int assychartId);
-       
+
+        Task DownloadAssyChartFormat();
     }
 }

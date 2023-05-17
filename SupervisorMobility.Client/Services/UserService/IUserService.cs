@@ -5,6 +5,8 @@ namespace SupervisorMobility.Client.Services.UserService
     public interface IUserService
     {
         Task<UsersUploadResult> ProccedToUploadUsers(FileUpload fileinfo);
+        Task<UsersUploadResult> UploadUsers(List<User> UsersToUpload);
+        Task<UsersUploadResult> UploadUsersToSuperior(List<User> UsersToUpload, User Superior);
 
         //Create User
         Task<User> CreateUser(User _newUser);

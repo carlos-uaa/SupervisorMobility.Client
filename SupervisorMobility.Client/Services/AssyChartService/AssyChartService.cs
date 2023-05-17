@@ -144,5 +144,21 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         }
 
 
+        public async Task DownloadAssyChartFormat()
+        {
+            var response = await _http.GetAsync($"assycharts/DownloadAssyChartFormat");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "AssyChartFormat.xlsx", streamRef);
+            }
+        }
+
     }
 }
