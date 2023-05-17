@@ -662,20 +662,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Snackbar.Add($"Error in Operator Signature", Severity.Error);
                     return;
                 }
+
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
-                _jobObservation.FinishedDate = DateTime.Now;
-                Console.WriteLine(_jobObservation.FinishedDate);
-
-                if (_jobObservation.SsvSignature.IsNullOrEmpty())
-                {
-                    _jobObservation.Status = 4;
-                }
-                else
-                {
-                    _jobObservation.Status = 6;
-                }
+                _jobObservation.Status = 4;
 
 
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
@@ -728,20 +721,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Snackbar.Add($"Error in Operator Signature", Severity.Error);
                     return;
                 }
+
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
-                _jobObservation.FinishedDate = DateTime.Now;
-                Console.WriteLine(_jobObservation.FinishedDate);
-
-                if (_jobObservation.SsvSignature.IsNullOrEmpty())
-                {
-                    _jobObservation.Status = 4;
-                }
-                else
-                {
-                    _jobObservation.Status = 6;
-                }
+                _jobObservation.Status = 4;
 
 
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
@@ -828,11 +814,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
                 _jobObservation.Status = 5;
+
+                _jobObservation.FinishedDate = DateTime.Now;
+
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
                 if (result)
@@ -875,11 +865,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
                 _jobObservation.Status = 5;
+
+                _jobObservation.FinishedDate = DateTime.Now;
+
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
                 if (result)
@@ -966,10 +960,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
+                _jobObservation.FinishedDate = DateTime.Now;
+
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
 
                 if (result)
@@ -1012,7 +1010,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-
+                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
