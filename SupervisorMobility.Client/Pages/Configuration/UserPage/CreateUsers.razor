@@ -8,7 +8,7 @@
 @inject IGroupService GroupServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
-
+@inject ISnackbar Snackbar
 
 
 @*Title*@
@@ -154,7 +154,7 @@
                             <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
                             if(_user.Superior != null)
                             {
-                                if(_user.Superior.Areas != null){
+                                if(_user.Superior.Areas != null && _user.Superior.Areas.Count > 0){
                                     <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
                                         <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                                         @foreach (var type in _user.Superior.Areas)
@@ -204,7 +204,7 @@
 
 
                         @*Mud select of Distribution *@
-                        @if (_user.UserType == 4)
+                        @if (_user.UserType == 4 && _user.Superior != null)
                         {
                             <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDistribution" For="@(() => auxDistribution)">
                                 <MudSelectItem Disabled="true" Value="0">Select an Distribution</MudSelectItem>
@@ -405,7 +405,7 @@
                                             </MudItem>
                                             <MudItem class="d-flex d-flex-column justify-center">
                                                 <MudAlert Severity="Severity.Info">
-                                                    <MudText Style="font-weight: bold;"> without Superiors Yet...</MudText>
+                                                    <MudText Style="font-weight: bold;"> Without Superiors Yet...</MudText>
                                                 </MudAlert>
                                             </MudItem>
                                         }
@@ -478,7 +478,6 @@
                                     @switch (_user.Subordinates?.Count)
                                     {
                                         case null:
-                                            <MudText Style="font-weight: bold;">Caso null.. Plant:{@auxPlant} </MudText>
 
                                             @if (auxPlant == 0 &&  _user.UserType > 2) 
                                             {
@@ -569,7 +568,6 @@
                                             }
                                             break;
                                         case 0:
-                                            <MudText Style="font-weight: bold;">Caso 0... Plant:{@auxPlant}</MudText>
 
                                             @if (auxPlant == 0 && _user.UserType > 2)
                                             {
@@ -1030,6 +1028,7 @@
         auxPlant = 0;
         auxArea = 0;
         auxGroup = 0;
+        auxDistribution = 0;
         plantInfo = "";
         areaInfo = "";
         grupInfo = "";
@@ -1166,6 +1165,8 @@
 
     private void RemoveSuperiorUser()
     {
+        auxDistribution = 0;
+        _distributions = new();
         _user.SuperiorId = null;
         _user.Superior = null;
         superior = false;
@@ -1176,7 +1177,7 @@
                 areaInfo = "";
                 plantInfo = "";
                 grupInfo = "";
-            break;
+                break;
         }
 
         StateHasChanged();
@@ -1298,6 +1299,33 @@
 
     private async void CreateUser()
     {
+
+        Console.WriteLine(_user.DistributionId);
+        if(_user.UserType == 4)
+        {
+            Console.WriteLine("aaa");
+            if(_user.Payroll.ToString() == null || _user.Payroll.ToString() == ""){
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First type the Payroll Number!", Severity.Warning);
+                return;
+            }
+            if (_user.Superior == null)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First Select a superior", Severity.Warning);
+                return;
+            }
+            if (auxDistribution == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First Select a distribution", Severity.Warning);
+                return;
+            }
+        }
+
         _user.IsActive = true;
         _user.CreatedDate = DateTime.Now;
         _user.LastUpdated = DateTime.Now;
