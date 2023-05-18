@@ -14,6 +14,12 @@
 @inject IUserService UsersServices
 @inject IDialogService DialogService
 
+<style>
+    .mud-table-cell{
+    overflow: hidden;
+}
+</style>
+
 @*Title*@
 <PageTitle>Supervisor Mobility | Upload Users</PageTitle>
 @*Breadcrumb links*@
@@ -519,7 +525,7 @@
                                             {
                                                 if (context.Superior.Areas.Count > 0)
                                                 {
-                                                    <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                    <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                         <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
                                                         @foreach (var item in context.Superior.Areas)
                                                         {
@@ -550,7 +556,7 @@
                                             {
                                                 if (selectedSSVOfList.Areas.Count > 0)
                                                 {
-                                                    <MudSelect T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                    <MudSelect T="Area" SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                         <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
                                                         @foreach (var item in selectedSSVOfList.Areas)
                                                         {
@@ -814,6 +820,7 @@
 
     //Dialog Manage Areas Variables
     private User AuxDialogUser = new();
+    private User MasterUserSuperior = new();
     private Area selectedAreaOfList = new Area();
     private bool ActiveAddArea = true;
     List<Area> _areasManager = null;
@@ -912,6 +919,12 @@
         }
 
         StateHasChanged();
+    }
+
+
+    private void updateSelectAreaContextItem(User ItemContext)
+    {
+        ItemContext.AreaId = ItemContext.Area?.AreaId;
     }
 
 
@@ -1097,6 +1110,7 @@
 
     private void UpdateSelectSSVforSupervisors()
     {
+        MasterUserSuperior = selectedSSVOfList;
         foreach (User element in dataToShowInTable)
         {
             element.Superior = selectedSSVOfList;
@@ -1110,6 +1124,8 @@
 
     private void UpdateSelectSupervisorForOperators()
     {
+        MasterUserSuperior = selectedSupervisorOfList;
+
         foreach (User element in dataToShowInTable)
         {
             element.Superior = selectedSupervisorOfList;
@@ -1803,6 +1819,27 @@
 
         if (FileSource is not null)
         {
+
+            foreach (var item in dataToShowInTable)
+            {
+                item.LastUpdated = DateTime.Now;
+                switch (uploadtype)
+                {
+                    case 2:
+                        item.UserType = 2;
+                        break; 
+                        case 3:
+                        case 4:
+                        item.UserType = 3;
+                        break;
+                        case 5:
+                        case 6:
+                        item.UserType = 4;
+                        break;
+                }
+            }
+
+
             switch (uploadtype)
             {
                 case 1:
@@ -1851,9 +1888,53 @@
                 case 2:
                 case 3:
                 case 5:
+                    
+                        UsersUploadResult ResultMassiveUpload = await UsersServices.UploadUsers(dataToShowInTable);
+
+                        if (ResultMassiveUpload is not null)
+                        {
+                            //tiene resultados
+                            ErrorMessageToDisplay = "Upload Data Succesfull";
+
+
+                            showResume = true;
+                            FileSource = null;
+                            await Clear();
+                        commitUsersResult = ResultMassiveUpload;
+
+                            base.StateHasChanged();
+
+                        }
+                        else
+                        {
+                            ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                        }
                     break;
                 case 4:
                 case 6:
+                               
+                      
+
+                        UsersUploadResult ResultMassiveUploadToSuperior = await UsersServices.UploadUsersToSuperior(dataToShowInTable, MasterUserSuperior);
+
+                        if (ResultMassiveUploadToSuperior is not null)
+                        {
+                            //tiene resultados
+                            ErrorMessageToDisplay = "Upload Data Succesfull";
+
+
+                            showResume = true;
+                            FileSource = null;
+                            await Clear();
+                        commitUsersResult = ResultMassiveUploadToSuperior;
+
+                            base.StateHasChanged();
+
+                        }
+                        else
+                        {
+                            ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                        }
                     break;
             }
 

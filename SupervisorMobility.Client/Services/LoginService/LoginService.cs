@@ -37,6 +37,8 @@ namespace SupervisorMobility.Client.Services.LoginService
 
         public async Task<AD_User> LoginAD(string username, string password)
         {
+
+
             var data = new
             {
                 username = username,
@@ -49,7 +51,7 @@ namespace SupervisorMobility.Client.Services.LoginService
 
             try
             {
-                var response = await _httpAD.PostAsync("", content);
+                var response = await _http.PostAsync("login", content);
 
                 if(response.StatusCode != HttpStatusCode.OK)
                 {
