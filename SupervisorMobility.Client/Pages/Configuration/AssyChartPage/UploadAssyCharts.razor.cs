@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using Microsoft.JSInterop;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Spreadsheet;
+using SupervisorMobility.Client.Services.UserService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -207,7 +208,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         }//end function on change
 
-
+        private async Task DownloadAssyChartFormat()
+        {
+            await AssyChartServices.DownloadAssyChartFormat();
+        }
         public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
         {
             List<string[]> dtTable = new List<string[]>();
