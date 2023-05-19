@@ -115,7 +115,6 @@ namespace SupervisorMobility.Client.Pages
                 
                 user = await UsersService.GetUserByEmailWithCollections(result.userPrincipalName);
 
-                Console.WriteLine("aaaaa");
                 Console.WriteLine(user.Name);
 
                 if(user != null)

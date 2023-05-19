@@ -46,49 +46,44 @@
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h3">User Details</MudText>
-
+                                <MudText Typo="Typo.h4" Style="text-align:center">User Details</MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent>
-                            <MudItem>
-                                <MudItem>
-                                    <MudText Typo="Typo.h6">Payroll</MudText>
+                        <MudCardContent Class="pl-15 pr-15">
+                            @if(_user.UserType != 4)
+                            {
+                                <MudItem class="d-flex flex-column justify-center align-self-center">
+                                    <MudTextField Label="Email" ReadOnly=true @bind-Value="@_user.Email" />
                                 </MudItem>
+                            }
+                            @if(_user.UserType == 4)
+                            {
                                 <MudItem class="d-flex flex-column justify-center align-self-center">
                                     <MudTextField Label="Payroll" ReadOnly=true @bind-Value="@_user.Payroll" />
-
                                 </MudItem>
-                            </MudItem>
-
+                            }
                             <MudItem>
                                 <MudItem>
-                                    <MudText Typo="Typo.h6">Permissions</MudText>
+                                    <MudText Typo="Typo.h6" Class="mt-5">Permissions</MudText>
                                 </MudItem>
-                                <MudItem class="d-flex flex-column justify-center">
-                                    @*@if (_user.IsAdmin)
-                                    {
-                                        <MudPaper Elevation="0">
-                                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
-                                        </MudPaper>
+                                <MudItem >
+          
+                                        @switch(_user.UserType)
+                                        {
+                                            case 1: 
+                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                            break; 
+                                            case 2:
+                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
 
-                                    }
-
-                                    @if (_user.IsSupervisor)
-                                    {
-                                        <MudPaper Elevation="0">
-                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
-                                        </MudPaper>
-
-                                    }
-
-                                    @if (_user.IsOperator)
-                                    {
-                                        <MudPaper Elevation="0">
-                                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
-                                        </MudPaper>
-
-                                    }*@
+                                                break;
+                                            case 3:
+                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                break;
+                                            case 4:
+                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                break;
+                                        }
                                 </MudItem>
                             </MudItem>
 
@@ -96,23 +91,47 @@
 
                             <MudItem>
                                 <MudItem>
-                                    <MudText Typo="Typo.h6">General Info</MudText>
+                                    <MudText Typo="Typo.h6" Class="mt-5">General Info</MudText>
                                 </MudItem>
                                 <MudItem class="d-flex flex-column justify-center align-self-center">
                                     <MudTextField Label="Plant" ReadOnly=true @bind-Value="@_user.Plant.Description" />
-                                    <MudTextField Label="Area" ReadOnly=true @bind-Value="@_user.Area.Description" />
-                                    <MudTextField Label="Group" ReadOnly=true @bind-Value="@_user.Group.Description" />
+                                    @if(_user.UserType == 2)
+                                    {
+                                        @if (_user.Areas?.Count > 0)
+                                        {
+                                            <MudText Typo="Typo.h6" Class="mt-5">Areas</MudText>
+                                            @foreach(var area in _user.Areas)
+                                            {
+                                                <MudTextField Label="Area" ReadOnly=true Value="@area.Description" />
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                This SSV has no areas yet.
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudTextField Label="Area" ReadOnly=true @bind-Value="@_user.Area.Description" />
+                                    }
+                                    <MudTextField Label="Group" Class="mt-5" ReadOnly=true @bind-Value="@_user.Group.Description" />
                                 </MudItem>
                             </MudItem>
 
                             <MudItem>
                                 <MudItem>
-                                    <MudText Typo="Typo.h6">More Data For Admin</MudText>
+                                    <MudText Typo="Typo.h6" Class="mt-5">More Data For Admin</MudText>
                                 </MudItem>
                                 <MudItem class="d-flex flex-column justify-center align-self-center">
                                     <MudTextField Label="Created Date" ReadOnly=true @bind-Value="@_user.CreatedDate" />
                                     <MudTextField Label="Last Modification Date" ReadOnly=true @bind-Value="@_user.LastUpdated" />
-                                    <MudTextField Label="Disable User Date" ReadOnly=true @bind-Value="@_user.DisabledDate" />
+                                    @if(_user.UserType == 1)
+                                    {
+                                        <MudTextField Label="Disabled User Date" ReadOnly=true @bind-Value="@_user.DisabledDate" />
+                                    }
 
                                 </MudItem>
                             </MudItem>
@@ -120,7 +139,7 @@
 
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">Close</MudButton>
+                            <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-auto mr-10 mb-10">Close</MudButton>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
