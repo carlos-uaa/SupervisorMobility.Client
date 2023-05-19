@@ -15,7 +15,7 @@
 @inject IDialogService DialogService
 
 <style>
-    .mud-table-cell{
+    .mtc{
     overflow: hidden;
 }
 </style>
@@ -65,7 +65,7 @@
                     <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
                         <MudItem style="text-align:center">
                             <img src="Images/userupdate.png" Height="100" Width="100" />
-                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersUpdated </MudText>
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Updated: @commitUsersResult.UsersUpdated </MudText>
                         </MudItem>
                     </MudPaper>
                 </MudPaper>
@@ -338,7 +338,7 @@
                                             {
                                                 @if (SS.UserType == 2)
                                                 {
-                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Plant?.Description}-{SS.Group?.Description}") </MudSelectItem>
                                                 }
                                             }
                                         </MudSelect>
@@ -422,7 +422,7 @@
 
 
 
-                        <MudTd DataLabel="Plant">
+                        <MudTd DataLabel="Plant" Class="mtc">
                             @if (context.Plant is null)
                             {
                                 @switch (uploadtype)
@@ -463,7 +463,7 @@
                                     <MudToolBar>
 
                                         <MudExpansionPanels>
-                                            <MudExpansionPanel Text="Areas Manage" MaxHeight="150" Class="activador" id="ExpansionPanel">
+                                            <MudExpansionPanel Text="Areas Manage" MaxHeight="150" Class="mtc" id="ExpansionPanel">
 
                                                 <MudItem class="d-flex flex-column justify-center ma-1">
                                                     <MudItem class="d-flex d-flex-column justify-center">
@@ -586,7 +586,7 @@
                             //area asignada al operador por el superior
                             @if (context.Area is null)
                             {
-                                <MudTd DataLabel="Area">
+                                <MudTd DataLabel="Area" Class="mtc">
                                     <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
                                 </MudTd>
                             }
@@ -602,7 +602,7 @@
 
                         @if (uploadtype > 4)
                         {
-                            <MudTd DataLabel="Distribution">
+                            <MudTd DataLabel="Distribution" Class="mtc">
 
                                 @if (context.Distribution is not null)
                                 {
@@ -640,7 +640,7 @@
                         }
 
 
-                        <MudTd DataLabel="Group">
+                        <MudTd DataLabel="Group" Class="mtc">
                             @if (context.Group is null)
                             {
                                 @switch (uploadtype)
@@ -885,6 +885,8 @@
 
     private void UpdateSelectSuperiorContextItem(User ItemContext)
     {
+        ItemContext.SuperiorId = ItemContext.Superior?.UserId;
+
         ItemContext.PlantId = ItemContext.Superior?.PlantId;
         ItemContext.AreaId = ItemContext.Superior?.AreaId;
         ItemContext.GroupId = ItemContext.Superior?.GroupId;
@@ -1144,7 +1146,7 @@
             element.Group = selectedSupervisorOfList.Group;
 
             if (element.PlantId != null && element.AreaId != null && uploadtype == 6)
-               if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
+                if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
                 {
                     element.Distribution = null;
                     element.DistributionId = null;
@@ -1806,10 +1808,12 @@
 
     private async Task Clear()
     {
+
         fileNames.Clear();
         dataToShowInTable.Clear();
         ClearDragClass();
         activeUpload = false;
+        showResume = false;
         showTableInUI = false;
         DataInDocument.Clear();
         await Task.Delay(100);
@@ -1835,7 +1839,10 @@
 
             foreach (var item in dataToShowInTable)
             {
+                item.CreatedDate = DateTime.Now;
                 item.LastUpdated = DateTime.Now;
+                item.IsActive = true;
+
                 switch (uploadtype)
                 {
                     case 2:
@@ -1876,11 +1883,11 @@
                         {
                             //tiene resultados
                             ErrorMessageToDisplay = "Upload Data Succesfull";
+                            await Clear();
 
 
                             showResume = true;
                             FileSource = null;
-                            await Clear();
                             commitUsersResult = newDataResults;
 
                             base.StateHasChanged();
@@ -1908,12 +1915,12 @@
                         {
                             //tiene resultados
                             ErrorMessageToDisplay = "Upload Data Succesfull";
+                            await Clear();
 
 
                             showResume = true;
                             FileSource = null;
-                            await Clear();
-                        commitUsersResult = ResultMassiveUpload;
+                            commitUsersResult = ResultMassiveUpload;
 
                             base.StateHasChanged();
 
@@ -1934,12 +1941,12 @@
                         {
                             //tiene resultados
                             ErrorMessageToDisplay = "Upload Data Succesfull";
+                            await Clear();
 
 
                             showResume = true;
                             FileSource = null;
-                            await Clear();
-                        commitUsersResult = ResultMassiveUploadToSuperior;
+                            commitUsersResult = ResultMassiveUploadToSuperior;
 
                             base.StateHasChanged();
 
