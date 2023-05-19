@@ -53,13 +53,12 @@ namespace SupervisorMobility.Client.Services.LoginService
             {
                 var response = await _http.PostAsync($"login?username={username}&password={password}", content);
 
-                if (response.StatusCode != HttpStatusCode.OK)
+                if(response.StatusCode != HttpStatusCode.OK)
                 {
                     return null;
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<AD_User>(); // Leemos la respuesta
-
 
                 return result;
             }catch(Exception ex)
