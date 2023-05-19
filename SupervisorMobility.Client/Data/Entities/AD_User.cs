@@ -8,6 +8,8 @@
         public string sAMAccountName { get; set; }
         public string whenCreated { get; set; }
         public string pwdLastSet { get; set; }
+        public string mail { get; set; }
+
         public string userAccountControl { get; set; }
         public string sn { get; set; }
         public string givenName { get; set; }
