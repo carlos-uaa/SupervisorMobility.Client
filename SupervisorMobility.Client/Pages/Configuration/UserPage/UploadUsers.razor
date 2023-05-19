@@ -62,6 +62,12 @@
                             <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Exist: @commitUsersResult.UsersExist </MudText>
                         </MudItem>
                     </MudPaper>
+                    <MudPaper Class="flex d-flex-row pa-16 ma-2" Elevation="3">
+                        <MudItem style="text-align:center">
+                            <img src="Images/userupdate.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Users Created: @commitUsersResult.UsersUpdated </MudText>
+                        </MudItem>
+                    </MudPaper>
                 </MudPaper>
             }
             else
@@ -1120,6 +1126,8 @@
             element.GroupId = selectedSSVOfList.GroupId;
             element.Group = selectedSSVOfList.Group;
         }
+        StateHasChanged();
+
     }
 
     private void UpdateSelectSupervisorForOperators()
@@ -1135,14 +1143,15 @@
             element.GroupId = selectedSupervisorOfList.GroupId;
             element.Group = selectedSupervisorOfList.Group;
 
-            if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
-            {
-                element.Distribution = null;
-                element.DistributionId = null;
-            }
-
-
+            if (element.PlantId != null && element.AreaId != null && uploadtype == 6)
+               if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
+                {
+                    element.Distribution = null;
+                    element.DistributionId = null;
+                }   
         }
+        StateHasChanged();
+
     }
 
     private async void OnInputFileChanged(InputFileChangeEventArgs e)
@@ -1307,16 +1316,20 @@
                             foreach (User element in dataToShowInTable)
                             {
                                 element.Superior = selectedSupervisorOfList != null ? selectedSupervisorOfList : null;
-                                element.SuperiorId = selectedSupervisorOfList != null ? selectedSupervisorOfList.UserId : null;
+                                element.SuperiorId = selectedSupervisorOfList != null ? selectedSupervisorOfList.SuperiorId : null;
+                                element.Area = selectedSupervisorOfList != null ? selectedSupervisorOfList.Area : null;
+                                element.AreaId= selectedSupervisorOfList != null ? selectedSupervisorOfList.AreaId : null;
                                 element.PlantId = selectedSupervisorOfList != null ? selectedSupervisorOfList.PlantId : null;
                                 element.Plant = selectedSupervisorOfList != null ? selectedSupervisorOfList.Plant : null;
                                 element.GroupId = selectedSupervisorOfList != null ? selectedSupervisorOfList.GroupId : null;
                                 element.Group = selectedSupervisorOfList != null ? selectedSupervisorOfList.Group : null;
-                                if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
-                                {
-                                    element.Distribution = null;
-                                    element.DistributionId = null;
-                                }
+
+                                if(element.PlantId != null && element.AreaId != null)
+                                    if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
+                                    {
+                                        element.Distribution = null;
+                                        element.DistributionId = null;
+                                    }
                             }
 
                         }
