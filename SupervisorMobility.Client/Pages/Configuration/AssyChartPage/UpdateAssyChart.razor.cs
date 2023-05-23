@@ -150,39 +150,58 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            GosFilesInFolder = await CDMSServices.GetFilesGOS(_assychart.GOS);
-            if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            if (_assychart.GOS != "")
             {
-                isGosFolder = false;
-                bool msgGOSBox = await OpenMessageGOS();
+                GosFilesInFolder = await CDMSServices.GetFilesGOS(_assychart.GOS);
+                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isGosFolder = false;
+                    bool msgGOSBox = await OpenMessageGOS();
 
+                }
+                else
+                {
+                    isGosFolder = true;
+                }
             }
-            else
-            {
-                isGosFolder = true;
-            }
+            else { isGosFolder = true; }
 
             CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            CcpFilesInFolder = await CDMSServices.GetFilesCCP(_assychart.CCP);
-            if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            if (_assychart.CCP != "")
             {
-                isCcpFolder = false;
-                bool msgCCPBox = await OpenMessageCCP();
+                CcpFilesInFolder = await CDMSServices.GetFilesCCP(_assychart.CCP);
+                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isCcpFolder = false;
+                    bool msgCCPBox = await OpenMessageCCP();
+                }
+                else
+                {
+                    isCcpFolder = true;
+                }
             }
             else
             {
                 isCcpFolder = true;
+
             }
 
             HoeFilesInFolder = new CDMS_HOE_Archives();
 
-            HoeFilesInFolder = await CDMSServices.GetFilesHOE(_assychart.HOE);
-            if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+            if (_assychart.HOE != "")
             {
-                isHoeFolder = false;
-                bool msgHOEBox = await OpenMessageHOE();
+                HoeFilesInFolder = await CDMSServices.GetFilesHOE(_assychart.HOE);
+                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isHoeFolder = false;
+                    bool msgHOEBox = await OpenMessageHOE();
 
+                }
+                else
+                {
+                    isHoeFolder = true;
+                }
             }
             else
             {

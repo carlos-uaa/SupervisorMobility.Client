@@ -15,9 +15,9 @@
 @inject IDialogService DialogService
 
 <style>
-    .mtc{
-    overflow: hidden;
-}
+    .mtc {
+        overflow: hidden;
+    }
 </style>
 
 @*Title*@
@@ -127,7 +127,6 @@
                         </MudTabPanel>
                         @*Add Supervisors to SSV*@
                         <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="Add To Supervisor" OnClick="() => AssignType(6)">
-
                             <MudSelect T="User" Label="Supervisors" Placeholder="Select Supervisor" SelectedValuesChanged="@(() => UpdateSelectSupervisorForOperators())" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                 <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> Select a Supervisor </MudSelectItem>
                                 @foreach (var SS in _allUsers)
@@ -584,18 +583,19 @@
                         else
                         {
                             //area asignada al operador por el superior
-                            @if (context.Area is null)
+
+                            @if (@context.Area != null)
                             {
-                                <MudTd DataLabel="Area" Class="mtc">
-                                    <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
+                                <MudTd DataLabel="Area">
+                                    <MudItem Class="d-flex justify-content-center align-items-center">
+                                        <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                    </MudItem>
                                 </MudTd>
                             }
                             else
                             {
-                                <MudTd DataLabel="Area">
-                                    <MudItem Class="d-flex justify-content-center align-items-center">
-                                        <MudTextField @bind-Value="@context.Area.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                    </MudItem>
+                                <MudTd DataLabel="Area" Class="mtc">
+                                    <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
                                 </MudTd>
                             }
                         }
@@ -616,7 +616,7 @@
                                     {
                                         @if (_distributions[(int)context.PlantId][(int)context.AreaId].Count > 0)
                                         {
-                                            <MudSelect T="Distribution" Label="Distribution" Placeholder="Distribution" @bind-Value="@context.Distribution" For="@(() => @context.Distribution)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                            <MudSelect SelectedValuesChanged="@(() => updateSelectDistributionContextItem(context))" T="Distribution" Label="Distribution" Placeholder="Distribution" @bind-Value="@context.Distribution" For="@(() => @context.Distribution)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                                 <MudSelectItem Disabled="true" Value="@context.Distribution"> Assign Area  </MudSelectItem>
                                                 @foreach (var item in _distributions[(int)context.PlantId][(int)context.AreaId])
                                                 {
@@ -930,9 +930,16 @@
     }
 
 
-    private void updateSelectAreaContextItem(User ItemContext)
+    private void updateSelectDistributionContextItem(User ItemContext)
     {
-        ItemContext.AreaId = ItemContext.Area?.AreaId;
+        ItemContext.DistributionId = ItemContext.Distribution?.DistributionId;
+    }
+
+    private void RemoveSelectedDistributionContextItem(User ItemContext)
+    {
+        ItemContext.DistributionId = null;
+        ItemContext.Distribution = null;
+        StateHasChanged();
     }
 
 
@@ -970,12 +977,7 @@
         StateHasChanged();
     }
 
-    private void RemoveSelectedDistributionContextItem(User ItemContext)
-    {
-        ItemContext.DistributionId = null;
-        ItemContext.Distribution = null;
-        StateHasChanged();
-    }
+
 
     private async void RemoveSelectedPlantContextItem(User ItemContext)
     {
@@ -1030,6 +1032,11 @@
                 break;
         }
         StateHasChanged();
+    }
+
+    private void updateSelectAreaContextItem(User ItemContext)
+    {
+        ItemContext.AreaId = ItemContext.Area?.AreaId;
     }
 
     private void updateSelectGroupContextItem(User ItemContext)
@@ -1135,6 +1142,11 @@
     private void UpdateSelectSupervisorForOperators()
     {
         MasterUserSuperior = selectedSupervisorOfList;
+        Console.WriteLine($"Entra en funcion updatew supervisor");
+
+
+        Console.WriteLine(_distributions[(int)MasterUserSuperior.PlantId][(int)MasterUserSuperior.AreaId]);
+
 
         foreach (User element in dataToShowInTable)
         {
@@ -1142,15 +1154,22 @@
             element.SuperiorId = selectedSupervisorOfList.UserId;
             element.PlantId = selectedSupervisorOfList.PlantId;
             element.Plant = selectedSupervisorOfList.Plant;
+            element.Area = selectedSupervisorOfList.Area;
+            element.AreaId = selectedSupervisorOfList.AreaId;
             element.GroupId = selectedSupervisorOfList.GroupId;
             element.Group = selectedSupervisorOfList.Group;
+
+            Console.WriteLine($"Plant: {element.PlantId} {element.Plant.Description}");
+
+            Console.WriteLine(_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId));
+
 
             if (element.PlantId != null && element.AreaId != null && uploadtype == 6)
                 if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
                 {
                     element.Distribution = null;
                     element.DistributionId = null;
-                }   
+                }
         }
         StateHasChanged();
 
@@ -1320,13 +1339,13 @@
                                 element.Superior = selectedSupervisorOfList != null ? selectedSupervisorOfList : null;
                                 element.SuperiorId = selectedSupervisorOfList != null ? selectedSupervisorOfList.SuperiorId : null;
                                 element.Area = selectedSupervisorOfList != null ? selectedSupervisorOfList.Area : null;
-                                element.AreaId= selectedSupervisorOfList != null ? selectedSupervisorOfList.AreaId : null;
+                                element.AreaId = selectedSupervisorOfList != null ? selectedSupervisorOfList.AreaId : null;
                                 element.PlantId = selectedSupervisorOfList != null ? selectedSupervisorOfList.PlantId : null;
                                 element.Plant = selectedSupervisorOfList != null ? selectedSupervisorOfList.Plant : null;
                                 element.GroupId = selectedSupervisorOfList != null ? selectedSupervisorOfList.GroupId : null;
                                 element.Group = selectedSupervisorOfList != null ? selectedSupervisorOfList.Group : null;
 
-                                if(element.PlantId != null && element.AreaId != null)
+                                if (element.PlantId != null && element.AreaId != null)
                                     if (_distributions[(int)element.PlantId][(int)element.AreaId].FindIndex(a => a.DistributionId == element.DistributionId) == -1)
                                     {
                                         element.Distribution = null;
@@ -1356,109 +1375,301 @@
         List<User> ListtoReturn = new List<User>();
         foreach (string[] row in DataInDocument)
         {
+            var ToInsertIntoList = new User();
+
             try
             {
-                var ToInsertIntoList = new User();
-                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-                ToInsertIntoList.Payroll = row[1] != "§" ? int.Parse(row[1]) : -1;
-                if (ToInsertIntoList.Payroll == -1)
-                {
-                    showTableInUI = false;
-
-                    ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
-                    break;
-                }
-
-                ToInsertIntoList.Name = row[2] != "§" ? row[2] : "";
-                if (ToInsertIntoList.Name == "")
-                {
-                    showTableInUI = false;
-
-                    ErrorMessageToDisplay = "Document Incomplet fields in Name";
-                    break;
-                }
-
-
-                ToInsertIntoList.PlantId = row[3] != "§" ? int.Parse(row[3]) : -1;
-                ToInsertIntoList.AreaId = row[4] != "§" ? int.Parse(row[4]) : -1;
-                ToInsertIntoList.GroupId = row[5] != "§" ? int.Parse(row[5]) : -1;
-
-                //ToInsertIntoList.IsAdmin = row[6] != "§" ? bool.Parse(row[6]) : false;
-                //ToInsertIntoList.IsSupervisor = row[7] != "§" ? bool.Parse(row[7]) : false;
-                //ToInsertIntoList.IsOperator = row[8] != "§" ? bool.Parse(row[8]) : false;
-
-                try
-                {
-                    ToInsertIntoList.CreatedDate = row[9] != "§" ? DateTime.Parse(row[9]) : DateTime.Now;
-
-                }
-                catch (Exception ex)
-                {
-                    ToInsertIntoList.CreatedDate = DateTime.Now;
-
-                }
-
-                try
-                {
-                    ToInsertIntoList.LastUpdated = row[10] != "§" ? DateTime.Parse(row[10]) : DateTime.Now;
-
-
-                }
-                catch (Exception ex)
-                {
-                    ToInsertIntoList.LastUpdated = DateTime.Now;
-
-                }
-
-                try
-                {
-                    ToInsertIntoList.DisabledDate = row[11] != "§" ? DateTime.Parse(row[11]) : DateTime.Now;
-
-                }
-                catch (Exception ex)
-                {
-                    ToInsertIntoList.DisabledDate = DateTime.Now;
-
-                }
-
-
-                ToInsertIntoList.IsActive = row[12] != "§" ? bool.Parse(row[12]) : true;
-
-                try
-                {
-                    ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
-                    ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
-                    ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
-                }
-                catch (Exception ex)
-                {
-                    showTableInUI = false;
-                    if (ToInsertIntoList.AreaId == -1)
-                    {
-                        ErrorMessageToDisplay = "Document Incomplet fields in Area";
-                    }
-
-                    if (ToInsertIntoList.PlantId == -1)
-                    {
-                        ErrorMessageToDisplay = "Document Incomplet fields in Plant";
-                    }
-
-                    if (ToInsertIntoList.GroupId == -1)
-                    {
-                        ErrorMessageToDisplay = "Document Incomplet fields in Group";
-                    }
-                    Console.WriteLine($"{ex.Message}");
-                }
-
-                ListtoReturn.Add(ToInsertIntoList);
-
-
+                ToInsertIntoList.UserType = row[5] != "§" ? int.Parse(row[0]) : -1;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{ex.Message}");
-                showTableInUI = false;
+
             }
+
+            if (ToInsertIntoList.UserType == -1)
+            {
+                showTableInUI = false;
+
+                ErrorMessageToDisplay = "Document Incomplet Some Field User Type";
+                break;
+            }
+
+            switch (ToInsertIntoList.UserType)
+            {
+                case 1:
+                    try
+                    {
+                        ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                        try
+                        {
+                            ToInsertIntoList.ObjectId = row[1] != "§" ? row[2] : row[403];
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For Admin";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = "Document Incomplet Some Name  For Admin";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
+
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = "Document Incomplet Some Email For Admin";
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Case 1 => Create All Users:{ex.Message}");
+                        showTableInUI = false;
+                    }
+                    break;
+                case 2:
+                    try
+                    {
+                        ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                        try
+                        {
+                            ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[403];
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For SSV";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = $"Document Incomplet Some Name For SSV With PrincipalName: {ToInsertIntoList.ObjectId}";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
+
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = $"Document Incomplet Some Email For SSV with Name {ToInsertIntoList.Name}";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.PlantId = row[7] != "§" ? int.Parse(row[7]) : int.Parse(row[403]) ;
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = $"Document Incomplet Some Plant For SSV whit email {ToInsertIntoList.Email}";
+                        }
+
+                        try
+                        {
+                            if (row[8].Contains(','))
+                            {
+                                string[]? SplitedAreas = row[8] != "§" ? row[8].Split(',') : null;
+
+                                if (SplitedAreas != null)
+                                {
+                                    if (ToInsertIntoList.Areas != null)
+                                    {
+                                        foreach (var item in SplitedAreas)
+                                        {
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ToInsertIntoList.Areas = new List<Area>();
+                                        foreach (var item in SplitedAreas)
+                                        {
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                        }
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                if (row[8] != "§")
+                                {
+                                    if (ToInsertIntoList.Areas != null)
+                                    {
+
+                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[8])));
+
+                                    }
+                                    else
+                                    {
+                                        ToInsertIntoList.Areas = new List<Area>();
+                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[8])));
+
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = $"Document Incomplet, Areas For SSV with Email{ToInsertIntoList.Email}";
+                        }
+
+                        try
+                        {
+                            ToInsertIntoList.PlantId = row[9] != "§" ? int.Parse(row[9]) : int.Parse(row[403]) ;
+                        }
+                        catch (Exception ex)
+                        {
+                            showTableInUI = false;
+                            ErrorMessageToDisplay = "Document Incomplet Some Group For SSV";
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Case 1 => Create All Users:{ex.Message}");
+                        showTableInUI = false;
+                    }
+                    break;
+                case 3:
+
+                    break;
+                case 4:
+
+                    break;
+            }
+
+            if (!showTableInUI)
+            {
+                break;
+            }
+
+
+            //try
+            //{
+            //    ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+            //    ToInsertIntoList.Payroll = row[1] != "§" ? int.Parse(row[1]) : -1;
+            //    if (ToInsertIntoList.Payroll == -1)
+            //    {
+            //        showTableInUI = false;
+
+            //        ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
+            //        break;
+            //    }
+
+            //    ToInsertIntoList.Name = row[2] != "§" ? row[2] : "";
+            //    if (ToInsertIntoList.Name == "")
+            //    {
+            //        showTableInUI = false;
+
+            //        ErrorMessageToDisplay = "Document Incomplet fields in Name";
+            //        break;
+            //    }
+
+
+            //    ToInsertIntoList.PlantId = row[3] != "§" ? int.Parse(row[3]) : -1;
+            //    ToInsertIntoList.AreaId = row[4] != "§" ? int.Parse(row[4]) : -1;
+            //    ToInsertIntoList.GroupId = row[5] != "§" ? int.Parse(row[5]) : -1;
+
+            //    //ToInsertIntoList.IsAdmin = row[6] != "§" ? bool.Parse(row[6]) : false;
+            //    //ToInsertIntoList.IsSupervisor = row[7] != "§" ? bool.Parse(row[7]) : false;
+            //    //ToInsertIntoList.IsOperator = row[8] != "§" ? bool.Parse(row[8]) : false;
+
+            //    try
+            //    {
+            //        ToInsertIntoList.CreatedDate = row[9] != "§" ? DateTime.Parse(row[9]) : DateTime.Now;
+
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ToInsertIntoList.CreatedDate = DateTime.Now;
+
+            //    }
+
+            //    try
+            //    {
+            //        ToInsertIntoList.LastUpdated = row[10] != "§" ? DateTime.Parse(row[10]) : DateTime.Now;
+
+
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ToInsertIntoList.LastUpdated = DateTime.Now;
+
+            //    }
+
+            //    try
+            //    {
+            //        ToInsertIntoList.DisabledDate = row[11] != "§" ? DateTime.Parse(row[11]) : DateTime.Now;
+
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ToInsertIntoList.DisabledDate = DateTime.Now;
+
+            //    }
+
+
+            //    ToInsertIntoList.IsActive = row[12] != "§" ? bool.Parse(row[12]) : true;
+
+            //    try
+            //    {
+            //        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
+            //        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+            //        ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        showTableInUI = false;
+            //        if (ToInsertIntoList.AreaId == -1)
+            //        {
+            //            ErrorMessageToDisplay = "Document Incomplet fields in Area";
+            //        }
+
+            //        if (ToInsertIntoList.PlantId == -1)
+            //        {
+            //            ErrorMessageToDisplay = "Document Incomplet fields in Plant";
+            //        }
+
+            //        if (ToInsertIntoList.GroupId == -1)
+            //        {
+            //            ErrorMessageToDisplay = "Document Incomplet fields in Group";
+            //        }
+            //        Console.WriteLine($"{ex.Message}");
+            //    }
+
+            //    ListtoReturn.Add(ToInsertIntoList);
+
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"{ex.Message}");
+            //    showTableInUI = false;
+            //}
         }
 
         return ListtoReturn;
@@ -1507,9 +1718,9 @@
 
                 try
                 {
-                    if (row[5].Contains('§'))
+                    if (row[5].Contains(','))
                     {
-                        string[]? SplitedAreas = row[5] != "§" ? row[5].Split('§') : null;
+                        string[]? SplitedAreas = row[5] != "§" ? row[5].Split(',') : null;
 
                         if (SplitedAreas != null)
                         {
@@ -1530,22 +1741,22 @@
                             }
 
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (row[5] != "§")
                         {
-                            if (row[5] != "§")
+                            if (ToInsertIntoList.Areas != null)
                             {
-                                if (ToInsertIntoList.Areas != null)
-                                {
 
-                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
+                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
 
-                                }
-                                else
-                                {
-                                    ToInsertIntoList.Areas = new List<Area>();
-                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
+                            }
+                            else
+                            {
+                                ToInsertIntoList.Areas = new List<Area>();
+                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
 
-                                }
                             }
                         }
                     }
@@ -1737,15 +1948,6 @@
                 //Read the first Sheet from Excel file.
                 IXLWorksheet workSheet = workBook.Worksheet(1);
 
-                //workSheet.Column("A").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("B").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("C").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("D").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("E").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("F").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("G").Style.Font.Underline = XLFontUnderlineValues.Single;
-                //workSheet.Column("H").Style.Font.Underline = XLFontUnderlineValues.Single;
-
                 //Loop through the Worksheet rows.
                 foreach (IXLRow row in workSheet.Rows())
                 {
@@ -1753,7 +1955,7 @@
                     {
                         RowsInFile.Clear();
 
-                        foreach (IXLCell cell in row.Cells(1, 6))
+                        foreach (IXLCell cell in row.Cells(1, 12))
                         {
                             string toinsert = "§";
 
@@ -1847,13 +2049,13 @@
                 {
                     case 2:
                         item.UserType = 2;
-                        break; 
-                        case 3:
-                        case 4:
+                        break;
+                    case 3:
+                    case 4:
                         item.UserType = 3;
                         break;
-                        case 5:
-                        case 6:
+                    case 5:
+                    case 6:
                         item.UserType = 4;
                         break;
                 }
@@ -1908,53 +2110,53 @@
                 case 2:
                 case 3:
                 case 5:
-                    
-                        UsersUploadResult ResultMassiveUpload = await UsersServices.UploadUsers(dataToShowInTable);
 
-                        if (ResultMassiveUpload is not null)
-                        {
-                            //tiene resultados
-                            ErrorMessageToDisplay = "Upload Data Succesfull";
-                            await Clear();
+                    UsersUploadResult ResultMassiveUpload = await UsersServices.UploadUsers(dataToShowInTable);
+
+                    if (ResultMassiveUpload is not null)
+                    {
+                        //tiene resultados
+                        ErrorMessageToDisplay = "Upload Data Succesfull";
+                        await Clear();
 
 
-                            showResume = true;
-                            FileSource = null;
-                            commitUsersResult = ResultMassiveUpload;
+                        showResume = true;
+                        FileSource = null;
+                        commitUsersResult = ResultMassiveUpload;
 
-                            base.StateHasChanged();
+                        base.StateHasChanged();
 
-                        }
-                        else
-                        {
-                            ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
-                        }
+                    }
+                    else
+                    {
+                        ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                    }
                     break;
                 case 4:
                 case 6:
-                               
-                      
-
-                        UsersUploadResult ResultMassiveUploadToSuperior = await UsersServices.UploadUsersToSuperior(dataToShowInTable, MasterUserSuperior);
-
-                        if (ResultMassiveUploadToSuperior is not null)
-                        {
-                            //tiene resultados
-                            ErrorMessageToDisplay = "Upload Data Succesfull";
-                            await Clear();
 
 
-                            showResume = true;
-                            FileSource = null;
-                            commitUsersResult = ResultMassiveUploadToSuperior;
 
-                            base.StateHasChanged();
+                    UsersUploadResult ResultMassiveUploadToSuperior = await UsersServices.UploadUsersToSuperior(dataToShowInTable, MasterUserSuperior);
 
-                        }
-                        else
-                        {
-                            ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
-                        }
+                    if (ResultMassiveUploadToSuperior is not null)
+                    {
+                        //tiene resultados
+                        ErrorMessageToDisplay = "Upload Data Succesfull";
+                        await Clear();
+
+
+                        showResume = true;
+                        FileSource = null;
+                        commitUsersResult = ResultMassiveUploadToSuperior;
+
+                        base.StateHasChanged();
+
+                    }
+                    else
+                    {
+                        ErrorMessageToDisplay = "Fail, Upload Data, pls Call for admin";
+                    }
                     break;
             }
 
