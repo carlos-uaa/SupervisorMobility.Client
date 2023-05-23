@@ -126,7 +126,7 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }   
         //get User by objectid whitr collection
-        public async Task<User> GetUserWhitObjectIdAndCollections(string ObjectId)
+        public async Task<User> GetUserByObjectIdWithCollections(string ObjectId)
         {
             var response = await _http.GetAsync($"Users/ByObjectId?ObjectId={ObjectId}&collections=true");
             if (response.IsSuccessStatusCode)

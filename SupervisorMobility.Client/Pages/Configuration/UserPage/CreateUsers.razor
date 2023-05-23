@@ -88,19 +88,16 @@
                                 <MudText Typo="Typo.h6">General Info</MudText>
                             </MudItem>
                         }
-@*                        @if (_user.UserType != 4 && _user.UserType > 0)
+                        @if(_user.UserType > 0)
                         {
                             <MudItem Class="d-flex d-flex-row">
-                                <MudTextField Label="Azure ID" @bind-Value="@_user.ObjectId" For="@(() => _user.ObjectId)" />
-                                <MudTooltip Text="Object Id of Active Directory">
-                                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" />
-                                </MudTooltip>
+                                <MudTextField Label="User name" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" />
                             </MudItem>
-                        }*@
+                        }
                         @if (_user.UserType > 0)
                         {
 
-                            <MudTextField Label="User Name" @bind-Value="@_user.Name" For="@(() => _user.Name)" />
+                            <MudTextField Label="Name" @bind-Value="@_user.Name" For="@(() => _user.Name)" />
                         }
                         @if (_user.UserType == 4)
                         {
@@ -1297,11 +1294,14 @@
 
     private async void CreateUser()
     {
-
-        Console.WriteLine(_user.DistributionId);
-        if(_user.UserType == 4)
+        if(_user.UserType == 3 && auxArea == 0){
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"First Select an Area!", Severity.Warning);
+            return;
+        }
+        else if(_user.UserType == 4)
         {
-            Console.WriteLine("aaa");
             if(_user.Payroll.ToString() == null || _user.Payroll.ToString() == ""){
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;

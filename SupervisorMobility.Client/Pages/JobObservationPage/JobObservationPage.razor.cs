@@ -387,7 +387,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 {
                     jobobs.Status = 3;
 
-                    await JobObservationService.UpdateJobObservation(jobobs, user.Email);
+                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
                 }
             }
         }
