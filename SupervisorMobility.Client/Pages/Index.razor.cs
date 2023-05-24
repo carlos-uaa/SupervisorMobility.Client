@@ -113,9 +113,7 @@ namespace SupervisorMobility.Client.Pages
             {
 
                 
-                user = await UsersService.GetUserByEmailWithCollections(result.userPrincipalName);
-
-                Console.WriteLine(user.Name);
+                user = await UsersService.GetUserByObjectIdWithCollections(result.userPrincipalName);
 
                 if(user != null)
                 {

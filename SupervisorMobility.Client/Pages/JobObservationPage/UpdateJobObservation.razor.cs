@@ -374,7 +374,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.Status = 1;
                 }
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -440,7 +440,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.Status = 1;
                 }
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -520,7 +520,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.Justification = null;
                 }
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -574,7 +574,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.Justification = null;
                 }
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -671,7 +671,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Status = 4;
 
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
 
                 if (result)
@@ -730,7 +730,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Status = 4;
 
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
 
                 if (result)
@@ -823,7 +823,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _jobObservation.FinishedDate = DateTime.Now;
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -874,7 +874,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _jobObservation.FinishedDate = DateTime.Now;
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -968,7 +968,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.Status = 6;
                 _jobObservation.FinishedDate = DateTime.Now;
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -1016,7 +1016,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.Email);
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {

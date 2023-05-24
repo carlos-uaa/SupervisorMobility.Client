@@ -121,7 +121,7 @@ else
         <HeaderContent>
             <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.UserId)">User Id</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Name)">Name</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Payroll)">PayRoll Number</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.UserType)">Type</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Plant?.Description)">Plant</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Area?.Description)">Area</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Group?.Description)">Group</MudTableSortLabel></MudTh>
@@ -134,8 +134,23 @@ else
             <MudTd DataLabel="Area">
                 <MudText Align="Align.Center">@context.Name</MudText>
             </MudTd>
-            <MudTd DataLabel="Distribution">
-                <MudText Align="Align.Center">@context.Payroll</MudText>
+            <MudTd DataLabel="Area" Style="text-align:center;">
+                @switch (context.UserType)
+                {
+                    case 1:
+                        <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                        break;
+                    case 2:
+                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+
+                        break;
+                    case 3:
+                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                        break;
+                    case 4:
+                        <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                        break;
+                }
             </MudTd>
             <MudTd DataLabel="GOS">
                 <MudText Align="Align.Center">@context.Plant?.Description</MudText>
@@ -149,7 +164,7 @@ else
                 <MudText Align="Align.Center">
                     <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() =>  UserDetails(context.UserId))"> </MudIconButton>
                     <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="()=>EditUser(context.UserId)">@*Edit*@</MudIconButton>
-                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="@(() =>DeleteUser(context.UserId))"></MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="@(() =>OpenDeleteDialog(context.UserId))"></MudIconButton>
                 </MudText>
             </MudTd>
         </RowTemplate>
@@ -160,6 +175,19 @@ else
 
 }
 
+@*Delete user modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">
+            Are you sure you want to delete this user?
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton @onclick="(() => DeleteUser(deleteUserId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 
@@ -197,14 +225,12 @@ else
 
     async void DeleteUser(int iduser)
     {
-        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this user?");
-
-        if (confirm)
-        {
-            _users.RemoveAll(user => user.UserId == iduser);
-            await UsersServices.DeleteUser(iduser);
-            //await PlantService.DeletePlant(plantId);
-        }
+        _users.RemoveAll(user => user.UserId == iduser);
+        await UsersServices.DeleteUser(iduser);
+        //await PlantService.DeletePlant(plantId);
+        _users = await UsersServices.GetUsersWhitCollections();
+        visibleDelete = false;
+        StateHasChanged();
     }
 
     void UserDetails(int userId)
@@ -230,5 +256,16 @@ else
             return true;
         return false;
     }
+
+    //Delete User
+    private bool visibleDelete = false;
+    public int deleteUserId = 0;
+    private void OpenDeleteDialog(int deleteId)
+    {
+        deleteUserId = deleteId;
+        visibleDelete = true;
+    }
+    void CloseDeleteModal() => visibleDelete = false;
+    private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
 
 }

@@ -153,7 +153,7 @@ namespace SupervisorMobility.Client.Shared
                 if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
                 {
                     jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs, user.Email);
+                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
                 }
             }
         }

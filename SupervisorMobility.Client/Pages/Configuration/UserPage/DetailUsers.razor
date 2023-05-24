@@ -1,168 +1,246 @@
 ﻿@page "/usersmanagement/DetailUser/{userId:int}"
+
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 @inject IUserService UsersServices
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
-@*Title*@
-<PageTitle>Supervisor Mobility | Detail Users</PageTitle>
-@*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-    </ItemTemplate>
-</MudBreadcrumbs>
-
-
-@if (showui)
+@if(logged == true)
 {
-    <MudGrid>
-        @*Guide info*@
-        <MudItem xs="12" sm="6" md="3">
-            <MudCard>
-                <MudCardContent Style="justify-content:center">
-                    <MudText Align="Align.Center" Typo="Typo.h3"><MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon></MudText>
-                    <MudItem Class="d-flex d-flex-column justify-center pa-2">
-                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">ID: @_user.UserId</MudText>
-                        <MudText Typo="Typo.h5" Align="Align.Center" Class="pa-2">@_user.Name</MudText>
-                    </MudItem>
-                    @if (_user.IsActive == true)
-                    {
-                        <MudText Align="Align.Center" Class="pt-2">
-                            <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText Align="Align.Center" Class="pa-4">
-                            <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                        </MudText>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        @*Guide*@
-        <MudItem xs="12" sm="6" md="9">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudCard>
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h4" Style="text-align:center">User Details</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent Class="pl-15 pr-15">
-                            @if(_user.UserType != 4)
-                            {
-                                <MudItem class="d-flex flex-column justify-center align-self-center">
-                                    <MudTextField Label="Email" ReadOnly=true @bind-Value="@_user.Email" />
+    @*Title*@
+    <PageTitle>Supervisor Mobility | Detail Users</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Class="mb-10" Items="_links">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+
+
+    @if (showui)
+    {
+        <MudGrid>
+            @*User info*@
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent Style="justify-content:center">
+                        <MudText Align="Align.Center" Typo="Typo.h3"><MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon></MudText>
+                            <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">@_user.Name</MudText>
+                        @if (_user.IsActive == true)
+                        {
+                            <MudText Align="Align.Center" Class="pt-2">
+                                <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Center" Class="pa-4">
+                                <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            @*User details*@
+            <MudItem xs="12" sm="6" md="9">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">Update User</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Class="mr-15 mt-5">User ID @_user.UserId</MudChip>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Class="pl-15 pr-15">
+                                <MudItem Class="d-flex flex-column justify-center align-self-center">
+                                    <MudTextField Label="User name" ReadOnly=true @bind-Value="@_user.ObjectId" />
                                 </MudItem>
-                            }
-                            @if(_user.UserType == 4)
-                            {
-                                <MudItem class="d-flex flex-column justify-center align-self-center">
-                                    <MudTextField Label="Payroll" ReadOnly=true @bind-Value="@_user.Payroll" />
-                                </MudItem>
-                            }
-                            <MudItem>
                                 <MudItem>
-                                    <MudText Typo="Typo.h6" Class="mt-5">Permissions</MudText>
-                                </MudItem>
-                                <MudItem >
+                                    <MudItem>
+                                        <MudText Typo="Typo.h6" Class="mt-5">Permissions</MudText>
+                                    </MudItem>
+                                    <MudItem >
           
-                                        @switch(_user.UserType)
-                                        {
-                                            case 1: 
-                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
-                                            break; 
-                                            case 2:
-                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
-
-                                                break;
-                                            case 3:
-                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
-                                                break;
-                                            case 4:
-                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
-                                                break;
-                                        }
-                                </MudItem>
-                            </MudItem>
-
-
-
-                            <MudItem>
-                                <MudItem>
-                                    <MudText Typo="Typo.h6" Class="mt-5">General Info</MudText>
-                                </MudItem>
-                                <MudItem class="d-flex flex-column justify-center align-self-center">
-                                    <MudTextField Label="Plant" ReadOnly=true @bind-Value="@_user.Plant.Description" />
-                                    @if(_user.UserType == 2)
-                                    {
-                                        @if (_user.Areas?.Count > 0)
-                                        {
-                                            <MudText Typo="Typo.h6" Class="mt-5">Areas</MudText>
-                                            @foreach(var area in _user.Areas)
+                                            @switch(_user.UserType)
                                             {
-                                                <MudTextField Label="Area" ReadOnly=true Value="@area.Description" />
-                                            }
+                                                case 1: 
+                                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                break; 
+                                                case 2:
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
 
+                                                    break;
+                                                case 3:
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                    break;
+                                                case 4:
+                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                    break;
+                                            }
+                                    </MudItem>
+                                </MudItem>
+
+
+
+                                <MudItem>
+                                    <MudItem>
+                                        <MudText Typo="Typo.h6" Class="mt-5">General Info</MudText>
+                                    </MudItem>
+                                    <MudItem>
+                                        @if (_user.UserType != 4)
+                                        {
+                                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                                <MudTextField Label="Email" ReadOnly=true @bind-Value="@_user.Email" />
+                                            </MudItem>
+                                        }
+                                        @if (_user.UserType == 4)
+                                        {
+                                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                                <MudTextField Label="Payroll" ReadOnly=true @bind-Value="@_user.Payroll" />
+                                            </MudItem>
+                                        }
+                                        <MudTextField Label="Plant" ReadOnly=true @bind-Value="@_user.Plant.Description" />
+                                        @if(_user.UserType == 2)
+                                        {
+                                            @if (_user.Areas?.Count > 0)
+                                            {
+                                                <MudText Typo="Typo.h6" Class="mt-5">Areas</MudText>
+                                                @foreach(var area in _user.Areas)
+                                                {
+                                                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@area.Code - @area.Description </MudChip>
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                    This SSV has no areas yet.
+                                                </MudAlert>
+                                            }
                                         }
                                         else
                                         {
-                                            <MudAlert Severity="Severity.Info" Class="mt-5">
-                                                This SSV has no areas yet.
-                                            </MudAlert>
+                                            <MudText Typo="Typo.h6" Class="mt-5">Area</MudText>
+                                            <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_user.Area.Code - @_user.Area.Description </MudChip>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <MudTextField Label="Area" ReadOnly=true @bind-Value="@_user.Area.Description" />
-                                    }
-                                    <MudTextField Label="Group" Class="mt-5" ReadOnly=true @bind-Value="@_user.Group.Description" />
+                                        <MudTextField Label="Group" Class="mt-5" ReadOnly=true @bind-Value="@_user.Group.Description" />
+                                    </MudItem>
                                 </MudItem>
-                            </MudItem>
 
-                            <MudItem>
-                                <MudItem>
-                                    <MudText Typo="Typo.h6" Class="mt-5">More Data For Admin</MudText>
+
+                                @if (_user.UserType != 1 && _user.UserType != 2)
+                                {
+                                    <MudItem>
+                                        <MudItem>
+                                            <MudText Typo="Typo.h6" Class="mt-5">Superior</MudText>
+                                        </MudItem>
+                                        <MudItem>
+                                            @if(_user.Superior != null)
+                                            {
+                                                switch (_user.Superior.UserType)
+                                                {
+                                                    case 1:
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Class="pl-5 pr-5">Admin - @_user.Superior.Name</MudChip>
+                                                        break;
+                                                    case 2:
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">SSV - @_user.Superior.Name</MudChip>
+                                                        break;
+                                                    case 3:
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">Supervisor - @_user.Superior.Name</MudChip>
+                                                        break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Class="mt-2">
+                                                    This user has no superior yet.
+                                                </MudAlert>
+                                            }
+                                        </MudItem>
+                                    </MudItem>
+                                }
+                                @if (_user.UserType != 4)
+                                {
+                                    <MudItem>
+                                        <MudItem>
+                                            <MudText Typo="Typo.h6" Class="mt-5">Subordinates</MudText>
+                                        </MudItem>
+                                        <MudItem>
+                                            @if (_user.Subordinates?.Count > 0)
+                                            {
+                                                @foreach (var subordinate in _user.Subordinates)
+                                                {
+                                                    switch (subordinate.UserType)
+                                                    {
+                                                        case 2:
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">SSV - @subordinate.Name</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">Supervisor - @subordinate.Name</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Dark" Class="pl-5 pr-5">Operator - @subordinate.Name</MudChip> 
+                                                            break;
+                                                    }
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Class="mt-2">
+                                                    This user has no subordinates yet.
+                                                </MudAlert>
+                                            }
+                                    </MudItem>
                                 </MudItem>
-                                <MudItem class="d-flex flex-column justify-center align-self-center">
-                                    <MudTextField Label="Created Date" ReadOnly=true @bind-Value="@_user.CreatedDate" />
-                                    <MudTextField Label="Last Modification Date" ReadOnly=true @bind-Value="@_user.LastUpdated" />
-                                    @if(_user.UserType == 1)
-                                    {
-                                        <MudTextField Label="Disabled User Date" ReadOnly=true @bind-Value="@_user.DisabledDate" />
-                                    }
+                                }
+                                @if (loggedUser.UserType == 1)
+                                {
+                                    <MudItem>
+                                        <MudItem>
+                                            <MudText Typo="Typo.h6" Class="mt-5">More Data For Admin</MudText>
+                                        </MudItem>
+                                        <MudItem class="d-flex flex-column justify-center align-self-center">
+                                            <MudTextField Label="Created Date" ReadOnly=true @bind-Value="@_user.CreatedDate" />
+                                            <MudTextField Label="Last Modification Date" ReadOnly=true @bind-Value="@_user.LastUpdated" />
+                                            @if(_user.UserType == 1)
+                                            {
+                                                <MudTextField Label="Disabled User Date" ReadOnly=true @bind-Value="@_user.DisabledDate" />
+                                            }
 
-                                </MudItem>
-                            </MudItem>
+                                        </MudItem>
+                                    </MudItem>
+                                }
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10">Close</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
 
 
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-auto mr-10 mb-10">Close</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-            </MudGrid>
+    }
+    else
+    {
+
+
+        <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+            <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">Loading Data</MudText>
+            </MudItem>
+            <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+                <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+            </MudPaper>
         </MudItem>
-    </MudGrid>
-
-
+    }
 }
-else
-{
-
-
-    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-        <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
-            <MudText Typo="Typo.h6" Class="align-item-center center">Loading Data</MudText>
-        </MudItem>
-        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
-            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
-        </MudPaper>
-    </MudItem>
-}
-
 
 
 
@@ -181,12 +259,49 @@ else
     private User _user = new User();
     private bool showui = false;
 
+    //Logged User
+    private string json = string.Empty;
+    public User loggedUser = new();
+    public bool logged = false;
+
     protected async override Task OnInitializedAsync()
     {
 
-        _user = await UsersServices.GetUserAndCollection(userId);
-        showui = true;
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+            await GetUserAsync();
+            _user = await UsersServices.GetUserAndCollection(userId);
+            showui = true;
+        }
     }
 
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            loggedUser = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            loggedUser = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 }
