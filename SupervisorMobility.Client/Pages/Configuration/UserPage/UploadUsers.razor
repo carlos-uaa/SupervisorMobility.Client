@@ -13,6 +13,7 @@
 @inject IGroupService GroupServices
 @inject IUserService UsersServices
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 <style>
     .mtc {
@@ -251,448 +252,846 @@
                     </ToolBarContent>
                     <HeaderContent>
 
-
-
-                        @if (uploadtype > 4)
+                        @if (uploadtype == 1)
                         {
-                            <MudTh>Payroll</MudTh>
-                        }
-
-                        <MudTh>User Name</MudTh>
-
-
-
-                        @if (uploadtype > 1 && uploadtype < 5)
-                        {
-                            <MudTh>Email</MudTh>
-                        }
-
-                        @if (uploadtype > 2)
-                        {
-                            <MudTh>Superior</MudTh>
-
-                        }
-
-                        <MudTh>Plant</MudTh>
-
-                        @if (uploadtype > 1 && uploadtype < 3)
-                        {
-                            <MudTh>Areas Manage</MudTh>
-                        }
-                        else if (uploadtype > 2 && uploadtype < 5)
-                        {
-                            <MudTh>Assigned Area</MudTh>
+                            <MudTh>User Name</MudTh>
+                            <MudTh>User Type</MudTh>
+                            <MudTh>Plant</MudTh>
+                            <MudTh>Area</MudTh>
+                            <MudTh>Group</MudTh>
+                            <MudTh>Extra Propieties</MudTh>
                         }
                         else
                         {
-                            <MudTh>Area</MudTh>
-                        }
+                            @if (uploadtype > 4)
+                            {
+                                <MudTh>Payroll</MudTh>
+                            }
+
+                            <MudTh>User Name</MudTh>
+
+                            @if (uploadtype > 1 && uploadtype < 5)
+                            {
+                                <MudTh>Email</MudTh>
+                            }
+
+                            @if (uploadtype > 2)
+                            {
+                                <MudTh>Superior</MudTh>
+
+                            }
+
+                            <MudTh>Plant</MudTh>
+
+                            @if (uploadtype > 1 && uploadtype < 3)
+                            {
+                                <MudTh>Areas Manage</MudTh>
+                            }
+                            else if (uploadtype > 2 && uploadtype < 5)
+                            {
+                                <MudTh>Assigned Area</MudTh>
+                            }
+                            else
+                            {
+                                <MudTh>Area</MudTh>
+                            }
 
 
-                        @if (uploadtype > 4)
-                        {
-                            <MudTh>Distribution</MudTh>
-                        }
+                            @if (uploadtype > 4)
+                            {
+                                <MudTh>Distribution</MudTh>
+                            }
 
 
-                        <MudTh>Group</MudTh>
+                            <MudTh>Group</MudTh>
 
-                        @if (uploadtype == 1)
-                        {
-                            <MudTh>Role</MudTh>
+                            @if (uploadtype == 1)
+                            {
+                                <MudTh>Role</MudTh>
+                            }
                         }
 
 
                     </HeaderContent>
                     <RowTemplate>
 
-                        @if (uploadtype > 4)
+                        @if (uploadtype == 1)
                         {
-                            <MudTd DataLabel="Payroll">
-                                <MudText Align="Align.Center">@context.Payroll</MudText>
+                            <MudTd DataLabel="Name">
+                                <MudText Align="Align.Center">@context.Name</MudText>
                             </MudTd>
-                        }
-
-                        <MudTd DataLabel=" Name">
-                            <MudText Align="Align.Center">@context.Name</MudText>
-                        </MudTd>
-
-                        @if (uploadtype > 1 && uploadtype < 5)
-                        {
-                            <MudTd DataLabel="Email">
-                                <MudText Align="Align.Center">@context.Email</MudText>
-                            </MudTd>
-                        }
-
-                        @switch (uploadtype)
-                        {
-                            case 3:
-                                @if (@context.Superior is null)
+                            <MudTd>
+                                @switch (context.UserType)
                                 {
-                                    <MudTd DataLabel="Superior SSV">
-
-                                        <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                            <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
-                                            @foreach (var SS in _allUsers)
-                                            {
-                                                @if (SS.UserType == 2)
-                                                {
-                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Plant?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                                }
-                                            }
-                                        </MudSelect>
-                                    </MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="Superior SSV">
-                                        <MudItem Class="d-flex justify-content-center align-items-center">
-                                            <MudTextField @bind-Value="@context.Superior.Name" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                        </MudItem>
-                                    </MudTd>
-
-
-                                }
-
-
-                                break;
-                            case 4:
-                                @if (selectedSSVOfList is null)
-                                {
-                                    <MudTd DataLabel="Superior SSV">
-                                        <MudText Align="Align.Center">Please Select Superior of List</MudText>
-                                    </MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="Superior SSV">
-                                        <MudText Align="Align.Center">@selectedSSVOfList?.Name</MudText>
-                                    </MudTd>
-                                }
-                                break;
-                            case 5:
-
-                                @if (@context.Superior is null)
-                                {
-                                    <MudTd DataLabel="Superior Supervisor">
-
-                                        <MudSelect T="User" Label="Supervisor" Placeholder="Select Supervisor" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                            <MudSelectItem Disabled="true" Value="@context.Superior"> Select a Supervisor  </MudSelectItem>
-                                            @foreach (var SS in _allUsers)
-                                            {
-                                                @if (SS.UserType == 3)
-                                                {
-                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                                                }
-                                            }
-                                        </MudSelect>
-                                    </MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="Superior Supervisor">
-                                        <MudItem Class="d-flex justify-content-center align-items-center">
-                                            <MudTextField @bind-Value="@context.Superior.Name" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                        </MudItem>
-                                    </MudTd>
-
-
-                                }
-
-
-                                break;
-                            case 6:
-                                @if (selectedSupervisorOfList is null)
-                                {
-                                    <MudTd DataLabel="Supervisor">
-                                        <MudText Align="Align.Center">Please Select Superior of List</MudText>
-                                    </MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="Supervisor">
-                                        <MudText Align="Align.Center">@selectedSupervisorOfList?.Name</MudText>
-                                    </MudTd>
-                                }
-                                break;
-
-                        }
-
-
-
-
-                        <MudTd DataLabel="Plant" Class="mtc">
-                            @if (context.Plant is null)
-                            {
-                                @switch (uploadtype)
-                                {
+                                    case 1:
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                        </MudPaper>
+                                        break;
                                     case 2:
-                                        <MudSelect SelectedValuesChanged="@(() => updateSelectPlantContextItem(context))" T="Plant" Label="Plant" Placeholder="Assign Plant" @bind-Value="@context.Plant" For="@(() => @context.Plant)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                            <MudSelectItem Disabled="true" Value="@context.Plant"> Assign Plant  </MudSelectItem>
-                                            @foreach (var item in _plants)
-                                            {
-                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                        </MudPaper>
                                         break;
                                     case 3:
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                        </MudPaper>
+                                        break;
                                     case 4:
-                                    case 5:
-                                    case 6:
-                                        <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor </MudText>
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                        </MudPaper>
                                         break;
                                 }
-                            }
-                            else
-                            {
-                                <MudItem Class="d-flex justify-content-center align-items-center">
-                                    <MudTextField @bind-Value="@context.Plant.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                </MudItem>
+                            </MudTd>
 
-
-                            }
-                        </MudTd>
-
-                        @if (uploadtype == 2)
-                        {
-
-                            <MudTd DataLabel="Areas Manage">
-                                @if (context.Areas?.Count > 0)
+                            <MudTd DataLabel="Plant">
+                                @if (context.UserType != 1)
                                 {
-                                    <MudToolBar>
+                                    <MudItem Class="d-flex justify-content-center align-items-center">
+                                        <MudTextField Value="context.Plant?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Style="cursor:pointer"></MudTextField>
+                                    </MudItem>
+                                }
 
-                                        <MudExpansionPanels>
-                                            <MudExpansionPanel Text="Areas Manage" MaxHeight="150" Class="mtc" id="ExpansionPanel">
+                            </MudTd>
 
-                                                <MudItem class="d-flex flex-column justify-center ma-1">
-                                                    <MudItem class="d-flex d-flex-column justify-center">
-                                                        @foreach (var itemArea in context.Areas)
-                                                        {
-                                                            <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
-                                                                <MudCardHeader>
-                                                                    <CardHeaderContent>
-                                                                        <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
-                                                                    </CardHeaderContent>
-                                                                    <CardHeaderActions>
-                                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(itemArea, context)" />
-                                                                    </CardHeaderActions>
-                                                                </MudCardHeader>
-                                                                <MudCardContent>
-                                                                    <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
-                                                                    <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
-                                                                </MudCardContent>
-                                                                <MudCardActions></MudCardActions>
-                                                            </MudCard>
-                                                        }
+                            <MudTd DataLabel="Area">
+                                @switch (context.UserType)
+                                {
+                                    case 1:
+                                        break;
+                                    case 2:
+                                        @if (context.Areas?.Count > 0)
+                                        {
+                                            <MudToolBar>
+
+                                                <MudExpansionPanels>
+                                                    <MudExpansionPanel Text="Areas Manage" MaxHeight="300" Class="@ClassForCards" @onclick="@GetPanelPositionClass">
+
+                                                        <MudItem class="d-flex flex-column justify-center ma-1">
+                                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                                @foreach (var itemArea in context.Areas)
+                                                                {
+                                                                    <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                        <MudCardHeader>
+                                                                            <CardHeaderContent>
+                                                                                <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
+                                                                            </CardHeaderContent>
+                                                                            <CardHeaderActions>
+
+                                                                            </CardHeaderActions>
+                                                                        </MudCardHeader>
+                                                                        <MudCardContent>
+                                                                            <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
+                                                                            <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
+                                                                        </MudCardContent>
+                                                                        <MudCardActions></MudCardActions>
+                                                                    </MudCard>
+                                                                }
+                                                            </MudItem>
+                                                        </MudItem>
+
+                                                    </MudExpansionPanel>
+
+                                                </MudExpansionPanels>
+
+                                            </MudToolBar>
+                                        }
+                                        break;
+                                    default:
+                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                            <MudTextField Value="context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Style="cursor:pointer"></MudTextField>
+                                        </MudItem>
+                                        break;
+                                }
+
+
+                            </MudTd>
+                            <MudTd DataLabel="Group">
+                                @if (context.UserType != 1)
+                                {
+                                    <MudItem Class="d-flex justify-content-center align-items-center">
+                                        <MudTextField Value="context.Group?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Style="cursor:pointer"></MudTextField>
+                                    </MudItem>
+                                }
+
+                            </MudTd>
+                            <MudTd>
+                              
+                                    @switch (context.UserType)
+                                    {
+                                        case 1:
+                                            <MudExpansionPanels>
+                                                <MudExpansionPanel Text="Email">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.Email</div>
+                                                            </MudPaper>
+                                                        </MudItem>
                                                     </MudItem>
-                                                </MudItem>
+                                                </MudExpansionPanel>
+                                                <MudExpansionPanel Text="Principal Username">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.ObjectId</div>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    </MudItem>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                            break;
+                                        case 2:
+                                            <MudExpansionPanels>
+                                                <MudExpansionPanel Text="Email">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.Email</div>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    </MudItem>
+                                                </MudExpansionPanel>
+                                                <MudExpansionPanel Text="Principal Username">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.ObjectId</div>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    </MudItem>
+                                                </MudExpansionPanel>
+                                                @if (context.Subordinates?.Count > 0)
+                                                {
+                                                    <MudExpansionPanel Text="Subordinates" MaxHeight="300">
 
-                                            </MudExpansionPanel>
+                                                        <MudItem class="d-flex flex-column justify-center ma-1">
+                                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                                @foreach (var sub in context.Subordinates)
+                                                                {
+                                                                    <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                        <MudCardHeader>
+                                                                            <CardHeaderContent>
+                                                                                @switch (sub.UserType)
+                                                                                {
+                                                                                    case 1:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 2:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 3:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 4:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                }
 
-                                        </MudExpansionPanels>
-                                        <MudSpacer />
-                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
-                                    </MudToolBar>
-                                }
-                                else
-                                {
-                                    if (context.Plant != null)
-                                    {
-                                        <MudToolBar>
-                                            <MudText Typo="Typo.button">no areas to show</MudText>
-                                            <MudSpacer />
-                                            <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
-                                        </MudToolBar>
+                                                                            </CardHeaderContent>
+                                                                            <CardHeaderActions>
+
+                                                                            </CardHeaderActions>
+                                                                        </MudCardHeader>
+                                                                        <MudCardContent>
+                                                                            <div class="font-weight-bold"><b>Name:</b> @sub.Name</div>
+                                                                            <div class="font-weight-light"><b>Assigned Area:</b> @sub.Area.Description</div>
+                                                                        </MudCardContent>
+                                                                        <MudCardActions></MudCardActions>
+                                                                    </MudCard>
+                                                                }
+                                                            </MudItem>
+                                                        </MudItem>
+
+                                                    </MudExpansionPanel>
+                                                }
+
+
+                                            </MudExpansionPanels>
+                                            break;
+                                        case 3:
+                                            <MudExpansionPanels>
+                                                <MudExpansionPanel Text="Email">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.Email</div>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    </MudItem>
+                                                </MudExpansionPanel>
+                                                <MudExpansionPanel Text="Principal Username">
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            <MudPaper Elevation="0">
+                                                                <div class="font-weight-bold"> @context.ObjectId</div>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    </MudItem>
+                                                </MudExpansionPanel>
+                                                @if (context.Superior != null)
+                                                {
+                                                    <MudExpansionPanel Text="Superior SSV" MaxHeight="300">
+                                                        <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                            <MudCardHeader>
+                                                                <CardHeaderContent>
+                                                                    @switch (context.Superior.UserType)
+                                                                    {
+                                                                        case 1:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 2:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 3:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 4:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                    }
+
+                                                                </CardHeaderContent>
+                                                                <CardHeaderActions>
+
+                                                                </CardHeaderActions>
+                                                            </MudCardHeader>
+                                                            <MudCardContent>
+                                                                <div class="font-weight-bold"><b>Name:</b> @context.Superior.Name</div>
+                                                                <div class="font-weight-light"><b>Plant:</b> @context.Superior?.Plant?.Description</div>
+                                                                <div class="font-weight-light"><b>Group:</b> @context.Superior?.Group?.Description</div>
+                                                            </MudCardContent>
+                                                            <MudCardActions></MudCardActions>
+                                                        </MudCard>
+                                                    </MudExpansionPanel>
+                                                }
+
+                                                @if (context.Subordinates?.Count > 0)
+                                                {
+                                                    <MudExpansionPanel Text="Subordinates" MaxHeight="300">
+                                                        <MudItem class="d-flex flex-column justify-center ma-1">
+                                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                                @foreach (var sub in context.Subordinates)
+                                                                {
+                                                                    <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                        <MudCardHeader>
+                                                                            <CardHeaderContent>
+                                                                                @switch (sub.UserType)
+                                                                                {
+                                                                                    case 1:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 2:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 3:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                    case 4:
+                                                                                        <MudPaper Elevation="0">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                                                        </MudPaper>
+                                                                                        break;
+                                                                                }
+
+                                                                            </CardHeaderContent>
+                                                                            <CardHeaderActions>
+
+                                                                            </CardHeaderActions>
+                                                                        </MudCardHeader>
+                                                                        <MudCardContent>
+                                                                            <div class="font-weight-bold"><b>Name:</b> @sub.Name</div>
+                                                                            <div class="font-weight-light"><b>Area:</b> @sub.Area?.Description</div>
+                                                                            <div class="font-weight-light"><b>Distribution:</b> @sub.Distribution?.Description</div>
+                                                                        </MudCardContent>
+                                                                        <MudCardActions></MudCardActions>
+                                                                    </MudCard>
+                                                                }
+                                                            </MudItem>
+                                                        </MudItem>
+
+                                                    </MudExpansionPanel>
+                                                }
+
+
+                                            </MudExpansionPanels>
+                                            break;
+                                        case 4:
+                                            <MudExpansionPanels>
+                                                @if (context.Superior != null)
+                                                {
+                                                    <MudExpansionPanel Text="Superior Supervisor" MaxHeight="300">
+                                                        <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                            <MudCardHeader>
+                                                                <CardHeaderContent>
+                                                                    @switch (context.Superior.UserType)
+                                                                    {
+                                                                        case 1:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 2:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 3:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                        case 4:
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                                            </MudPaper>
+                                                                            break;
+                                                                    }
+
+                                                                </CardHeaderContent>
+                                                                <CardHeaderActions>
+
+                                                                </CardHeaderActions>
+                                                            </MudCardHeader>
+                                                            <MudCardContent>
+                                                                <div class="font-weight-bold"><b>Name:</b> @context.Superior.Name</div>
+                                                                <div class="font-weight-light"><b>Plant:</b> @context.Superior?.Plant?.Description</div>
+                                                                <div class="font-weight-light"><b>Assigned area:</b> @context.Superior?.Area?.Description</div>
+                                                                <div class="font-weight-light"><b>Group:</b> @context.Superior?.Group?.Description</div>
+                                                            </MudCardContent>
+                                                            <MudCardActions></MudCardActions>
+                                                        </MudCard>
+                                                    </MudExpansionPanel>
+
+                                                }
+
+                                                @if (context.Distribution != null)
+                                                {
+                                                    <MudExpansionPanel Text="Distribution" MaxHeight="300">
+
+                                                        <MudItem class="d-flex flex-column justify-center ma-1">
+                                                            <MudItem class="d-flex d-flex-column justify-center">
+
+                                                                <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                    <MudCardHeader>
+                                                                        <CardHeaderContent>
+                                                                            <div class="font-weight-bold"><b>Distribution Code:</b> @context.Distribution?.Code</div>
+                                                                        </CardHeaderContent>
+                                                                        <CardHeaderActions>
+                                                                        </CardHeaderActions>
+                                                                    </MudCardHeader>
+                                                                    <MudCardContent>
+                                                                        <div class="font-weight-light"><b>Distribution Description:</b> @context.Distribution?.Description</div>
+                                                                    </MudCardContent>
+                                                                    <MudCardActions></MudCardActions>
+                                                                </MudCard>
+
+                                                            </MudItem>
+                                                        </MudItem>
+
+                                                    </MudExpansionPanel>
+                                                }
+
+
+                                            </MudExpansionPanels>
+                                            break;
                                     }
-                                    else
-                                    {
-                                        <MudText Typo="Typo.button" Align="Align.Center">first select a plant</MudText>
-                                    }
-                                }
+                                
+
                             </MudTd>
                         }
-                        else if (uploadtype == 3 || uploadtype == 4)
+                        else
                         {
+                            @if (uploadtype > 4)
+                            {
+                                <MudTd DataLabel="Payroll">
+                                    <MudText Align="Align.Center">@context.Payroll</MudText>
+                                </MudTd>
+                            }
+
+                            <MudTd DataLabel=" Name">
+                                <MudText Align="Align.Center">@context.Name</MudText>
+                            </MudTd>
+
+                            @if (uploadtype > 1 && uploadtype < 5)
+                            {
+                                <MudTd DataLabel="Email">
+                                    <MudText Align="Align.Center">@context.Email</MudText>
+                                </MudTd>
+                            }
 
                             @switch (uploadtype)
                             {
                                 case 3:
                                     @if (@context.Superior is null)
                                     {
-                                        <MudTd DataLabel="Assigned Area">
-                                            <MudText Align="Align.Center">Please Select a Superior</MudText>
+                                        <MudTd DataLabel="Superior SSV">
+
+                                            <MudSelect T="User" Label="SSV" Placeholder="Select SSV" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                <MudSelectItem Disabled="true" Value="@context.Superior"> Select a SSV  </MudSelectItem>
+                                                @foreach (var SS in _allUsers)
+                                                {
+                                                    @if (SS.UserType == 2)
+                                                    {
+                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Plant?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
                                         </MudTd>
                                     }
                                     else
                                     {
-                                        <MudTd DataLabel="Assigned Area">
-                                            @if (context.Superior.Areas is not null)
-                                            {
-                                                if (context.Superior.Areas.Count > 0)
-                                                {
-                                                    <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                        <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
-                                                        @foreach (var item in context.Superior.Areas)
-                                                        {
-                                                            <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                }
-                                                else
-                                                {
-                                                    <MudText Typo="Typo.button">no areas to show</MudText>
-                                                }
-                                            }
+                                        <MudTd DataLabel="Superior SSV">
+                                            <MudItem Class="d-flex justify-content-center align-items-center">
+                                                <MudTextField @bind-Value="@context.Superior.Name" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                            </MudItem>
                                         </MudTd>
+
+
                                     }
+
+
                                     break;
                                 case 4:
                                     @if (selectedSSVOfList is null)
                                     {
-                                        <MudTd DataLabel="Assigned Area">
-                                            <MudText Align="Align.Center">Please Select a Superior</MudText>
+                                        <MudTd DataLabel="Superior SSV">
+                                            <MudText Align="Align.Center">Please Select Superior of List</MudText>
                                         </MudTd>
                                     }
                                     else
                                     {
-
-                                        <MudTd DataLabel="Assigned Area">
-                                            @if (selectedSSVOfList.Areas is not null)
-                                            {
-                                                if (selectedSSVOfList.Areas.Count > 0)
-                                                {
-                                                    <MudSelect T="Area" SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                        <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
-                                                        @foreach (var item in selectedSSVOfList.Areas)
-                                                        {
-                                                            <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                }
-                                                else
-                                                {
-                                                    <MudText Typo="Typo.button">no areas to show</MudText>
-                                                }
-                                            }
+                                        <MudTd DataLabel="Superior SSV">
+                                            <MudText Align="Align.Center">@selectedSSVOfList?.Name</MudText>
                                         </MudTd>
                                     }
                                     break;
-                            }
+                                case 5:
 
-                        }
-                        else
-                        {
-                            //area asignada al operador por el superior
-
-                            @if (@context.Area != null)
-                            {
-                                <MudTd DataLabel="Area">
-                                    <MudItem Class="d-flex justify-content-center align-items-center">
-                                        <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                    </MudItem>
-                                </MudTd>
-                            }
-                            else
-                            {
-                                <MudTd DataLabel="Area" Class="mtc">
-                                    <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
-                                </MudTd>
-                            }
-                        }
-
-                        @if (uploadtype > 4)
-                        {
-                            <MudTd DataLabel="Distribution" Class="mtc">
-
-                                @if (context.Distribution is not null)
-                                {
-                                    <MudItem Class="d-flex justify-content-center align-items-center">
-                                        <MudTextField Value="@context.Distribution?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedDistributionContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                    </MudItem>
-                                }
-                                else
-                                {
-                                    @if (context.PlantId != null && context.AreaId != null)
+                                    @if (@context.Superior is null)
                                     {
-                                        @if (_distributions[(int)context.PlantId][(int)context.AreaId].Count > 0)
-                                        {
-                                            <MudSelect SelectedValuesChanged="@(() => updateSelectDistributionContextItem(context))" T="Distribution" Label="Distribution" Placeholder="Distribution" @bind-Value="@context.Distribution" For="@(() => @context.Distribution)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                <MudSelectItem Disabled="true" Value="@context.Distribution"> Assign Area  </MudSelectItem>
-                                                @foreach (var item in _distributions[(int)context.PlantId][(int)context.AreaId])
+                                        <MudTd DataLabel="Superior Supervisor">
+
+                                            <MudSelect T="User" Label="Supervisor" Placeholder="Select Supervisor" @bind-Value="@context.Superior" For="@(() => @context.Superior)" SelectedValuesChanged="@(() => UpdateSelectSuperiorContextItem(@context))" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                <MudSelectItem Disabled="true" Value="@context.Superior"> Select a Supervisor  </MudSelectItem>
+                                                @foreach (var SS in _allUsers)
+                                                {
+                                                    @if (SS.UserType == 3)
+                                                    {
+                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        </MudTd>
+                                    }
+                                    else
+                                    {
+                                        <MudTd DataLabel="Superior Supervisor">
+                                            <MudItem Class="d-flex justify-content-center align-items-center">
+                                                <MudTextField @bind-Value="@context.Superior.Name" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedSuperiorContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                            </MudItem>
+                                        </MudTd>
+
+
+                                    }
+
+
+                                    break;
+                                case 6:
+                                    @if (selectedSupervisorOfList is null)
+                                    {
+                                        <MudTd DataLabel="Supervisor">
+                                            <MudText Align="Align.Center">Please Select Superior of List</MudText>
+                                        </MudTd>
+                                    }
+                                    else
+                                    {
+                                        <MudTd DataLabel="Supervisor">
+                                            <MudText Align="Align.Center">@selectedSupervisorOfList?.Name</MudText>
+                                        </MudTd>
+                                    }
+                                    break;
+
+                            }
+
+
+
+
+                            <MudTd DataLabel="Plant" Class="mtc">
+                                @if (context.Plant is null)
+                                {
+                                    @switch (uploadtype)
+                                    {
+                                        case 2:
+                                            <MudSelect SelectedValuesChanged="@(() => updateSelectPlantContextItem(context))" T="Plant" Label="Plant" Placeholder="Assign Plant" @bind-Value="@context.Plant" For="@(() => @context.Plant)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                <MudSelectItem Disabled="true" Value="@context.Plant"> Assign Plant  </MudSelectItem>
+                                                @foreach (var item in _plants)
                                                 {
                                                     <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
                                                 }
                                             </MudSelect>
-                                        }
-                                        else
-                                        {
-                                            <MudText Typo="Typo.button" class="marquee">this combination of floor plan and area does not have any distributions</MudText>
-                                        }
+                                            break;
+                                        case 3:
+                                        case 4:
+                                        case 5:
+                                        case 6:
+                                            <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor </MudText>
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <MudItem Class="d-flex justify-content-center align-items-center">
+                                        <MudTextField @bind-Value="@context.Plant.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                    </MudItem>
+
+
+                                }
+                            </MudTd>
+
+                            @if (uploadtype == 2)
+                            {
+
+                                <MudTd DataLabel="Areas Manage">
+                                    @if (context.Areas?.Count > 0)
+                                    {
+                                        <MudToolBar>
+
+                                            <MudExpansionPanels>
+                                                <MudExpansionPanel Text="Areas Manage" MaxHeight="300" Class="@ClassForCards" @onclick="@GetPanelPositionClass">
+
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            @foreach (var itemArea in context.Areas)
+                                                            {
+                                                                <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                    <MudCardHeader>
+                                                                        <CardHeaderContent>
+                                                                            <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
+                                                                        </CardHeaderContent>
+                                                                        <CardHeaderActions>
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(itemArea, context)" />
+                                                                        </CardHeaderActions>
+                                                                    </MudCardHeader>
+                                                                    <MudCardContent>
+                                                                        <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
+                                                                        <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
+                                                                    </MudCardContent>
+                                                                    <MudCardActions></MudCardActions>
+                                                                </MudCard>
+                                                            }
+                                                        </MudItem>
+                                                    </MudItem>
+
+                                                </MudExpansionPanel>
+
+                                            </MudExpansionPanels>
+                                            <MudSpacer />
+                                            <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                        </MudToolBar>
                                     }
                                     else
                                     {
-                                        <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
+                                        if (context.Plant != null)
+                                        {
+                                            <MudToolBar>
+                                                <MudText Typo="Typo.button">no areas to show</MudText>
+                                                <MudSpacer />
+                                                <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                            </MudToolBar>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.button" Align="Align.Center">first select a plant</MudText>
+                                        }
                                     }
-
-                                }
-                            </MudTd>
-
-                        }
-
-
-                        <MudTd DataLabel="Group" Class="mtc">
-                            @if (context.Group is null)
+                                </MudTd>
+                            }
+                            else if (uploadtype == 3 || uploadtype == 4)
                             {
+
                                 @switch (uploadtype)
                                 {
                                     case 3:
-                                    case 4:
-                                    case 5:
-                                    case 6:
-                                        <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor </MudText>
+                                        @if (@context.Superior is null)
+                                        {
+                                            <MudTd DataLabel="Assigned Area">
+                                                <MudText Align="Align.Center">Please Select a Superior</MudText>
+                                            </MudTd>
+                                        }
+                                        else
+                                        {
+                                            <MudTd DataLabel="Assigned Area">
+                                                @if (context.Superior.Areas is not null)
+                                                {
+                                                    if (context.Superior.Areas.Count > 0)
+                                                    {
+                                                        <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                            <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
+                                                            @foreach (var item in context.Superior.Areas)
+                                                            {
+                                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudText Typo="Typo.button">no areas to show</MudText>
+                                                    }
+                                                }
+                                            </MudTd>
+                                        }
                                         break;
-                                    default:
-                                        <MudSelect SelectedValuesChanged="@(() => updateSelectGroupContextItem(@context))" T="Data.Entities.Group" Label="Group" Placeholder="Select Group" @bind-Value="@context.Group" For="@(() => @context.Group)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                            <MudSelectItem Disabled="true" Value="@context.Group"> Assign Group  </MudSelectItem>
-                                            @foreach (var item in _groups)
-                                            {
-                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                    case 4:
+                                        @if (selectedSSVOfList is null)
+                                        {
+                                            <MudTd DataLabel="Assigned Area">
+                                                <MudText Align="Align.Center">Please Select a Superior</MudText>
+                                            </MudTd>
+                                        }
+                                        else
+                                        {
+
+                                            <MudTd DataLabel="Assigned Area">
+                                                @if (selectedSSVOfList.Areas is not null)
+                                                {
+                                                    if (selectedSSVOfList.Areas.Count > 0)
+                                                    {
+                                                        <MudSelect T="Area" SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                            <MudSelectItem Disabled="true" Value="@context.Area"> Assign Area  </MudSelectItem>
+                                                            @foreach (var item in selectedSSVOfList.Areas)
+                                                            {
+                                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudText Typo="Typo.button">no areas to show</MudText>
+                                                    }
+                                                }
+                                            </MudTd>
+                                        }
                                         break;
                                 }
+
                             }
                             else
                             {
-                                <MudItem Class="d-flex justify-content-center align-items-center">
-                                    <MudTextField ReadOnly=true @bind-Value="@context.Group.Description" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedGroupContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                </MudItem>
+                                //area asignada al operador por el superior
+
+                                @if (@context.Area != null)
+                                {
+                                    <MudTd DataLabel="Area">
+                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                        </MudItem>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="Area" Class="mtc">
+                                        <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
+                                    </MudTd>
+                                }
                             }
 
-                        </MudTd>
+                            @if (uploadtype > 4)
+                            {
+                                <MudTd DataLabel="Distribution" Class="mtc">
 
-                        @if (uploadtype == 1)
-                        {
-                            <MudTd DataLabel="Permissions">
-                                <MudText Align="Align.Center">
-                                    @*@if(context.IsAdmin){
-                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                    @if (context.Distribution is not null)
+                                    {
+                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                            <MudTextField Value="@context.Distribution?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedDistributionContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        @if (context.PlantId != null && context.AreaId != null)
+                                        {
+                                            @if (_distributions[(int)context.PlantId][(int)context.AreaId].Count > 0)
+                                            {
+                                                <MudSelect SelectedValuesChanged="@(() => updateSelectDistributionContextItem(context))" T="Distribution" Label="Distribution" Placeholder="Distribution" @bind-Value="@context.Distribution" For="@(() => @context.Distribution)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                    <MudSelectItem Disabled="true" Value="@context.Distribution"> Assign Area  </MudSelectItem>
+                                                    @foreach (var item in _distributions[(int)context.PlantId][(int)context.AreaId])
+                                                    {
+                                                        <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.button" class="marquee">this combination of floor plan and area does not have any distributions</MudText>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor</MudText>
+                                        }
+
+                                    }
+                                </MudTd>
 
                             }
 
-                            @if(context.IsSupervisor){
-                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
 
-                            }
+                            <MudTd DataLabel="Group" Class="mtc">
+                                @if (context.Group is null)
+                                {
+                                    @switch (uploadtype)
+                                    {
+                                        case 3:
+                                        case 4:
+                                        case 5:
+                                        case 6:
+                                            <MudText Align="Align.Center" class="marquee">This field is inherited by the supervisor </MudText>
+                                            break;
+                                        default:
+                                            <MudSelect SelectedValuesChanged="@(() => updateSelectGroupContextItem(@context))" T="Data.Entities.Group" Label="Group" Placeholder="Select Group" @bind-Value="@context.Group" For="@(() => @context.Group)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                <MudSelectItem Disabled="true" Value="@context.Group"> Assign Group  </MudSelectItem>
+                                                @foreach (var item in _groups)
+                                                {
+                                                    <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <MudItem Class="d-flex justify-content-center align-items-center">
+                                        <MudTextField ReadOnly=true @bind-Value="@context.Group.Description" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedGroupContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                    </MudItem>
+                                }
 
-                            @if(context.IsOperator){
-                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
-
-                            }*@
-
-
-                                </MudText>
                             </MudTd>
+
+
                         }
 
                     </RowTemplate>
@@ -797,6 +1196,8 @@
     private int uploadtype = 1;
     private string FileName;
 
+    private bool isOkFile = false;
+
     private string ErrorMessageToDisplay;
     private string FileErrorMesage;
     private IBrowserFile? FileSource;
@@ -867,6 +1268,27 @@
             new BreadcrumbItem("Users", href: "/usersmanagement"),
             new BreadcrumbItem("Upload Users", href: "", disabled: true),
         };
+
+    string ClassForCards = "";
+
+    private async void GetPanelPositionClass(MouseEventArgs e)
+    {
+
+        var clickY = e.ClientY;
+
+        var screenHeight = await JS.InvokeAsync<int>("getWindowInnerHeight");
+
+        if (clickY < screenHeight / 2)
+        {
+            ClassForCards = "onexpanded-down";
+        }
+        else
+        {
+            ClassForCards = "onexpanded-up";
+        }
+
+        StateHasChanged();
+    }
 
 
     private async void AssignType(int value)
@@ -1207,7 +1629,6 @@
             MemoryStream ms = new MemoryStream();
             await fileContent.CopyToAsync(ms);
             var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray());
-            bool isOkFile = false;
 
             if (fileExtentionCSV.IsMatch(e.File.Name))
             {
@@ -1245,10 +1666,10 @@
                 }
             }
 
-            //foreach(var item in DataInDocument)
+            //foreach (var item in DataInDocument)
             //{
             //    Console.WriteLine($"Linea:");
-            //    foreach(var element in item)
+            //    foreach (var element in item)
             //    {
             //        Console.Write($",{element}");
             //    }
@@ -1375,303 +1796,618 @@
         List<User> ListtoReturn = new List<User>();
         foreach (string[] row in DataInDocument)
         {
-            var ToInsertIntoList = new User();
+
+            bool allEqual = row.All(item => item.Equals("§"));
+
+            if (allEqual)
+            {
+                // Todos los elementos son iguales a "§"
+                Console.WriteLine("Todos los elementos son iguales a '§'.");
+                break;
+            }
 
             try
             {
-                ToInsertIntoList.UserType = row[5] != "§" ? int.Parse(row[0]) : -1;
+                var ToInsertIntoList = new User();
+
+                try
+                {
+                    ToInsertIntoList.UserType = row[5] != "§" ? int.Parse(row[5]) : -1;
+
+
+                }
+                catch (Exception ex)
+                {
+                    Console.Write($"{ex.Message}");
+                }
+
+                if (ToInsertIntoList.UserType == -1)
+                {
+                    showTableInUI = false;
+                    isOkFile = false;
+                    ErrorMessageToDisplay = "Document Incomplet Some Field User Type";
+                    break;
+                }
+
+                switch (ToInsertIntoList.UserType)
+                {
+                    case 1:
+                        try
+                        {
+                            ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                            try
+                            {
+                                ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                isOkFile = false;
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For Admin";
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                isOkFile = false;
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = "Document Incomplet Some Name  For Admin";
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
+
+                            }
+                            catch (Exception ex)
+                            {
+                                isOkFile = false;
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = "Document Incomplet Some Email For Admin";
+                                break;
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            isOkFile = false;
+                            Console.WriteLine($"Case 1 => Create All Users:{ex.Message}");
+                            showTableInUI = false;
+                            break;
+                        }
+                        break;
+                    case 2:
+                        try
+                        {
+                            ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                            try
+                            {
+                                ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+
+                                ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For SSV";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Name For SSV With PrincipalName: {ToInsertIntoList.ObjectId}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Email For SSV with Name {ToInsertIntoList.Name}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                if (row[7].Contains(','))
+                                {
+                                    string[]? SplitedSubordinates = row[7] != "§" ? row[7].Split(',') : null;
+
+                                    if (SplitedSubordinates != null)
+                                    {
+                                        if (ToInsertIntoList.Subordinates != null)
+                                        {
+                                            foreach (var item in SplitedSubordinates)
+                                            {
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Subordinates = new List<User>();
+                                            foreach (var item in SplitedSubordinates)
+                                            {
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                            }
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    if (row[7] != "§")
+                                    {
+                                        if (ToInsertIntoList.Subordinates != null)
+                                        {
+
+                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Subordinates = new List<User>();
+                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Error, One or More Subirdinates ID's For SSV with Email{ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+
+
+                            try
+                            {
+                                ToInsertIntoList.PlantId = row[8] != "§" ? int.Parse(row[8]) : int.Parse(row[403]);
+
+                                try
+                                {
+                                    ToInsertIntoList.Plant = _plants.Find(p => p.PlantId == ToInsertIntoList.PlantId);
+                                }
+                                catch (Exception ex)
+                                {
+                                    ErrorMessageToDisplay = $"Document Incorrect Some Plant Id For SSV whit email {ToInsertIntoList.Email}";
+                                    isOkFile = false;
+                                    break;
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Plant For SSV whit email {ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            //subordinados
+
+                            try
+                            {
+                                if (row[9].Contains(','))
+                                {
+                                    string[]? SplitedAreas = row[9] != "§" ? row[9].Split(',') : null;
+
+                                    if (SplitedAreas != null)
+                                    {
+                                        if (ToInsertIntoList.Areas != null)
+                                        {
+                                            foreach (var item in SplitedAreas)
+                                            {
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Areas = new List<Area>();
+                                            foreach (var item in SplitedAreas)
+                                            {
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                            }
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    if (row[9] != "§")
+                                    {
+                                        if (ToInsertIntoList.Areas != null)
+                                        {
+
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[9])));
+
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Areas = new List<Area>();
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[9])));
+
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet, Areas For SSV with Email{ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.GroupId = row[10] != "§" ? int.Parse(row[10]) : int.Parse(row[403]);
+
+                                try
+                                {
+                                    ToInsertIntoList.Group = _groups.Find(p => p.GroupId == ToInsertIntoList.GroupId);
+                                }
+                                catch (Exception ex)
+                                {
+                                    ErrorMessageToDisplay = $"Document Incorrect Some Group Id For SSV whit email {ToInsertIntoList.Email}";
+                                    isOkFile = false;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                isOkFile = false;
+                                ErrorMessageToDisplay = "Document Incomplet Some Group For SSV";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Case 2 => Create All Users:{ex.Message}");
+                            showTableInUI = false;
+                            isOkFile = false;
+                        }
+                        break;
+                    case 3:
+                        try
+                        {
+                            ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                            try
+                            {
+                                ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For Supervisor";
+                                isOkFile = false;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Name For Supervisor With PrincipalName: {ToInsertIntoList.ObjectId}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
+
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Email For Supervisor with Name: {ToInsertIntoList.Name}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[403]);
+
+                                try
+                                {
+                                    ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
+
+                                    try
+                                    {
+                                        ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
+                                        ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
+                                        isOkFile = false;
+                                        break;
+                                    }
+
+                                    try
+                                    {
+                                        ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
+                                        ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
+                                        isOkFile = false;
+                                        break;
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    ErrorMessageToDisplay = $"Incorrect document, the superior id for SSV with email: {ToInsertIntoList.Email}";
+                                    isOkFile = false;
+                                    break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+
+                                ErrorMessageToDisplay = $"Document Incomplet Some Superior For Supervisor whit email {ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                if (row[7].Contains(','))
+                                {
+                                    string[]? SplitedSubordinates = row[7] != "§" ? row[7].Split(',') : null;
+
+                                    if (SplitedSubordinates != null)
+                                    {
+                                        if (ToInsertIntoList.Subordinates != null)
+                                        {
+                                            foreach (var item in SplitedSubordinates)
+                                            {
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Subordinates = new List<User>();
+                                            foreach (var item in SplitedSubordinates)
+                                            {
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                            }
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    if (row[7] != "§")
+                                    {
+                                        if (ToInsertIntoList.Subordinates != null)
+                                        {
+
+                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Subordinates = new List<User>();
+                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Error, One or More Subirdinates ID's For SSV with Email{ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.AreaId = row[9] != "§" ? int.Parse(row[9]) : int.Parse(row[403]);
+                                try
+                                {
+                                    ToInsertIntoList.Area = ToInsertIntoList.Superior?.Areas.ToList().Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                                }
+                                catch (Exception ex)
+                                {
+                                    showTableInUI = false;
+
+                                    ErrorMessageToDisplay = $"Document Incorrect,Area Id of Superior with Email: {ToInsertIntoList.Email}, The selected area does not belong to the superior's areas";
+                                    isOkFile = false;
+                                    break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+
+                                ErrorMessageToDisplay = $"Document Incomplet, Assigned Area For Supervisor with Email: {ToInsertIntoList.Email}";
+                                isOkFile = false;
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Case 3 => Create All Users:{ex.Message}");
+                            showTableInUI = false;
+                            isOkFile = false;
+
+                            break;
+                        }
+                        break;
+                    case 4:
+                        try
+                        {
+                            ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+
+                            try
+                            {
+                                ToInsertIntoList.Payroll = row[2] != "§" ? int.Parse(row[2]) : int.Parse(row[403]);
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet Some Payroll For Operator";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+
+                                ErrorMessageToDisplay = $"Document Incomplet Some Name For Operator With payroll: {ToInsertIntoList.Payroll}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[403]);
+                                try
+                                {
+                                    ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
+
+                                    try
+                                    {
+                                        ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
+                                        ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
+                                        isOkFile = false;
+                                        break;
+                                    }
+
+                                    try
+                                    {
+                                        ToInsertIntoList.AreaId = ToInsertIntoList.Superior?.AreaId;
+                                        ToInsertIntoList.Area = ToInsertIntoList.Superior?.Area;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's area id for SSV with email: {ToInsertIntoList.Email}";
+                                        isOkFile = false;
+                                        break;
+                                    }
+
+                                    try
+                                    {
+                                        ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
+                                        ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
+                                        isOkFile = false;
+                                        break;
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    isOkFile = false;
+                                    ErrorMessageToDisplay = $"Document Incorrect, Superior not found For Operator whit Name {ToInsertIntoList.Name}";
+                                    break;
+                                }
+
+
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incorrect Some Superior Id For Operator whit Name {ToInsertIntoList.Name}";
+                                isOkFile = false;
+                                break;
+                            }
+
+                            try
+                            {
+                                ToInsertIntoList.DistributionId = row[11] != "§" ? int.Parse(row[11]) : int.Parse(row[403]);
+
+                                try
+                                {
+                                    ToInsertIntoList.Distribution = _distributions[(int)ToInsertIntoList.PlantId][(int)ToInsertIntoList.AreaId].Find(d => d.DistributionId == ToInsertIntoList.DistributionId);
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    ErrorMessageToDisplay = $"Document Incorrect Distribution Id for Operator with Name: {ToInsertIntoList.Name}";
+                                    isOkFile = false;
+                                    break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+
+                                ErrorMessageToDisplay = $"Document Incomplet, Distribution for Operator with Name: {ToInsertIntoList.Name}";
+                                isOkFile = false;
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Case 4 => Create All Users:{ex.Message}");
+
+                            showTableInUI = false;
+                        }
+                        break;
+                }
+
+                if (!showTableInUI)
+                {
+                    break;
+                }
+
+                ListtoReturn.Add(ToInsertIntoList);
             }
             catch (Exception ex)
             {
 
-            }
-
-            if (ToInsertIntoList.UserType == -1)
-            {
+                Console.WriteLine($"{ex.Message}");
+                isOkFile = false;
                 showTableInUI = false;
-
-                ErrorMessageToDisplay = "Document Incomplet Some Field User Type";
-                break;
             }
-
-            switch (ToInsertIntoList.UserType)
-            {
-                case 1:
-                    try
-                    {
-                        ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-
-                        try
-                        {
-                            ToInsertIntoList.ObjectId = row[1] != "§" ? row[2] : row[403];
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For Admin";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = "Document Incomplet Some Name  For Admin";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
-
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = "Document Incomplet Some Email For Admin";
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Case 1 => Create All Users:{ex.Message}");
-                        showTableInUI = false;
-                    }
-                    break;
-                case 2:
-                    try
-                    {
-                        ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-
-                        try
-                        {
-                            ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[403];
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = "Document Incomplet Some Principal user@compasdcpcs.local For SSV";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[403];
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = $"Document Incomplet Some Name For SSV With PrincipalName: {ToInsertIntoList.ObjectId}";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[403];
-
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = $"Document Incomplet Some Email For SSV with Name {ToInsertIntoList.Name}";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.PlantId = row[7] != "§" ? int.Parse(row[7]) : int.Parse(row[403]) ;
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = $"Document Incomplet Some Plant For SSV whit email {ToInsertIntoList.Email}";
-                        }
-
-                        try
-                        {
-                            if (row[8].Contains(','))
-                            {
-                                string[]? SplitedAreas = row[8] != "§" ? row[8].Split(',') : null;
-
-                                if (SplitedAreas != null)
-                                {
-                                    if (ToInsertIntoList.Areas != null)
-                                    {
-                                        foreach (var item in SplitedAreas)
-                                        {
-                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ToInsertIntoList.Areas = new List<Area>();
-                                        foreach (var item in SplitedAreas)
-                                        {
-                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
-                                        }
-                                    }
-
-                                }
-                            }
-                            else
-                            {
-                                if (row[8] != "§")
-                                {
-                                    if (ToInsertIntoList.Areas != null)
-                                    {
-
-                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[8])));
-
-                                    }
-                                    else
-                                    {
-                                        ToInsertIntoList.Areas = new List<Area>();
-                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[8])));
-
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = $"Document Incomplet, Areas For SSV with Email{ToInsertIntoList.Email}";
-                        }
-
-                        try
-                        {
-                            ToInsertIntoList.PlantId = row[9] != "§" ? int.Parse(row[9]) : int.Parse(row[403]) ;
-                        }
-                        catch (Exception ex)
-                        {
-                            showTableInUI = false;
-                            ErrorMessageToDisplay = "Document Incomplet Some Group For SSV";
-                        }
-
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Case 1 => Create All Users:{ex.Message}");
-                        showTableInUI = false;
-                    }
-                    break;
-                case 3:
-
-                    break;
-                case 4:
-
-                    break;
-            }
-
-            if (!showTableInUI)
-            {
-                break;
-            }
-
-
-            //try
-            //{
-            //    ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-            //    ToInsertIntoList.Payroll = row[1] != "§" ? int.Parse(row[1]) : -1;
-            //    if (ToInsertIntoList.Payroll == -1)
-            //    {
-            //        showTableInUI = false;
-
-            //        ErrorMessageToDisplay = "Document Incomplet fields in Payroll";
-            //        break;
-            //    }
-
-            //    ToInsertIntoList.Name = row[2] != "§" ? row[2] : "";
-            //    if (ToInsertIntoList.Name == "")
-            //    {
-            //        showTableInUI = false;
-
-            //        ErrorMessageToDisplay = "Document Incomplet fields in Name";
-            //        break;
-            //    }
-
-
-            //    ToInsertIntoList.PlantId = row[3] != "§" ? int.Parse(row[3]) : -1;
-            //    ToInsertIntoList.AreaId = row[4] != "§" ? int.Parse(row[4]) : -1;
-            //    ToInsertIntoList.GroupId = row[5] != "§" ? int.Parse(row[5]) : -1;
-
-            //    //ToInsertIntoList.IsAdmin = row[6] != "§" ? bool.Parse(row[6]) : false;
-            //    //ToInsertIntoList.IsSupervisor = row[7] != "§" ? bool.Parse(row[7]) : false;
-            //    //ToInsertIntoList.IsOperator = row[8] != "§" ? bool.Parse(row[8]) : false;
-
-            //    try
-            //    {
-            //        ToInsertIntoList.CreatedDate = row[9] != "§" ? DateTime.Parse(row[9]) : DateTime.Now;
-
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        ToInsertIntoList.CreatedDate = DateTime.Now;
-
-            //    }
-
-            //    try
-            //    {
-            //        ToInsertIntoList.LastUpdated = row[10] != "§" ? DateTime.Parse(row[10]) : DateTime.Now;
-
-
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        ToInsertIntoList.LastUpdated = DateTime.Now;
-
-            //    }
-
-            //    try
-            //    {
-            //        ToInsertIntoList.DisabledDate = row[11] != "§" ? DateTime.Parse(row[11]) : DateTime.Now;
-
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        ToInsertIntoList.DisabledDate = DateTime.Now;
-
-            //    }
-
-
-            //    ToInsertIntoList.IsActive = row[12] != "§" ? bool.Parse(row[12]) : true;
-
-            //    try
-            //    {
-            //        ToInsertIntoList.Plant = _plants.Find(e => e.PlantId == ToInsertIntoList.PlantId);
-            //        ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
-            //        ToInsertIntoList.Group = _groups.Find(g => g.GroupId == ToInsertIntoList.GroupId);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        showTableInUI = false;
-            //        if (ToInsertIntoList.AreaId == -1)
-            //        {
-            //            ErrorMessageToDisplay = "Document Incomplet fields in Area";
-            //        }
-
-            //        if (ToInsertIntoList.PlantId == -1)
-            //        {
-            //            ErrorMessageToDisplay = "Document Incomplet fields in Plant";
-            //        }
-
-            //        if (ToInsertIntoList.GroupId == -1)
-            //        {
-            //            ErrorMessageToDisplay = "Document Incomplet fields in Group";
-            //        }
-            //        Console.WriteLine($"{ex.Message}");
-            //    }
-
-            //    ListtoReturn.Add(ToInsertIntoList);
-
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"{ex.Message}");
-            //    showTableInUI = false;
-            //}
         }
 
+        Console.WriteLine(ErrorMessageToDisplay);
         return ListtoReturn;
     }
 
@@ -1682,13 +2418,7 @@
         {
             try
             {
-                Console.Write($"{row[0]}");
-                Console.Write($",{row[1]}");
-                Console.Write($",{row[2]}");
-                Console.Write($",{row[3]}");
-                Console.Write($",{row[4]}");
-                Console.Write($",{row[5]}");
-                Console.WriteLine($"  End");
+
                 var ToInsertIntoList = new User();
                 ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
                 ToInsertIntoList.Name = row[1] != "§" ? row[1] : "";
