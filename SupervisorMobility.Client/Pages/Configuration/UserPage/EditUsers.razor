@@ -981,7 +981,9 @@ else
         IsOperator = (_user.UserType == 4);
 
         auxPlant = (int)_user.PlantId;
-        await SetSuperiorToUser();
+        if(_user.Superior != null){
+            await SetSuperiorToUser();
+        }
 
         selectedSeniorSupervisorOfList = new User();
         selectedSupervisorOfList = new User();
@@ -991,42 +993,45 @@ else
         ShowAreasInvokeByPlantSelector();
         switch (_user.UserType)
         {
+            case 2:
+                auxGroup = (int)_user.GroupId;
+                break;
             case 3:
-                    auxPlant = (int)_user.PlantId;
-                    auxArea = (int)_user.AreaId;
-                    auxGroup = (int)_user.GroupId;
+                auxPlant = (int)_user.PlantId;
+                auxArea = (int)_user.AreaId;
+                auxGroup = (int)_user.GroupId;
 
-                    if(_user.Superior != null){
-                        superior = true;
-                    }
+                if(_user.Superior != null){
+                    superior = true;
+                }
 
-                    plantInfo = _user.Plant?.Description;
+                plantInfo = _user.Plant?.Description;
 
-                    areaInfo = _user.Area?.Description;
-                    grupInfo = _user.Group?.Description;
+                areaInfo = _user.Area?.Description;
+                grupInfo = _user.Group?.Description;
 
                 break;
             case 4:
-                    auxPlant = (int)_user.PlantId;
-                    auxArea = (int)_user.AreaId;
-                    auxGroup = (int)_user.GroupId;
-                    auxDistribution = (int)_user.DistributionId;
-                    
-                    if (_user.Superior != null)
-                    {
-                        superior = true;
-                    }
+                auxPlant = (int)_user.PlantId;
+                auxArea = (int)_user.AreaId;
+                auxGroup = (int)_user.GroupId;
+                auxDistribution = (int)_user.DistributionId;
 
-                    plantInfo = _user.Plant?.Description;
-                    areaInfo = _user.Area?.Description;
-                    grupInfo = _user.Group?.Description;
+                if (_user.Superior != null)
+                {
+                    superior = true;
+                }
 
-                    Console.WriteLine(plantInfo);
+                plantInfo = _user.Plant?.Description;
+                areaInfo = _user.Area?.Description;
+                grupInfo = _user.Group?.Description;
 
-                    if (auxPlant != 0 && auxArea != 0)
-                    {
-                        _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
-                    }
+                Console.WriteLine(plantInfo);
+
+                if (auxPlant != 0 && auxArea != 0)
+                {
+                    _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                }
                 break;
 
         }
@@ -1174,10 +1179,12 @@ else
     {
         var auxObjectId = _user.ObjectId;
         var auxName = _user.Name;
+        var auxCreateDate = _user.CreatedDate;
         _user = new();
 
         _user.ObjectId = auxObjectId;
         _user.Name = auxName;
+        _user.CreatedDate = _user.CreatedDate;
         _user.IsActive = true;
 
 
@@ -1276,7 +1283,8 @@ else
 
     private async Task SetSuperiorToUser()
     {
-        if(_user.UserType != 1){
+        if (_user.UserType != 1)
+        {
             _user.SuperiorId = _user.Superior.SuperiorId;
             superior = true;
         }
@@ -1485,6 +1493,7 @@ else
             }
         }
 
+
         _user.IsActive = true;
         _user.LastUpdated = DateTime.Now;
 
@@ -1499,6 +1508,11 @@ else
         if(_user.Superior != null)
         {
             _user.SuperiorId = _user.Superior.UserId;
+        }
+
+
+        if(_user.Areas != null){
+            Console.WriteLine(_user.Areas.Count);
         }
 
 

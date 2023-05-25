@@ -225,9 +225,20 @@ namespace SupervisorMobility.Client.Services.UserService
         {
             var response = await _http.DeleteAsync($"Users/{UserId}");
         }
+
         //update User
         public async Task<bool> UpdateUser(int UserId, User UserToUpdate)
         {
+
+            if(UserToUpdate.Areas?.Count > 0)
+            {
+                foreach(var area in UserToUpdate.Areas)
+                {
+                    Console.WriteLine(area.AreaId);
+                }
+
+            }
+
             var response = await _http.PutAsJsonAsync($"Users/{UserId}", UserToUpdate);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
