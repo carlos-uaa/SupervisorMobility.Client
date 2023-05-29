@@ -47,7 +47,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         //Job observations status lists.
-        public List<JobObservation> _jobObservation { get; set; } = new();
+        public List<JobObservation> _jobObservations { get; set; } = new();
+        public List<JobObservation> _jobObservationsAux { get; set; } = new();
         public List<JobObservation> _plannedJobObservation { get; set; } = new();
         public List<JobObservation> _inProgressJobObservation { get; set; } = new();
         public List<JobObservation> _lateJobObservation { get; set; } = new();
@@ -56,6 +57,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public List<JobObservation> _finishedJobObservation { get; set; } = new();
 
 
+        //Admin
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
 
         public string totalPlanned;
         public string totalInProgress;
@@ -63,6 +67,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public string totalUnderReview;
         public string totalRejected;
         public string totalFinished;
+
+        public int plantId;
+        public int areaId;
 
         //User
         private string json = string.Empty;
@@ -72,6 +79,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         //Operator user
         public List<User> users = new();
         public List<User> operatorUsers = new();
+
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -88,11 +97,97 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 await GetUserAsync();
                 await LateDates();
+                _jobObservations.Clear();
 
-                _jobObservation = await JobObservationService.GetAllJobObservations();
-                _filterJobObservation = _jobObservation;
-                foreach (var jobobs in _jobObservation)
+                if(user != null)
                 {
+                    if (user.UserType == 1)
+                    {
+                        ClearFilters();
+                        _plants = await PlantServices.GetPlants();
+                    }
+                    else
+                    {
+
+                        Console.WriteLine("bbbbb");
+                        plantId = (int)user.PlantId;
+                        areaId = (int)user.AreaId;
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                        foreach (var jobobs in _jobObservationsAux)
+                        {
+                            if(plantId == jobobs.PlantId &&  areaId == jobobs.AreaId)
+                            {
+                                _jobObservations.Add(jobobs);
+                                switch (jobobs.Status)
+                                {
+                                    case 1: _plannedJobObservation.Add(jobobs); break;
+                                    case 2: _inProgressJobObservation.Add(jobobs); break;
+                                    case 3: _lateJobObservation.Add(jobobs); break;
+                                    case 4: _underReviewJobObservation.Add(jobobs); break;
+                                    case 5: _rejectedJobObservation.Add(jobobs); break;
+                                    case 6: _finishedJobObservation.Add(jobobs); break;
+                                }
+
+                            }
+                        }
+
+                        _filterJobObservation = _jobObservations;
+                        _filterPlannedJobObservation = _plannedJobObservation;
+                        _filterInProgressJobObservation = _inProgressJobObservation;
+                        _filterLateJobObservation = _lateJobObservation;
+                        _filterUnderReviewJobObservation = _underReviewJobObservation;
+                        _filterRejectedJobObservation = _rejectedJobObservation;
+                        _filterFinishedJobObservation = _finishedJobObservation;
+
+
+                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+                        totalLate = "Late (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
+                        _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
+
+                        //operator User
+                        users = await UsersService.GetUsers();
+                        foreach (var operatorUser in users)
+                        {
+                            if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
+                            {
+                                operatorUsers.Add(operatorUser);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        private async void ShowAreas()
+        {
+            areaId = 0;
+            color = Color.Default;
+            filters = false;
+            ClearFilters();
+            operatorUsers.Clear();
+            _jobObservationsAux.Clear();
+            _jobObservations.Clear();
+
+            _plannedJobObservation.Clear();
+            _inProgressJobObservation.Clear();
+            _lateJobObservation.Clear();
+            _underReviewJobObservation.Clear();
+            _rejectedJobObservation.Clear();
+            _finishedJobObservation.Clear();
+
+
+            _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+            foreach (var jobobs in _jobObservationsAux)
+            {
+                if (plantId == jobobs.PlantId)
+                {
+                    _jobObservations.Add(jobobs);
                     switch (jobobs.Status)
                     {
                         case 1: _plannedJobObservation.Add(jobobs); break;
@@ -102,48 +197,110 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         case 5: _rejectedJobObservation.Add(jobobs); break;
                         case 6: _finishedJobObservation.Add(jobobs); break;
                     }
-                }
-
-                _filterPlannedJobObservation = _plannedJobObservation;
-                _filterInProgressJobObservation = _inProgressJobObservation;
-                _filterLateJobObservation= _lateJobObservation;
-                _filterUnderReviewJobObservation = _underReviewJobObservation;
-                _filterRejectedJobObservation = _rejectedJobObservation;
-                _filterFinishedJobObservation= _finishedJobObservation;
-
-
-                totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-                totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-                totalLate = "Late (" + _lateJobObservation.Count +")";
-                totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-                totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-                totalFinished = "Finished (" + _finishedJobObservation.Count +")";
-
-
-                if(user != null)
-                {
-                    _distributions = await DistributionService.GetDistributionsWithCollections((int)user.PlantId, (int)user.AreaId);
 
                 }
-
-                //operator User
-                users = await UsersService.GetUsers();
-                foreach (var operatorUser in users)
-                {
-                    if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
-                    {
-                        operatorUsers.Add(operatorUser);
-                    }
-                }
-
             }
+
+            _filterJobObservation = _jobObservations;
+            _filterPlannedJobObservation = _plannedJobObservation;
+            _filterInProgressJobObservation = _inProgressJobObservation;
+            _filterLateJobObservation = _lateJobObservation;
+            _filterUnderReviewJobObservation = _underReviewJobObservation;
+            _filterRejectedJobObservation = _rejectedJobObservation;
+            _filterFinishedJobObservation = _finishedJobObservation;
+
+
+            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+            totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
+
+
+
+            _areas = await AreaServices.GetAreas(plantId);
+
+            StateHasChanged();
+        }
+
+
+        private async void ShowJobObs()
+        {
+            ClearFilters();
+            _jobObservationsAux.Clear();
+            _jobObservations.Clear();
+            operatorUsers.Clear();
+            _plannedJobObservation.Clear();
+            _inProgressJobObservation.Clear();
+            _lateJobObservation.Clear();
+            _underReviewJobObservation.Clear();
+            _rejectedJobObservation.Clear();
+            _finishedJobObservation.Clear();
+
+            _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+            foreach (var jobobs in _jobObservationsAux)
+            {
+                if (plantId == jobobs.PlantId && areaId == jobobs.AreaId)
+                {
+                    _jobObservations.Add(jobobs);
+                    switch (jobobs.Status)
+                    {
+                        case 1: _plannedJobObservation.Add(jobobs); break;
+                        case 2: _inProgressJobObservation.Add(jobobs); break;
+                        case 3: _lateJobObservation.Add(jobobs); break;
+                        case 4: _underReviewJobObservation.Add(jobobs); break;
+                        case 5: _rejectedJobObservation.Add(jobobs); break;
+                        case 6: _finishedJobObservation.Add(jobobs); break;
+                    }
+
+                }
+            }
+
+            _filterJobObservation = _jobObservations;
+            _filterPlannedJobObservation = _plannedJobObservation;
+            _filterInProgressJobObservation = _inProgressJobObservation;
+            _filterLateJobObservation = _lateJobObservation;
+            _filterUnderReviewJobObservation = _underReviewJobObservation;
+            _filterRejectedJobObservation = _rejectedJobObservation;
+            _filterFinishedJobObservation = _finishedJobObservation;
+
+
+            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+            totalLate = "Late (" + _lateJobObservation.Count + ")";
+            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
+            _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
+
+            //operator User
+            users = await UsersService.GetUsers();
+            foreach (var operatorUser in users)
+            {
+                if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
+                {
+                    operatorUsers.Add(operatorUser);
+                }
+            }
+            StateHasChanged();
+
         }
 
         public void ActiveFilters()
         {
+            if (!filters && areaId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select an Area first", Severity.Warning);
+                return;
+            }
             filters = !filters;
 
-            _jobObservation = _filterJobObservation;
+            _jobObservations = _filterJobObservation;
             _plannedJobObservation= _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
@@ -173,7 +330,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         public void ClearFilters()
         {
-            _jobObservation = _filterJobObservation;
+            _jobObservations = _filterJobObservation;
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
@@ -202,7 +359,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private void FilterDistributions()
         {
             operationId = new();
-            _jobObservation = _filterJobObservation;
+            _jobObservations = _filterJobObservation;
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
@@ -212,7 +369,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             operationFlag = true;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == distributionId)].Operations;
-            _jobObservation = _jobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+            _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
             _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
@@ -223,7 +380,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             if (statusId != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
@@ -233,7 +390,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (operatorId != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
@@ -243,7 +400,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (filterDate != null)
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
@@ -253,7 +410,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (idFilter != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
@@ -272,7 +429,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private void Filters()
         {
-            _jobObservation = _filterJobObservation;
+            _jobObservations = _filterJobObservation;
             _plannedJobObservation = _filterPlannedJobObservation;
             _inProgressJobObservation = _filterInProgressJobObservation;
             _lateJobObservation = _filterLateJobObservation;
@@ -281,7 +438,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _finishedJobObservation = _filterFinishedJobObservation;
 
             if (distributionId != default(int)) {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
@@ -291,7 +448,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (operationId!= default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
@@ -301,7 +458,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (statusId != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
@@ -311,7 +468,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if (operatorId != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
@@ -321,7 +478,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if(filterDate != null)
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
@@ -331,7 +488,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
             if(idFilter != default(int))
             {
-                _jobObservation = _jobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
                 _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
@@ -380,8 +537,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         public async Task LateDates()
         {
-            _jobObservation = await JobObservationService.GetAllJobObservations();
-            foreach(var jobobs in _jobObservation)
+            _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+            foreach(var jobobs in _jobObservationsAux)
             {
                 if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
                 {
@@ -395,8 +552,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         async Task DeleteJobObservation(int jobObservationId)
         {
-            _jobObservation.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
+            _jobObservations.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
             await JobObservationService.DeleteJobObservation(jobObservationId);
+            _jobObservationsAux.Clear();
             _plannedJobObservation.Clear();
             _inProgressJobObservation.Clear();
             _lateJobObservation.Clear();
@@ -404,7 +562,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _rejectedJobObservation.Clear();
             _finishedJobObservation.Clear();
 
-            foreach (var jobobs in _jobObservation)
+            foreach (var jobobs in _jobObservations)
             {
                 switch (jobobs.Status)
                 {

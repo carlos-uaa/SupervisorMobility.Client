@@ -105,15 +105,39 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (user != null)
             {
                 _plants = await PlantServices.GetPlants();
-                _jobObservation.PlantId = (int)user.PlantId;
 
-                _jobObservation.AreaId = (int)user.AreaId;
+                if (user.UserType != 1)
+                {
+                    _jobObservation.PlantId = (int)user.PlantId;
 
-                _areas = await AreaServices.GetAreas((int)user.PlantId);
-                _jobObservation.SupervisorId = user.UserId;
-                _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    _jobObservation.AreaId = (int)user.AreaId;
 
-                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                    _areas = await AreaServices.GetAreas((int)user.PlantId);
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                    _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+
+                    //operator User
+                    users = await UsersService.GetUsers();
+                    foreach (var operatorUser in users)
+                    {
+                        if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                        {
+                            operatorUsers.Add(operatorUser);
+                        }
+                    }
+
+                }
+                else
+                {
+                    _jobObservation.PlantId = 0;
+                    _jobObservation.AreaId = 0;
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                }
+
                 StateHasChanged();
             }
 

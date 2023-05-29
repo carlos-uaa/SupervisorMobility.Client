@@ -159,18 +159,20 @@
 
                                 }
 
-                                @if (_user.UserType == 2)
+                                @if(_user.UserType != 1)
                                 {
-                                    @*Mud select of Plants *@
-                                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
-                                        <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
-                                        @foreach (var type in _plants)
-                                        {
-                                            <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                    @*Mud select of Areas *@
-                                    @*<MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                    @if (_user.UserType == 2)
+                                    {
+                                        @*Mud select of Plants *@
+                                        <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+                                            <MudSelectItem Disabled="true" Value="0">Select a Plant</MudSelectItem>
+                                            @foreach (var type in _plants)
+                                            {
+                                                <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        @*Mud select of Areas *@
+                                        @*<MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
                             <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                             @foreach (var type in _areas)
                             {
@@ -178,24 +180,48 @@
                             }
                             </MudSelect>*@
 
-                                    <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxGroup" For="@(() => auxGroup)">
-                                        <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
-                                        @foreach (var type in _groups)
-                                        {
-                                            <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                else if (_user.UserType == 3 && LogedUser.UserType == 1)
-                                {
-                                    <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
-                                    if (_user.Superior != null)
+                                        <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxGroup" For="@(() => auxGroup)">
+                                            <MudSelectItem Disabled="true" Value="0">Select an Group</MudSelectItem>
+                                            @foreach (var type in _groups)
+                                            {
+                                                <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else if (_user.UserType == 3 && LogedUser.UserType == 1)
                                     {
-                                        if (_user.Superior.Areas != null && _user.Superior.Areas.Count > 0)
+                                        <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
+                                        if (_user.Superior != null)
+                                        {
+                                            if (_user.Superior.Areas != null && _user.Superior.Areas.Count > 0)
+                                            {
+                                                <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                                    <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                                    @foreach (var type in _user.Superior.Areas)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info">
+                                                    <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
+                                                </MudAlert>
+                                            }
+
+                                        }
+
+                                        <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
+                                    }
+                                    else if (_user.UserType == 3 && LogedUser.UserType == 2)
+                                    {
+                                        <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
+                                        if (LogedUser.Areas != null)
                                         {
                                             <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
                                                 <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
-                                                @foreach (var type in _user.Superior.Areas)
+                                                @foreach (var type in LogedUser.Areas)
                                                 {
                                                     <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                                                 }
@@ -207,169 +233,147 @@
                                                 <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
                                             </MudAlert>
                                         }
-
+                                        <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
+                                    }
+                                    else if (_user.UserType == 4)
+                                    {
+                                        <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
+                                        <MudTextField @bind-Value="areaInfo" Label="Area" ReadOnly="true" Variant="Variant.Outlined" />
+                                        <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
                                     }
 
-                                    <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
-                                }
-                                else if (_user.UserType == 3 && LogedUser.UserType == 2)
-                                {
-                                    <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
-                                    if (LogedUser.Areas != null)
+
+
+
+                                    @*Mud select of Distribution *@
+                                    @if (_user.UserType == 4 && _user.Superior != null)
                                     {
-                                        <MudSelect T="int" Label="Area" Variant="Variant.Outlined" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
-                                            <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
-                                            @foreach (var type in LogedUser.Areas)
+                                        <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDistribution" For="@(() => auxDistribution)">
+                                            <MudSelectItem Disabled="true" Value="0">Select an Distribution</MudSelectItem>
+                                            @foreach (var type in _distributions)
                                             {
-                                                <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                                <MudSelectItem Value="type.DistributionId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                                             }
                                         </MudSelect>
                                     }
-                                    else
+                                    @* Areas Managed*@
+
+
+                                    @if (_user.UserType == 2)
                                     {
-                                        <MudAlert Severity="Severity.Info">
-                                            <MudText Style="font-weight: bold;">This superior has no areas yet.</MudText>
-                                        </MudAlert>
-                                    }
-                                    <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
-                                }
-                                else if (_user.UserType == 4)
-                                {
-                                    <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
-                                    <MudTextField @bind-Value="areaInfo" Label="Area" ReadOnly="true" Variant="Variant.Outlined" />
-                                    <MudTextField @bind-Value="grupInfo" Label="Group" ReadOnly="true" Variant="Variant.Outlined" />
-                                }
-
-
-
-
-                                @*Mud select of Distribution *@
-                                @if (_user.UserType == 4 && _user.Superior != null)
-                                {
-                                    <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDistribution" For="@(() => auxDistribution)">
-                                        <MudSelectItem Disabled="true" Value="0">Select an Distribution</MudSelectItem>
-                                        @foreach (var type in _distributions)
-                                        {
-                                            <MudSelectItem Value="type.DistributionId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                @* Areas Managed*@
-
-
-                                @if (_user.UserType == 2)
-                                {
-                                    <MudItem Class="mt-5">
-                                        <MudText Typo="Typo.h6">Managed Areas</MudText>
-                                    </MudItem>
-                                    @switch (_user.Areas?.Count)
-                                    {
-                                        case null:
-                                            @if (auxPlant == 0)
-                                            {
-                                                <MudItem>
-                                                    <MudAlert Severity="Severity.Info">
-                                                        Select a plant first
-                                                    </MudAlert>
-                                                </MudItem>
-                                            }
-                                            else
-                                            {
-                                                @if (_areasManager?.Count > 0)
-                                                {
-                                                    <MudItem class="d-flex flex-column justify-center">
-                                                        <MudAlert Severity="Severity.Info">
-                                                            First select the area / areas to manage
-                                                        </MudAlert>
-                                                    </MudItem>
-                                                }
-                                                else
-                                                {
-                                                    <MudItem class="d-flex flex-column justify-center">
-                                                        <MudAlert Severity="Severity.Info">
-                                                            This plant does not have areas to manage
-                                                        </MudAlert>
-                                                    </MudItem>
-                                                }
-
-
-                                            }
-                                            break;
-                                        case 0:
-                                            @if (auxPlant == 0)
-                                            {
-                                                <MudItem class="d-flex flex-column justify-center justify-align-center">
-                                                    <MudAlert Severity="Severity.Info">
-                                                        First select a plant
-                                                    </MudAlert>
-                                                </MudItem>
-                                            }
-                                            else
-                                            {
-                                                @if (_areasManager?.Count > 0)
-                                                {
-                                                    <MudItem class="d-flex flex-column justify-center">
-                                                        <MudAlert Severity="Severity.Info">
-                                                            First add areas to manage
-                                                        </MudAlert>
-                                                    </MudItem>
-                                                }
-                                                else
-                                                {
-                                                    <MudItem class="d-flex flex-column justify-center">
-                                                        <MudAlert Severity="Severity.Info">
-                                                            This plant does not have areas to manage
-                                                        </MudAlert>
-                                                    </MudItem>
-                                                }
-                                            }
-                                            break;
-                                        default:
-                                            @if (_user.Areas is not null && _user.Areas?.ToList().Count > 0)
-                                            {
-                                                <MudItem class="d-flex flex-column justify-center ma-1">
-                                                    <MudItem class="d-flex d-flex-column justify-center">
-                                                        @foreach (var itemArea in _user.Areas)
-                                                        {
-                                                            <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
-                                                                <MudCardHeader>
-                                                                    <CardHeaderContent>
-                                                                        <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
-                                                                    </CardHeaderContent>
-                                                                    <CardHeaderActions>
-                                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromUserList(itemArea)" />
-                                                                    </CardHeaderActions>
-                                                                </MudCardHeader>
-                                                                <MudCardContent>
-                                                                    <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
-                                                                    <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
-                                                                </MudCardContent>
-                                                                <MudCardActions></MudCardActions>
-                                                            </MudCard>
-                                                        }
-                                                    </MudItem>
-                                                </MudItem>
-                                            }
-
-                                            break;
-                                    }
-                                    @*Selector Ares*@
-                                    @if (_areasManager?.Count > 0 && auxPlant != 0)
-                                    {
-                                        <MudItem class="d-flex d-flex-column justify-center ma-1">
-                                            <MudItem Class="d-flex d-flex-row">
-                                                <MudSelect T="Area" Label="Areas" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="Select Area" @bind-Value="@selectedAreaOfList" For="@(() => selectedAreaOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                    <MudSelectItem Disabled="true" Value="selectedAreaOfList"> Select Area </MudSelectItem>
-                                                    @foreach (var areaItem in _areasManager)
-                                                    {
-                                                        <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
-                                                    }
-                                                </MudSelect>
-                                                <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Area </MudButton>
-                                            </MudItem>
+                                        <MudItem Class="mt-5">
+                                            <MudText Typo="Typo.h6">Managed Areas</MudText>
                                         </MudItem>
+                                        @switch (_user.Areas?.Count)
+                                        {
+                                            case null:
+                                                @if (auxPlant == 0)
+                                                {
+                                                    <MudItem>
+                                                        <MudAlert Severity="Severity.Info">
+                                                            Select a plant first
+                                                        </MudAlert>
+                                                    </MudItem>
+                                                }
+                                                else
+                                                {
+                                                    @if (_areasManager?.Count > 0)
+                                                    {
+                                                        <MudItem class="d-flex flex-column justify-center">
+                                                            <MudAlert Severity="Severity.Info">
+                                                                First select the area / areas to manage
+                                                            </MudAlert>
+                                                        </MudItem>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudItem class="d-flex flex-column justify-center">
+                                                            <MudAlert Severity="Severity.Info">
+                                                                This plant does not have areas to manage
+                                                            </MudAlert>
+                                                        </MudItem>
+                                                    }
+
+
+                                                }
+                                                break;
+                                            case 0:
+                                                @if (auxPlant == 0)
+                                                {
+                                                    <MudItem class="d-flex flex-column justify-center justify-align-center">
+                                                        <MudAlert Severity="Severity.Info">
+                                                            First select a plant
+                                                        </MudAlert>
+                                                    </MudItem>
+                                                }
+                                                else
+                                                {
+                                                    @if (_areasManager?.Count > 0)
+                                                    {
+                                                        <MudItem class="d-flex flex-column justify-center">
+                                                            <MudAlert Severity="Severity.Info">
+                                                                First add areas to manage
+                                                            </MudAlert>
+                                                        </MudItem>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudItem class="d-flex flex-column justify-center">
+                                                            <MudAlert Severity="Severity.Info">
+                                                                This plant does not have areas to manage
+                                                            </MudAlert>
+                                                        </MudItem>
+                                                    }
+                                                }
+                                                break;
+                                            default:
+                                                @if (_user.Areas is not null && _user.Areas?.ToList().Count > 0)
+                                                {
+                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                        <MudItem class="d-flex d-flex-column justify-center">
+                                                            @foreach (var itemArea in _user.Areas)
+                                                            {
+                                                                <MudCard Elevation="1" Class="mr-5" Style="width: 300px;">
+                                                                    <MudCardHeader>
+                                                                        <CardHeaderContent>
+                                                                            <MudText Typo="Typo.subtitle1"><b>Area Id:</b> @itemArea.AreaId</MudText>
+                                                                        </CardHeaderContent>
+                                                                        <CardHeaderActions>
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromUserList(itemArea)" />
+                                                                        </CardHeaderActions>
+                                                                    </MudCardHeader>
+                                                                    <MudCardContent>
+                                                                        <div class="font-weight-bold"><b>Code:</b> @itemArea.Code</div>
+                                                                        <div class="font-weight-light"><b>Description:</b> @itemArea.Description</div>
+                                                                    </MudCardContent>
+                                                                    <MudCardActions></MudCardActions>
+                                                                </MudCard>
+                                                            }
+                                                        </MudItem>
+                                                    </MudItem>
+                                                }
+
+                                                break;
+                                        }
+                                        @*Selector Ares*@
+                                        @if (_areasManager?.Count > 0 && auxPlant != 0)
+                                        {
+                                            <MudItem class="d-flex d-flex-column justify-center ma-1">
+                                                <MudItem Class="d-flex d-flex-row">
+                                                    <MudSelect T="Area" Label="Areas" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="Select Area" @bind-Value="@selectedAreaOfList" For="@(() => selectedAreaOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                        <MudSelectItem Disabled="true" Value="selectedAreaOfList"> Select Area </MudSelectItem>
+                                                        @foreach (var areaItem in _areasManager)
+                                                        {
+                                                            <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Area </MudButton>
+                                                </MudItem>
+                                            </MudItem>
+                                        }
                                     }
                                 }
+                                
 
 
                                 @if (_user.UserType != 0)
@@ -973,8 +977,12 @@ else
 
         _allUsers = await UserServices.GetUsersWhitCollections();
 
+        if(_user.UserType != 1){
+
+            _areas = await AreaServices.GetAreas((int)_user.PlantId);
+            auxPlant = (int)_user.PlantId;
+        }
         _plants = await PlantServices.GetPlants();
-        _areas = await AreaServices.GetAreas((int)_user.PlantId);
         _groups = await GroupServices.GetGroups();
 
         IsAdmin = (_user.UserType == 1);
@@ -982,7 +990,7 @@ else
         IsSupervisor = (_user.UserType == 3);
         IsOperator = (_user.UserType == 4);
 
-        auxPlant = (int)_user.PlantId;
+
         if (_user.Superior != null)
         {
             await SetSuperiorToUser();
@@ -1013,6 +1021,16 @@ else
 
         switch (_user.UserType)
         {
+            case 1:
+                foreach (User user in SeniorsSupervisors.ToList())
+                {
+                    if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
+                    {
+                        SeniorsSupervisors.Remove(user);
+                    }                   
+                }
+
+                break;
             case 2:
                 auxGroup = (int)_user.GroupId;
                 if (auxPlant != 0)
@@ -1026,7 +1044,14 @@ else
                         {
                             _areasManager.Remove(areaM);
                         }
-                        Console.WriteLine("Hola");
+                    }
+
+                    foreach (User user in Supervisors.ToList())
+                    {
+                        if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
+                        {
+                            Supervisors.Remove(user);
+                        }                   
                     }
 
                 }
@@ -1045,6 +1070,14 @@ else
 
                 areaInfo = _user.Area?.Description;
                 grupInfo = _user.Group?.Description;
+
+                foreach (User user in Operators.ToList())
+                {
+                    if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
+                    {
+                        Operators.Remove(user);
+                    }                   
+                }
 
                 break;
             case 4:
