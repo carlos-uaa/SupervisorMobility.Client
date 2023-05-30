@@ -44,6 +44,33 @@ namespace SupervisorMobility.Client.Services.PATService
             return null;
         }
 
+        public async Task<List<PAT>> GetAllPATs()
+        {
+
+            try
+            {
+                var response = await _http.GetAsync($"PAT");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var PatList = JsonSerializer.Deserialize<List<PAT>>(content, _options);
+
+                    response.Dispose();
+
+                    return PatList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de PATS SSV: {ex.Message}");
+            }
+
+            return null;
+
+        }
 
         public async Task<List<PAT>> GetAllPATSforSSV(int ssvid)
         {

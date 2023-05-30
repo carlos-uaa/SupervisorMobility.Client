@@ -13,6 +13,10 @@
     </ItemTemplate>
 </MudBreadcrumbs>
 
+
+
+
+
 @code {
     [Parameter]
     public int patID { get; set; }
@@ -22,7 +26,7 @@
     private List<Operation> _operations { get; set; } = new();
     private List<User> _allUsers { get; set; } = new();
     private List<User> _UserOfArea { get; set; } = new();
-
+    private Dictionary<int, Dictionary<int, ILURegister>> ILU_Matrix = new();
 
     protected async override Task OnInitializedAsync()
     {
@@ -35,7 +39,24 @@
             if(userInList.AreaId == _pat.AreaId)
                 _UserOfArea?.Add(userInList);
         }
+        //Operacion //Operador
 
+        foreach(var op in _operations){
+
+            foreach(var usr in _UserOfArea)
+            {
+                var reg = usr.ILURegisers.Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId)
+                    .OrderByDescending(r => r.AcquisitionDate)
+                    .First();
+
+                if(reg != null)
+                {
+                    //ILU_Matrix.Add(new Dictionary(op.OperationId, new Dictionary(usr.UserId, reg)));
+                }
+
+                
+            }
+        }
 
 
     }
@@ -43,7 +64,8 @@
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("PAT", href: "", disabled: true),
+            new BreadcrumbItem("PAT", href: "/PAT"),
+            new BreadcrumbItem("PAT Details", href: "", disabled: true),
         };
 
 
