@@ -1,0 +1,51 @@
+﻿@page "/PAT/{patID:int}"
+@inject IUserService UsersServices
+@inject IAreaService AreasServices
+@inject IOperationService OperationsServices
+@inject IPATService PATsServices
+
+@*Title*@
+<PageTitle>Supervisor Mobility | PAT Details</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@code {
+    [Parameter]
+    public int patID { get; set; }
+
+
+    private Data.Entities.PAT? _pat { get; set; } = new();
+    private List<Operation> _operations { get; set; } = new();
+    private List<User> _allUsers { get; set; } = new();
+    private List<User> _UserOfArea { get; set; } = new();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _pat = await PATsServices.getPat(patID);
+        _operations = await OperationsServices.GetOperations(_pat.Area.PlantId, _pat.AreaId, _pat.DistributionId);
+        _allUsers = await UsersServices.GetUsersWhitCollections();
+
+        foreach(User userInList in _allUsers)
+        {
+            if(userInList.AreaId == _pat.AreaId)
+                _UserOfArea?.Add(userInList);
+        }
+
+
+
+    }
+
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("PAT", href: "", disabled: true),
+        };
+
+
+
+}

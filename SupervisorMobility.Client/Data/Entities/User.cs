@@ -18,7 +18,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? SuperiorId { get; set; }
         public User? Superior { get; set; }
 
-        public ICollection<User>? Subordinates { get; set; } 
+        public ICollection<User>? Subordinates { get; set; }
+        public ICollection<ILURegister>? ILURegisers { get; set; }
 
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdated { get; set; }
