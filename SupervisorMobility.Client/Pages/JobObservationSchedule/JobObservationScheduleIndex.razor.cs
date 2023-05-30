@@ -89,12 +89,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 {
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
-                    plantId = (int)user.PlantId;
-                
-                    areaId = (int)user.AreaId;
-                    groupId= (int)user.GroupId;
 
-                    _areas = await AreaServices.GetAreas(plantId);
+                    if(user.UserType != 1)
+                    {
+                        plantId = (int)user.PlantId;
+                        areaId = (int)user.AreaId;
+                        groupId= (int)user.GroupId;
+                        _areas = await AreaServices.GetAreas(plantId);
+                    }
+                    else
+                    {
+                        plantId = 0;
+                        areaId = 0;
+                        groupId = 0;
+                    }
+
                     supervisor = user.Name;
                     StateHasChanged();
                 }

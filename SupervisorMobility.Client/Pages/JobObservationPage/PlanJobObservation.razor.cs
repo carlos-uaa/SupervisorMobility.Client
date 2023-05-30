@@ -104,28 +104,40 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             if (user != null)
             {
                 _plants = await PlantServices.GetPlants();
-                _jobObservation.PlantId = (int)user.PlantId;
 
-                _jobObservation.AreaId = (int)user.AreaId;
-
-                _areas = await AreaServices.GetAreas((int)user.PlantId);
-                _jobObservation.SupervisorId = user.UserId;
-                _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
-
-                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-                StateHasChanged();
-            }
-
-
-
-            //operator User
-            users = await UsersService.GetUsers();
-            foreach (var operatorUser in users)
-            {
-                if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                if(user.UserType != 1)
                 {
-                    operatorUsers.Add(operatorUser);
+                    _jobObservation.PlantId = (int)user.PlantId;
+
+                    _jobObservation.AreaId = (int)user.AreaId;
+
+                    _areas = await AreaServices.GetAreas((int)user.PlantId);
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                    _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+
+                    //operator User
+                    users = await UsersService.GetUsers();
+                    foreach (var operatorUser in users)
+                    {
+                        if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                        {
+                            operatorUsers.Add(operatorUser);
+                        }
+                    }
+
                 }
+                else
+                {
+                    _jobObservation.PlantId = 0;
+                    _jobObservation.AreaId = 0;
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                }
+
+                StateHasChanged();
             }
 
 
@@ -183,6 +195,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowDistributions()
         {
+            operatorUsers.Clear();
+            //operator User
+            users = await UsersService.GetUsers();
+            foreach (var operatorUser in users)
+            {
+                if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                {
+                    operatorUsers.Add(operatorUser);
+                }
+            }
+
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
