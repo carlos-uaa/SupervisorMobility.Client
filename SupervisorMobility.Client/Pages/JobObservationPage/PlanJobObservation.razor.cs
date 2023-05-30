@@ -105,8 +105,26 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 _plants = await PlantServices.GetPlants();
 
-                if(user.UserType != 1)
+                if(user.UserType == 1)
                 {
+                    _jobObservation.PlantId = 0;
+                    _jobObservation.AreaId = 0;
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                }
+                else if(user.UserType == 2)
+                {
+                    _jobObservation.PlantId = (int)user.PlantId;
+                    _jobObservation.AreaId = 0;
+                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+
+                }
+                else
+                {
+
                     _jobObservation.PlantId = (int)user.PlantId;
 
                     _jobObservation.AreaId = (int)user.AreaId;
@@ -129,13 +147,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
 
                 }
-                else
-                {
-                    _jobObservation.PlantId = 0;
-                    _jobObservation.AreaId = 0;
-                    _jobObservation.SupervisorId = user.UserId;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
-                }
 
                 StateHasChanged();
             }
@@ -154,7 +165,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
             _jobObservation.Option = 1;
 
-            Console.WriteLine(_jobObservation.StartDate);
 
             _plants = await PlantServices.GetPlants();
             //_products = await ProductService.GetProducts();
@@ -196,6 +206,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private async void ShowDistributions()
         {
             operatorUsers.Clear();
+            _jobObservation.OperatorId = 0;
             //operator User
             users = await UsersService.GetUsers();
             foreach (var operatorUser in users)
@@ -209,6 +220,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+            StateHasChanged();
         }
         private async void ShowOperations()
         {
@@ -218,6 +230,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
             distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            StateHasChanged();
         }
 
         private async void ShowPastJobObservations()

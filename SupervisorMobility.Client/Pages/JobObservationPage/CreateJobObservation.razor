@@ -78,7 +78,8 @@
                         </tr>
                         <tr>
                             <td>
-                                @if(user.UserType == 1){
+                                @if (_jobObservation.PlantId != 0 && user.UserType == 1)
+                                {
                                     @*Mud select for Areas for Admin *@
                                     <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
                                         <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
@@ -88,15 +89,36 @@
                                         }
                                     </MudSelect>
                                 }
-                                else{
-                                    @*Mud select for Areas *@
+                                else if (_jobObservation.PlantId != 0 && user.UserType == 2)
+                                {
+                                    @*Mud select for Areas for SSV *@
                                     <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                        @foreach (var type in user.Areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else if (_jobObservation.PlantId != 0)
+                                {
+                                    @*Mud select for Areas for SV *@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                                         @foreach (var type in _areas)
                                         {
-                                            if(type.AreaId == user.AreaId){
+                                            if (type.AreaId == user.AreaId)
+                                            {
                                                 <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                             }
                                         }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    @*Mud select for Areas *@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Disabled Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                        <MudSelectItem Disabled="true" Value="0">First Select a Plant</MudSelectItem>
                                     </MudSelect>
                                 }
 
@@ -110,27 +132,52 @@
                         <tr>
                             <td class="d-flex">
                                 @*Mud select for Distribution *@
-                                <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                    <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
-                                    @foreach (var type in _distributions)
-                                    {
-                                        <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
-                                </MudSelect>
-                                @*Mud select for Operation *@
-                                <MudSelect T="int" Label="Operation" Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="ShowPastJobObservations">
-                                    <MudSelectItem Disabled="true" Value="0">Select an Operation</MudSelectItem>
-                                    @foreach (var type in _operations)
-                                    {
-                                        <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                @if (_jobObservation.AreaId != 0)
+                                {
+                                    <MudSelect T="int" Label="Distribution" Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                        <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                                        @foreach (var type in _distributions)
+                                        {
+                                            <MudSelectItem Value="type.DistributionId">
+                                                @(
+                                            $"{type.Code} - {type.Description}"
+                                            )
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudSelect T="int" Label="Distribution" Disabled Variant="Variant.Text" Placeholder="Select a Distribution" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                        <MudSelectItem Disabled="true" Value="0">First Select an Area</MudSelectItem>
+                                    </MudSelect>
+                                }
+
+                                @if (_jobObservation.DistributionId != 0)
+                                {
+                                    @*Mud select for Operation *@
+                                    <MudSelect T="int" Label="Operation" Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="ShowPastJobObservations">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Operation</MudSelectItem>
+                                        @foreach (var type in _operations)
+                                        {
+                                            <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    @*Mud select for Operation *@
+                                    <MudSelect T="int" Label="Operation" Disabled Variant="Variant.Text" Placeholder="Select an Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="ShowPastJobObservations">
+                                        <MudSelectItem Disabled="true" Value="0">First Select a Distribution</MudSelectItem>
+                                    </MudSelect>
+                                }
                             </td>
                             <td>
                  @*               <div class="d-flex">
                                     <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observador" Class="mr-4"/>*@
-
-                                     @*Mud select for Operator *@
+                                @if (_jobObservation.AreaId != 0)
+                                {
+                                    @*Mud select for Operator *@
                                     <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
                                         <MudSelectItem Disabled="true" Value="0">Select an Operator</MudSelectItem>
                                         @foreach (var type in operatorUsers)
@@ -138,6 +185,15 @@
                                             <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
                                         }
                                     </MudSelect>
+
+                                }
+                                else
+                                {
+                                    @*Mud select for Operator *@
+                                    <MudSelect T="int" Label="Operator" Variant="Variant.Text" Placeholder="Select an Operator" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                        <MudSelectItem Disabled="true" Value="0">First Select an Area</MudSelectItem>
+                                    </MudSelect>
+                                }
    @*                                 <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" />
                                     <MudText Color="Color.Error" Style="font-size:12px"><ValidationMessage For="@(() => _jobObservation.Operator)" /></MudText>*@
                                 @*</div>*@

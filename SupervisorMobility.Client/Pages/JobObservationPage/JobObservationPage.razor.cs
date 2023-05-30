@@ -105,11 +105,82 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     {
                         ClearFilters();
                         _plants = await PlantServices.GetPlants();
+
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                        foreach (var jobobs in _jobObservationsAux)
+                        {
+                            _jobObservations.Add(jobobs);
+                            switch (jobobs.Status)
+                            {
+                                case 1: _plannedJobObservation.Add(jobobs); break;
+                                case 2: _inProgressJobObservation.Add(jobobs); break;
+                                case 3: _lateJobObservation.Add(jobobs); break;
+                                case 4: _underReviewJobObservation.Add(jobobs); break;
+                                case 5: _rejectedJobObservation.Add(jobobs); break;
+                                case 6: _finishedJobObservation.Add(jobobs); break;
+                            }
+                        }
+
+                        _filterJobObservation = _jobObservations;
+                        _filterPlannedJobObservation = _plannedJobObservation;
+                        _filterInProgressJobObservation = _inProgressJobObservation;
+                        _filterLateJobObservation = _lateJobObservation;
+                        _filterUnderReviewJobObservation = _underReviewJobObservation;
+                        _filterRejectedJobObservation = _rejectedJobObservation;
+                        _filterFinishedJobObservation = _finishedJobObservation;
+
+
+                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+                        totalLate = "Late (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
                     }
+                    else if(user.UserType == 2)
+                    {
+                        ClearFilters();
+                        plantId = (int)user.PlantId;
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                        foreach (var jobobs in _jobObservationsAux)
+                        {
+                            if (plantId == jobobs.PlantId)
+                            {
+                                _jobObservations.Add(jobobs);
+                                switch (jobobs.Status)
+                                {
+                                    case 1: _plannedJobObservation.Add(jobobs); break;
+                                    case 2: _inProgressJobObservation.Add(jobobs); break;
+                                    case 3: _lateJobObservation.Add(jobobs); break;
+                                    case 4: _underReviewJobObservation.Add(jobobs); break;
+                                    case 5: _rejectedJobObservation.Add(jobobs); break;
+                                    case 6: _finishedJobObservation.Add(jobobs); break;
+                                }
+
+                            }
+                        }
+
+                        _filterJobObservation = _jobObservations;
+                        _filterPlannedJobObservation = _plannedJobObservation;
+                        _filterInProgressJobObservation = _inProgressJobObservation;
+                        _filterLateJobObservation = _lateJobObservation;
+                        _filterUnderReviewJobObservation = _underReviewJobObservation;
+                        _filterRejectedJobObservation = _rejectedJobObservation;
+                        _filterFinishedJobObservation = _finishedJobObservation;
+
+
+                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
+                        totalLate = "Late (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+
+                    }
+
                     else
                     {
-
-                        Console.WriteLine("bbbbb");
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
                         _jobObservationsAux = await JobObservationService.GetAllJobObservations();
