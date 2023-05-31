@@ -22,7 +22,7 @@ namespace SupervisorMobility.Client.Services.PATService
         {
             try
             {
-                var response = await _http.GetAsync($"PAT/{patid}");
+                var response = await _http.GetAsync($"PAT/{patid}?includeCollections=true");
 
                 var content = await response.Content.ReadAsStringAsync();
 

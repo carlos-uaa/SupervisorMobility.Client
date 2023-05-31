@@ -15,6 +15,7 @@ namespace SupervisorMobility.Client.Services.UserService
         //get  Users
         Task<List<User>> GetUsers();
         Task<List<User>> GetUsersWhitCollections();
+        Task<List<User>> GetSubordinates(int SupervisorId);
         Task<User> GetUser(int UserId);
         Task<User> GetUserWhitObjectId(string ObjectId);
         Task<User> GetUserByObjectIdWithCollections(string ObjectId);

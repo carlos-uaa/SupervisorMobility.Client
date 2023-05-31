@@ -219,6 +219,33 @@ namespace SupervisorMobility.Client.Services.UserService
             
             return null;
            
+        } 
+        public async Task<List<User>> GetSubordinates(int SupervisorId)
+        {
+            
+            try
+            {
+                var response = await _http.GetAsync($"Users/{SupervisorId}/Subordinates?collections=true");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+            
+            return null;
+           
         }
         //delete User
         public async Task DeleteUser(int UserId)
