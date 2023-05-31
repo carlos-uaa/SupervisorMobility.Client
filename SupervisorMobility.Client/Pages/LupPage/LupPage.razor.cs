@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Services.LupService;
 
 namespace SupervisorMobility.Client.Pages.LupPage
@@ -16,6 +17,12 @@ namespace SupervisorMobility.Client.Pages.LupPage
         public List<Lup> _lupC { get; set; } = new();
         public List<Lup> _lupOther { get; set; } = new();
 
+        //Admin
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
+
+        public int plantId;
+        public int areaId;
 
         private bool visible = false;
         private int lupId;
@@ -50,30 +57,163 @@ namespace SupervisorMobility.Client.Pages.LupPage
                 await GetUserAsync();
 
                 jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
-                foreach (var jobObs in jobObservationList)
-                {
-                    if (jobObs.Lup.Count > 0)
-                    {
-                        foreach (var lup in jobObs.Lup)
-                        {
-                            if (user != null && user.AreaId == jobObs.AreaId)
-                            {
-                                _lup.Add(lup);
-                                switch (lup.Pillar)
-                                {
-                                    case 1: _lupS.Add(lup); break;
-                                    case 2: _lupQ.Add(lup); break;
-                                    case 3: _lupD.Add(lup); break;
-                                    case 4: _lupC.Add(lup); break;
-                                    case 5: _lupOther.Add(lup); break;
-                                }
 
+                if(user != null)
+                {
+                    if(user.UserType == 1)
+                    {
+                        _plants = await PlantServices.GetPlants();
+                        foreach (var jobObs in jobObservationList)
+                        {
+                            if (jobObs.Lup.Count > 0)
+                            {
+                                foreach (var lup in jobObs.Lup)
+                                {
+                                    _lup.Add(lup);
+                                    switch (lup.Pillar)
+                                    {
+                                        case 1: _lupS.Add(lup); break;
+                                        case 2: _lupQ.Add(lup); break;
+                                        case 3: _lupD.Add(lup); break;
+                                        case 4: _lupC.Add(lup); break;
+                                        case 5: _lupOther.Add(lup); break;
+                                    }
+                                }
                             }
+                        }
+                    }
+                    else if(user.UserType == 2)
+                    {
+                        plantId = (int)user.PlantId;
+                        foreach (var jobObs in jobObservationList)
+                        {
+                            if (jobObs.Lup.Count > 0)
+                            {
+                                foreach (var lup in jobObs.Lup)
+                                {
+                                    if (plantId == jobObs.PlantId)
+                                    {
+                                        _lup.Add(lup);
+                                        switch (lup.Pillar)
+                                        {
+                                            case 1: _lupS.Add(lup); break;
+                                            case 2: _lupQ.Add(lup); break;
+                                            case 3: _lupD.Add(lup); break;
+                                            case 4: _lupC.Add(lup); break;
+                                            case 5: _lupOther.Add(lup); break;
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        plantId = (int)user.PlantId;
+                        areaId = (int)user.AreaId;
+                        foreach (var jobObs in jobObservationList)
+                        {
+                            if (jobObs.Lup.Count > 0)
+                            {
+                                foreach (var lup in jobObs.Lup)
+                                {
+                                    if (plantId == jobObs.PlantId && areaId == jobObs.AreaId)
+                                    {
+                                        _lup.Add(lup);
+                                        switch (lup.Pillar)
+                                        {
+                                            case 1: _lupS.Add(lup); break;
+                                            case 2: _lupQ.Add(lup); break;
+                                            case 3: _lupD.Add(lup); break;
+                                            case 4: _lupC.Add(lup); break;
+                                            case 5: _lupOther.Add(lup); break;
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+        }
+
+        private async void ShowAreas()
+        {
+            _lup.Clear();
+            _lupS.Clear();
+            _lupQ.Clear();
+            _lupD.Clear();
+            _lupC.Clear();
+            _lupOther.Clear();
+
+            foreach (var jobObs in jobObservationList)
+            {
+                if (jobObs.Lup.Count > 0)
+                {
+                    foreach (var lup in jobObs.Lup)
+                    {
+                        if (plantId == jobObs.PlantId)
+                        {
+                            _lup.Add(lup);
+                            switch (lup.Pillar)
+                            {
+                                case 1: _lupS.Add(lup); break;
+                                case 2: _lupQ.Add(lup); break;
+                                case 3: _lupD.Add(lup); break;
+                                case 4: _lupC.Add(lup); break;
+                                case 5: _lupOther.Add(lup); break;
+                            }
+
                         }
                     }
                 }
             }
 
+            areaId = 0;
+            _areas = await AreaServices.GetAreas(plantId);
+
+            StateHasChanged();
+        }
+
+        private void ShowLups()
+        {
+            _lup.Clear();
+            _lupS.Clear();
+            _lupQ.Clear();
+            _lupD.Clear();
+            _lupC.Clear();
+            _lupOther.Clear();
+
+            foreach (var jobObs in jobObservationList)
+            {
+                if (jobObs.Lup.Count > 0)
+                {
+                    foreach (var lup in jobObs.Lup)
+                    {
+                        if (areaId == jobObs.AreaId)
+                        {
+                            _lup.Add(lup);
+                            switch (lup.Pillar)
+                            {
+                                case 1: _lupS.Add(lup); break;
+                                case 2: _lupQ.Add(lup); break;
+                                case 3: _lupD.Add(lup); break;
+                                case 4: _lupC.Add(lup); break;
+                                case 5: _lupOther.Add(lup); break;
+                            }
+
+                        }
+                    }
+                }
+            }
+            StateHasChanged();
 
         }
 

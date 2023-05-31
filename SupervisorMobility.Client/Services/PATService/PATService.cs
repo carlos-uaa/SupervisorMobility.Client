@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Services.PATService
 
             try
             {
-                var response = await _http.GetAsync($"PAT");
+                var response = await _http.GetAsync($"PAT?includeCollections=true");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -77,7 +77,7 @@ namespace SupervisorMobility.Client.Services.PATService
 
             try
             {
-                var response = await _http.GetAsync($"PAT/SSV/{ssvid}");
+                var response = await _http.GetAsync($"PAT/SSV/{ssvid}?includeCollections=true");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -105,7 +105,7 @@ namespace SupervisorMobility.Client.Services.PATService
 
             try
             {
-                var response = await _http.GetAsync($"PAT/SV/{svid}");
+                var response = await _http.GetAsync($"PAT/SV/{svid}?includeCollections=true");
 
                 var content = await response.Content.ReadAsStringAsync();
 
