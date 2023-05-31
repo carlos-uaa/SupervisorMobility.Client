@@ -32,6 +32,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? SSVresponsibleID { get; set; }
         public User? SSVresponsible { get; set; }
 
+        public int PlantId { get; set; }
+        public Plant? Plant { get; set; }   
 
         public int AreaId { get; set; }
         public Area? Area { get; set; }
