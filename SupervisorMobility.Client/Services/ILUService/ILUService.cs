@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data;
+using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
 namespace SupervisorMobility.Client.Services.ILUService
@@ -32,7 +33,7 @@ namespace SupervisorMobility.Client.Services.ILUService
 
             try
             {
-                var response = await _http.GetAsync("Users");
+                var response = await _http.GetAsync("ILU/Levels");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -54,7 +55,34 @@ namespace SupervisorMobility.Client.Services.ILUService
             return null;
 
         }
+        
+        public async Task<ILURegister> AddRegisterForUser(ILURegister iluToRegister, int UserId)
+        {
 
+            try
+            {
+                var response = await _http.PostAsJsonAsync($"ILU/Register?userID={UserId}", iluToRegister);
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var iLULevelsList = JsonSerializer.Deserialize<ILURegister>(content, _options);
+
+                    response.Dispose();
+
+                    return iLULevelsList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+
+        }
     }
 
 }

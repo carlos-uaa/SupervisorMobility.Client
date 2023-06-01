@@ -4,6 +4,7 @@
 @inject IOperationService OperationsServices
 @inject IPATService PATsServices
 @inject IJSRuntime JS
+@inject IILUService ILUServices
 
 @*Title*@
 <PageTitle>Supervisor Mobility | PAT Details</PageTitle>
@@ -50,7 +51,10 @@
     .dynamic-left {
         left: 0;
     }
- 
+
+    .mud-typography.mud-typography-body1 {
+        overflow: hidden;
+    }
 </style>
 
 
@@ -111,14 +115,14 @@
                             <td class="fixed-column dynamic-left"></td>
                             @foreach (var usr in _UserOfArea)
                             {
-                                <td style="text-align: end;" colspan="2">
+                                <td style="text-align: end;" colspan="2" >
 
                                     <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
                                         <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar">
                                             Plan job observation
                                         </MudMenuItem>
-                                        <MudMenuItem Icon="@Icons.Material.Filled.Add">
-                                            New Level ILU 
+                                        <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
+                                            <MudText  Class="animationtext">New ILU for @usr.Name in Operation @op.Description </MudText>
                                         </MudMenuItem>
                                     </MudMenu>
 
@@ -165,7 +169,31 @@ else
     <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
 }
 
+<MudDialog DisableSidePadding="false" @bind-IsVisible="AddILUVisibleDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Add New ILU Level
+                </MudText>
+            </MudItem>
 
+            <MudItem Class="d-flex flex-column justify-center ma-1">
+                <MudSelect T="int" Label="ILU" Variant="Variant.Text" Placeholder="Select a Level" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxILU_Level" For="@(() => auxILU_Level)" SelectedValuesChanged="updateILULevel">
+                    <MudSelectItem Disabled="true" Value="0">Select a Level</MudSelectItem>
+                    @foreach (var type in _LevelsILU)
+                    {
+                        <MudSelectItem Value="type.ILULevelId">@($"{type.ILULevelCode}-{type.ILULevelDescription}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="AddILUClose">Add</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 
@@ -176,11 +204,16 @@ else
     private PAT? _pat { get; set; } = new();
     private List<Operation> _operations { get; set; } = new();
     private List<User> _UserOfArea { get; set; } = new();
+    private List<ILULevel> _LevelsILU { get; set; } = new();
     //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
     private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
 
     bool ShowTable = false;
 
+    //dialog
+    bool AddILUVisibleDialog = false;
+    private ILURegister newIlu { get; set; } = new();
+    private int auxILU_Level = 0;
 
 
     protected async override Task OnInitializedAsync()
@@ -191,7 +224,7 @@ else
         _operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
         //_UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
         _UserOfArea = await UsersServices.GetUsersWhitCollections();
-
+        _LevelsILU = await ILUServices.GetLevelsILU();
 
         //Operacion //Operador
 
@@ -232,5 +265,33 @@ else
         };
 
 
+    private void updateILULevel()
+    {
+        newIlu.ILULevelId = auxILU_Level;
+    }
+
+    private async void OpenDialogAddILU(int ID_Operation, int ID_User)
+    {
+        AddILUVisibleDialog = true;
+        newIlu.OperationId = ID_Operation;
+        newIlu.OperatorId = ID_User;
+
+        StateHasChanged();
+    }
+
+    private async void AddILUClose()
+    {
+
+        var result = await ILUServices.AddRegisterForUser(newIlu, (int)newIlu.OperatorId);
+        if(result != null)
+        {
+            //aqui un mensaje bonito 
+        }
+
+        AddILUVisibleDialog = false;
+        StateHasChanged();
+    }
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
 }
