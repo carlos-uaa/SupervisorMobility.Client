@@ -21,20 +21,29 @@
     }
 
     .table-container {
+        box-shadow: var(--mud-elevation-1);
         overflow-x: auto;
+        border-radius: var(--mud-default-borderradius);
+        ;
     }
+
+        .table-container:hover {
+            box-shadow: var(--mud-elevation-2);
+        }
 
     table {
         border-collapse: collapse;
         width: auto;
         min-width: 100%;
         table-layout: fixed;
+        border-radius: var(--mud-default-borderradius);
+        ;
     }
 
     th,
     td {
         padding: 8px;
-        border: 1px solid black;
+        border: 1px solid #DEDEDF;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -50,13 +59,53 @@
     .dynamic-left {
         left: 0;
     }
- 
 </style>
 
 
 @if (ShowTable)
 {
-    <div class="table-container">
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
+    <thead>
+        <tr>
+            <th>
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudText Class="ml-2">Area</MudText>
+                </MudItem>
+                </th>
+            <th style="width:20vw">
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudText Class="ml-2">Distribution</MudText>
+                </MudItem>
+            </th>
+            <th>Application Year</th>
+            <th>Supervisor</th>
+            <th>SSV</th>
+            <th>Date</th>
+            <th colspan="2" style="width:7vw">Sheet</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @_pat?.Area?.Code - @_pat?.Area?.Description
+
+            </td>
+            <td>
+                @_pat?.Distribution?.Code - @_pat?.Distribution?.Description
+            </td>
+            <td>@_pat?.AplicationYear</td>
+            <td>@_pat?.Supervisor?.Name</td>
+            <td>@_pat?.SSVresponsible?.Name</td>
+            <td>@_pat?.AplicationDate?.ToShortDateString()</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+    <div class="table-container mb-10">
         <div class="scrollable-columns">
 
             <table>
@@ -118,36 +167,36 @@
                                             Plan job observation
                                         </MudMenuItem>
                                         <MudMenuItem Icon="@Icons.Material.Filled.Add">
-                                            New Level ILU 
+                                            New Level ILU
                                         </MudMenuItem>
                                     </MudMenu>
 
-                                @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
-                                {
-                                    <table>
-                                        <tbody>
-                                            @if (context != null)
-                                            {
-                                                @*@foreach (var register in context)
+                                    @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
+                                    {
+                                        <table>
+                                            <tbody>
+                                                @if (context != null)
                                                 {
-                                                <tr>
-                                                <td>@register.AcquisitionDate</td>
-                                                <td>Level</td>
-                                                <td>@register.OtherProperty</td>
-                                                <!-- Agrega más celdas según tus propiedades de ILURegister -->
-                                                </tr>
-                                                }*@
-                                            }
-                                            else
-                                            {
-                                                <tr>
-                                                    <td>OPid: @op.OperationId</td>
-                                                    <td>usrid: @usr.UserId</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                }
+                                                    @*@foreach (var register in context)
+                                {
+                                <tr>
+                                <td>@register.AcquisitionDate</td>
+                                <td>Level</td>
+                                <td>@register.OtherProperty</td>
+                                <!-- Agrega más celdas según tus propiedades de ILURegister -->
+                                </tr>
+                                }*@
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td>OPid: @op.OperationId</td>
+                                                        <td>usrid: @usr.UserId</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
                                 </td>
 
                             }
@@ -158,7 +207,7 @@
 
         </div>
     </div>
-    
+
 }
 else
 {
