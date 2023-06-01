@@ -18,7 +18,7 @@ namespace SupervisorMobility.Client.Services.PATService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        public async Task<PAT> getPat(int patid)
+        public async Task<PAT?> getPat(int patid)
         {
             try
             {
