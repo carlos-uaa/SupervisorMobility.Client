@@ -1,4 +1,10 @@
 ﻿@page "/PAT/{patID:int}"
+
+@using System.Net.Http.Json
+@using MudBlazor
+@using System.Globalization;
+
+@inject NavigationManager NavigationManager
 @inject IUserService UsersServices
 @inject IAreaService AreasServices
 @inject IOperationService OperationsServices
@@ -163,7 +169,7 @@
                                 <td style="text-align: end;" colspan="2" >
 
                                     <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => PlanJobObservation(op.OperationId, usr.UserId))">
                                             Plan job observation
                                         </MudMenuItem>
                                         <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
@@ -338,5 +344,34 @@ else
     }
 
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+    void PlanJobObservation(int operationId, int operatorId)
+    {
+        if (CultureInfo.CurrentCulture.Name == "en-US")
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+            var formatedDate = date;
+
+            var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+            var dateString = EnglishDate.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+        else
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+            var dateString = date.ToShortDateString().Replace("/", "-");
+
+            var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}";
+
+            // Concatenar la fecha y el query string en la URL de navegación
+            var url = $"jobobservation/planjobobservation/{dateString}?{queryString}";
+
+            NavigationManager.NavigateTo(url);
+            
+            //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+    }
 
 }
