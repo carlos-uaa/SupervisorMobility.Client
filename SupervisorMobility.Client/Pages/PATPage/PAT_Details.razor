@@ -1,4 +1,10 @@
 ﻿@page "/PAT/{patID:int}"
+
+@using System.Net.Http.Json
+@using MudBlazor
+@using System.Globalization;
+
+@inject NavigationManager NavigationManager
 @inject IUserService UsersServices
 @inject IAreaService AreasServices
 @inject IOperationService OperationsServices
@@ -22,20 +28,29 @@
     }
 
     .table-container {
+        box-shadow: var(--mud-elevation-1);
         overflow-x: auto;
+        border-radius: var(--mud-default-borderradius);
+        ;
     }
+
+        .table-container:hover {
+            box-shadow: var(--mud-elevation-2);
+        }
 
     table {
         border-collapse: collapse;
         width: auto;
         min-width: 100%;
         table-layout: fixed;
+        border-radius: var(--mud-default-borderradius);
+        ;
     }
 
     th,
     td {
         padding: 8px;
-        border: 1px solid black;
+        border: 1px solid #DEDEDF;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -51,15 +66,51 @@
     .dynamic-left {
         left: 0;
     }
-
-    .mud-typography.mud-typography-body1 {
-        overflow: hidden;
-    }
 </style>
 
 
 @if (ShowTable)
 {
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
+    <thead>
+        <tr>
+            <th>
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudText Class="ml-2">Area</MudText>
+                </MudItem>
+                </th>
+            <th style="width:20vw">
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudText Class="ml-2">Distribution</MudText>
+                </MudItem>
+            </th>
+            <th>Application Year</th>
+            <th>Supervisor</th>
+            <th>SSV</th>
+            <th>Date</th>
+            <th colspan="2" style="width:7vw">Sheet</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @_pat?.Area?.Code - @_pat?.Area?.Description
+
+            </td>
+            <td>
+                @_pat?.Distribution?.Code - @_pat?.Distribution?.Description
+            </td>
+            <td>@_pat?.AplicationYear</td>
+            <td>@_pat?.Supervisor?.Name</td>
+            <td>@_pat?.SSVresponsible?.Name</td>
+            <td>@_pat?.AplicationDate?.ToShortDateString()</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
     <div class="table-container">
         <div class="scrollable-columns">
 
@@ -118,7 +169,7 @@
                                 <td style="text-align: end;" colspan="2">
 
                                     <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => PlanJobObservation(op.OperationId, usr.UserId))">
                                             Plan job observation
                                         </MudMenuItem>
                                         <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
@@ -328,5 +379,34 @@ else
     }
 
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+    void PlanJobObservation(int operationId, int operatorId)
+    {
+        if (CultureInfo.CurrentCulture.Name == "en-US")
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+            var formatedDate = date;
+
+            var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+            var dateString = EnglishDate.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+        else
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+            var dateString = date.ToShortDateString().Replace("/", "-");
+
+            var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}";
+
+            // Concatenar la fecha y el query string en la URL de navegación
+            var url = $"jobobservation/planjobobservation/{dateString}?{queryString}";
+
+            NavigationManager.NavigateTo(url);
+            
+            //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+    }
 
 }
