@@ -2,7 +2,7 @@
 {
     public interface IPATService
     {
-
+        Task<PAT> CreatePat(PAT pat);
         Task<PAT?> getPat(int patid);
         Task<List<PAT>> GetAllPATs();
         Task<List<PAT>> GetAllPATSforSSV(int SSVid);

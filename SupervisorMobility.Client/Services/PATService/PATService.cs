@@ -1,4 +1,6 @@
 ﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.PATService
 {
@@ -18,6 +20,31 @@ namespace SupervisorMobility.Client.Services.PATService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        public async Task<PAT> CreatePat(PAT pat)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync($"PAT", pat);
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var newPat = JsonSerializer.Deserialize<PAT>(content, _options);
+
+                    response.Dispose();
+
+                    return newPat;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+        }
         public async Task<PAT?> getPat(int patid)
         {
             try
