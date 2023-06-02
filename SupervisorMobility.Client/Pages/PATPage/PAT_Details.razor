@@ -115,43 +115,50 @@
                             <td class="fixed-column dynamic-left"></td>
                             @foreach (var usr in _UserOfArea)
                             {
-                                <td style="text-align: end;" colspan="2" >
+                                <td style="text-align: end;" colspan="2">
 
                                     <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
                                         <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar">
                                             Plan job observation
                                         </MudMenuItem>
                                         <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
-                                            <MudText  Class="animationtext">New ILU for @usr.Name in Operation @op.Description </MudText>
+                                            <MudText Class="animationtext">New ILU for @usr.Name in Operation @op.Description </MudText>
                                         </MudMenuItem>
                                     </MudMenu>
 
-                                @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
-                                {
-                                    <table>
-                                        <tbody>
-                                            @if (context != null)
-                                            {
-                                                @*@foreach (var register in context)
+                                    @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
+                                    {
+                                        <table>
+                                            <tbody>
+                                                @{
+                                                    var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                    char ILULevelNumber = '§';
+                                                    @if (latestContext != null)
+                                                    {
+                                                        ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                    }
+                                                }
+
+                                                @if (context.Count > 0 && latestContext != null)
                                                 {
-                                                <tr>
-                                                <td>@register.AcquisitionDate</td>
-                                                <td>Level</td>
-                                                <td>@register.OtherProperty</td>
-                                                <!-- Agrega más celdas según tus propiedades de ILURegister -->
-                                                </tr>
-                                                }*@
-                                            }
-                                            else
-                                            {
-                                                <tr>
-                                                    <td>OPid: @op.OperationId</td>
-                                                    <td>usrid: @usr.UserId</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                }
+                                                    <tr>
+                                                        <td>@latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+                                                        @if (ILULevelNumber != '§')
+                                                        {
+                                                            <td>@ILULevelNumber</td>
+                                                        }
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td>OPid: @op.OperationId</td>
+                                                        <td>usrid: @usr.UserId</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
                                 </td>
 
                             }
@@ -162,7 +169,7 @@
 
         </div>
     </div>
-    
+
 }
 else
 {
@@ -171,12 +178,15 @@ else
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="AddILUVisibleDialog" Options="dialogOptions">
     <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:column" Class="gap-4">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudText Typo="Typo.h6">
                     Add New ILU Level
                 </MudText>
             </MudItem>
+
+            <MudTextField ReadOnly Label="Operator Name" Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Name"></MudTextField>
+            <MudTextField ReadOnly Label="Operation Name" Value="_operations.Find(u => u.OperationId == _newIlu.OperationId).Description"></MudTextField>
 
             <MudItem Class="d-flex flex-column justify-center ma-1">
                 <MudSelect T="int" Label="ILU" Variant="Variant.Text" Placeholder="Select a Level" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxILU_Level" For="@(() => auxILU_Level)" SelectedValuesChanged="updateILULevel">
@@ -212,7 +222,7 @@ else
 
     //dialog
     bool AddILUVisibleDialog = false;
-    private ILURegister newIlu { get; set; } = new();
+    private ILURegister _newIlu { get; set; } = new();
     private int auxILU_Level = 0;
 
 
@@ -221,10 +231,10 @@ else
         _pat = await PATsServices.getPat(patID);
 
 
+        _LevelsILU = await ILUServices.GetLevelsILU();
         _operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
         //_UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
         _UserOfArea = await UsersServices.GetUsersWhitCollections();
-        _LevelsILU = await ILUServices.GetLevelsILU();
 
         //Operacion //Operador
 
@@ -267,29 +277,54 @@ else
 
     private void updateILULevel()
     {
-        newIlu.ILULevelId = auxILU_Level;
+        _newIlu.ILULevelId = auxILU_Level;
     }
 
     private async void OpenDialogAddILU(int ID_Operation, int ID_User)
     {
         AddILUVisibleDialog = true;
-        newIlu.OperationId = ID_Operation;
-        newIlu.OperatorId = ID_User;
-
+        _newIlu.OperationId = ID_Operation;
+        _newIlu.OperatorId = ID_User;
+        _newIlu.isActive = true;
         StateHasChanged();
     }
 
     private async void AddILUClose()
     {
+        ShowTable = false;
+        AddILUVisibleDialog = false;
 
-        var result = await ILUServices.AddRegisterForUser(newIlu, (int)newIlu.OperatorId);
-        if(result != null)
+
+        var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
+        if (result != null)
         {
-            //aqui un mensaje bonito 
+            _UserOfArea = await UsersServices.GetUsersWhitCollections();
+            ILU_Matrix.Clear();
+            foreach (var op in _operations)
+            {
+                foreach (var usr in _UserOfArea)
+                {
+                    // Obtener los registros correspondientes a la operación y usuario actual
+                    var matchingRegisters = usr.ILURegisers?
+                        .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId)
+                        .OrderByDescending(r => r.AcquisitionDate)
+                        .ToList();
+
+                    ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
+                    // Almacenar los registros en la
+                    //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
+                }
+            }
+
+
+            ShowTable = true;
+            StateHasChanged();
+            await JS.InvokeVoidAsync("blazorUtils.setDynamicLeft");
+
+            Console.WriteLine("Se añadio");
+            //aqui un mensaje bonito
         }
 
-        AddILUVisibleDialog = false;
-        StateHasChanged();
     }
 
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };

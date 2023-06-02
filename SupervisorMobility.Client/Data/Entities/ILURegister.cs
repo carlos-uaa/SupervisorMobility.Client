@@ -19,5 +19,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public int? ILULevelId { get; set; }
         public ILULevel? ILULevel { get; set; }
+
+        public bool isActive { get; set; }
     }
 }
