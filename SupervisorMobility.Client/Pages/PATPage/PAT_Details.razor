@@ -31,7 +31,7 @@
         box-shadow: var(--mud-elevation-1);
         overflow-x: auto;
         border-radius: var(--mud-default-borderradius);
-        ;
+        
     }
 
         .table-container:hover {
@@ -44,7 +44,7 @@
         min-width: 100%;
         table-layout: fixed;
         border-radius: var(--mud-default-borderradius);
-        ;
+        
     }
 
     th,
@@ -66,6 +66,10 @@
     .dynamic-left {
         left: 0;
     }
+
+    .mud-typography.mud-typography-body1{
+        overflow: hidden;
+    }
 </style>
 
 
@@ -76,13 +80,13 @@
         <tr>
             <th>
                 <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
                     <MudText Class="ml-2">Area</MudText>
                 </MudItem>
-                </th>
+            </th>
             <th style="width:20vw">
                 <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.Business" > </MudIcon>
+                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
                     <MudText Class="ml-2">Distribution</MudText>
                 </MudItem>
             </th>
@@ -121,7 +125,14 @@
                         <th colspan="2" rowspan="4" class="fixed-column dynamic-left"> Nombre de operador</th>
                         @foreach (var usr in _UserOfArea)
                         {
-                            <th rowspan="4" colspan="2">@usr.Name</th>
+                            @if (User_Knolowed[usr.UserId])
+                            {
+                                <th rowspan="4" colspan="2">@usr.Name</th>
+                            }
+                            else
+                            {
+                                <th rowspan="4" colspan="2" style="background-color:#fbe8ce;color:#ff9800">@usr.Name</th>
+                            }
                         }
                     </tr>
                     <tr>
@@ -161,9 +172,24 @@
                     @foreach (var op in _operations)
                     {
                         <tr>
-                            <td style="max-width:60px;width:50px" class="fixed-column">@op.OperationId</td>
-                            <td colspan="3" class="fixed-column dynamic-left">@op.Description</td>
-                            <td class="fixed-column dynamic-left"></td>
+                            
+                            @if (Operations_Knolowed[op.OperationId])
+                            {
+                                <td style="max-width:60px;width:50px" class="fixed-column">@op.OperationId</td>
+                                <td colspan="3" class="fixed-column dynamic-left">@op.Description</td>
+                                <td class="fixed-column dynamic-left"></td>
+                            }
+                            else
+                            {
+                                <td style="max-width:60px;width:50px; background-color: #f9dad8; color: #f44336;" class="fixed-column">
+                                    @op.OperationId
+                                </td>
+                                <td style="background-color: #f9dad8; color: #f44336;" colspan="3" class="fixed-column dynamic-left">
+                                    @op.Description
+                                </td>
+                                <td class="fixed-column dynamic-left"></td>
+                            }
+
                             @foreach (var usr in _UserOfArea)
                             {
                                 <td style="text-align: end;" colspan="2">
@@ -179,10 +205,11 @@
 
                                     @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
                                     {
-                                        <table>
+
+                                        <table style="border: none">
                                             <tbody>
                                                 @{
-                                                    var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                    var latestContext = context.OrderByDescending(c => c.ILURegisterid).FirstOrDefault();
                                                     char ILULevelNumber = '§';
                                                     @if (latestContext != null)
                                                     {
@@ -192,20 +219,19 @@
 
                                                 @if (context.Count > 0 && latestContext != null)
                                                 {
-                                                    <tr>
-                                                        <td>@latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+                                                    <tr style="border: none">
+                                                        <td style="border: none">@latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
                                                         @if (ILULevelNumber != '§')
                                                         {
-                                                            <td>@ILULevelNumber</td>
+                                                            <td style="border: none">
+                                                                <MudText Typo="Typo.subtitle1"> <b>  @ILULevelNumber </b> </MudText>
+                                                                </td>
                                                         }
                                                     </tr>
                                                 }
                                                 else
                                                 {
-                                                    <tr>
-                                                        <td>OPid: @op.OperationId</td>
-                                                        <td>usrid: @usr.UserId</td>
-                                                    </tr>
+                                                   
                                                 }
                                             </tbody>
                                         </table>
@@ -268,12 +294,15 @@ else
     private List<ILULevel> _LevelsILU { get; set; } = new();
     //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
     private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
+    private Dictionary<int, bool> Operations_Knolowed { get; set; } = new Dictionary<int, bool>();
+    private Dictionary<int, bool> User_Knolowed { get; set; } = new Dictionary<int, bool>();
 
     bool ShowTable = false;
 
     //dialog
     bool AddILUVisibleDialog = false;
     private ILURegister _newIlu { get; set; } = new();
+    private List<ILURegister> AllRegistersOfPat { get; set; } = new();
     private int auxILU_Level = 0;
 
 
@@ -305,9 +334,36 @@ else
                     .OrderByDescending(r => r.AcquisitionDate)
                     .ToList();
 
+                AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
                 ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
                 // Almacenar los registros en la
                 //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
+            }
+        }
+
+        foreach (var op in _operations)
+        {
+            if (AllRegistersOfPat.FindIndex(r => r.OperationId == op.OperationId) != -1)
+            {
+                Operations_Knolowed.Add(op.OperationId, true);
+            }
+            else
+            {
+                Operations_Knolowed.Add(op.OperationId, false);
+
+            }
+        }
+
+        foreach (var usr in _UserOfArea)
+        {
+            if (AllRegistersOfPat.FindIndex(r => r.OperatorId == usr.UserId) != -1)
+            {
+                User_Knolowed.Add(usr.UserId, true);
+            }
+            else
+            {
+                User_Knolowed.Add(usr.UserId, false);
+
             }
         }
 
@@ -337,6 +393,7 @@ else
         _newIlu.OperationId = ID_Operation;
         _newIlu.OperatorId = ID_User;
         _newIlu.isActive = true;
+        auxILU_Level = 0;
         StateHasChanged();
     }
 
@@ -345,10 +402,11 @@ else
         ShowTable = false;
         AddILUVisibleDialog = false;
 
-
+        _newIlu.AcquisitionDate = DateTime.Now;
         var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
         if (result != null)
         {
+            //_UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
             _UserOfArea = await UsersServices.GetUsersWhitCollections();
             ILU_Matrix.Clear();
             foreach (var op in _operations)
@@ -404,7 +462,7 @@ else
             var url = $"jobobservation/planjobobservation/{dateString}?{queryString}";
 
             NavigationManager.NavigateTo(url);
-            
+
             //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
         }
     }
