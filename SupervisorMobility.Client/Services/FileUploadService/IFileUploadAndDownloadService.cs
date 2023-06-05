@@ -17,6 +17,10 @@
         Task DownloadFileGuide(int idfile, string filename);
         Task DownloadFileEvidence(int idfile, string filename);
 
+        Task DownloadAllUsersFormat();
+        Task DownloadSSVFormat();
+        Task DownloadSupervisorsFormat();
+        Task DownloadOperatorsFormat();
 
     }
 }

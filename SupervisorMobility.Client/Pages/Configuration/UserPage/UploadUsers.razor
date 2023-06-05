@@ -157,6 +157,14 @@
                    Color="Color.Primary">
                     <b>All Upload Format</b>
                 </MudButton>
+
+                <MudButton OnClick="DownloadAllExample"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary">
+                    <b>Example Of Use All Format</b>
+                </MudButton>
                 break;
             case 2:
                 <MudButton OnClick="DownloadSSVFormat"
@@ -165,6 +173,13 @@
                    EndIcon="@Icons.Material.Filled.FileDownload"
                    Color="Color.Primary">
                     <b>SSV Format</b>
+                </MudButton>
+                <MudButton OnClick="DownloadSSVExample"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary">
+                    <b>Example Of Use SSV Format</b>
                 </MudButton>
                 break;
             case 3:
@@ -176,6 +191,14 @@
                    Color="Color.Primary">
                     <b>Supervisors Format</b>
                 </MudButton>
+
+                <MudButton OnClick="DownloadSVExample"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary">
+                    <b>Example Of Use SV Format</b>
+                </MudButton>
                 break;
             case 5:
             case 6:
@@ -185,6 +208,13 @@
                    EndIcon="@Icons.Material.Filled.FileDownload"
                    Color="Color.Primary" FullWidth="true">
                     <b>Operators Format</b>
+                </MudButton>
+                <MudButton OnClick="DownloadOperatorsExample"
+                   Target="_blank"
+                   Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.FileDownload"
+                   Color="Color.Primary">
+                    <b>Example Of Use Operator Format</b>
                 </MudButton>
                 break;
         }
@@ -272,6 +302,7 @@
 
                             @if (uploadtype > 1 && uploadtype < 5)
                             {
+                                <MudTh>Username</MudTh>
                                 <MudTh>Email</MudTh>
                             }
 
@@ -653,7 +684,7 @@
 
                                         <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                             <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" >Show More Info</MudButton>
+                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Show More Info</MudButton>
                                             </ActivatorContent>
                                             <ChildContent>
                                                 <MudExpansionPanels>
@@ -666,7 +697,8 @@
                                                             </MudItem>
                                                         </MudItem>
                                                     </MudExpansionPanel>
-                                                    <MudExpansionPanel Text="Principal Username">
+                                                   @if(context.UserType < 4){
+                                                        <MudExpansionPanel Text="Principal Username">
                                                         <MudItem class="d-flex flex-column justify-center ma-1">
                                                             <MudItem class="d-flex d-flex-column justify-center">
                                                                 <MudPaper Elevation="0">
@@ -675,6 +707,7 @@
                                                             </MudItem>
                                                         </MudItem>
                                                     </MudExpansionPanel>
+                                                   }
                                                     @if (context.Superior != null)
                                                     {
                                                         <MudExpansionPanel Text="Superior SSV" MaxHeight="300">
@@ -801,6 +834,9 @@
 
                             @if (uploadtype > 1 && uploadtype < 5)
                             {
+                                <MudTd DataLabel="Username">
+                                    <MudText Align="Align.Center">@context.ObjectId</MudText>
+                                </MudTd>
                                 <MudTd DataLabel="Email">
                                     <MudText Align="Align.Center">@context.Email</MudText>
                                 </MudTd>
@@ -952,7 +988,8 @@
                                                     <ChildContent>
                                                         @foreach (var area in context.Areas)
                                                         {
-                                                            <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudButton>
+                                                            <MudMenuItem>
+                                                                <MudButton StartIcon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudButton>
                                                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(area, context)" />
                                                             </MudMenuItem>
                                                         }
@@ -1990,7 +2027,8 @@
                                         {
                                             foreach (var item in SplitedSubordinates)
                                             {
-                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                                if (_allUsers.FindIndex(u => u.UserId == int.Parse(item)) != -1)
+                                                    ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
                                             }
                                         }
                                         else
@@ -1998,7 +2036,8 @@
                                             ToInsertIntoList.Subordinates = new List<User>();
                                             foreach (var item in SplitedSubordinates)
                                             {
-                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                                if (_allUsers.FindIndex(u => u.UserId == int.Parse(item)) != -1)
+                                                    ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
                                             }
                                         }
 
@@ -2010,14 +2049,15 @@
                                     {
                                         if (ToInsertIntoList.Subordinates != null)
                                         {
-
-                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                            if (_allUsers.FindIndex(u => u.UserId == int.Parse(row[7])) != -1)
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
 
                                         }
                                         else
                                         {
                                             ToInsertIntoList.Subordinates = new List<User>();
-                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                            if (_allUsers.FindIndex(u => u.UserId == int.Parse(row[7])) != -1)
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
                                         }
                                     }
                                 }
@@ -2044,6 +2084,7 @@
                                 {
                                     ErrorMessageToDisplay = $"Document Incorrect Some Plant Id For SSV whit email {ToInsertIntoList.Email}";
                                     isOkFile = false;
+                                    showTableInUI = false;
                                     break;
                                 }
 
@@ -2124,6 +2165,7 @@
                                 {
                                     ErrorMessageToDisplay = $"Document Incorrect Some Group Id For SSV whit email {ToInsertIntoList.Email}";
                                     isOkFile = false;
+                                    showTableInUI = false;
                                 }
                             }
                             catch (Exception ex)
@@ -2189,27 +2231,40 @@
                                 {
                                     ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
 
-                                    try
+                                    if (ToInsertIntoList.Superior != null)
                                     {
-                                        ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
-                                        ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
-                                        isOkFile = false;
-                                        break;
-                                    }
+                                        try
+                                        {
+                                            ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
+                                            ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
+                                            isOkFile = false;
+                                            showTableInUI = false;
+                                            break;
+                                        }
 
-                                    try
-                                    {
-                                        ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
-                                        ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+                                        try
+                                        {
+                                            ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
+                                            ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
+                                            isOkFile = false;
+                                            showTableInUI = false;
+                                            break;
+                                        }
                                     }
-                                    catch (Exception ex)
+                                    else
                                     {
-                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
+                                        ErrorMessageToDisplay = $"Incorrect document, the superior id for SSV with email: {ToInsertIntoList.Email}";
+
                                         isOkFile = false;
+                                        showTableInUI = false;
                                         break;
                                     }
 
@@ -2218,6 +2273,7 @@
                                 {
                                     ErrorMessageToDisplay = $"Incorrect document, the superior id for SSV with email: {ToInsertIntoList.Email}";
                                     isOkFile = false;
+                                    showTableInUI = false;
                                     break;
                                 }
                             }
@@ -2242,7 +2298,8 @@
                                         {
                                             foreach (var item in SplitedSubordinates)
                                             {
-                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                                if (_allUsers.FindIndex(u => u.UserId == int.Parse(item)) != -1)
+                                                    ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
                                             }
                                         }
                                         else
@@ -2250,7 +2307,8 @@
                                             ToInsertIntoList.Subordinates = new List<User>();
                                             foreach (var item in SplitedSubordinates)
                                             {
-                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
+                                                if (_allUsers.FindIndex(u => u.UserId == int.Parse(item)) != -1)
+                                                    ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(item)));
                                             }
                                         }
 
@@ -2263,13 +2321,15 @@
                                         if (ToInsertIntoList.Subordinates != null)
                                         {
 
-                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                            if (_allUsers.FindIndex(u => u.UserId == int.Parse(row[7])) != -1)
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
 
                                         }
                                         else
                                         {
                                             ToInsertIntoList.Subordinates = new List<User>();
-                                            ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
+                                            if (_allUsers.FindIndex(u => u.UserId == int.Parse(row[7])) != -1)
+                                                ToInsertIntoList.Subordinates.Add(_allUsers.Find(u => u.UserId == int.Parse(row[7])));
                                         }
                                     }
                                 }
@@ -2354,46 +2414,63 @@
                                 {
                                     ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
 
-                                    try
+                                    if (ToInsertIntoList.Superior != null)
                                     {
-                                        ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
-                                        ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
+                                        try
+                                        {
+                                            ToInsertIntoList.PlantId = ToInsertIntoList.Superior?.PlantId;
+                                            ToInsertIntoList.Plant = ToInsertIntoList.Superior?.Plant;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
+                                            isOkFile = false;
+                                            showTableInUI = false;
+                                            break;
+                                        }
+
+                                        try
+                                        {
+                                            ToInsertIntoList.AreaId = ToInsertIntoList.Superior?.AreaId;
+                                            ToInsertIntoList.Area = ToInsertIntoList.Superior?.Area;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's area id for SSV with email: {ToInsertIntoList.Email}";
+                                            isOkFile = false;
+                                            showTableInUI = false;
+                                            break;
+                                        }
+
+                                        try
+                                        {
+                                            ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
+                                            ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
+                                            isOkFile = false;
+                                            showTableInUI = false;
+                                            break;
+                                        }
                                     }
-                                    catch (Exception ex)
+                                    else
                                     {
-                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's plant id for SSV with email: {ToInsertIntoList.Email}";
                                         isOkFile = false;
+                                        showTableInUI = false;
+                                        ErrorMessageToDisplay = $"Document Incorrect, Superior not found For Operator whit Name {ToInsertIntoList.Name}";
                                         break;
+
                                     }
 
-                                    try
-                                    {
-                                        ToInsertIntoList.AreaId = ToInsertIntoList.Superior?.AreaId;
-                                        ToInsertIntoList.Area = ToInsertIntoList.Superior?.Area;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's area id for SSV with email: {ToInsertIntoList.Email}";
-                                        isOkFile = false;
-                                        break;
-                                    }
 
-                                    try
-                                    {
-                                        ToInsertIntoList.Group = ToInsertIntoList.Superior?.Group;
-                                        ToInsertIntoList.GroupId = ToInsertIntoList.Superior?.GroupId;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ErrorMessageToDisplay = $"Incorrect document, Review Superior's information, the superior's Group id for SSV with email: {ToInsertIntoList.Email}";
-                                        isOkFile = false;
-                                        break;
-                                    }
 
                                 }
                                 catch (Exception ex)
                                 {
                                     isOkFile = false;
+                                    showTableInUI = false;
                                     ErrorMessageToDisplay = $"Document Incorrect, Superior not found For Operator whit Name {ToInsertIntoList.Name}";
                                     break;
                                 }
@@ -2419,24 +2496,19 @@
                                 catch (Exception ex)
                                 {
 
-                                    ErrorMessageToDisplay = $"Document Incorrect Distribution Id for Operator with Name: {ToInsertIntoList.Name}";
-                                    isOkFile = false;
-                                    break;
+
                                 }
                             }
                             catch (Exception ex)
                             {
-                                showTableInUI = false;
 
-                                ErrorMessageToDisplay = $"Document Incomplet, Distribution for Operator with Name: {ToInsertIntoList.Name}";
-                                isOkFile = false;
-                                break;
                             }
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Case 4 => Create All Users:{ex.Message}");
 
+                            isOkFile = false;
                             showTableInUI = false;
                         }
                         break;
@@ -2476,6 +2548,7 @@
                 ToInsertIntoList.Email = row[2] != "§" ? row[2] : "";
                 ToInsertIntoList.PlantId = row[3] != "§" ? int.Parse(row[3]) : -1;
                 ToInsertIntoList.GroupId = row[4] != "§" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.ObjectId = row[6] != "§" ? row[6] : "";
 
 
                 try
@@ -2576,6 +2649,7 @@
 
                 ToInsertIntoList.SuperiorId = row[3] != "§" ? int.Parse(row[3]) : -1;
                 ToInsertIntoList.AreaId = row[4] != "§" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.ObjectId = row[5] != "§" ? row[5] : "";
 
 
                 try
@@ -2736,7 +2810,7 @@
                     {
                         RowsInFile.Clear();
 
-                        foreach (IXLCell cell in row.Cells(1, 12))
+                        foreach (IXLCell cell in row.Cells(1, 13))
                         {
                             string toinsert = "§";
 
@@ -2969,6 +3043,26 @@
     private async Task DownloadOperatorsFormat()
     {
         await UsersServices.DownloadOperatorsFormat();
+    }
+
+    private async Task DownloadAllExample()
+    {
+        await FileUpDoServices.DownloadAllUsersFormat();
+    }
+
+    private async Task DownloadSSVExample()
+    {
+        await FileUpDoServices.DownloadSSVFormat();
+    }
+
+    private async Task DownloadSVExample()
+    {
+        await FileUpDoServices.DownloadSupervisorsFormat();
+    }
+
+    private async Task DownloadOperatorsExample()
+    {
+        await FileUpDoServices.DownloadOperatorsFormat();
     }
 
     private async void OpenDialog(User ContextItem)
