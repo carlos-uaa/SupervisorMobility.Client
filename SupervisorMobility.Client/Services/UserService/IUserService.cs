@@ -33,5 +33,11 @@ namespace SupervisorMobility.Client.Services.UserService
         Task DownloadSSVFormat();
         Task DownloadSupervisorsFormat();
         Task DownloadOperatorsFormat();
+
+
+        //Users Not Found
+        Task<List<UserNotFound>> GetUsersNotFound();
+
+
     }
 }
