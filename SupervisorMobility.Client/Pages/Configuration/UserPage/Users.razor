@@ -266,19 +266,42 @@ else
 
     private bool FilterFunc(User element)
     {
+
+
+
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
+        if (element.ObjectId != null){
+        if ((bool)element.ObjectId?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        }
+        if (element.Email != null)
+        {
+        if ((bool)element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        }
         if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.Payroll.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.Payroll != null)
+        {
+            if ((bool)element.Payroll?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Plant != null)
+        {
+        if ((bool)element.Plant?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase) )
             return true;
-        if (element.Plant!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        }
+        if (element.Area != null){
+            if ((bool)element.Area?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Group != null)
+        {
+        if ((bool)element.Group?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.Area!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Group!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if ($"{element.UserId} {element.Payroll} {element.Name} {element.Plant?.Description} {element.Area?.Description} {element.Group?.Description}".Contains(searchString))
+        }
+        if ($"{element.UserId} {element.Payroll} {element.Name} {element.Plant?.Description} {element.Area?.Description} {element.Group?.Description} {element.ObjectId} {element.Email}".Contains(searchString))
             return true;
         return false;
     }
