@@ -37,7 +37,7 @@ namespace SupervisorMobility.Client.Services.UserService
 
         //Users Not Found
         Task<List<UserNotFound>> GetUsersNotFound();
-
+        Task<UserNotFound> CreateUnregisteredUser(UserNotFound _newUser);
 
     }
 }

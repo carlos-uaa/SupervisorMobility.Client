@@ -132,6 +132,22 @@ namespace SupervisorMobility.Client.Pages
                 }
                 else
                 {
+
+                    UserNotFound newUser =new();
+                    newUser.Name = result.displayName;
+                    newUser.ObjectId = result.userPrincipalName;
+                    newUser.IsActive = true;
+
+                    var response = await UsersService.CreateUnregisteredUser(newUser);
+                    if (response != null)
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Unregistered user added to database for admin.", Severity.Info);
+                    }
+                    else
+                        await js.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
+
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"User not found, please contact your administrator", Severity.Error);

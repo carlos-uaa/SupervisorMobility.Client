@@ -370,5 +370,27 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
 
         }
+
+        // Create UnregisteredUser User
+        public async Task<UserNotFound> CreateUnregisteredUser(UserNotFound _newUser)
+        {
+            var response = await _http.PostAsJsonAsync($"UserNotFound", _newUser);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newUser = await response.Content.ReadFromJsonAsync<UserNotFound>();
+                return newUser;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+
+            }
+
+            return null;
+
+
+
+        }
     }
 }
