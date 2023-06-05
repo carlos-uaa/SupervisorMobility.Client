@@ -340,6 +340,35 @@ namespace SupervisorMobility.Client.Services.UserService
             }
         }
 
-        
+
+
+        //Get Users not found
+        public async Task<List<UserNotFound>> GetUsersNotFound()
+        {
+
+            try
+            {
+                var response = await _http.GetAsync("UserNotFound");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<UserNotFound>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+
+        }
     }
 }
