@@ -342,7 +342,7 @@ namespace SupervisorMobility.Client.Services.UserService
 
 
 
-        //Get Users not found
+        //Get Unregistered Users
         public async Task<List<UserNotFound>> GetUsersNotFound()
         {
 
@@ -389,8 +389,19 @@ namespace SupervisorMobility.Client.Services.UserService
 
             return null;
 
+        }
 
+        //update User
+        public async Task<bool> UpdateUnregisteredUser(int UserId, UserNotFound UserToUpdate)
+        {
 
+            var response = await _http.PutAsJsonAsync($"UserNotFound/{UserId}", UserToUpdate);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

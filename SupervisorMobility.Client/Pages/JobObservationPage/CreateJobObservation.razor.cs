@@ -104,15 +104,62 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             if (user != null)
             {
+
+                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+                var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+                // Leer los valores de los parámetros
+                var PatPlantId = queryString["PlantId"];
+                var PatAreaId = queryString["AreaId"];
+                var PatDistributionId = queryString["DistributionId"];
+                var PatOperationId = queryString["OperationId"];
+                var PatOperatorId = queryString["OperatorId"];
+
                 _plants = await PlantServices.GetPlants();
 
 
                 if (user.UserType == 1)
                 {
-                    _jobObservation.PlantId = 0;
-                    _jobObservation.AreaId = 0;
-                    _jobObservation.SupervisorId = user.UserId;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    if (PatPlantId != null)
+                    {
+
+                        _jobObservation.PlantId = int.Parse(PatPlantId);
+
+                        _jobObservation.AreaId = int.Parse(PatAreaId);
+
+                        _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
+                        _jobObservation.SupervisorId = user.UserId;
+
+                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                        _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+                        _jobObservation.DistributionId = int.Parse(PatDistributionId);
+
+                        _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+                        _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+
+                        _jobObservation.OperationId = int.Parse(PatOperationId);
+
+                        //operator User
+                        users = await UsersService.GetUsers();
+                        foreach (var operatorUser in users)
+                        {
+                            if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                            {
+                                operatorUsers.Add(operatorUser);
+                            }
+                        }
+
+                        _jobObservation.OperatorId = int.Parse(PatOperatorId);
+                    }
+                    else
+                    {
+                        _jobObservation.PlantId = 0;
+                        _jobObservation.AreaId = 0;
+                        _jobObservation.SupervisorId = user.UserId;
+                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    }
 
                 }
                 else if (user.UserType == 2)
@@ -127,24 +174,59 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 else
                 {
 
-                    _jobObservation.PlantId = (int)user.PlantId;
-
-                    _jobObservation.AreaId = (int)user.AreaId;
-
-                    _areas = await AreaServices.GetAreas((int)user.PlantId);
-                    _jobObservation.SupervisorId = user.UserId;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
-
-                    _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-
-
-                    //operator User
-                    users = await UsersService.GetUsers();
-                    foreach (var operatorUser in users)
+                    if (PatPlantId != null)
                     {
-                        if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                        _jobObservation.PlantId = int.Parse(PatPlantId);
+
+                        _jobObservation.AreaId = int.Parse(PatAreaId);
+
+                        _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
+                        _jobObservation.SupervisorId = user.UserId;
+
+                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                        _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+                        _jobObservation.DistributionId = int.Parse(PatDistributionId);
+
+                        _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+                        _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+
+                        _jobObservation.OperationId = int.Parse(PatOperationId);
+
+                        //operator User
+                        users = await UsersService.GetUsers();
+                        foreach (var operatorUser in users)
                         {
-                            operatorUsers.Add(operatorUser);
+                            if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                            {
+                                operatorUsers.Add(operatorUser);
+                            }
+                        }
+
+                        _jobObservation.OperatorId = int.Parse(PatOperatorId);
+                    }
+                    else
+                    {
+                        _jobObservation.PlantId = (int)user.PlantId;
+
+                        _jobObservation.AreaId = (int)user.AreaId;
+
+                        _areas = await AreaServices.GetAreas((int)user.PlantId);
+                        _jobObservation.SupervisorId = user.UserId;
+                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+
+                        _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+
+
+                        //operator User
+                        users = await UsersService.GetUsers();
+                        foreach (var operatorUser in users)
+                        {
+                            if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                            {
+                                operatorUsers.Add(operatorUser);
+                            }
                         }
                     }
 
