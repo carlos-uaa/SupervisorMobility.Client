@@ -71,10 +71,13 @@ else if (_users.Count == 0)
             </MudItem>
             <MudItem Class="d-flex">
                 <MudSpacer />
-                <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
-                    Unregistered Users
-                </MudButton>
-                <MudSpacer />
+                @if (loggedUser.UserType == 1)
+                {
+                    <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
+                        Unregistered Users
+                    </MudButton>
+                    <MudSpacer />
+                }
                 <MudButton Href="/usersmanagement/UploadUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Primary">
                     Upload Users
                 </MudButton>
@@ -105,10 +108,13 @@ else
                     <MudSpacer />
                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     <MudSpacer />
-                    <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
-                        Unregistered Users
-                    </MudButton>
-                    <MudSpacer />
+                    @if(loggedUser.UserType == 1)
+                    {
+                        <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
+                            Unregistered Users
+                        </MudButton>
+                        <MudSpacer />
+                    }
                     <MudButton Href="/usersmanagement/UploadUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Primary">
                         Upload Users
                     </MudButton>
@@ -242,7 +248,12 @@ else
 @code {
 
     List<User> _users = new List<User>();
+    List<User> allUsers = new List<User>();
     string searchString = "";
+
+    //User
+    private string json = string.Empty;
+    public User loggedUser = new();
 
 
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -254,9 +265,54 @@ else
 
     protected async override Task OnInitializedAsync()
     {
-        _users = await UsersServices.GetUsersWhitCollections();
+        allUsers = await UsersServices.GetUsersWhitCollections();
+
+
+        await GetUserAsync();
+
+        if (loggedUser != null)
+        {
+            if (loggedUser.UserType == 1)
+            {
+                _users = allUsers;
+            }
+            else
+            {
+
+                foreach(User usr in allUsers)
+                {
+                    if(usr.UserId == loggedUser.UserId || usr.SuperiorId == loggedUser.UserId || usr.Superior?.SuperiorId == loggedUser.UserId)
+                    {
+                        _users.Add(usr);
+                    }
+
+                }
+
+            }
+        }
+
     }
 
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            loggedUser = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            loggedUser = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
     // Plant details
@@ -276,7 +332,36 @@ else
         _users.RemoveAll(user => user.UserId == iduser);
         await UsersServices.DeleteUser(iduser);
         //await PlantService.DeletePlant(plantId);
-        _users = await UsersServices.GetUsersWhitCollections();
+        _users.Clear();
+
+
+        allUsers = await UsersServices.GetUsersWhitCollections();
+
+
+        await GetUserAsync();
+
+        if (loggedUser != null)
+        {
+            if (loggedUser.UserType == 1)
+            {
+                _users = allUsers;
+            }
+            else
+            {
+
+                foreach (User usr in allUsers)
+                {
+                    if (usr.UserId == loggedUser.UserId || usr.SuperiorId == loggedUser.UserId)
+                    {
+                        _users.Add(usr);
+                    }
+
+                }
+
+            }
+        }
+
+
         visibleDelete = false;
         StateHasChanged();
     }

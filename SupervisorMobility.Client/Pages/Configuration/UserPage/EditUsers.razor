@@ -188,7 +188,7 @@
                                             }
                                         </MudSelect>
                                     }
-                                    else if (_user.UserType == 3 && LogedUser.UserType == 1)
+                                    else if (_user.UserType == 3)
                                     {
                                         <MudTextField @bind-Value="plantInfo" Label="Plant" ReadOnly="true" Variant="Variant.Outlined" />
                                         if (_user.Superior != null)
@@ -462,7 +462,7 @@
                                                                         }
                                                                         else
                                                                         {
-                                                                            @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
+                                                                            @if (SS.PlantId == _user.PlantId && SS.Areas?.ToList().FindIndex(s => s.AreaId == _user.AreaId) != -1)
                                                                             {
                                                                                 <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Group?.Description}") </MudSelectItem>
                                                                             }
@@ -775,13 +775,13 @@
                                                                 {
                                                                     @if (LogedUser.UserType == 1)
                                                                     {
-                                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                        <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description}") </MudSelectItem>
                                                                     }
                                                                     else
                                                                     {
                                                                         @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
                                                                         {
-                                                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                            <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description}") </MudSelectItem>
                                                                         }
                                                                     }
                                                                 }
@@ -798,13 +798,13 @@
                                                                 {
                                                                     @if (LogedUser.UserType == 1)
                                                                     {
-                                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                        <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description}") </MudSelectItem>
                                                                     }
                                                                     else
                                                                     {
                                                                         @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
                                                                         {
-                                                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                            <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description}") </MudSelectItem>
                                                                         }
                                                                     }
                                                                 }
@@ -821,13 +821,19 @@
                                                                 {
                                                                     @if (LogedUser.UserType == 1)
                                                                     {
-                                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
+                                                                        <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
                                                                     }
-                                                                    else
+                                                                    else if(LogedUser.UserType == 2)
                                                                     {
                                                                         @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
                                                                         {
-                                                                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
+                                                                            <MudSelectItem Value="SS">@($"{SS.Name }- {SS.Area?.Description} - {SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
+                                                                        }
+                                                                    }
+                                                                    else if(LogedUser.UserType == 3){
+                                                                        @if (LogedUser.AreaId == SS.AreaId)
+                                                                        {
+                                                                            <MudSelectItem Value="SS">@($"{SS.Name} - {SS.Area?.Description} - {SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
                                                                         }
                                                                     }
                                                                 }
@@ -976,10 +982,14 @@ else
         IsOperator = (_user.UserType == 4);
 
 
-        if (_user.Superior != null)
-        {
-            await SetSuperiorToUser();
-        }
+        //Console.WriteLine(_user.Superior.Name);
+        //Console.WriteLine(_user.Superior.Areas.Count);
+
+        //if (_user.Superior != null)
+        //{
+        //    superior = true;
+        //    //await SetSuperiorToUser();
+        //}
 
         selectedSeniorSupervisorOfList = new User();
         selectedSupervisorOfList = new User();
@@ -989,6 +999,13 @@ else
         //
         foreach (User item in _allUsers)
         {
+            if(_user.Superior != null){
+                if(_user.SuperiorId == item.UserId){
+                    _user.Superior = item;
+                    superior = true;
+                }
+            }
+
             switch (item.UserType)
             {
                 case 2:
@@ -1060,10 +1077,12 @@ else
                 {
                     if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
                     {
+                        Console.WriteLine(user.Name);
+
                         Operators.Remove(user);
                     }                   
                 }
-
+                Console.WriteLine(Operators.Count);
                 break;
             case 4:
                 auxPlant = (int)_user.PlantId;
@@ -1097,6 +1116,111 @@ else
 
 
 
+    }
+
+
+    private async Task setActiveUser(int userType)
+    {
+        var auxId = _user.UserId;
+        var auxObjectId = _user.ObjectId;
+        var auxName = _user.Name;
+        var auxCreateDate = _user.CreatedDate;
+
+        _user = new();
+
+        _user.UserId = auxId;
+        _user.ObjectId = auxObjectId;
+        _user.Name = auxName;
+        _user.CreatedDate = auxCreateDate;
+        _user.IsActive = true;
+
+
+        auxPlant = 0;
+        auxArea = 0;
+        auxGroup = 0;
+        auxDistribution = 0;
+        plantInfo = "";
+        areaInfo = "";
+        grupInfo = "";
+        selectedSeniorSupervisorOfList = new User();
+        selectedSupervisorOfList = new User();
+        selectedOperatorOfList = new User();
+        selectedAreaOfList = new Area();
+
+
+        IsAdmin = userType == 1 && !IsAdmin;
+        IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
+        IsSupervisor = userType == 3 && !IsSupervisor;
+        IsOperator = userType == 4 && !IsOperator;
+
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
+
+
+        ShowAreasInvokeByPlantSelector();
+
+        switch (userType)
+        {
+            case 1: RemoveSuperiorUser(); break;
+            case 2: RemoveSuperiorUser(); break;
+            case 3:
+                if (LogedUser.UserType == 2)
+                {
+                    _user.SuperiorId = LogedUser.UserId;
+                    _user.Superior = LogedUser;
+                    superior = true;
+                    _user.PlantId =  _user.Superior?.PlantId;
+                    _user.GroupId =  _user.Superior?.GroupId;
+
+                    auxPlant =  (int)_user.Superior?.PlantId;
+                    auxGroup = (int)_user.Superior?.GroupId;
+
+                    plantInfo = _user.Superior?.Plant?.Description;
+                    grupInfo = _user.Superior?.Group?.Description;
+
+                }
+                else
+                {
+                    auxPlant = 0;
+                    auxArea = 0;
+                    _user.GroupId = 0;
+                }
+                break;
+            case 4:
+                if (LogedUser.UserType == 3)
+                {
+                    auxPlant = (int)LogedUser.PlantId;
+                    auxArea = (int)LogedUser.AreaId;
+                    auxGroup = (int)LogedUser.GroupId;
+
+                    _user.SuperiorId = LogedUser.UserId;
+                    _user.Superior = LogedUser;
+                    superior = true;
+
+                    _user.PlantId = _user.Superior?.PlantId;
+                    _user.AreaId = _user.Superior?.AreaId;
+                    _user.GroupId = _user.Superior?.GroupId;
+
+                    plantInfo = _user.Superior?.Plant?.Description;
+                    areaInfo = _user.Superior?.Area?.Description;
+                    grupInfo = _user.Superior?.Group?.Description;
+
+                    if (auxPlant != 0 && auxArea != 0)
+                    {
+                        _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                    }
+                }
+                else
+                {
+                    auxPlant = 0;
+                    auxArea = 0;
+                    _user.GroupId = 0;
+                }
+                break;
+
+        }
+
+
+        StateHasChanged();
     }
 
     private async void ShowAreas()
@@ -1204,114 +1328,7 @@ else
 
 
 
-    private async Task setActiveUser(int userType)
-    {
-        var auxId = _user.UserId;
-        var auxObjectId = _user.ObjectId;
-        var auxName = _user.Name;
-        var auxCreateDate = _user.CreatedDate;
 
-        _user = new();
-
-        _user.UserId = auxId;
-        _user.ObjectId = auxObjectId;
-        _user.Name = auxName;
-        _user.CreatedDate = auxCreateDate;
-        _user.IsActive = true;
-
-
-        auxPlant = 0;
-        auxArea = 0;
-        auxGroup = 0;
-        auxDistribution = 0;
-        plantInfo = "";
-        areaInfo = "";
-        grupInfo = "";
-        selectedSeniorSupervisorOfList = new User();
-        selectedSupervisorOfList = new User();
-        selectedOperatorOfList = new User();
-        selectedAreaOfList = new Area();
-
-
-        IsAdmin = userType == 1 && !IsAdmin;
-        IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
-        IsSupervisor = userType == 3 && !IsSupervisor;
-        IsOperator = userType == 4 && !IsOperator;
-
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
-
-
-        ShowAreasInvokeByPlantSelector();
-
-        switch (userType)
-        {
-            case 1: RemoveSuperiorUser(); break;
-            case 2: RemoveSuperiorUser(); break;
-            case 3:
-                if (LogedUser.UserType == 2)
-                {
-                    auxPlant = (int)LogedUser.PlantId;
-                    auxArea = (int)LogedUser.AreaId;
-                    auxGroup = (int)LogedUser.GroupId;
-
-                    _user.SuperiorId = LogedUser.UserId;
-                    _user.Superior = LogedUser;
-                    superior = true;
-
-                    _user.PlantId = _user.Superior?.PlantId;
-                    _user.AreaId = _user.Superior?.AreaId;
-                    _user.GroupId = _user.Superior?.GroupId;
-
-                    plantInfo = _user.Superior?.Plant?.Description;
-                    areaInfo = _user.Superior?.Area?.Description;
-                    grupInfo = _user.Superior?.Group?.Description;
-
-
-                }
-                else
-                {
-                    auxPlant = 0;
-                    auxArea = 0;
-                    _user.GroupId = 0;
-                }
-                break;
-            case 4:
-                if (LogedUser.UserType == 3)
-                {
-                    auxPlant = (int)LogedUser.PlantId;
-                    auxArea = (int)LogedUser.AreaId;
-                    auxGroup = (int)LogedUser.GroupId;
-
-                    _user.SuperiorId = LogedUser.UserId;
-                    _user.Superior = LogedUser;
-                    superior = true;
-
-                    _user.PlantId = _user.Superior?.PlantId;
-                    _user.AreaId = _user.Superior?.AreaId;
-                    _user.GroupId = _user.Superior?.GroupId;
-
-                    plantInfo = _user.Superior?.Plant?.Description;
-                    areaInfo = _user.Superior?.Area?.Description;
-                    grupInfo = _user.Superior?.Group?.Description;
-
-                    if (auxPlant != 0 && auxArea != 0)
-                    {
-                        _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
-                    }
-                }
-                else
-                {
-                    auxPlant = 0;
-                    auxArea = 0;
-                    _user.GroupId = 0;
-                }
-                break;
-
-        }
-
-
-        StateHasChanged();
-    }
 
     private async Task SetSuperiorToUser()
     {
@@ -1359,6 +1376,8 @@ else
                 }
                 break;
         }
+
+
 
 
         StateHasChanged();
