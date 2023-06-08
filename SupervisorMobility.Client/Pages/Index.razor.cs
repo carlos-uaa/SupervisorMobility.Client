@@ -148,9 +148,8 @@ namespace SupervisorMobility.Client.Pages
                     else
                         await js.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
 
-                    Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"User not found, please contact your administrator", Severity.Error);
+                    Snackbar.Add($"User not found, please contact your administrator", Severity.Warning);
                 }
             }
             else

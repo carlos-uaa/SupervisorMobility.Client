@@ -825,7 +825,7 @@
                                                                     }
                                                                     else if(LogedUser.UserType == 2)
                                                                     {
-                                                                        @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
+                                                                        @if (LogedUser.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
                                                                         {
                                                                             <MudSelectItem Value="SS">@($"{SS.Name }- {SS.Area?.Description} - {SS.Group?.Description} - {SS.Distribution?.Description}") </MudSelectItem>
                                                                         }
@@ -1005,6 +1005,7 @@ else
                     superior = true;
                 }
             }
+            
 
             switch (item.UserType)
             {
@@ -1015,7 +1016,9 @@ else
                     Supervisors.Add(item);
                     break;
                 case 4:
-                    Operators.Add(item);
+                    if(item.SuperiorId == null || item.SuperiorId == _user.UserId){
+                        Operators.Add(item);
+                    }
                     break;
             }
         }
@@ -1059,31 +1062,31 @@ else
                 }
                 break;
             case 3:
-                auxPlant = (int)_user.PlantId;
-                auxArea = (int)_user.AreaId;
-                auxGroup = (int)_user.GroupId;
+                    auxPlant = (int)_user.PlantId;
+                    auxArea = (int)_user.AreaId;
+                    auxGroup = (int)_user.GroupId;
 
-                if (_user.Superior != null)
-                {
-                    superior = true;
-                }
-
-                plantInfo = _user.Plant?.Description;
-
-                areaInfo = _user.Area?.Description;
-                grupInfo = _user.Group?.Description;
-
-                foreach (User user in Operators.ToList())
-                {
-                    if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
+                    if (_user.Superior != null)
                     {
-                        Console.WriteLine(user.Name);
+                        superior = true;
+                    }
 
-                        Operators.Remove(user);
-                    }                   
-                }
-                Console.WriteLine(Operators.Count);
-                break;
+                    plantInfo = _user.Plant?.Description;
+
+                    areaInfo = _user.Area?.Description;
+                    grupInfo = _user.Group?.Description;
+
+                    foreach (User user in Operators.ToList())
+                    {
+                        if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
+                        {
+                            Console.WriteLine(user.Name);
+
+                            Operators.Remove(user);
+                        }                   
+                    }
+                    Console.WriteLine(Operators.Count);
+                    break;
             case 4:
                 auxPlant = (int)_user.PlantId;
                 auxArea = (int)_user.AreaId;
