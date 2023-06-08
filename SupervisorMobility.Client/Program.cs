@@ -32,9 +32,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net;
-using SupervisorMobility.Client.Services.GlobalDataService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -71,15 +68,15 @@ builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadS
 // Connection to API
 builder.Services.AddScoped<CustomHttpClientService>();
 
-builder.Services.AddCors(policy =>
-{
-    policy.AddPolicy("Cors", builder =>
-        builder
-            .WithOrigins("*")
-            .AllowAnyMethod().AllowAnyHeader()
-        .SetIsOriginAllowedToAllowWildcardSubdomains()
-            );
-});
+//builder.Services.AddCors(policy =>
+//{
+//    policy.AddPolicy("Cors", builder =>
+//        builder
+//            .WithOrigins("*")
+//            .AllowAnyMethod().AllowAnyHeader()
+//        .SetIsOriginAllowedToAllowWildcardSubdomains()
+//            );
+//});
 
 
 
@@ -99,20 +96,20 @@ await builder.Build().RunAsync();
 public class CustomHttpClientService
 {
     private readonly HttpClient _apiHttpClient;
-    private readonly HttpClient _bridgeHttpClient;
+    private readonly HttpClient _bridgeHttpClient;                                                                                  
     private readonly HttpClient _ADHttpClient;
 
     public CustomHttpClientService()
     {
         //Dev
-        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
-        //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
+        _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
+        _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
 
         //Prod
-        _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
-        _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
+        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
+        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
+        //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
     }
 
     public HttpClient GetADHttpClient()
