@@ -68,28 +68,6 @@ builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadS
 // Connection to API
 builder.Services.AddScoped<CustomHttpClientService>();
 
-//builder.Services.AddCors(policy =>
-//{
-//    policy.AddPolicy("Cors", builder =>
-//        builder
-//            .WithOrigins("*")
-//            .AllowAnyMethod().AllowAnyHeader()
-//        .SetIsOriginAllowedToAllowWildcardSubdomains()
-//            );
-//});
-
-//builder.Services.AddCors(policy =>
-//{
-//    policy.AddDefaultPolicy(builder =>
-//    {
-//        builder.WithOrigins("*")
-//                .AllowAnyMethod()
-//                .AllowAnyHeader()
-//                .AllowAnyOrigin()
-//                .SetIsOriginAllowedToAllowWildcardSubdomains();
-//    });
-//});
-
 
 //Active Directory
 builder.Services.AddMsalAuthentication(options =>
