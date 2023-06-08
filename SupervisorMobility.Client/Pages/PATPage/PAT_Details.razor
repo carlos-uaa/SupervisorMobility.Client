@@ -275,13 +275,31 @@ else
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:column" Class="gap-4">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
+                <MudText Typo="Typo.h5">
                     Add New ILU Level
                 </MudText>
             </MudItem>
 
-            <MudTextField ReadOnly Label="Operator Name" Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Name"></MudTextField>
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
+                <MudItem xs="12" sm="12" lg="12" md="12" >
+                    <MudText Typo="Typo.h6">
+                        Operator Info
+                    </MudText>
+                </MudItem>
+                <MudTextField ReadOnly Style="max-width: 100px;" Label="Payroll" Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Payroll"></MudTextField>
+                <MudTextField ReadOnly Label="Operator Name" Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Name"></MudTextField>
+            </MudItem>
+
+                <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
+                <MudItem xs="12" sm="12" lg="12" md="12">
+                    <MudText Typo="Typo.h6">
+                        Operation Info
+                    </MudText>
+                </MudItem>
+              
             <MudTextField ReadOnly Label="Operation Name" Value="_operations.Find(u => u.OperationId == _newIlu.OperationId).Description"></MudTextField>
+            </MudItem>
+
 
             <MudItem Class="d-flex flex-column justify-center ma-1">
                 <MudSelect T="int" Label="ILU" Variant="Variant.Text" Placeholder="Select a Level" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxILU_Level" For="@(() => auxILU_Level)" SelectedValuesChanged="updateILULevel">
@@ -296,7 +314,7 @@ else
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Info" OnClick="AddILUClose">Add</MudButton>
+        <MudButton Color="Color.Info" Disabled="@(auxILU_Level != 0 ? false : true)" OnClick="AddILUClose">Add ILU Level</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -474,7 +492,7 @@ else
             Selector = (e) => e.OperatorId
         };  
 
-        private TableGroupDefinition<ILURegister> OperationsInUser = new()
+    private TableGroupDefinition<ILURegister> OperationsInUser = new()
         {
             GroupName = "Operation",
             Indentation = false,
@@ -487,17 +505,25 @@ else
         _pat = await PATsServices.getPat(patID);
 
 
+        await PrepareDataTable();
+
+    }
+
+    private async Task PrepareDataTable()
+    {
+        AllRegistersOfPat?.Clear();
+        ILU_Matrix?.Clear();
+        Operations_Knolowed?.Clear();
+        User_Knolowed?.Clear();
+        _LevelsILU?.Clear();
+        _operations?.Clear();
+        _UserOfArea?.Clear();
+
+
         _LevelsILU = await ILUServices.GetLevelsILU();
         _operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
         _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
         //_UserOfArea = await UsersServices.GetUsersWhitCollections();
-
-        //Operacion //Operador
-
-        //int numOperations = _operations.Count;
-        //int numUsers = _UserOfArea.Count;
-
-        //ILU_Matrix = new ILURegister[numOperations,numUsers];
 
 
         foreach (var op in _operations)
@@ -542,7 +568,6 @@ else
 
             }
         }
-
 
         ShowTable = true;
         StateHasChanged();
@@ -603,7 +628,7 @@ else
         ILUHistoryOperationDialog = true;
         StateHasChanged();
     }
-    
+
     private async void CloseHistoryILU()
     {
         ILUHistoryDialog = false;
@@ -617,11 +642,11 @@ else
 
     private async void OpenDialogAddILU(int ID_Operation, int ID_User)
     {
-        AddILUVisibleDialog = true;
         _newIlu.OperationId = ID_Operation;
         _newIlu.OperatorId = ID_User;
         _newIlu.isActive = true;
         auxILU_Level = 0;
+        AddILUVisibleDialog = true;
         StateHasChanged();
     }
 
@@ -634,29 +659,7 @@ else
         var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
         if (result != null)
         {
-            _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-           // _UserOfArea = await UsersServices.GetUsersWhitCollections();
-            ILU_Matrix.Clear();
-            foreach (var op in _operations)
-            {
-                foreach (var usr in _UserOfArea)
-                {
-                    // Obtener los registros correspondientes a la operación y usuario actual
-                    var matchingRegisters = usr.ILURegisers?
-                   .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
-                   .OrderByDescending(r => r.AcquisitionDate)
-                   .ToList();
-
-                    ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
-                    // Almacenar los registros en la
-                    //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
-                }
-            }
-
-
-            ShowTable = true;
-            StateHasChanged();
-            await JS.InvokeVoidAsync("blazorUtils.setDynamicLeft");
+            await PrepareDataTable();
 
             Console.WriteLine("Se añadio");
             //aqui un mensaje bonito
