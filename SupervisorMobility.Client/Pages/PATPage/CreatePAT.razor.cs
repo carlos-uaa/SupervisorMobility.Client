@@ -21,6 +21,11 @@ namespace SupervisorMobility.Client.Pages.PATPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
 
+        List<User> _allUsers = new();
+        List<User> _SSVs = new();
+        List<User> _supervisors = new();
+        public int ssvId;
+
         public string SupervisorName = string.Empty;
 
         //User
@@ -55,6 +60,9 @@ namespace SupervisorMobility.Client.Pages.PATPage
                     {
                         _pat.PlantId = 0;
                         _pat.AreaId = 0;
+
+                        _allUsers = await UsersService.GetUsersWhitCollections();
+
                     }
                     else if (user.UserType == 2)
                     {
@@ -118,9 +126,21 @@ namespace SupervisorMobility.Client.Pages.PATPage
 
         private async void ShowAreas()
         {
+            _SSVs.Clear();
+            ssvId = 0;
             _pat.AreaId = 0;
             _pat.DistributionId = 0;
             _areas = await AreaServices.GetAreas(_pat.PlantId);
+
+            foreach (User usr in _allUsers)
+            {
+                if (usr.UserType == 2 && usr.PlantId == _pat.PlantId)
+                {
+                    _SSVs.Add(usr);
+                }
+
+            }
+
         }
 
         private async void ShowDistributions()
@@ -131,10 +151,27 @@ namespace SupervisorMobility.Client.Pages.PATPage
             StateHasChanged();
         }
 
+        private void ShowSupervisors()
+        {
+            _supervisors.Clear();
+            _pat.SupervisorId = 0;
+
+            foreach(User sv in _allUsers)
+            {
+                if(sv.SuperiorId == ssvId)
+                _supervisors.Add(sv);
+            }
+            StateHasChanged();
+        }
 
         // Create Pat
         async void CreatePatAsync()
         {
+            if(user.UserType == 1)
+            {
+                _pat.SSVresponsibleID = ssvId;
+            }
+
             var result = await PATsServices.CreatePat(_pat);
             if(result != null)
             {
