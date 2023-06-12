@@ -7,7 +7,7 @@ namespace SupervisorMobility.Client.Data.Entities
     public class PAT
     {
         public int PATid { get; set; }
-
+        public int Status { get; set; }
         public int SupervisorId { get; set; }
 
         public User? Supervisor

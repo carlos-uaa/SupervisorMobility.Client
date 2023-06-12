@@ -172,6 +172,8 @@ namespace SupervisorMobility.Client.Pages.PATPage
                 _pat.SSVresponsibleID = ssvId;
             }
 
+            _pat.Status = 1;
+
             var result = await PATsServices.CreatePat(_pat);
             if(result != null)
             {

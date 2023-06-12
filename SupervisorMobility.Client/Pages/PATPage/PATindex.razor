@@ -47,13 +47,13 @@ else
             <MudSpacer />
             <MudTextField @bind-Value="@searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
             <MudSpacer />
-            @if(user.UserType == 1 || user.UserType == 3)
+            @if (user.UserType == 1 || user.UserType == 3)
             {
                 <MudButton @onclick="(() => CreatePat())">
                     <MudText>Create PAT</MudText>
                     <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Pat" Color="Color.Primary"></MudIcon>
                 </MudButton>
-                
+
             }
         </ToolBarContent>
         <HeaderContent>
@@ -74,6 +74,9 @@ else
             </MudTh>
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.Distribution?.Description)"><MudText>Distribution</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.Status)"><MudText>Status</MudText></MudTableSortLabel>
             </MudTh>
             <MudTh>
                 <MudText Align="Align.Center">Actions</MudText>
@@ -98,10 +101,32 @@ else
             <MudTd DataLabel="Distribution">
                 <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
             </MudTd>
+            <MudTd DataLabel="Distribution">
+                <MudText Align="Align.Center">
+                    @switch (context.Status)
+                    {
+                        case 1:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">New</MudChip>
+                            break;
+                        case 2:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">Approved</MudChip>
+                            break;
+                    }
+                </MudText>
+            </MudTd>
             <MudTd DataLabel="Actions">
                 <MudText Align="Align.Center">
-                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => PatDetails(context.PATid))"></MudIconButton>
-                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))"></MudIconButton>
+                    <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => PatDetails(context.PATid))">PAT Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))">Delete PAT</MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                   @* <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => PatDetails(context.PATid))"></MudIconButton>
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))"></MudIconButton>*@
                 </MudText>
             </MudTd>
         </RowTemplate>
@@ -155,14 +180,14 @@ else
         {
             await GetUserAsync();
 
-            if(user != null)
+            if (user != null)
             {
-                if(user.UserType == 1)
+                if (user.UserType == 1)
                 {
                     Console.WriteLine("Es admin");
                     _Pats = await PATsServices.GetAllPATs();
                 }
-                else if(user.UserType == 2)
+                else if (user.UserType == 2)
                 {
                     Console.WriteLine("Es SSV");
 
@@ -180,29 +205,29 @@ else
     }
 
 
-        //Local storage user
-        private async Task GetUserAsync()
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
         {
-            if (!await TryGetAsync())
-            {
-                user = new();
-            }
+            user = new();
         }
+    }
 
-        private async Task<bool> TryGetAsync()
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
         {
-            bool hasProperty = await HasPropertyAsync();
-            if (hasProperty)
-            {
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
 
-            }
-            return hasProperty;
         }
+        return hasProperty;
+    }
 
-        private async Task<bool> HasPropertyAsync()
-            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
     // Create pat
     void CreatePat()

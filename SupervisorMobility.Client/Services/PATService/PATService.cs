@@ -155,5 +155,17 @@ namespace SupervisorMobility.Client.Services.PATService
 
         }
 
+        // Update pat
+        public async Task<bool> UpdatePat(PAT pat)
+        {
+            var response = await _http.PutAsJsonAsync($"PAT/{pat.PATid}", pat);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

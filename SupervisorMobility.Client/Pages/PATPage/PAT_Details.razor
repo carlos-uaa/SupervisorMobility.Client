@@ -9,8 +9,9 @@
 @inject IAreaService AreasServices
 @inject IOperationService OperationsServices
 @inject IPATService PATsServices
-@inject IJSRuntime JS
+@inject IJSRuntime JSRuntime
 @inject IILUService ILUServices
+@inject ISnackbar Snackbar
 
 @*Title*@
 <PageTitle>Supervisor Mobility | PAT Details</PageTitle>
@@ -73,6 +74,29 @@
 
 @if (ShowTable)
 {
+    <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
+        <MudText Typo="Typo.h6">PAT Details </MudText>
+        <MudItem Style="justify-content: end" Class="ml-auto">
+            <MudItem Class="d-flex">
+                @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status == 1)
+                {
+                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                    New
+                </MudChip>
+                }
+                @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
+                {
+                    <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">Approve PAT</MudButton>
+                }
+                else if(_pat?.Status == 2)
+                {
+                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                        Approved!
+                    </MudChip>
+                }
+            </MudItem>
+        </MudItem>
+    </MudItem>
     <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
     <thead>
         <tr>
@@ -456,6 +480,24 @@ else
     </DialogActions>
 </MudDialog>
 
+@*Sign PAT modal*@
+    <MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+            <MudText Typo="Typo.h6">Confirm</MudText>
+            <MudText Class="mt-4 mb-4"> <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+                are you sure you want to approve this PAT?
+            </MudText>
+            <MudText Class="mt-4 mb-4">
+                Once approved, it cannot be modified.
+            </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseSign" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton @onclick="(() => ApprovePat())" Color="Color.Info" StartIcon="@Icons.Material.Filled.PlaylistAddCheck" Variant="Variant.Filled">Approve PAT</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
 @code {
     [Parameter]
     public int patID { get; set; }
@@ -500,14 +542,61 @@ else
             Selector = (e) => e.OperationId
         };
 
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
     protected async override Task OnInitializedAsync()
     {
-        _pat = await PATsServices.getPat(patID);
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+            await GetUserAsync();
 
+            _pat = await PATsServices.getPat(patID);
 
-        await PrepareDataTable();
+            await PrepareDataTable();
+            StateHasChanged();
+        }
+
 
     }
+
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+        {
+            user = new();
+        }
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
+
 
     private async Task PrepareDataTable()
     {
@@ -571,7 +660,7 @@ else
 
         ShowTable = true;
         StateHasChanged();
-        await JS.InvokeVoidAsync("blazorUtils.setDynamicLeft");
+        await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
 
     }
 
@@ -703,5 +792,32 @@ else
             //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
         }
     }
+
+    //Finished Job observation
+    private bool visibleSign = false;
+    private void OpenSignComment()
+    {
+        visibleSign = true;
+    }
+    void CloseSign() => visibleSign = false;
+    private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
+
+    public async Task ApprovePat()
+    {
+
+        _pat!.Status = 2;
+        var result = await PATsServices.UpdatePat(_pat);
+
+        if (result)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"PAT Approved succesfully!", Severity.Info);
+            NavigationManager.NavigateTo($"PAT");
+        }
+
+        visibleSign = false;        
+    }
+
 
 }
