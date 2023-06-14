@@ -70,7 +70,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
             visibleDelete = true;
         }
         void CloseDeleteModal() => visibleDelete = false;
-        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+        
+        DialogOptions dialogDeleteOptions =  new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
 
     }
 }

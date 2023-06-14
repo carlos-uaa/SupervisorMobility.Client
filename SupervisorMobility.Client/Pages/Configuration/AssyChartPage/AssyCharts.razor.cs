@@ -244,7 +244,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
         void CloseHoe() => HoeDialog = false;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+     
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
         private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
         {
