@@ -27,7 +27,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
         private bool visible = false;
         private int lupId;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -317,6 +317,6 @@ namespace SupervisorMobility.Client.Pages.LupPage
             visibleDelete = true;
         }
         void CloseDeleteModal() => visibleDelete = false;
-        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
     }
 }

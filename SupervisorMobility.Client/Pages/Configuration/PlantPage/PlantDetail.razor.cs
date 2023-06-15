@@ -67,6 +67,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
             visibleDelete = true;
         }
         void CloseDeleteModal() => visibleDelete = false;
-        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
     }
 }
