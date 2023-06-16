@@ -128,10 +128,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.PlantId = (int)user.PlantId;
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    _allUsers = await UsersService.GetUsersWhitCollections();
 
                 }
-                else
+                else if(user.UserType == 3)
                 {
 
                     _jobObservation.PlantId = (int)user.PlantId;
@@ -226,6 +226,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     }
                 }
 
+            }
+            else if(user.UserType == 2) 
+            {
+                foreach (User sv in _allUsers)
+                {
+                    if (sv.UserType == 3 && sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId && sv.SuperiorId == user.UserId)
+                    {
+                        _supervisors.Add(sv);
+                    }
+                }
             }
 
 
