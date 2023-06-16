@@ -21,6 +21,8 @@ namespace SupervisorMobility.Client.Services.UserService
         Task<User> GetUserByObjectIdWithCollections(string ObjectId);
         Task<User> GetUserByEmailWithCollections(string email);
         Task<User> GetUserAndCollection(int UserId);
+        Task<List<User>> GetUserByTypeAndCollection(int userType);
+        Task<List<User>> GetUserByType(int userType);
 
         //UPDATE
         Task<bool> UpdateUser(int UserId, User _newUser);

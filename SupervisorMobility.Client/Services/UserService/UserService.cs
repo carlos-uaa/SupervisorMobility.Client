@@ -162,8 +162,58 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return null;
+        }
 
+        public async Task<List<User>> GetUserByTypeAndCollection(int userType)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections=true");
 
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public async Task<List<User>> GetUserByType(int userType)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections=false");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
         }
 
         public async Task<List<User>> GetUsers()
