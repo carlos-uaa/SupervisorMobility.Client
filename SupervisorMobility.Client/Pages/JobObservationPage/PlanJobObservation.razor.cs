@@ -27,6 +27,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+
+        List<User> _supervisors { get; set; } = new();
+        List<User> _allUsers = new();
+
+
         List<Lup> _tempLup { get; set; } = new();
         Lup lup { get; set; } = new();
         List<Lup> _lup { get; set; } = new();
@@ -115,14 +120,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 {
                     _jobObservation.PlantId = 0;
                     _jobObservation.AreaId = 0;
-                    _jobObservation.SupervisorId = user.UserId;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    _jobObservation.SupervisorId = 0;
+                    _allUsers = await UsersService.GetUsersWhitCollections();
                 }
                 else if (user.UserType == 2)
                 {
                     _jobObservation.PlantId = (int)user.PlantId;
                     _jobObservation.AreaId = 0;
-                    _jobObservation.SupervisorId = user.UserId;
+                    _jobObservation.SupervisorId = 0;
                     _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
 
                 }
@@ -209,6 +214,23 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowDistributions()
         {
+            _jobObservation.SupervisorId = 0;
+            _supervisors.Clear();
+            if(user.UserType == 1)
+            {
+                foreach (User sv in _allUsers)
+                {
+                    if (sv.UserType == 3 && sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
+                    {
+                        _supervisors.Add(sv);
+                    }
+                }
+
+            }
+
+
+
+
             operatorUsers.Clear();
             _jobObservation.OperatorId = 0;
             //operator User
@@ -282,6 +304,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
+
+
+
+                if(user.UserType == 1)
+                {
+                    if(_jobObservation.SupervisorId == 0)
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Select a Supervisor first", Severity.Error);
+                        return;
+                    }
+                    _jobObservation.Supervisor = await UsersService.GetUser(_jobObservation.SupervisorId);
+                }
+
                 var formatedStartDate = _jobObservation.StartDate;
                 var formatedEndDate = _jobObservation.EndDate;
 

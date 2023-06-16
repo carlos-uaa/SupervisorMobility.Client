@@ -114,6 +114,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 var PatDistributionId = queryString["DistributionId"];
                 var PatOperationId = queryString["OperationId"];
                 var PatOperatorId = queryString["OperatorId"];
+                var PatSupervisorId = queryString["SupervisorId"];
 
                 _plants = await PlantServices.GetPlants();
 
@@ -128,9 +129,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservation.AreaId = int.Parse(PatAreaId);
 
                         _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
-                        _jobObservation.SupervisorId = user.UserId;
+                        _jobObservation.SupervisorId = int.Parse(PatSupervisorId);
 
-                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                        _jobObservation.Supervisor = await UsersService.GetUser(_jobObservation.SupervisorId);
 
                         _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
 
