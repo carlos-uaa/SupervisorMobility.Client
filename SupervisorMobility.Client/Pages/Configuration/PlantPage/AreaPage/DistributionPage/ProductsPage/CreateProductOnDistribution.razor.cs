@@ -13,17 +13,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         [Parameter]
         public int DistributionId { get; set; }
 
-        public List<Plant> _plants { get; set; } = new List<Plant>();
-        public List<Area> _areas { get; set; } = new List<Area>();
-
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "#"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Products", href: "/products"),
-            new BreadcrumbItem("ProductsDetail", href: "", disabled: true),
-            new BreadcrumbItem("New Distribution", href: "", disabled: true),
+            new BreadcrumbItem("Plants", href: "/plants"),
         };
 
         // Objects
@@ -31,13 +26,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public Area _area { get; set; }
         public Distribution _distribution { get; set; }
         public Product _product = new();
-        public List<Product> _products { get; set; } = new List<Product>();
 
+        private bool showui = false;
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _products = await ProductServices.GetProducts();
             _plant = await PlantServices.GetPlantById(PlantId);
             _area = await AreaServices.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionServices.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
@@ -47,15 +41,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _links.Add(new BreadcrumbItem($"{_area.Description}", href: $"plants/{PlantId}/areas/{AreaId}"));
             _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"));
             _links.Add(new BreadcrumbItem("Add Existent Product", href: "", disabled: true));
+            showui = true;
 
         }
 
-
-        async void UpdateAreas()
-        {
-            AreaId = 0;
-            _areas = await AreaServices.GetAreas(PlantId);
-        }
 
         void GoToProduct()
         {
@@ -70,11 +59,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
 
 
         // Create distribution
-        async void CreateDistributionAsync()
+        async void CreateProductInDistributionAsync()
         {
             Console.WriteLine($"plant{PlantId}  area{AreaId} dist {DistributionId} prod {_product.ProductId} product {_product.ProductId}");
 
-            var result = await DistributionServices.AddProduct(PlantId, AreaId, DistributionId, _product);
+            var result = await DistributionServices.CreateProduct(PlantId, AreaId, DistributionId, _product);
 
             if (result != null)
             {
