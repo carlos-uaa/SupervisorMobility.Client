@@ -44,10 +44,18 @@ namespace SupervisorMobility.Client.Shared
         public List<JobObservation> todayObservations = new();
         public List<JobObservation> thisWeekObservations = new();
 
-
+        private bool logged = false;
 
         protected async override Task OnInitializedAsync()
         {
+
+            logged = await HasPropertyAsync();
+            if (logged)
+            {
+                await GetUserAsync();
+                GlobalData.LoggedUser = user.Name;
+                StateHasChanged();
+            }
             //await LateDates();
 
             //user
@@ -101,6 +109,7 @@ namespace SupervisorMobility.Client.Shared
         public async Task Refresh()
         {
             await GetUserAsync();
+
             lateObservations.Clear();
             todayObservations.Clear();
             thisWeekObservations.Clear();
@@ -109,6 +118,7 @@ namespace SupervisorMobility.Client.Shared
             if (user != null)
             {
                 jobObservations = await JobObservationService.GetAllJobObservations();
+                jobObservations = jobObservations.Where(j => j.IsActive == true).ToList();
 
                 foreach (var jobobs in jobObservations)
                 {
@@ -148,6 +158,7 @@ namespace SupervisorMobility.Client.Shared
         public async Task LateDates()
         {
             jobObservations = await JobObservationService.GetAllJobObservations();
+            jobObservations = jobObservations.Where(j => j.IsActive == true).ToList();
             foreach (var jobobs in jobObservations)
             {
                 if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)

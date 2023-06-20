@@ -19,8 +19,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
         public List<Group> _groups { get; set; } = new();
-        public List<JobObservation> _jobObservation { get; set; } = new();
 
+        public List<JobObservation> _allJobObservations { get; set; } = new();
+        public List<JobObservation> _jobObservations { get; set; } = new();
+
+        List<User> _allSSVs = new();
+        List<User> _SSVs = new();
+        List<User> _supervisors = new();
+        List<User> _allSupervisors = new();
+        public int ssvId;
+        public int supervisorId;
+
+        public string SupervisorName = string.Empty;
 
 
         public int plantId;
@@ -43,6 +53,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
 
         DisplayNameLabelClass model = new();
+
+
+
+
 
         public class DisplayNameLabelClass
         {
@@ -87,6 +101,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
                 if (user != null)
                 {
+                    _allJobObservations = await JobObservationService.GetAllJobObservations();
+                    _allJobObservations = _allJobObservations.Where(j => j.IsActive == true).ToList();
+
+                    _jobObservations = _allJobObservations;
+
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
 
@@ -95,29 +114,45 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         plantId = 0;
                         areaId = 0;
                         groupId = 0;
+                        ssvId = 0;
+                        supervisorId = 0;
+                        _allSSVs = await UsersService.GetUserByTypeAndCollection(2);
+                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
                     }
                     else if(user.UserType == 2)
                     {
                         plantId = (int)user.PlantId;
                         areaId = 0;
                         groupId = (int)user.GroupId;
+                        ssv = user.Name;
+                        ssvId = user.UserId;
+                        supervisorId = 0;
+                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
                     }
-                    else
+                    else if(user.UserType == 3)
                     {
 
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
                         groupId = (int)user.GroupId;
                         _areas = await AreaServices.GetAreas(plantId);
+                        supervisor = user.Name;
+                        supervisorId = user.UserId;
+                        ssv = user.Superior.Name;
+                        ssvId = (int)user.SuperiorId;
+
+                        _jobObservations = new();
+                        foreach (var jobobs in _allJobObservations)
+                        {
+                            if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                            {
+                                _jobObservations.Add(jobobs);
+                            }
+                        }
                     }
 
-                    supervisor = user.Name;
-                    StateHasChanged();
                 }
-                _jobObservation = await JobObservationService.GetAllJobObservations();
-                _plants = await PlantServices.GetPlants();
-                _groups = await GroupService.GetGroups();
-
+                    StateHasChanged();
             }
         }
 
@@ -149,8 +184,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //Change the status if the observation is late
         public async Task LateDates()
         {
-            _jobObservation = await JobObservationService.GetAllJobObservations();
-            foreach (var jobobs in _jobObservation)
+            _allJobObservations = await JobObservationService.GetAllJobObservations();
+            _allJobObservations = _allJobObservations.Where(j => j.IsActive == true).ToList();
+
+            foreach (var jobobs in _allJobObservations)
             {
                 if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
                 {
@@ -250,8 +287,124 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private async void ShowAreas()
         {
+
+            _jobObservations = _allJobObservations;
+            ssvId = 0;
+            _SSVs.Clear();
+
+            supervisorId = 0;
+            _supervisors.Clear();
+
+            _supervisors.Clear();
+            supervisorId = 0;
+
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
+
+            StateHasChanged();
+
+        }
+
+        private void ShowSSV()
+        {
+
+
+            if (user.UserType == 1)
+            {
+
+                supervisorId = 0;
+                _supervisors.Clear();
+
+                _SSVs.Clear();
+                ssvId = 0;
+
+
+                foreach (User ssv in _allSSVs)
+                {
+                    if (ssv.PlantId == plantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == areaId) != -1)
+                    {
+                        _SSVs.Add(ssv);
+                    }
+                }
+
+            }
+            else if(user.UserType == 2)
+            {
+
+                supervisorId = 0;
+                _supervisors.Clear();
+
+                foreach (User sv in _allSupervisors)
+                {
+                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                        _supervisors.Add(sv);
+                }
+
+
+                _jobObservations = new();
+                foreach (var jobobs in _allJobObservations)
+                {
+                    foreach (User usr in user.Subordinates)
+                    {
+                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+                }
+            }
+            StateHasChanged();
+        }
+
+        private void ShowSupervisors()
+        {            
+            
+            _supervisors.Clear();
+            supervisorId = 0;
+            
+            User SeniorSV = new();
+            foreach(User usr in _allSSVs)
+            {
+                if(usr.UserId == ssvId)
+                {
+                    SeniorSV = usr;
+                }
+            }
+
+
+            _jobObservations = new();
+            foreach (var jobobs in _allJobObservations)
+            {
+                foreach(User usr in SeniorSV.Subordinates)
+                {
+                    if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                    {
+                        _jobObservations.Add(jobobs);
+                    }
+                }
+            }
+
+
+
+            foreach (User sv in _allSupervisors)
+            {
+                if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                    _supervisors.Add(sv);
+            }
+            StateHasChanged();
+        }
+
+        private void JobObservationsBySupervisor()
+        {
+            _jobObservations = new();
+            foreach (var jobobs in _allJobObservations)
+            {
+                if (jobobs.SupervisorId == supervisorId)
+                {
+                    _jobObservations.Add(jobobs);
+                }
+            }
+            StateHasChanged();
         }
 
         private void OnDateChanged(DateTime? value)

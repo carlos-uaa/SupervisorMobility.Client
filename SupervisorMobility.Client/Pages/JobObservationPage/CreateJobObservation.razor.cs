@@ -27,6 +27,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+
+        List<User> _supervisors { get; set; } = new();
+        List<User> _allUsers = new();
+
+
         List<Lup> _tempLup { get; set; } = new();
         Lup lup { get; set; } = new();
         List<Lup> _lup { get; set; } = new();
@@ -143,10 +148,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
                         //operator User
-                        users = await UsersService.GetUsers();
+                        users = await UsersService.GetUserByType(4);
                         foreach (var operatorUser in users)
                         {
-                            if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                            if (operatorUser.AreaId == _jobObservation.AreaId)
                             {
                                 operatorUsers.Add(operatorUser);
                             }
@@ -158,8 +163,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     {
                         _jobObservation.PlantId = 0;
                         _jobObservation.AreaId = 0;
-                        _jobObservation.SupervisorId = user.UserId;
-                        _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                        _jobObservation.SupervisorId = 0;
+                        _allUsers = await UsersService.GetUserByType(3);
                     }
 
                 }
@@ -167,8 +172,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 {
                     _jobObservation.PlantId = (int)user.PlantId;
                     _jobObservation.AreaId = 0;
-                    _jobObservation.SupervisorId = user.UserId;
-                    _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
+                    _jobObservation.SupervisorId = 0;
+                    _allUsers = await UsersService.GetUserByType(3);
 
 
                 }
@@ -196,10 +201,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
                         //operator User
-                        users = await UsersService.GetUsers();
+                        users = await UsersService.GetUserByType(4);
                         foreach (var operatorUser in users)
                         {
-                            if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                            if (operatorUser.AreaId == _jobObservation.AreaId)
                             {
                                 operatorUsers.Add(operatorUser);
                             }
@@ -221,10 +226,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
                         //operator User
-                        users = await UsersService.GetUsers();
+                        users = await UsersService.GetUserByType(4);
                         foreach (var operatorUser in users)
                         {
-                            if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.UserType == 4)
+                            if (user != null && operatorUser.AreaId == user.AreaId)
                             {
                                 operatorUsers.Add(operatorUser);
                             }
@@ -286,13 +291,38 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowDistributions()
         {
+            _jobObservation.SupervisorId = 0;
+            _supervisors.Clear();
+            if (user.UserType == 1)
+            {
+                foreach (User sv in _allUsers)
+                {
+                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
+                    {
+                        _supervisors.Add(sv);
+                    }
+                }
+
+            }
+            else if (user.UserType == 2)
+            {
+                foreach (User sv in _allUsers)
+                {
+                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId && sv.SuperiorId == user.UserId)
+                    {
+                        _supervisors.Add(sv);
+                    }
+                }
+            }
+
+
             operatorUsers.Clear();
             _jobObservation.OperatorId = 0;
             //operator User
-            users = await UsersService.GetUsers();
+            users = await UsersService.GetUserByType(4);
             foreach (var operatorUser in users)
             {
-                if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.UserType == 4)
+                if (operatorUser.AreaId == _jobObservation.AreaId)
                 {
                     operatorUsers.Add(operatorUser);
                 }
@@ -675,7 +705,22 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            lup.Observer = _jobObservation.Supervisor.Name;
+            if(_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First select a Supervisor", Severity.Error);
+                return;
+            }
+
+            foreach(User supervisor in _supervisors)
+            {
+                if (_jobObservation.SupervisorId == supervisor.UserId)
+                {
+                    lup.Observer = supervisor.Name;
+                    
+                }
+            }
             lup.JobObservationId = 0;
             lup.Pillar = pillar;
             lup.Status = 1;
