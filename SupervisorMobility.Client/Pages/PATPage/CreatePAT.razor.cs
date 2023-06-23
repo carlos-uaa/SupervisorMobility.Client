@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
 namespace SupervisorMobility.Client.Pages.PATPage
 {
@@ -21,9 +22,11 @@ namespace SupervisorMobility.Client.Pages.PATPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
 
-        List<User> _allUsers = new();
+        List<User> _allSSVs = new();
         List<User> _SSVs = new();
         List<User> _supervisors = new();
+        List<User> _allSupervisors = new();
+
         public int ssvId;
 
         public string SupervisorName = string.Empty;
@@ -61,14 +64,11 @@ namespace SupervisorMobility.Client.Pages.PATPage
                         _pat.PlantId = 0;
                         _pat.AreaId = 0;
 
-                        _allUsers = await UsersService.GetUsersWhitCollections();
+                        _allSSVs = await UsersService.GetUserByTypeAndCollection(2);
+                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
 
                     }
-                    else if (user.UserType == 2)
-                    {
-
-                    }
-                    else
+                    else if (user.UserType == 3)
                     {
                         _pat.PlantId = (int)user.PlantId;
                         _areas = await AreaServices.GetAreas(_pat.PlantId); 
@@ -126,29 +126,43 @@ namespace SupervisorMobility.Client.Pages.PATPage
 
         private async void ShowAreas()
         {
+            _supervisors.Clear();
+            _pat.SupervisorId = 0;
             _SSVs.Clear();
             ssvId = 0;
             _pat.AreaId = 0;
             _pat.DistributionId = 0;
             _areas = await AreaServices.GetAreas(_pat.PlantId);
 
-            foreach (User usr in _allUsers)
-            {
-                if (usr.UserType == 2 && usr.PlantId == _pat.PlantId)
-                {
-                    _SSVs.Add(usr);
-                }
-
-            }
-
         }
 
         private async void ShowDistributions()
         {
+            _SSVs.Clear();
+            ssvId = 0;
+
+            _supervisors.Clear();
+            _pat.SupervisorId = 0;
 
             _pat.DistributionId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
+
+
+            foreach (User ssv in _allSSVs)
+            {
+                if (ssv.PlantId == _pat.PlantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == _pat.AreaId) != -1)
+                {
+                    _SSVs.Add(ssv);
+                }
+            }
+
+
+
             StateHasChanged();
+
+
+
+
         }
 
         private void ShowSupervisors()
@@ -156,10 +170,19 @@ namespace SupervisorMobility.Client.Pages.PATPage
             _supervisors.Clear();
             _pat.SupervisorId = 0;
 
-            foreach(User sv in _allUsers)
+            User SeniorSV = new();
+            foreach (User usr in _allSSVs)
             {
-                if(sv.SuperiorId == ssvId)
-                _supervisors.Add(sv);
+                if (usr.UserId == ssvId)
+                {
+                    SeniorSV = usr;
+                }
+            }
+
+            foreach (User sv in _allSupervisors)
+            {
+                if (sv.SuperiorId == ssvId && sv.AreaId == _pat.AreaId)
+                    _supervisors.Add(sv);
             }
             StateHasChanged();
         }

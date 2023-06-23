@@ -123,6 +123,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
                     _allSupervisors = await UsersService.GetUserByType(3);
+                    _operators = await UsersService.GetUserByType(4);
+
                 }
                 else if (user.UserType == 2)
                 {
@@ -130,6 +132,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
                     _allSupervisors = await UsersService.GetUserByType(3);
+                    _operators = await UsersService.GetUserByType(4);
 
                 }
                 else if(user.UserType == 3)
@@ -210,6 +213,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.AreaId = 0;
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
+            _jobObservation.OperatorId = 0;
+            _jobObservation.SupervisorId = 0;
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
 
@@ -239,19 +244,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 }
             }
 
-
+            _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             StateHasChanged();
         }
 
-        private async void ShowOperators()
+        private void ShowOperators()
         {
-            operatorUsers.Clear();
+            operatorUsers = new();
             _jobObservation.OperatorId = 0;
             //operator User
-            _operators = await UsersService.GetUserByType(4);
             foreach (var operatorUser in _operators)
             {
                 if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
