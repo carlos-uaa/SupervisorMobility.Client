@@ -22,14 +22,14 @@ namespace SupervisorMobility.Client.Data.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resource {
+    public class Resource1 {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resource() {
+        internal Resource1() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SupervisorMobility.Client.Data.Resources.Resource", typeof(Resource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SupervisorMobility.Client.Data.Resources.Resource1", typeof(Resource1).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,56 +61,11 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Attendance.
-        /// </summary>
-        public static string attendance {
-            get {
-                return ResourceManager.GetString("attendance", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Busca una cadena traducida similar a Configuration.
         /// </summary>
         public static string configuration {
             get {
                 return ResourceManager.GetString("configuration", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Home.
-        /// </summary>
-        public static string home {
-            get {
-                return ResourceManager.GetString("home", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Job Observations.
-        /// </summary>
-        public static string jobObservations {
-            get {
-                return ResourceManager.GetString("jobObservations", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Job Observation Schedule.
-        /// </summary>
-        public static string jobObservationSchedule {
-            get {
-                return ResourceManager.GetString("jobObservationSchedule", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a To Do (LUP).
-        /// </summary>
-        public static string toDoLup {
-            get {
-                return ResourceManager.GetString("toDoLup", resourceCulture);
             }
         }
     }
