@@ -465,6 +465,17 @@
     </DialogActions>
 </MudDialog>
 
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Se recargar la pagina, seguro? <br>
+        <b><i>Are you sure you want to delete the upper field?</i></b>
+
+
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox> 
 
 @code {
     //idk how this works but im add ~ Mika
@@ -483,7 +494,7 @@
     private string json = string.Empty;
 
     bool _drawerOpen = true;
-    bool languageCheck = true;
+    bool languageCheck = false;
     bool _IsHovering = false;
     bool NoifyDialog = false;
     [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
@@ -492,51 +503,83 @@
 
     private bool logged = false;
 
-    private string CurrentCulture { get; set; } = "es-ES"; // Establece el idioma actual como español
+    //confirmation message edit info
+    MudMessageBox mbox { get; set; }
 
-    private async Task ChangeCulture()
-    {
-        // Cambiar entre español e inglés
-        switch (CurrentCulture)
-        {
-            case "es-ES":
-                CurrentCulture = "en-US";
-                break;
-            case "en-US":
-                CurrentCulture = "es-ES";
-                break;
-        }
-
-        // Llama a una función JavaScript para cambiar el CultureInfo en el cliente
-        await js.InvokeVoidAsync("changeCulture", CurrentCulture);
-
-        // Recarga la página después de cambiar el CultureInfo
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-    }
 
     private async void LanguageSwitch()
     {
-    
-        Console.WriteLine($"Lenguage: {languageCheck} {CultureInfo.CurrentCulture.Name}");
 
-        var cultureInfo = languageCheck ? new CultureInfo("es-ES") : new CultureInfo("en-US");
+        bool result = await OpenMessageConfirmation();
+        if (result)
+        {
+            Console.WriteLine($"Lenguage: {languageCheck} {CultureInfo.CurrentCulture.Name}");
+            StateHasChanged();
 
-        CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-        CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+            var cultureInfo = languageCheck ? new CultureInfo("es-ES") : new CultureInfo("en-US");
 
-        languageCheck = !languageCheck;
-        Console.WriteLine($"Lenguage Despues: {languageCheck} {CultureInfo.CurrentCulture.Name}");
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+            Console.WriteLine($"Lenguage Despues: {languageCheck} {CultureInfo.CurrentCulture.Name}");
+            StateHasChanged();
+
+
+            switch (CultureInfo.CurrentCulture.Name)
+            {
+                case "es-ES":
+                case "es-419":
+                    js.InvokeVoidAsync("localStorage.setItem", "i18nextLng", "es-ES");
+                    break;
+                case "en-US":
+                    js.InvokeVoidAsync("localStorage.setItem", "i18nextLng", "en-US");
+                    break;
+            }
+
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+
+        }
+        else
+        {
+            languageCheck = !languageCheck;
+            StateHasChanged();
+        }
+
 
         // Aquí puedes realizar cualquier acción adicional que desees cuando se cambie el estado del mudSwitch
     }
 
+    private async Task<bool> OpenMessageConfirmation()
+    {
+        bool? result = await mbox.Show();
+
+        return result == null ? false : true;
+    }
+
     protected async override Task OnInitializedAsync()
     {
-        var cultureInfo = languageCheck ? new CultureInfo("es-ES") : new CultureInfo("en-US");
+        Console.WriteLine($"Start Lenguage: {languageCheck} {CultureInfo.CurrentCulture.Name}");
+        var currentLanguage = await js.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+        switch (currentLanguage)
+        {
+            case "es-ES":
+            case "es-419":
+                var cultureInfo = new CultureInfo("es-ES");
+                languageCheck = true;
+                CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+                CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+                break;
+            case "en-US":
+                var cultureInfous = new CultureInfo("en-US");
+                CultureInfo.DefaultThreadCurrentCulture = cultureInfous;
+                CultureInfo.DefaultThreadCurrentUICulture = cultureInfous;
+                languageCheck = false;
+                break;
+        }
 
-        CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-        CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-      
+
+        Console.WriteLine($"Start Lenguage End: {languageCheck} {CultureInfo.CurrentCulture.Name}");
+
 
 
         logged = await HasPropertyAsync();
@@ -573,7 +616,7 @@
 
         //json = JsonSerializer.Serialize<User>(user);
         //await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-
+        StateHasChanged();
     }
 
     private async Task LogInAsAdmin()
