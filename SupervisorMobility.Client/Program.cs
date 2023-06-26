@@ -38,6 +38,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Services
+builder.Services.AddLocalization();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
