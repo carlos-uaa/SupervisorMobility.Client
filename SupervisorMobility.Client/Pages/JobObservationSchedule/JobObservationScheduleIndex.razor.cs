@@ -102,7 +102,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 if (user != null)
                 {
                     _allJobObservations = await JobObservationService.GetAllJobObservations();
-                    _allJobObservations = _allJobObservations.Where(j => j.IsActive == true).ToList();
 
                     _jobObservations = _allJobObservations;
 
@@ -185,7 +184,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         public async Task LateDates()
         {
             _allJobObservations = await JobObservationService.GetAllJobObservations();
-            _allJobObservations = _allJobObservations.Where(j => j.IsActive == true).ToList();
 
             foreach (var jobobs in _allJobObservations)
             {

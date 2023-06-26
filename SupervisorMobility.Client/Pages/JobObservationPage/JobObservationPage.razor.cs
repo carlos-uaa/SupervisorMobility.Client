@@ -107,7 +107,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _plants = await PlantServices.GetPlants();
 
                         _jobObservationsAux = await JobObservationService.GetAllJobObservations();
-                        _jobObservationsAux = _jobObservationsAux.Where(j => j.IsActive == true).ToList();
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             _jobObservations.Add(jobobs);
@@ -144,7 +143,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         ClearFilters();
                         plantId = (int)user.PlantId;
                         _jobObservationsAux = await JobObservationService.GetAllJobObservations();
-                        _jobObservationsAux = _jobObservationsAux.Where(j => j.IsActive == true).ToList();
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if (plantId == jobobs.PlantId)
@@ -192,7 +190,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
                         _jobObservationsAux = await JobObservationService.GetAllJobObservations();
-                        _jobObservationsAux = _jobObservationsAux.Where(j => j.IsActive == true).ToList();
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if(plantId == jobobs.PlantId &&  areaId == jobobs.AreaId && user.UserId == jobobs.SupervisorId)
