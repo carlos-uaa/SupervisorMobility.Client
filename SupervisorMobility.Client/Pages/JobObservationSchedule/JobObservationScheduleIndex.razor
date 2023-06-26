@@ -12,10 +12,17 @@
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
 @inject IJobObservationService JobObservationService
+@inject IUserService UsersService
 @inject ISnackbar Snackbar
-
 @inject NavigationManager NavigationManager
 
+<style>
+
+    .scroll1::-webkit-scrollbar {
+        width: 4px;
+    }
+
+</style>
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Job Observation Index</PageTitle>
@@ -48,46 +55,46 @@
             <MudText Typo="Typo.h6">Programa de Observación de Operación</MudText>
         </MudItem>
         <MudPaper Class="d-flex align-center justify-center mud-width-full pa-4" Elevation="0">
-            <MudItem xs="12" sm="6" md="5" lg="5">
+            <MudItem xs="12" sm="6" md="3" lg="3">
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true>
-                    <tbody >
+                    <tbody>
                         <tr>
                             <th colspan="2" style="text-align: center;">Symbology to be used</th>
                         </tr>
-                        <tr >
+                        <tr>
                             <td>Planned Job Observation</td>
                             <td style="text-align:center;">
                                 <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
                             </td>
-                         </tr>
-                         <tr>
+                        </tr>
+                        <tr>
                             <td>Job Observation In Progress</td>
                             <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" /></td>
-                         </tr>
-                         <tr>
+                        </tr>
+                        <tr>
                             <td>Finished Job Observation</td>
                             <td style="text-align:center;"><MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" /></td>
-                         </tr>
-@*                         <tr>
-                             <td colspan="2">
-                                <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                    <ActivatorContent>
-                                        <MudButton Icon="@Icons.Material.Filled.Info" FullWidth=true>Show All Job Observation Symbols</MudButton>
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">Planned</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Block" IconColor="Color.Info">Planned with SSV coaching</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">In Progress</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">Late</MudButton></MudMenuItem>
-                                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Circle" IconColor="Color.Success">Finalized</MudButton></MudMenuItem>
-                                    </ChildContent>
-                                </MudMenu>
-                             </td>
-                         </tr>*@
+                        </tr>
+                        @*                         <tr>
+                        <td colspan="2">
+                        <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                        <MudButton Icon="@Icons.Material.Filled.Info" FullWidth=true>Show All Job Observation Symbols</MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">Planned</MudButton></MudMenuItem>
+                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Block" IconColor="Color.Info">Planned with SSV coaching</MudButton></MudMenuItem>
+                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">In Progress</MudButton></MudMenuItem>
+                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">Late</MudButton></MudMenuItem>
+                        <MudMenuItem><MudButton StartIcon="@Icons.Material.Filled.Circle" IconColor="Color.Success">Finalized</MudButton></MudMenuItem>
+                        </ChildContent>
+                        </MudMenu>
+                        </td>
+                        </tr>*@
                         <tr>
                             <td colspan="2">
                                 <div class="pt-1 pb-4 pr-2">
-                                    <MudDatePicker Label="Month / Year" OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth"/>
+                                    <MudDatePicker Label="Month / Year" OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
                                 </div>
                             </td>
                         </tr>
@@ -95,11 +102,11 @@
                 </MudSimpleTable>
             </MudItem>
             <MudItem lg="1" md="1"></MudItem>
-            <MudItem xs="12" sm="6" md="5" lg="5" Class="ml-2">
+            <MudItem xs="12" sm="6" md="7" lg="7" Class="ml-2">
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Class="pt-3 pb-3">
                     <tbody>
                         <tr>
-                            <td>
+                            <td width="50%">
                                 @if (user.UserType == 1)
                                 {
                                     @*Mud select of Plants for Admin*@
@@ -117,7 +124,8 @@
                                     <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
                                         @foreach (var type in _plants)
                                         {
-                                            if(type.PlantId == user.PlantId){
+                                            if (type.PlantId == user.PlantId)
+                                            {
                                                 <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                             }
                                         }
@@ -126,43 +134,59 @@
 
                             </td>
                             <td>
-                                @if(user.UserType == 1){
-                                    @*Mud select of Areas for Admin*@
-                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
-                                        <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
-                                        @foreach (var type in _areas)
-                                        {
-                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                @if (user.UserType == 1)
+                                {
+                                    @if (plantId != 0)
+                                    {
+                                        @*Mud select of Areas for Admin*@
+                                        <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowSSV">
+                                            <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
+                                            @foreach (var type in _areas)
+                                            {
+                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        @*Mud select for SSV *@
+                                        <MudSelect T="int" Label="Area" Variant="Variant.Text" Disabled Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
+                                            <MudSelectItem Disabled="true" Value="0">First Select a Plant</MudSelectItem>
+                                        </MudSelect>
+                                    }
+
                                 }
-                                else if(user.UserType == 2){
+                                else if (user.UserType == 2)
+                                {
                                     @*Mud select of Areas for SSV *@
-                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
-                                        <MudSelectItem Disabled="true" Value="0">Select a Area</MudSelectItem>
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowSSV">
+                                        <MudSelectItem Disabled="true" Value="0">Select an Area</MudSelectItem>
                                         @foreach (var type in user.Areas)
                                         {
                                             <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                         }
                                     </MudSelect>
                                 }
-                                else{
-                                @*Mud select of Areas for SV *@
-                                <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
-                                    @foreach (var type in _areas)
-                                    {
-                                        if(type.AreaId == user.AreaId){
+                                else
+                                {
+                                    @*Mud select of Areas for SV *@
+                                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select an Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowSSV">
+                                        @foreach (var type in _areas)
+                                        {
+                                            if (type.AreaId == user.AreaId)
+                                            {
 
-                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
                                         }
-                                    }
-                                </MudSelect>
+                                    </MudSelect>
                                 }
                             </td>
-                         </tr>
-                         <tr>
+                        </tr>
+                        <tr>
                             <td>
-                                @if(user.UserType == 1){
+                                @if (user.UserType == 1)
+                                {
                                     @*Mud select of Groups for Admin*@
                                     <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
                                         <MudSelectItem Disabled="true" Value="0">Select a Group</MudSelectItem>
@@ -172,12 +196,14 @@
                                         }
                                     </MudSelect>
                                 }
-                                else{
+                                else
+                                {
                                     @*Mud select of Groups *@
                                     <MudSelect T="int" Label="Group" Variant="Variant.Text" Placeholder="Select a Group" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
                                         @foreach (var type in _groups)
                                         {
-                                            if(type.GroupId == user.GroupId){
+                                            if (type.GroupId == user.GroupId)
+                                            {
                                                 <MudSelectItem Value="type.GroupId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                             }
                                         }
@@ -185,12 +211,109 @@
                                 }
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" RequiredError="SSV is required!" OnlyValidateIfDirty="true" />
+
+                                @if (user.UserType == 1)
+                                {
+                                    @if (plantId != 0 && areaId != 0)
+                                    {
+                                        @*Mud select for SSV for Admin *@
+                                        <MudSelect T="int" Label="SSV" Variant="Variant.Text" Placeholder="All SSV" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)" SelectedValuesChanged="ShowSupervisors">
+                                            <MudSelectItem Disabled="true" Value="0">All SSV</MudSelectItem>
+                                            @foreach (var ssv in _SSVs)
+                                            {
+                                                <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        @*Mud select for SSV *@
+                                        <MudSelect T="int" Label="SSV" Variant="Variant.Text" Disabled Placeholder="Select an SSV" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)" >
+                                            <MudSelectItem Disabled="true" Value="0">First Select an Area</MudSelectItem>
+                                        </MudSelect>
+                                    }
+
+                                }
+                                else if (user.UserType == 2)
+                                {
+                                    <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" RequiredError="SSV is required!" OnlyValidateIfDirty="true" ReadOnly/>
+                                }
+                                else if (user.UserType == 3)
+                                {
+
+                                    <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" RequiredError="SSV is required!" OnlyValidateIfDirty="true" ReadOnly />
+                                }
+
                             </td>
-                         </tr>
-                         <tr>
-                            <td >
-                                <MudTextField T="string" @bind-Value="supervisor" Label="Supervisor" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+                        </tr>
+                        <tr>
+                            <td>
+                                @if (user.UserType == 1)
+                                {
+
+                                    @if (ssvId != 0 && plantId != 0)
+                                    {
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Placeholder="All Supervisors" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" For="@(() => supervisorId)" SelectedValuesChanged="JobObservationsBySupervisor">
+                                                <MudSelectItem Disabled="true" Value="0">All Supervisors</MudSelectItem>
+                                                @foreach (var sv in _supervisors)
+                                                {
+                                                    <MudSelectItem Value="sv.UserId">
+                                                        @($"{sv.Name}")
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                SSV has no supervisors.
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Placeholder="Select a Supervisor" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="supervisorId" For="@(() => supervisorId)">
+                                            <MudSelectItem Disabled="true" Value="0">First Select SSV</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                }
+                                else if (user.UserType == 2)
+                                {
+                                    @if (areaId != 0)
+                                    {
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Placeholder="All Supervisors" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" For="@(() => supervisorId)" SelectedValuesChanged="JobObservationsBySupervisor">
+                                                <MudSelectItem Disabled="true" Value="0">All Supervisors</MudSelectItem>
+                                                @foreach (var sv in _supervisors)
+                                                {
+                                                    <MudSelectItem Value="sv.UserId">
+                                                        @($"{sv.Name}")
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                SSV / Area has no supervisors.
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Placeholder="Select a Supervisor" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="supervisorId" For="@(() => supervisorId)">
+                                            <MudSelectItem Disabled="true" Value="0">First Select an Area</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                }
+                                else if (user.UserType == 3)
+                                {
+                                    <MudTextField T="string" @bind-Value="supervisor" Label="Supervisor" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true" />
+
+                                }
                             </td>
                             <td>
                                 @*Mud select of Status *@
@@ -204,7 +327,7 @@
                                     <MudSelectItem Value="6">Finished</MudSelectItem>
                                 </MudSelect>
                             </td>
-                         </tr>
+                        </tr>
                     </tbody>
                 </MudSimpleTable>
             </MudItem>
@@ -220,7 +343,7 @@
         <MudSimpleTable Striped=true Bordered=true Elevation="6" Class="calendar-table rounded">
             <thead>
                 <tr style="cursor:default">
-                    @for(var dayIndex = 0; dayIndex < days.Count(); dayIndex++)
+                    @for (var dayIndex = 0; dayIndex < days.Count(); dayIndex++)
                     {
                         <th style="text-align: center; width:14.28%">
                             @days[dayIndex]
@@ -229,7 +352,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for(var weekIndex = 0; weekIndex < weeks.Count(); weekIndex++)
+                @for (var weekIndex = 0; weekIndex < weeks.Count(); weekIndex++)
                 {
                     <tr>
                         @for (var dayIndex = 0; dayIndex < weeks[weekIndex].Dates.Count(); dayIndex++)
@@ -241,7 +364,7 @@
                             {
                                 <td style="text-align: end; width:14.28%;">
                                     <span style="color: #DDDDDD">@weeks[weekIndex].Dates[dayIndex].DayName</span>
-                                    <div style="min-height: 13vh"></div>
+                                    <div style="min-height: 16vh"></div>
                                 </td>
                             }
                             else
@@ -250,9 +373,10 @@
 
                                 var dayName = @weeks[weekIndex].Dates[dayIndex].DayName;
                                 <td style="text-align: end; width:14.28%;">
-                                    @if(CultureInfo.CurrentCulture.Name == "en-US" || CultureInfo.CurrentCulture.Name == "en"){
+                                    @if (CultureInfo.CurrentCulture.Name == "en-US" || CultureInfo.CurrentCulture.Name == "en")
+                                    {
                                         var todayFormatedDay = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
-                                    var todayEnglish = todayFormatedDay.Month.ToString() + "/" + todayFormatedDay.Day.ToString() + "/" + todayFormatedDay.Year.ToString();
+                                        var todayEnglish = todayFormatedDay.Month.ToString() + "/" + todayFormatedDay.Day.ToString() + "/" + todayFormatedDay.Year.ToString();
 
                                         @if (DateTime.Now.ToShortDateString() == todayEnglish)
                                         {
@@ -277,9 +401,10 @@
                                             </MudMenu>
                                         }
                                     }
-                                    else{
+                                    else
+                                    {
                                         @if (DateTime.Now.ToShortDateString() == date)
-                                            {
+                                        {
                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label=@dayName Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
                                                 <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="@(()=>PlanJobObservation(date))" @ontouchstart="@(()=>PlanJobObservation(date))">
                                                     Plan job observation
@@ -288,9 +413,9 @@
                                                     Create new job observation
                                                 </MudMenuItem>
                                             </MudMenu>
-                                            }
-                                            else
-                                            {
+                                        }
+                                        else
+                                        {
                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label=@dayName AnchorOrigin="Origin.BottomCenter">
                                                 <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="@(()=>PlanJobObservation(date))" @ontouchstart="@(()=>PlanJobObservation(date))">
                                                     Plan job observation
@@ -299,333 +424,333 @@
                                                     Create new job observation
                                                 </MudMenuItem>
                                             </MudMenu>
-                                            }
+                                        }
                                     }
 
-                                    <div style="min-height: 13vh">
-                                    @foreach(var jobobs in _jobObservation)
-                                    {
-                                        var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
-                                        var time1 = jobobs.StartDate?.ToString("HH:mm");
-                                        var time2 = jobobs.EndDate?.ToString("HH:mm");
-
-                                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date && plantId == jobobs.PlantId && areaId == jobobs.AreaId)
+                                    <div style="min-height: 16vh; overflow-y: scroll; max-height: 16vh; scroll-behavior: smooth;" class="scroll scroll1">
+                                        @foreach (var jobobs in _jobObservations)
                                         {
-                                            //Ends the same day 
-                                            if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+                                            var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
+                                            var time1 = jobobs.StartDate?.ToString("HH:mm");
+                                            var time2 = jobobs.EndDate?.ToString("HH:mm");
+
+                                            if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date && plantId == jobobs.PlantId && areaId == jobobs.AreaId)
                                             {
-                                                    //Status filter
-                                                switch (optionStatus)
+                                                //Ends the same day
+                                                if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                                                 {
-                                                    case 0:
+                                                    //Status filter
+                                                    switch (optionStatus)
+                                                    {
+                                                        case 0:
 
-                                                        //Programmed
-                                                        if (jobobs.Status == 1)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning">
-                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //In Progress
-                                                        else if (jobobs.Status == 2)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-
-                                                        //Late job observations
-                                                        else if (jobobs.Status == 3)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-
-                                                        //Under Review job observations
-                                                        else if (jobobs.Status == 4)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-
-                                                        //Rejected job observations
-                                                        else if (jobobs.Status == 5)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //Finalized
-                                                        else if (jobobs.Status == 6)
-                                                        {
-                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Circle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-
-                                                        break;
-                                                    case 1:
-                                                        //Programmed
-                                                        if (jobobs.Status == 1)
-                                                        {
+                                                            //Programmed
+                                                            if (jobobs.Status == 1)
+                                                            {
                                                                 <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning">
                                                                         <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //In Progress
+                                                            else if (jobobs.Status == 2)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
 
-                                                        break;
-                                                    case 2:
-                                                        //In Progress
-                                                        if (jobobs.Status == 2)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 3:
-                                                    //Late job observations
-                                                        if (jobobs.Status == 3)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                            //Late job observations
+                                                            else if (jobobs.Status == 3)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+
+                                                            //Under Review job observations
+                                                            else if (jobobs.Status == 4)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+
+                                                            //Rejected job observations
+                                                            else if (jobobs.Status == 5)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //Finalized
+                                                            else if (jobobs.Status == 6)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Circle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+
+                                                            break;
+                                                        case 1:
+                                                            //Programmed
+                                                            if (jobobs.Status == 1)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+
+                                                            break;
+                                                        case 2:
+                                                            //In Progress
+                                                            if (jobobs.Status == 2)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
                                                                 </MudTooltip>
                                                             }
                                                             break;
-                                                    case 4:
-                                                        if (jobobs.Status == 4)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 5: 
-                                                        if (jobobs.Status == 5)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Cancel" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                         break;
-                                                    case 6:
-                                                        if (jobobs.Status == 6)
-                                                        {
+                                                        case 3:
+                                                            //Late job observations
+                                                            if (jobobs.Status == 3)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 4:
+                                                            if (jobobs.Status == 4)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 5:
+                                                            if (jobobs.Status == 5)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 6:
+                                                            if (jobobs.Status == 6)
+                                                            {
                                                                 <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
+                                                                    <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
                                                                         <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="font-size: 10px">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Circle" />
-                                                                </MudButton>
-                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Circle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+
+                                                    }
 
                                                 }
-
-                                            }
-                                            //lasts more than one day
-                                            else
-                                            {
-                                                switch (optionStatus)
+                                                //lasts more than one day
+                                                else
                                                 {
-                                                    case 0:
-                                                        //Programmed
-                                                        if (jobobs.Status == 1)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //In Progress
-                                                        else if (jobobs.Status == 2)
-                                                        {
-                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                    <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //late job observations
-                                                        else if (jobobs.Status == 3)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                    <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //Under Review job observations
-                                                        else if (jobobs.Status == 4)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                    <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //Rejected job observations
-                                                        else if (jobobs.Status == 5)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Cancel" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        //Finalized
-                                                        else if (jobobs.Status == 6)
-                                                        {
-                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                    <MudButton Color="Color.Success" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Circle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 1:
-                                                        if (jobobs.Status == 1)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                    switch (optionStatus)
+                                                    {
+                                                        case 0:
+                                                            //Programmed
+                                                            if (jobobs.Status == 1)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                     <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 2:
-                                                        if (jobobs.Status == 2)
-                                                        {
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //In Progress
+                                                            else if (jobobs.Status == 2)
+                                                            {
                                                                 <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                     <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                         <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 3:
-                                                        if (jobobs.Status == 3)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //late job observations
+                                                            else if (jobobs.Status == 3)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 4:
-                                                        if (jobobs.Status == 4)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //Under Review job observations
+                                                            else if (jobobs.Status == 4)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 5:
-                                                        if (jobobs.Status == 5)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
-                                                                <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
-                                                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //Rejected job observations
+                                                            else if (jobobs.Status == 5)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
                                                                         <MudIcon Icon="@Icons.Material.Filled.Cancel" />
-                                                                </MudButton>
-                                                                <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
-                                                    case 6:
-                                                        if (jobobs.Status == 6)
-                                                        {
-                                                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            //Finalized
+                                                            else if (jobobs.Status == 6)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                     <MudButton Color="Color.Success" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                         <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@time1 - @time2</MudChip>
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Circle" />
-                                                                </MudButton>
-                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>. Operator: @jobobs.Operator.Name</span>
-                                                            </MudTooltip>
-                                                        }
-                                                        break;
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Circle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 1:
+                                                            if (jobobs.Status == 1)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 2:
+                                                            if (jobobs.Status == 2)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 3:
+                                                            if (jobobs.Status == 3)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 4:
+                                                            if (jobobs.Status == 4)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 5:
+                                                            if (jobobs.Status == 5)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+                                                        case 6:
+                                                            if (jobobs.Status == 6)
+                                                            {
+                                                                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                                                    <MudButton Color="Color.Success" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Style="font-size: 10px" Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@time1 - @time2</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Circle" />
+                                                                    </MudButton>
+                                                                    <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@jobobs.JobObservationId</span>.  @jobobs.Operator.Name</span>
+                                                                </MudTooltip>
+                                                            }
+                                                            break;
+
+                                                    }
 
                                                 }
-
                                             }
                                         }
-                                    }
                                     </div>
                                 </td>
-                                
+
                             }
-                            
+
                         }
                     </tr>
                 }
@@ -635,10 +760,10 @@
 </MudGrid>
 
 
-<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions" >
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
     <DialogContent>
         <MudContainer Style="max-height: 75vh; overflow-y: scroll">
-            <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId" ></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
+            <SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.JobObservationPage.JobObservationDetails>
         </MudContainer>
     </DialogContent>
     <DialogActions>

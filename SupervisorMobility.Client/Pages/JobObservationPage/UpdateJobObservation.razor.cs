@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public bool logged = false;
 
         //Operator user
-        public List<User> users = new();
+        public List<User> _operators = new();
         public List<User> operatorUsers = new();
 
         public string route = string.Empty;
@@ -177,10 +177,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 models[4] = Int32.Parse(prod[4]);
                 cycles = _jobObservation.Cicles.Split('|');
 
-                users = await UsersService.GetUsers();
-                foreach (var operatorUser in users)
+                _operators = await UsersService.GetUserByType(4);
+                //operator User
+                foreach (var operatorUser in _operators)
                 {
-                    if (user != null && operatorUser.AreaId == operatorUser.AreaId && operatorUser.UserType == 4)
+                    if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
                     {
                         operatorUsers.Add(operatorUser);
                     }

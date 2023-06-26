@@ -119,6 +119,7 @@ namespace SupervisorMobility.Client.Pages
                 {
 
                     GlobalData.LoggedUser = user.Name;
+
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Welcome Back {user.Name}", Severity.Info);
