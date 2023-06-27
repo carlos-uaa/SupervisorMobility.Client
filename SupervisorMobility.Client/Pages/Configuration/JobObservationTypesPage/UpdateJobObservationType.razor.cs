@@ -9,14 +9,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
         public int JobObservationTypeId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job observation types", href: "/jobobservationtypes"),
-            new BreadcrumbItem("UpdateJobObservationType", href: "", disabled: true)
-        };
-
+        private List<BreadcrumbItem> _links;
         // Objects
         public JobObservationType _jobObservationType { get; set; } = new();
 
@@ -25,6 +18,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
         {
             JobObservationType dbJobObservationType = await JobObservationTypeService.GetJobObservationTypeById(JobObservationTypeId);
             _jobObservationType = dbJobObservationType;
+
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["JOTTitle"], href: "/jobobservationtypes"),
+            new BreadcrumbItem("UpdateJobObservationType", href: "", disabled: true)
+        };
         }
 
         // Update job observation type

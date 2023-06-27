@@ -268,6 +268,105 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation Type Code.
+        /// </summary>
+        public static string JOTCode {
+            get {
+                return ResourceManager.GetString("JOTCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create JobObservation Type.
+        /// </summary>
+        public static string JOTCreate {
+            get {
+                return ResourceManager.GetString("JOTCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete JobObservation Type.
+        /// </summary>
+        public static string JOTDelete {
+            get {
+                return ResourceManager.GetString("JOTDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation Type  Description.
+        /// </summary>
+        public static string JOTDescription {
+            get {
+                return ResourceManager.GetString("JOTDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Details JobObservation Type.
+        /// </summary>
+        public static string JOTDetails {
+            get {
+                return ResourceManager.GetString("JOTDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit JobObservation Type.
+        /// </summary>
+        public static string JOTEdit {
+            get {
+                return ResourceManager.GetString("JOTEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation Type ID.
+        /// </summary>
+        public static string JOTId {
+            get {
+                return ResourceManager.GetString("JOTId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this Job Observation Type?.
+        /// </summary>
+        public static string JOTmsgQuestionDelete {
+            get {
+                return ResourceManager.GetString("JOTmsgQuestionDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Job Observation Type.
+        /// </summary>
+        public static string JOTNew {
+            get {
+                return ResourceManager.GetString("JOTNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation Types.
+        /// </summary>
+        public static string JOTTitle {
+            get {
+                return ResourceManager.GetString("JOTTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update JobObservation Type.
+        /// </summary>
+        public static string JOTUpdate {
+            get {
+                return ResourceManager.GetString("JOTUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Este cambio recargará la página, asegúrese de terminar su trabajo antes de hacer el cambio..
         /// </summary>
         public static string msg1Language {
@@ -363,6 +462,78 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Save {
             get {
                 return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Support document type Code.
+        /// </summary>
+        public static string SDTCode {
+            get {
+                return ResourceManager.GetString("SDTCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create  Support document type.
+        /// </summary>
+        public static string SDTCreate {
+            get {
+                return ResourceManager.GetString("SDTCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Support document type.
+        /// </summary>
+        public static string SDTDelete {
+            get {
+                return ResourceManager.GetString("SDTDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Support document type Description.
+        /// </summary>
+        public static string SDTDescription {
+            get {
+                return ResourceManager.GetString("SDTDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Support document type.
+        /// </summary>
+        public static string SDTEdit {
+            get {
+                return ResourceManager.GetString("SDTEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Support document type ID.
+        /// </summary>
+        public static string SDTId {
+            get {
+                return ResourceManager.GetString("SDTId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Support document type.
+        /// </summary>
+        public static string SDTNew {
+            get {
+                return ResourceManager.GetString("SDTNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Support Document Types.
+        /// </summary>
+        public static string SDTTitile {
+            get {
+                return ResourceManager.GetString("SDTTitile", resourceCulture);
             }
         }
         

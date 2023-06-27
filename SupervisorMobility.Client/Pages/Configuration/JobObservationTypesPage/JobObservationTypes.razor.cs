@@ -6,12 +6,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
     public partial class JobObservationTypes
     {
         //Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job Observation types", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         public List<JobObservationType> _jobObservationTypes { get; set; } = new();
@@ -21,6 +16,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
         protected async override Task OnInitializedAsync()
         {
             _jobObservationTypes = await JobObservationTypeService.GetJobObservationTypes();
+
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["JOTTitle"], href: "", disabled: true)
+        };
         }
 
         // Create job observation type

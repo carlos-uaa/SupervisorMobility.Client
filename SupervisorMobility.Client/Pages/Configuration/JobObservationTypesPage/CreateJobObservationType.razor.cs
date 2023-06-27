@@ -1,20 +1,28 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
 {
     public partial class CreateJobObservationType
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job observation types", href: "/jobobservationtypes"),
-            new BreadcrumbItem("New job observation type", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         JobObservationType _jobObservationType = new();
+
+        protected async override Task OnInitializedAsync()
+        {
+            _jobObservationTypes = await JobObservationTypeService.GetJobObservationTypes();
+
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["JOTTitle"], href: "/jobobservationtypes"),
+            new BreadcrumbItem(text: Localizer["JOTNew"], href: "", disabled: true)
+        };
+        }
 
         // Create job observation type
         async void CreateJobObservationTypeAsync()
