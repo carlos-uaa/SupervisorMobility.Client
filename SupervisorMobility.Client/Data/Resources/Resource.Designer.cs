@@ -61,6 +61,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Actions.
+        /// </summary>
+        public static string Actions {
+            get {
+                return ResourceManager.GetString("Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Attendance.
         /// </summary>
         public static string attendance {
@@ -70,11 +79,155 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Close.
+        /// </summary>
+        public static string closeLanguage {
+            get {
+                return ResourceManager.GetString("closeLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Code.
+        /// </summary>
+        public static string Code {
+            get {
+                return ResourceManager.GetString("Code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Configuration.
         /// </summary>
         public static string configuration {
             get {
                 return ResourceManager.GetString("configuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Confirm.
+        /// </summary>
+        public static string Confirm {
+            get {
+                return ResourceManager.GetString("Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Apply.
+        /// </summary>
+        public static string confirmLanguage {
+            get {
+                return ResourceManager.GetString("confirmLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Group.
+        /// </summary>
+        public static string CreateGroup {
+            get {
+                return ResourceManager.GetString("CreateGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete.
+        /// </summary>
+        public static string Delete {
+            get {
+                return ResourceManager.GetString("Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Group.
+        /// </summary>
+        public static string DeleteGroup {
+            get {
+                return ResourceManager.GetString("DeleteGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Description.
+        /// </summary>
+        public static string Description {
+            get {
+                return ResourceManager.GetString("Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Group.
+        /// </summary>
+        public static string EditGroup {
+            get {
+                return ResourceManager.GetString("EditGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group Code.
+        /// </summary>
+        public static string GroupCode {
+            get {
+                return ResourceManager.GetString("GroupCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group description.
+        /// </summary>
+        public static string GroupDescription {
+            get {
+                return ResourceManager.GetString("GroupDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group details.
+        /// </summary>
+        public static string GroupDetails {
+            get {
+                return ResourceManager.GetString("GroupDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group Id.
+        /// </summary>
+        public static string GroupId {
+            get {
+                return ResourceManager.GetString("GroupId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Groups.
+        /// </summary>
+        public static string GroupTitle {
+            get {
+                return ResourceManager.GetString("GroupTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update Group.
+        /// </summary>
+        public static string GroupUpdate {
+            get {
+                return ResourceManager.GetString("GroupUpdate", resourceCulture);
             }
         }
         
@@ -106,11 +259,137 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Este cambio recargará la página, asegúrese de terminar su trabajo antes de hacer el cambio..
+        /// </summary>
+        public static string msg1Language {
+            get {
+                return ResourceManager.GetString("msg1Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This change will reload the page, be sure to finish your work before making the change..
+        /// </summary>
+        public static string msg2Language {
+            get {
+                return ResourceManager.GetString("msg2Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this Group?.
+        /// </summary>
+        public static string msgDeleteGroup {
+            get {
+                return ResourceManager.GetString("msgDeleteGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New group.
+        /// </summary>
+        public static string NewGroup {
+            get {
+                return ResourceManager.GetString("NewGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All.
+        /// </summary>
+        public static string notifyAll {
+            get {
+                return ResourceManager.GetString("notifyAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Notification.
+        /// </summary>
+        public static string notifyDelete {
+            get {
+                return ResourceManager.GetString("notifyDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New.
+        /// </summary>
+        public static string notifyNew {
+            get {
+                return ResourceManager.GetString("notifyNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Mark as Read.
+        /// </summary>
+        public static string notifyRead {
+            get {
+                return ResourceManager.GetString("notifyRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Read.
+        /// </summary>
+        public static string notifyReadTitle {
+            get {
+                return ResourceManager.GetString("notifyReadTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¿Estas seguro de cambiar el idioma a .
+        /// </summary>
+        public static string question1Language {
+            get {
+                return ResourceManager.GetString("question1Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to change the language to.
+        /// </summary>
+        public static string question2Language {
+            get {
+                return ResourceManager.GetString("question2Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Save.
+        /// </summary>
+        public static string Save {
+            get {
+                return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Search.
+        /// </summary>
+        public static string Search {
+            get {
+                return ResourceManager.GetString("Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a To Do (LUP).
         /// </summary>
         public static string toDoLup {
             get {
                 return ResourceManager.GetString("toDoLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Warning.
+        /// </summary>
+        public static string warningLanguage {
+            get {
+                return ResourceManager.GetString("warningLanguage", resourceCulture);
             }
         }
     }
