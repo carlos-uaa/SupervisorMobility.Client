@@ -61,11 +61,11 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Actions.
+        ///   Busca una cadena traducida similar a Accept.
         /// </summary>
-        public static string Actions {
+        public static string accept {
             get {
-                return ResourceManager.GetString("Actions", resourceCulture);
+                return ResourceManager.GetString("accept", resourceCulture);
             }
         }
         
@@ -79,29 +79,11 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Cancel.
+        ///   Busca una cadena traducida similar a Authenticating.
         /// </summary>
-        public static string Cancel {
+        public static string authenticating {
             get {
-                return ResourceManager.GetString("Cancel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Close.
-        /// </summary>
-        public static string closeLanguage {
-            get {
-                return ResourceManager.GetString("closeLanguage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Code.
-        /// </summary>
-        public static string Code {
-            get {
-                return ResourceManager.GetString("Code", resourceCulture);
+                return ResourceManager.GetString("authenticating", resourceCulture);
             }
         }
         
@@ -115,119 +97,20 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Confirm.
+        ///   Busca una cadena traducida similar a Enter the active directory user name..
         /// </summary>
-        public static string Confirm {
+        public static string enterTheActiveDirectoryUserName {
             get {
-                return ResourceManager.GetString("Confirm", resourceCulture);
+                return ResourceManager.GetString("enterTheActiveDirectoryUserName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Apply.
+        ///   Busca una cadena traducida similar a Help.
         /// </summary>
-        public static string confirmLanguage {
+        public static string help {
             get {
-                return ResourceManager.GetString("confirmLanguage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Create Group.
-        /// </summary>
-        public static string CreateGroup {
-            get {
-                return ResourceManager.GetString("CreateGroup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Delete.
-        /// </summary>
-        public static string Delete {
-            get {
-                return ResourceManager.GetString("Delete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Delete Group.
-        /// </summary>
-        public static string DeleteGroup {
-            get {
-                return ResourceManager.GetString("DeleteGroup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Description.
-        /// </summary>
-        public static string Description {
-            get {
-                return ResourceManager.GetString("Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Edit Group.
-        /// </summary>
-        public static string EditGroup {
-            get {
-                return ResourceManager.GetString("EditGroup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Group Code.
-        /// </summary>
-        public static string GroupCode {
-            get {
-                return ResourceManager.GetString("GroupCode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Group description.
-        /// </summary>
-        public static string GroupDescription {
-            get {
-                return ResourceManager.GetString("GroupDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Group details.
-        /// </summary>
-        public static string GroupDetails {
-            get {
-                return ResourceManager.GetString("GroupDetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Group Id.
-        /// </summary>
-        public static string GroupId {
-            get {
-                return ResourceManager.GetString("GroupId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Groups.
-        /// </summary>
-        public static string GroupTitle {
-            get {
-                return ResourceManager.GetString("GroupTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Update Group.
-        /// </summary>
-        public static string GroupUpdate {
-            get {
-                return ResourceManager.GetString("GroupUpdate", resourceCulture);
+                return ResourceManager.GetString("help", resourceCulture);
             }
         }
         
@@ -259,119 +142,47 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Este cambio recargará la página, asegúrese de terminar su trabajo antes de hacer el cambio..
+        ///   Busca una cadena traducida similar a Log in.
         /// </summary>
-        public static string msg1Language {
+        public static string login {
             get {
-                return ResourceManager.GetString("msg1Language", resourceCulture);
+                return ResourceManager.GetString("login", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a This change will reload the page, be sure to finish your work before making the change..
+        ///   Busca una cadena traducida similar a Log out.
         /// </summary>
-        public static string msg2Language {
+        public static string logout {
             get {
-                return ResourceManager.GetString("msg2Language", resourceCulture);
+                return ResourceManager.GetString("logout", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Are you sure you want to delete this Group?.
+        ///   Busca una cadena traducida similar a Need Help Navigating?.
         /// </summary>
-        public static string msgDeleteGroup {
+        public static string needHelpNavigating {
             get {
-                return ResourceManager.GetString("msgDeleteGroup", resourceCulture);
+                return ResourceManager.GetString("needHelpNavigating", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a New group.
+        ///   Busca una cadena traducida similar a Password.
         /// </summary>
-        public static string NewGroup {
+        public static string password {
             get {
-                return ResourceManager.GetString("NewGroup", resourceCulture);
+                return ResourceManager.GetString("password", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a All.
+        ///   Busca una cadena traducida similar a Sign In.
         /// </summary>
-        public static string notifyAll {
+        public static string signIn {
             get {
-                return ResourceManager.GetString("notifyAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Delete Notification.
-        /// </summary>
-        public static string notifyDelete {
-            get {
-                return ResourceManager.GetString("notifyDelete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a New.
-        /// </summary>
-        public static string notifyNew {
-            get {
-                return ResourceManager.GetString("notifyNew", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Mark as Read.
-        /// </summary>
-        public static string notifyRead {
-            get {
-                return ResourceManager.GetString("notifyRead", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Read.
-        /// </summary>
-        public static string notifyReadTitle {
-            get {
-                return ResourceManager.GetString("notifyReadTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a ¿Estas seguro de cambiar el idioma a .
-        /// </summary>
-        public static string question1Language {
-            get {
-                return ResourceManager.GetString("question1Language", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Are you sure you want to change the language to.
-        /// </summary>
-        public static string question2Language {
-            get {
-                return ResourceManager.GetString("question2Language", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Save.
-        /// </summary>
-        public static string Save {
-            get {
-                return ResourceManager.GetString("Save", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Search.
-        /// </summary>
-        public static string Search {
-            get {
-                return ResourceManager.GetString("Search", resourceCulture);
+                return ResourceManager.GetString("signIn", resourceCulture);
             }
         }
         
@@ -385,11 +196,11 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Warning.
+        ///   Busca una cadena traducida similar a Username.
         /// </summary>
-        public static string warningLanguage {
+        public static string username {
             get {
-                return ResourceManager.GetString("warningLanguage", resourceCulture);
+                return ResourceManager.GetString("username", resourceCulture);
             }
         }
     }

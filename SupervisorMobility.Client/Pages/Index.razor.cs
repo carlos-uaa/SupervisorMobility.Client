@@ -11,15 +11,9 @@ namespace SupervisorMobility.Client.Pages
     public partial class Index
     {
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
-        private List<BreadcrumbItem> _login = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Login", href: "#", disabled: true)
-        };
+        private List<BreadcrumbItem> _login;
 
         public bool logged = false;
 
@@ -51,10 +45,20 @@ namespace SupervisorMobility.Client.Pages
 
         protected async override Task OnInitializedAsync()
         {
+            _login = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["login"], href: "#", disabled: true)
+            };
+
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#", disabled: true)
+            };
+
             logged = await HasPropertyAsync();
             if (logged)
             {
-
+    
                 await GetUserAsync();
                 GlobalData.LoggedUser = user.Name;
                 StateHasChanged();
