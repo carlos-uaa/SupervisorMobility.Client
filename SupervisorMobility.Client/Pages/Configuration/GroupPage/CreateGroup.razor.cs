@@ -5,13 +5,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
     public partial class CreateGroup
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+        private List<BreadcrumbItem> _links;
+        protected async override Task OnInitializedAsync()
         {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Groups", href: "/groups"),
-            new BreadcrumbItem("New group", href: "", disabled: true)
+
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["GroupTitle"], href: "/groups"),
+            new BreadcrumbItem(text: Localizer["GroupNew"], href: "", disabled: true)
         };
+        }
 
         // Objects
         Group _group = new();
