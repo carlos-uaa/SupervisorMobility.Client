@@ -73,17 +73,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Job Observation Schedule", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: @Localizer["jobObservationSchedule"], href: "", disabled: true)
+            };
 
-            if(!await HasPropertyAsync())
+            if (!await HasPropertyAsync())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
