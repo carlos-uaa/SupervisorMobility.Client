@@ -6,12 +6,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
     public partial class DocumentTypes
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Support Document Types", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         public List<SupportDocumentType> _supportDocumentTypes { get; set; } = new();
@@ -22,6 +17,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         protected async override Task OnInitializedAsync()
         {
             _supportDocumentTypes = await SupportDocumentTypeService.GetSupportDocumentTypes();
+
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["SDTTitle"], href: "", disabled: true)
+            };
         }
 
         // Create support document type

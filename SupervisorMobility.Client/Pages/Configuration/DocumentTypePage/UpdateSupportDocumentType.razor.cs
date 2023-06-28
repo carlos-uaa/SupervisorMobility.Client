@@ -9,13 +9,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         public int SupportDocumentTypeId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Support Document Types", href: "/documenttypes"),
-            new BreadcrumbItem("UpdateDocType", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         public SupportDocumentType _supportDocumentType { get; set; } = new();
@@ -25,6 +19,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
         {
             SupportDocumentType dbSupportDocumentType = await SupportDocumentTypeService.GetSupportDocumentTypeById(SupportDocumentTypeId);
             _supportDocumentType = dbSupportDocumentType;
+            _links = new List<BreadcrumbItem>
+        {
+              new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["JOTTitle"], href: "/documenttypes"),
+            new BreadcrumbItem(text: Localizer["JOTUpdate"], href: "", disabled: true)
+        };
         }
 
         // Update support document type

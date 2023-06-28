@@ -13,8 +13,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
 
         protected async override Task OnInitializedAsync()
         {
-            _jobObservationTypes = await JobObservationTypeService.GetJobObservationTypes();
-
+         
             _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem(text: Localizer["home"], href: "#"),

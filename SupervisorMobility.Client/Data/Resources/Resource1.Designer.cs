@@ -520,6 +520,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this Document Type?.
+        /// </summary>
+        public static string SDTmsgDelete {
+            get {
+                return ResourceManager.GetString("SDTmsgDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a New Support document type.
         /// </summary>
         public static string SDTNew {
