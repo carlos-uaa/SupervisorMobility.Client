@@ -11,11 +11,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
     public partial class JobObservationPage
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Job Observation", href: "/jobobservation", disabled: true),
-        };
+        private List<BreadcrumbItem> _links;
 
         //Objects
         private bool dense = false;
@@ -84,6 +80,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+            {
+                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                    new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation", disabled: true),
+            };
+
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -130,12 +132,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _filterFinishedJobObservation = _finishedJobObservation;
 
 
-                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-                        totalLate = "Late (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
                     }
                     else if(user.UserType == 2)
@@ -176,12 +178,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _filterFinishedJobObservation = _finishedJobObservation;
 
 
-                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-                        totalLate = "Late (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
                     }
 
@@ -217,12 +219,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _filterFinishedJobObservation = _finishedJobObservation;
 
 
-                        totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-                        totalLate = "Late (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
                         _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
@@ -285,12 +287,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _filterFinishedJobObservation = _finishedJobObservation;
 
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
 
 
@@ -389,12 +391,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _filterFinishedJobObservation = _finishedJobObservation;
 
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
@@ -461,12 +463,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _finishedJobObservation = _filterFinishedJobObservation;
 
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
             idFilter = new();
             distributionId = new();
@@ -541,12 +543,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
             }
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
         }
 
         private void Filters()
@@ -619,12 +621,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
             }
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
         }
 
         public void ClearStatus()
@@ -696,12 +698,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
 
 
-            totalPlanned = "Planned (" + _plannedJobObservation.Count + ")";
-            totalInProgress = "In Progress (" + _inProgressJobObservation.Count + ")";
-            totalLate = "Late (" + _lateJobObservation.Count + ")";
-            totalUnderReview = "Under Review (" + _underReviewJobObservation.Count + ")";
-            totalRejected = "Rejected (" + _rejectedJobObservation.Count + ")";
-            totalFinished = "Finished (" + _finishedJobObservation.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
 
             visibleDelete = false;
 

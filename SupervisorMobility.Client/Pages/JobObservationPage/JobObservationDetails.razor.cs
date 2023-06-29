@@ -94,7 +94,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             changeStartHour = _jobObservation.PlannedStartDate?.TimeOfDay;
             changeEndHour = _jobObservation.PlannedEndDate?.TimeOfDay;
-            Console.WriteLine(startHour);
 
             if (_jobObservation.PlantId != 0)
             {
@@ -109,43 +108,39 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             {
                                 _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
                                 if (_assychart == null)
-                                    messageErrorFolders = "The folders with the information provided were not located.";
+                                    messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                                 else
                                     searchAssychart = true;
                             }
                             catch (Exception ex)
                             {
-                                messageErrorFolders = "The folders with the information provided were not located.";
+                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
 
                             if (_assychart == null)
-                                messageErrorFolders = "The folders with the information provided were not located.";
+                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             else
                                 searchAssychart = true;
 
                         }
                         else
                         {
-                            messageErrorFolders = "Job Observation does not contain a valid operation";
-                            Console.WriteLine("missing plant");
+                            messageErrorFolders = Localizer["jobObservationDoesNotContainAValidOperation"];
                         }
                     }
                     else
                     {
-                        messageErrorFolders = "Job Observation does not contain a valid distribution";
-                        Console.WriteLine("missing plant");
+                        messageErrorFolders = Localizer["jobObservationDoesNotContainAValidDistribution"];
                     }
                 }
                 else
                 {
-                    messageErrorFolders = "Job Observation does not contain a valid area";
-                    Console.WriteLine("missing plant");
+                    messageErrorFolders = Localizer["jobObservationDoesNotContainAValidArea"];
                 }
             }
             else
             {
-                messageErrorFolders = "Job Observation does not contain a valid plant";
-                Console.WriteLine("missing plant");
+                messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
             }
 
         }

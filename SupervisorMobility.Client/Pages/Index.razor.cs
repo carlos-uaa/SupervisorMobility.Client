@@ -148,20 +148,20 @@ namespace SupervisorMobility.Client.Pages
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Unregistered user added to database for admin.", Severity.Info);
+                        Snackbar.Add(Localizer["unregisteredUserAddedToDatabaseForAdmin"], Severity.Info);
                     }
                     else
                         await js.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
 
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"User not found, please contact your administrator", Severity.Warning);
+                    Snackbar.Add(Localizer["userNotFoundPleaseContactYourAdmin"], Severity.Warning);
                 }
             }
             else
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error with username / password does not match", Severity.Error);
+                Snackbar.Add(Localizer["errorWithUsernamePasswordDoesNotMatch"], Severity.Error);
             }
             _processing = false;
 

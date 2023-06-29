@@ -61,6 +61,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a New.
+        /// </summary>
+        public static string _new {
+            get {
+                return ResourceManager.GetString("new", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Operator.
         /// </summary>
         public static string _operator {
@@ -75,6 +84,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string accept {
             get {
                 return ResourceManager.GetString("accept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Actions.
+        /// </summary>
+        public static string actions {
+            get {
+                return ResourceManager.GetString("actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Alert.
+        /// </summary>
+        public static string alert {
+            get {
+                return ResourceManager.GetString("alert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All Job Observations.
+        /// </summary>
+        public static string allJobObservations {
+            get {
+                return ResourceManager.GetString("allJobObservations", resourceCulture);
             }
         }
         
@@ -106,11 +142,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Anomaly.
+        /// </summary>
+        public static string anomaly {
+            get {
+                return ResourceManager.GetString("anomaly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Area.
         /// </summary>
         public static string area {
             get {
                 return ResourceManager.GetString("area", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a are you sure you want to delete this job observation?.
+        /// </summary>
+        public static string areYouSureYouWantToDeleteThisJobObservation {
+            get {
+                return ResourceManager.GetString("areYouSureYouWantToDeleteThisJobObservation", resourceCulture);
             }
         }
         
@@ -133,11 +187,56 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Calendar.
+        /// </summary>
+        public static string calendar {
+            get {
+                return ResourceManager.GetString("calendar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cancel.
+        /// </summary>
+        public static string cancel {
+            get {
+                return ResourceManager.GetString("cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Canceled.
+        /// </summary>
+        public static string canceled {
+            get {
+                return ResourceManager.GetString("canceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Clear filters.
+        /// </summary>
+        public static string clearFilters {
+            get {
+                return ResourceManager.GetString("clearFilters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Close.
         /// </summary>
         public static string close {
             get {
                 return ResourceManager.GetString("close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a  Comentaries.
+        /// </summary>
+        public static string comentaries {
+            get {
+                return ResourceManager.GetString("comentaries", resourceCulture);
             }
         }
         
@@ -151,6 +250,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Confirm.
+        /// </summary>
+        public static string confirm {
+            get {
+                return ResourceManager.GetString("confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create.
+        /// </summary>
+        public static string create {
+            get {
+                return ResourceManager.GetString("create", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Create new job observation.
         /// </summary>
         public static string createJobObservation {
@@ -160,11 +277,164 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Cycle 1.
+        /// </summary>
+        public static string cycle1 {
+            get {
+                return ResourceManager.GetString("cycle1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cycle 2.
+        /// </summary>
+        public static string cycle2 {
+            get {
+                return ResourceManager.GetString("cycle2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cycle 3.
+        /// </summary>
+        public static string cycle3 {
+            get {
+                return ResourceManager.GetString("cycle3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cycle 4.
+        /// </summary>
+        public static string cycle4 {
+            get {
+                return ResourceManager.GetString("cycle4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cycle 5.
+        /// </summary>
+        public static string cycle5 {
+            get {
+                return ResourceManager.GetString("cycle5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cycle time.
+        /// </summary>
+        public static string cycleTime {
+            get {
+                return ResourceManager.GetString("cycleTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Data not found.
+        /// </summary>
+        public static string dataNotFound {
+            get {
+                return ResourceManager.GetString("dataNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Date.
+        /// </summary>
+        public static string date {
+            get {
+                return ResourceManager.GetString("date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a mm/dd/yyyy.
+        /// </summary>
+        public static string dd_mm_yyyy {
+            get {
+                return ResourceManager.GetString("dd/mm/yyyy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete.
+        /// </summary>
+        public static string delete {
+            get {
+                return ResourceManager.GetString("delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Job Observation.
+        /// </summary>
+        public static string deleteJobObservation {
+            get {
+                return ResourceManager.GetString("deleteJobObservation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution.
+        /// </summary>
+        public static string distribution {
+            get {
+                return ResourceManager.GetString("distribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download.
+        /// </summary>
+        public static string download {
+            get {
+                return ResourceManager.GetString("download", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Job Observation.
+        /// </summary>
+        public static string editJobObservations {
+            get {
+                return ResourceManager.GetString("editJobObservations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a End Date.
+        /// </summary>
+        public static string endDate {
+            get {
+                return ResourceManager.GetString("endDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Enter the active directory user name..
         /// </summary>
         public static string enterTheActiveDirectoryUserName {
             get {
                 return ResourceManager.GetString("enterTheActiveDirectoryUserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error con Usuario / Contraseña no coinciden..
+        /// </summary>
+        public static string errorWithUsernamePasswordDoesNotMatch {
+            get {
+                return ResourceManager.GetString("errorWithUsernamePasswordDoesNotMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error, you have to log in..
+        /// </summary>
+        public static string errorYouHaveToLogIn {
+            get {
+                return ResourceManager.GetString("errorYouHaveToLogIn", resourceCulture);
             }
         }
         
@@ -214,6 +484,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First select a supervisor.
+        /// </summary>
+        public static string firstSelectASupervisor {
+            get {
+                return ResourceManager.GetString("firstSelectASupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Go to Job observation.
+        /// </summary>
+        public static string goToJobObservation {
+            get {
+                return ResourceManager.GetString("goToJobObservation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Group.
         /// </summary>
         public static string group {
@@ -241,6 +529,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a History Versions.
+        /// </summary>
+        public static string historyVersions {
+            get {
+                return ResourceManager.GetString("historyVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HOE Time.
+        /// </summary>
+        public static string HOETime {
+            get {
+                return ResourceManager.GetString("HOETime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Home.
         /// </summary>
         public static string home {
@@ -250,11 +556,83 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Improve / Activity Detected.
+        /// </summary>
+        public static string improveActivityDetected {
+            get {
+                return ResourceManager.GetString("improveActivityDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Improvement ideas and/or comments from the Operator.
+        /// </summary>
+        public static string improvementIdeasAndOrCommentsFromTheOperator {
+            get {
+                return ResourceManager.GetString("improvementIdeasAndOrCommentsFromTheOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a In Progress.
         /// </summary>
         public static string inProgress {
             get {
                 return ResourceManager.GetString("inProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation Cyclical Card.
+        /// </summary>
+        public static string jobObservacionCiclycalCard {
+            get {
+                return ResourceManager.GetString("jobObservacionCiclycalCard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observations Details.
+        /// </summary>
+        public static string jobObservationDetails {
+            get {
+                return ResourceManager.GetString("jobObservationDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation does not contain a valid area.
+        /// </summary>
+        public static string jobObservationDoesNotContainAValidArea {
+            get {
+                return ResourceManager.GetString("jobObservationDoesNotContainAValidArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation does not contain a valid distribution.
+        /// </summary>
+        public static string jobObservationDoesNotContainAValidDistribution {
+            get {
+                return ResourceManager.GetString("jobObservationDoesNotContainAValidDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation does not contain a valid operation.
+        /// </summary>
+        public static string jobObservationDoesNotContainAValidOperation {
+            get {
+                return ResourceManager.GetString("jobObservationDoesNotContainAValidOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation does not contain a valid plant.
+        /// </summary>
+        public static string jobObservationDoesNotContainAValidPlant {
+            get {
+                return ResourceManager.GetString("jobObservationDoesNotContainAValidPlant", resourceCulture);
             }
         }
         
@@ -313,6 +691,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Management of the anomaly.
+        /// </summary>
+        public static string managementOfTheAnomaly {
+            get {
+                return ResourceManager.GetString("managementOfTheAnomaly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Maintain and/or improve the work area.
+        /// </summary>
+        public static string mantainAndOrImproveTheWorkArea {
+            get {
+                return ResourceManager.GetString("mantainAndOrImproveTheWorkArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Model.
+        /// </summary>
+        public static string model {
+            get {
+                return ResourceManager.GetString("model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Month / year.
         /// </summary>
         public static string monthYear {
@@ -331,11 +736,137 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No CCP Path.
+        /// </summary>
+        public static string noCCPPath {
+            get {
+                return ResourceManager.GetString("noCCPPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No GOS Path.
+        /// </summary>
+        public static string noGOSPath {
+            get {
+                return ResourceManager.GetString("noGOSPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No HOE Path.
+        /// </summary>
+        public static string noHOEPath {
+            get {
+                return ResourceManager.GetString("noHOEPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Not Selected.
+        /// </summary>
+        public static string notSelected {
+            get {
+                return ResourceManager.GetString("notSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Observer.
+        /// </summary>
+        public static string observer {
+            get {
+                return ResourceManager.GetString("observer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Open CCP Folder.
+        /// </summary>
+        public static string openCCPFolder {
+            get {
+                return ResourceManager.GetString("openCCPFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Open GOS Folder.
+        /// </summary>
+        public static string openGOSFolder {
+            get {
+                return ResourceManager.GetString("openGOSFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Open HOE Folder.
+        /// </summary>
+        public static string openHOEFolder {
+            get {
+                return ResourceManager.GetString("openHOEFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operation.
+        /// </summary>
+        public static string operation {
+            get {
+                return ResourceManager.GetString("operation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operator&apos;s signature.
+        /// </summary>
+        public static string operatorsSignature {
+            get {
+                return ResourceManager.GetString("operatorsSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Other.
+        /// </summary>
+        public static string other {
+            get {
+                return ResourceManager.GetString("other", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Password.
         /// </summary>
         public static string password {
             get {
                 return ResourceManager.GetString("password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Past Job Observaion | Lup.
+        /// </summary>
+        public static string pastJobObservationLup {
+            get {
+                return ResourceManager.GetString("pastJobObservationLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Pillar.
+        /// </summary>
+        public static string pillar {
+            get {
+                return ResourceManager.GetString("pillar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plan.
+        /// </summary>
+        public static string plan {
+            get {
+                return ResourceManager.GetString("plan", resourceCulture);
             }
         }
         
@@ -385,11 +916,101 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Product 1.
+        /// </summary>
+        public static string product1 {
+            get {
+                return ResourceManager.GetString("product1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product 2.
+        /// </summary>
+        public static string product2 {
+            get {
+                return ResourceManager.GetString("product2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product 3.
+        /// </summary>
+        public static string product3 {
+            get {
+                return ResourceManager.GetString("product3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product 4.
+        /// </summary>
+        public static string product4 {
+            get {
+                return ResourceManager.GetString("product4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product 5.
+        /// </summary>
+        public static string product5 {
+            get {
+                return ResourceManager.GetString("product5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Rejected.
         /// </summary>
         public static string rejected {
             get {
                 return ResourceManager.GetString("rejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Rute.
+        /// </summary>
+        public static string rute {
+            get {
+                return ResourceManager.GetString("rute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Search.
+        /// </summary>
+        public static string search {
+            get {
+                return ResourceManager.GetString("search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Distribution.
+        /// </summary>
+        public static string selectADistribution {
+            get {
+                return ResourceManager.GetString("selectADistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a distribution and an operation.
+        /// </summary>
+        public static string selectADistributionAndAnOperation {
+            get {
+                return ResourceManager.GetString("selectADistributionAndAnOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a distribution first.
+        /// </summary>
+        public static string selectADistributionFirst {
+            get {
+                return ResourceManager.GetString("selectADistributionFirst", resourceCulture);
             }
         }
         
@@ -412,6 +1033,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Select an Operation.
+        /// </summary>
+        public static string selectAnOperation {
+            get {
+                return ResourceManager.GetString("selectAnOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select an Operator.
+        /// </summary>
+        public static string selectAnOperator {
+            get {
+                return ResourceManager.GetString("selectAnOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Select a Plant.
         /// </summary>
         public static string selectAPlant {
@@ -421,11 +1060,47 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Select a supervisor.
+        /// </summary>
+        public static string selectASupervisor {
+            get {
+                return ResourceManager.GetString("selectASupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Server not response.
+        /// </summary>
+        public static string serverNotResponse {
+            get {
+                return ResourceManager.GetString("serverNotResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Show all Symbols.
         /// </summary>
         public static string showAllSymbols {
             get {
                 return ResourceManager.GetString("showAllSymbols", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Show / Hide filters.
+        /// </summary>
+        public static string showHideFilters {
+            get {
+                return ResourceManager.GetString("showHideFilters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Signature of the .
+        /// </summary>
+        public static string signatureOfThe {
+            get {
+                return ResourceManager.GetString("signatureOfThe", resourceCulture);
             }
         }
         
@@ -457,6 +1132,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Start Date.
+        /// </summary>
+        public static string startDate {
+            get {
+                return ResourceManager.GetString("startDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Status.
         /// </summary>
         public static string status {
@@ -475,11 +1159,74 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a The folders with the information provided were not located..
+        /// </summary>
+        public static string theFoldersWithTheInformationWereNotLocated {
+            get {
+                return ResourceManager.GetString("theFoldersWithTheInformationWereNotLocated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no Past job observations.
+        /// </summary>
+        public static string thereAreNoPastJobObservations {
+            get {
+                return ResourceManager.GetString("thereAreNoPastJobObservations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This Area does not have supervisors.
+        /// </summary>
+        public static string thisAreaDoesNotHaveSupervisors {
+            get {
+                return ResourceManager.GetString("thisAreaDoesNotHaveSupervisors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This Plant does not have job observations..
+        /// </summary>
+        public static string thisPlantDoesNotHaveJobObservatoins {
+            get {
+                return ResourceManager.GetString("thisPlantDoesNotHaveJobObservatoins", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This Supervisor does not have operators.
+        /// </summary>
+        public static string thisSupervisorDoesNotHaveOperators {
+            get {
+                return ResourceManager.GetString("thisSupervisorDoesNotHaveOperators", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a This Week.
         /// </summary>
         public static string thisWeek {
             get {
                 return ResourceManager.GetString("thisWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Time 1.
+        /// </summary>
+        public static string time1 {
+            get {
+                return ResourceManager.GetString("time1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Time 2.
+        /// </summary>
+        public static string time2 {
+            get {
+                return ResourceManager.GetString("time2", resourceCulture);
             }
         }
         
@@ -511,6 +1258,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Total Lup.
+        /// </summary>
+        public static string totalLup {
+            get {
+                return ResourceManager.GetString("totalLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Under Review.
         /// </summary>
         public static string underReview {
@@ -520,11 +1276,47 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Unregistered user added to database for admin..
+        /// </summary>
+        public static string unregisteredUserAddedToDatabaseForAdmin {
+            get {
+                return ResourceManager.GetString("unregisteredUserAddedToDatabaseForAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Username.
         /// </summary>
         public static string username {
             get {
                 return ResourceManager.GetString("username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User not found, please contact your administrator..
+        /// </summary>
+        public static string userNotFoundPleaseContactYourAdmin {
+            get {
+                return ResourceManager.GetString("userNotFoundPleaseContactYourAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verify training.
+        /// </summary>
+        public static string verifyTraining {
+            get {
+                return ResourceManager.GetString("verifyTraining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Write the anomaly.
+        /// </summary>
+        public static string writeTheAnomaly {
+            get {
+                return ResourceManager.GetString("writeTheAnomaly", resourceCulture);
             }
         }
     }
