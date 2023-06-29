@@ -497,7 +497,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Error);
+                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
                 return;
             }
             visiblePast = true;
