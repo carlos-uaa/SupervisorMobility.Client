@@ -61,11 +61,740 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a AssyChart&apos;s Resume.
+        /// </summary>
+        public static string ACACResume {
+            get {
+                return ResourceManager.GetString("ACACResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All AssyCharts.
+        /// </summary>
+        public static string ACAll {
+            get {
+                return ResourceManager.GetString("ACAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area.
+        /// </summary>
+        public static string ACArea {
+            get {
+                return ResourceManager.GetString("ACArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area Resume.
+        /// </summary>
+        public static string ACAreaResume {
+            get {
+                return ResourceManager.GetString("ACAreaResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Areas.
+        /// </summary>
+        public static string ACAreas {
+            get {
+                return ResourceManager.GetString("ACAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a please select one area.
+        /// </summary>
+        public static string ACAreasSelectArea {
+            get {
+                return ResourceManager.GetString("ACAreasSelectArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bulk Data.
+        /// </summary>
+        public static string ACBulk {
+            get {
+                return ResourceManager.GetString("ACBulk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bulk Assy Chart.
+        /// </summary>
+        public static string ACBulkAC {
+            get {
+                return ResourceManager.GetString("ACBulkAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cancel Upload Data.
+        /// </summary>
+        public static string ACCancelUpload {
+            get {
+                return ResourceManager.GetString("ACCancelUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a CCP.
+        /// </summary>
+        public static string ACCCP {
+            get {
+                return ResourceManager.GetString("ACCCP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Loading CCP Directory....
+        /// </summary>
+        public static string ACCCPDirectory {
+            get {
+                return ResourceManager.GetString("ACCCPDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No CCP Path Found.
+        /// </summary>
+        public static string ACCCPNoPath {
+            get {
+                return ResourceManager.GetString("ACCCPNoPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a CCP Path.
+        /// </summary>
+        public static string ACCCPRute {
+            get {
+                return ResourceManager.GetString("ACCCPRute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Creation Date.
+        /// </summary>
+        public static string ACCD {
+            get {
+                return ResourceManager.GetString("ACCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create AssyChart.
+        /// </summary>
+        public static string ACCreate {
+            get {
+                return ResourceManager.GetString("ACCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete AssyChart.
+        /// </summary>
+        public static string ACDelete {
+            get {
+                return ResourceManager.GetString("ACDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Details AssyChart.
+        /// </summary>
+        public static string ACDetails {
+            get {
+                return ResourceManager.GetString("ACDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution.
+        /// </summary>
+        public static string ACDistribution {
+            get {
+                return ResourceManager.GetString("ACDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Resume.
+        /// </summary>
+        public static string ACDistributionResume {
+            get {
+                return ResourceManager.GetString("ACDistributionResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Distributions.
+        /// </summary>
+        public static string ACDistributions {
+            get {
+                return ResourceManager.GetString("ACDistributions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a please select one distribution.
+        /// </summary>
+        public static string ACDistributionSelectDistribution {
+            get {
+                return ResourceManager.GetString("ACDistributionSelectDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download Bulk.
+        /// </summary>
+        public static string ACDownload {
+            get {
+                return ResourceManager.GetString("ACDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download All Assy Charts.
+        /// </summary>
+        public static string ACDownloadAll {
+            get {
+                return ResourceManager.GetString("ACDownloadAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit AssyChart.
+        /// </summary>
+        public static string ACEdit {
+            get {
+                return ResourceManager.GetString("ACEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Filtering.
+        /// </summary>
+        public static string ACFiltering {
+            get {
+                return ResourceManager.GetString("ACFiltering", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a is not a final directory..
+        /// </summary>
+        public static string ACFinalProvider {
+            get {
+                return ResourceManager.GetString("ACFinalProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a AssyChart Format.
+        /// </summary>
+        public static string ACFormat {
+            get {
+                return ResourceManager.GetString("ACFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a GOS.
+        /// </summary>
+        public static string ACGOS {
+            get {
+                return ResourceManager.GetString("ACGOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Loading GOS Directory....
+        /// </summary>
+        public static string ACGOSDirectory {
+            get {
+                return ResourceManager.GetString("ACGOSDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No GOS Path Found.
+        /// </summary>
+        public static string ACGOSNoPath {
+            get {
+                return ResourceManager.GetString("ACGOSNoPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a GOS Path.
+        /// </summary>
+        public static string ACGOSRute {
+            get {
+                return ResourceManager.GetString("ACGOSRute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HOE.
+        /// </summary>
+        public static string ACHOE {
+            get {
+                return ResourceManager.GetString("ACHOE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Loading HOE Directory....
+        /// </summary>
+        public static string ACHOEDirectory {
+            get {
+                return ResourceManager.GetString("ACHOEDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No HOE Path Found.
+        /// </summary>
+        public static string ACHOENoPath {
+            get {
+                return ResourceManager.GetString("ACHOENoPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HOE Path.
+        /// </summary>
+        public static string ACHOERute {
+            get {
+                return ResourceManager.GetString("ACHOERute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a AssyChart Id.
+        /// </summary>
+        public static string ACId {
+            get {
+                return ResourceManager.GetString("ACId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area.
+        /// </summary>
+        public static string ACLabelArea {
+            get {
+                return ResourceManager.GetString("ACLabelArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Selected CCP Folder.
+        /// </summary>
+        public static string ACLabelCCPSelect {
+            get {
+                return ResourceManager.GetString("ACLabelCCPSelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution.
+        /// </summary>
+        public static string ACLabelDistribution {
+            get {
+                return ResourceManager.GetString("ACLabelDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Selected GOS Folder.
+        /// </summary>
+        public static string ACLabelGOSSelect {
+            get {
+                return ResourceManager.GetString("ACLabelGOSSelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Selected HOE Folder.
+        /// </summary>
+        public static string ACLabelHOESelect {
+            get {
+                return ResourceManager.GetString("ACLabelHOESelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operation.
+        /// </summary>
+        public static string ACLabelOperation {
+            get {
+                return ResourceManager.GetString("ACLabelOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plant.
+        /// </summary>
+        public static string ACLabelPlant {
+            get {
+                return ResourceManager.GetString("ACLabelPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product.
+        /// </summary>
+        public static string ACLabelProduct {
+            get {
+                return ResourceManager.GetString("ACLabelProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Modification Date.
+        /// </summary>
+        public static string ACMD {
+            get {
+                return ResourceManager.GetString("ACMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Model.
+        /// </summary>
+        public static string ACModel {
+            get {
+                return ResourceManager.GetString("ACModel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Created.
+        /// </summary>
+        public static string ACmsgCreate {
+            get {
+                return ResourceManager.GetString("ACmsgCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a File Corrupted/ File Content Error / Error of procesing.
+        /// </summary>
+        public static string ACmsgError {
+            get {
+                return ResourceManager.GetString("ACmsgError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Only CSV / XLSX files can be uploaded.
+        /// </summary>
+        public static string ACmsgOnlyCSV {
+            get {
+                return ResourceManager.GetString("ACmsgOnlyCSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Updated.
+        /// </summary>
+        public static string ACmsgUpdate {
+            get {
+                return ResourceManager.GetString("ACmsgUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Assy Chart.
+        /// </summary>
+        public static string ACNewAC {
+            get {
+                return ResourceManager.GetString("ACNewAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Assy Chart List not found.
+        /// </summary>
+        public static string ACNotFound {
+            get {
+                return ResourceManager.GetString("ACNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Notice CCP Path.
+        /// </summary>
+        public static string ACNoticeCCP {
+            get {
+                return ResourceManager.GetString("ACNoticeCCP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Notice GOS Path.
+        /// </summary>
+        public static string ACNoticeGOS {
+            get {
+                return ResourceManager.GetString("ACNoticeGOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Notice HOE Path.
+        /// </summary>
+        public static string ACNoticeHOE {
+            get {
+                return ResourceManager.GetString("ACNoticeHOE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Open Folder.
+        /// </summary>
+        public static string ACOpenFolder {
+            get {
+                return ResourceManager.GetString("ACOpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operation.
+        /// </summary>
+        public static string ACOperation {
+            get {
+                return ResourceManager.GetString("ACOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operation Resume.
+        /// </summary>
+        public static string ACOperationResume {
+            get {
+                return ResourceManager.GetString("ACOperationResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Area.
+        /// </summary>
+        public static string ACPHArea {
+            get {
+                return ResourceManager.GetString("ACPHArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Distribution.
+        /// </summary>
+        public static string ACPHDistribution {
+            get {
+                return ResourceManager.GetString("ACPHDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Operation.
+        /// </summary>
+        public static string ACPHOperation {
+            get {
+                return ResourceManager.GetString("ACPHOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Plant.
+        /// </summary>
+        public static string ACPHPlant {
+            get {
+                return ResourceManager.GetString("ACPHPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Product.
+        /// </summary>
+        public static string ACPHProduct {
+            get {
+                return ResourceManager.GetString("ACPHProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plant.
+        /// </summary>
+        public static string ACPlant {
+            get {
+                return ResourceManager.GetString("ACPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plant Resume.
+        /// </summary>
+        public static string ACPlantResume {
+            get {
+                return ResourceManager.GetString("ACPlantResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Plant.
+        /// </summary>
+        public static string ACPlants {
+            get {
+                return ResourceManager.GetString("ACPlants", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Assy Chart List By Plant not Found .
+        /// </summary>
+        public static string ACPlantsNotFound {
+            get {
+                return ResourceManager.GetString("ACPlantsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a please select a plant/shop.
+        /// </summary>
+        public static string ACPlantsSelectPlant {
+            get {
+                return ResourceManager.GetString("ACPlantsSelectPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Please provide a valid path.
+        /// </summary>
+        public static string ACPleaseProvider {
+            get {
+                return ResourceManager.GetString("ACPleaseProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product Resume.
+        /// </summary>
+        public static string ACProductResume {
+            get {
+                return ResourceManager.GetString("ACProductResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The provided path.
+        /// </summary>
+        public static string ACProviderPath {
+            get {
+                return ResourceManager.GetString("ACProviderPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this AssyChart?.
+        /// </summary>
+        public static string ACquestionDelete {
+            get {
+                return ResourceManager.GetString("ACquestionDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Resume.
+        /// </summary>
+        public static string ACResume {
+            get {
+                return ResourceManager.GetString("ACResume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Plant to bulk.
+        /// </summary>
+        public static string ACSelectPlantBulk {
+            get {
+                return ResourceManager.GetString("ACSelectPlantBulk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Actions.
         /// </summary>
         public static string Actions {
             get {
                 return ResourceManager.GetString("Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Assy Char.
+        /// </summary>
+        public static string ACTitle {
+            get {
+                return ResourceManager.GetString("ACTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update AssyChart.
+        /// </summary>
+        public static string ACUpdate {
+            get {
+                return ResourceManager.GetString("ACUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Data.
+        /// </summary>
+        public static string ACUpload {
+            get {
+                return ResourceManager.GetString("ACUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Assy Chart.
+        /// </summary>
+        public static string ACUploadAC {
+            get {
+                return ResourceManager.GetString("ACUploadAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Files.
+        /// </summary>
+        public static string ACUploadFiles {
+            get {
+                return ResourceManager.GetString("ACUploadFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Alert.
+        /// </summary>
+        public static string Alert {
+            get {
+                return ResourceManager.GetString("Alert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a AssyChart.
+        /// </summary>
+        public static string assychart {
+            get {
+                return ResourceManager.GetString("assychart", resourceCulture);
             }
         }
         
@@ -84,6 +813,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Close.
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
             }
         }
         
@@ -142,6 +880,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Data not found.
+        /// </summary>
+        public static string DataNotFound {
+            get {
+                return ResourceManager.GetString("DataNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Delete.
         /// </summary>
         public static string Delete {
@@ -169,11 +916,56 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Download.
+        /// </summary>
+        public static string Download {
+            get {
+                return ResourceManager.GetString("Download", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Edit Group.
         /// </summary>
         public static string EditGroup {
             get {
                 return ResourceManager.GetString("EditGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Gudie Id.
+        /// </summary>
+        public static string GMId {
+            get {
+                return ResourceManager.GetString("GMId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create New Guide.
+        /// </summary>
+        public static string GMNew {
+            get {
+                return ResourceManager.GetString("GMNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No Guides Found.
+        /// </summary>
+        public static string GMNoFound {
+            get {
+                return ResourceManager.GetString("GMNoFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guides Management.
+        /// </summary>
+        public static string GMTitle {
+            get {
+                return ResourceManager.GetString("GMTitle", resourceCulture);
             }
         }
         
@@ -237,6 +1029,186 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string GroupUpdate {
             get {
                 return ResourceManager.GetString("GroupUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a File Id.
+        /// </summary>
+        public static string GudiesId {
+            get {
+                return ResourceManager.GetString("GudiesId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guide Code.
+        /// </summary>
+        public static string GuidesCode {
+            get {
+                return ResourceManager.GetString("GuidesCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Guide.
+        /// </summary>
+        public static string GuidesCreateTitle {
+            get {
+                return ResourceManager.GetString("GuidesCreateTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Guide.
+        /// </summary>
+        public static string GuidesDelete {
+            get {
+                return ResourceManager.GetString("GuidesDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this guide.
+        /// </summary>
+        public static string GuidesDeleteMsg {
+            get {
+                return ResourceManager.GetString("GuidesDeleteMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guide Description.
+        /// </summary>
+        public static string GuidesDescription {
+            get {
+                return ResourceManager.GetString("GuidesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a See Details Guide.
+        /// </summary>
+        public static string GuidesDetails {
+            get {
+                return ResourceManager.GetString("GuidesDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guide Details.
+        /// </summary>
+        public static string GuidesDetailsTitle {
+            get {
+                return ResourceManager.GetString("GuidesDetailsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Drag and drop PDF file here or click.
+        /// </summary>
+        public static string GuidesDrag {
+            get {
+                return ResourceManager.GetString("GuidesDrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Guide.
+        /// </summary>
+        public static string GuidesEdit {
+            get {
+                return ResourceManager.GetString("GuidesEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a File.
+        /// </summary>
+        public static string GuidesFile {
+            get {
+                return ResourceManager.GetString("GuidesFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a File Name.
+        /// </summary>
+        public static string GuidesFileName {
+            get {
+                return ResourceManager.GetString("GuidesFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a File Upload Details.
+        /// </summary>
+        public static string GuidesFU {
+            get {
+                return ResourceManager.GetString("GuidesFU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guide Name.
+        /// </summary>
+        public static string GuidesName {
+            get {
+                return ResourceManager.GetString("GuidesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Guide.
+        /// </summary>
+        public static string GuidesNew {
+            get {
+                return ResourceManager.GetString("GuidesNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no guides at this time.
+        /// </summary>
+        public static string GuidesNo {
+            get {
+                return ResourceManager.GetString("GuidesNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No Guides Found.
+        /// </summary>
+        public static string GuidesNotFound {
+            get {
+                return ResourceManager.GetString("GuidesNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Storage Name.
+        /// </summary>
+        public static string GuidesStorageName {
+            get {
+                return ResourceManager.GetString("GuidesStorageName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Guides.
+        /// </summary>
+        public static string GuidesTitle {
+            get {
+                return ResourceManager.GetString("GuidesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Data.
+        /// </summary>
+        public static string GuidesUploadData {
+            get {
+                return ResourceManager.GetString("GuidesUploadData", resourceCulture);
             }
         }
         
@@ -390,6 +1362,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string msgDeleteGroup {
             get {
                 return ResourceManager.GetString("msgDeleteGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Name.
+        /// </summary>
+        public static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a NO FILES IN DIRECTORY.
+        /// </summary>
+        public static string NoFilesDirectory {
+            get {
+                return ResourceManager.GetString("NoFilesDirectory", resourceCulture);
             }
         }
         
@@ -556,11 +1546,1037 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Server not response.
+        /// </summary>
+        public static string ServerNotResponse {
+            get {
+                return ResourceManager.GetString("ServerNotResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a To Do (LUP).
         /// </summary>
         public static string toDoLup {
             get {
                 return ResourceManager.GetString("toDoLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Extra Properties.
+        /// </summary>
+        public static string UserExtras {
+            get {
+                return ResourceManager.GetString("UserExtras", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users.
+        /// </summary>
+        public static string Users {
+            get {
+                return ResourceManager.GetString("Users", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Active.
+        /// </summary>
+        public static string UsersActive {
+            get {
+                return ResourceManager.GetString("UsersActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Add Area.
+        /// </summary>
+        public static string UsersAddArea {
+            get {
+                return ResourceManager.GetString("UsersAddArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Add To SSV&apos;s.
+        /// </summary>
+        public static string UsersAddToSsv {
+            get {
+                return ResourceManager.GetString("UsersAddToSsv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Add To Supervisor.
+        /// </summary>
+        public static string UsersAddToSV {
+            get {
+                return ResourceManager.GetString("UsersAddToSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Admin.
+        /// </summary>
+        public static string UsersAdmin {
+            get {
+                return ResourceManager.GetString("UsersAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All Type Users.
+        /// </summary>
+        public static string UsersAll {
+            get {
+                return ResourceManager.GetString("UsersAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Example of Use All Users Format.
+        /// </summary>
+        public static string UsersAllExampleFormat {
+            get {
+                return ResourceManager.GetString("UsersAllExampleFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download All Users Format.
+        /// </summary>
+        public static string UsersAllFormat {
+            get {
+                return ResourceManager.GetString("UsersAllFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area.
+        /// </summary>
+        public static string UsersArea {
+            get {
+                return ResourceManager.GetString("UsersArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area Id.
+        /// </summary>
+        public static string UsersAreaId {
+            get {
+                return ResourceManager.GetString("UsersAreaId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Areas Manage.
+        /// </summary>
+        public static string UsersAreasManage {
+            get {
+                return ResourceManager.GetString("UsersAreasManage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Assigned Area.
+        /// </summary>
+        public static string UsersAssignedArea {
+            get {
+                return ResourceManager.GetString("UsersAssignedArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bulk Users.
+        /// </summary>
+        public static string UsersBulk {
+            get {
+                return ResourceManager.GetString("UsersBulk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This field is inherited by the supervisor.
+        /// </summary>
+        public static string UsersBySuperior {
+            get {
+                return ResourceManager.GetString("UsersBySuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cancel Upload Users.
+        /// </summary>
+        public static string UsersCancelUpload {
+            get {
+                return ResourceManager.GetString("UsersCancelUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Code.
+        /// </summary>
+        public static string UsersCode {
+            get {
+                return ResourceManager.GetString("UsersCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Users.
+        /// </summary>
+        public static string UsersCreateTitle {
+            get {
+                return ResourceManager.GetString("UsersCreateTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete User.
+        /// </summary>
+        public static string UsersDelete {
+            get {
+                return ResourceManager.GetString("UsersDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this user?.
+        /// </summary>
+        public static string UsersDeleteQuestion {
+            get {
+                return ResourceManager.GetString("UsersDeleteQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Description.
+        /// </summary>
+        public static string UsersDescription {
+            get {
+                return ResourceManager.GetString("UsersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User Details.
+        /// </summary>
+        public static string UsersDetails {
+            get {
+                return ResourceManager.GetString("UsersDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Detail Users.
+        /// </summary>
+        public static string UsersDetailsTitle {
+            get {
+                return ResourceManager.GetString("UsersDetailsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution.
+        /// </summary>
+        public static string UsersDistribution {
+            get {
+                return ResourceManager.GetString("UsersDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download All Users .
+        /// </summary>
+        public static string UsersDownloadAll {
+            get {
+                return ResourceManager.GetString("UsersDownloadAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Drag and drop file Xlsx/CSV here or click.
+        /// </summary>
+        public static string UsersDragAndDrop {
+            get {
+                return ResourceManager.GetString("UsersDragAndDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit User.
+        /// </summary>
+        public static string UsersEdit {
+            get {
+                return ResourceManager.GetString("UsersEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a E-mail.
+        /// </summary>
+        public static string UsersEmail {
+            get {
+                return ResourceManager.GetString("UsersEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Employment Information.
+        /// </summary>
+        public static string UsersEmployeInfo {
+            get {
+                return ResourceManager.GetString("UsersEmployeInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First add areas to manage.
+        /// </summary>
+        public static string UsersFirstAddArea {
+            get {
+                return ResourceManager.GetString("UsersFirstAddArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First select the area / areas to manage.
+        /// </summary>
+        public static string UsersFirstArea {
+            get {
+                return ResourceManager.GetString("UsersFirstArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First Type a Payroll Number.
+        /// </summary>
+        public static string UsersFirstPayroll {
+            get {
+                return ResourceManager.GetString("UsersFirstPayroll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a first select a plant.
+        /// </summary>
+        public static string UsersFirstPlant {
+            get {
+                return ResourceManager.GetString("UsersFirstPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First Add a subordinate.
+        /// </summary>
+        public static string UsersFirstSubordinate {
+            get {
+                return ResourceManager.GetString("UsersFirstSubordinate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First Select a superior.
+        /// </summary>
+        public static string UsersFirstSuperior {
+            get {
+                return ResourceManager.GetString("UsersFirstSuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a General Infor.
+        /// </summary>
+        public static string UsersGeneralInfo {
+            get {
+                return ResourceManager.GetString("UsersGeneralInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group.
+        /// </summary>
+        public static string UsersGroup {
+            get {
+                return ResourceManager.GetString("UsersGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Hierarchy tree.
+        /// </summary>
+        public static string UsersHT {
+            get {
+                return ResourceManager.GetString("UsersHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User Id.
+        /// </summary>
+        public static string UsersId {
+            get {
+                return ResourceManager.GetString("UsersId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Inactive.
+        /// </summary>
+        public static string UsersInactive {
+            get {
+                return ResourceManager.GetString("UsersInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area.
+        /// </summary>
+        public static string UsersLabelArea {
+            get {
+                return ResourceManager.GetString("UsersLabelArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution.
+        /// </summary>
+        public static string UsersLabelDistribution {
+            get {
+                return ResourceManager.GetString("UsersLabelDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Group.
+        /// </summary>
+        public static string UsersLabelGroup {
+            get {
+                return ResourceManager.GetString("UsersLabelGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plant.
+        /// </summary>
+        public static string UsersLabelPlant {
+            get {
+                return ResourceManager.GetString("UsersLabelPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SSV.
+        /// </summary>
+        public static string UsersLabelSSV {
+            get {
+                return ResourceManager.GetString("UsersLabelSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Manage Areas.
+        /// </summary>
+        public static string UsersManageAreas {
+            get {
+                return ResourceManager.GetString("UsersManageAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a More Data For Admin.
+        /// </summary>
+        public static string UsersMoreData {
+            get {
+                return ResourceManager.GetString("UsersMoreData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a To modify this field, it is necessary to edit the corresponding field in the superior (manager)..
+        /// </summary>
+        public static string UsersMsg1 {
+            get {
+                return ResourceManager.GetString("UsersMsg1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete the upper field?.
+        /// </summary>
+        public static string UsersMsg2 {
+            get {
+                return ResourceManager.GetString("UsersMsg2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Name.
+        /// </summary>
+        public static string UsersName {
+            get {
+                return ResourceManager.GetString("UsersName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create New User.
+        /// </summary>
+        public static string UsersNew {
+            get {
+                return ResourceManager.GetString("UsersNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No Areas yet.
+        /// </summary>
+        public static string UsersNoAreas {
+            get {
+                return ResourceManager.GetString("UsersNoAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This Superior No have Areas.
+        /// </summary>
+        public static string UsersNoAreasSSV {
+            get {
+                return ResourceManager.GetString("UsersNoAreasSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a this combination of floor plan and area does not have any distributions.
+        /// </summary>
+        public static string UsersNoDistribution {
+            get {
+                return ResourceManager.GetString("UsersNoDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No Users Found.
+        /// </summary>
+        public static string UsersNoFound {
+            get {
+                return ResourceManager.GetString("UsersNoFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no users who tried to log in with an unregistered account..
+        /// </summary>
+        public static string UsersNoFound0Count {
+            get {
+                return ResourceManager.GetString("UsersNoFound0Count", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this user from the unregistered users table?.
+        /// </summary>
+        public static string UsersNoFoundDeleteMsg {
+            get {
+                return ResourceManager.GetString("UsersNoFoundDeleteMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Not Found.
+        /// </summary>
+        public static string UsersNoFoundTitle {
+            get {
+                return ResourceManager.GetString("UsersNoFoundTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a These users tried to log in.
+        /// </summary>
+        public static string UsersNoFoundTry {
+            get {
+                return ResourceManager.GetString("UsersNoFoundTry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This user has no subordinates yet..
+        /// </summary>
+        public static string UsersNoSubordinate {
+            get {
+                return ResourceManager.GetString("UsersNoSubordinate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This user has no superior yet..
+        /// </summary>
+        public static string UsersNoSuperior {
+            get {
+                return ResourceManager.GetString("UsersNoSuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Unregistered User delted.
+        /// </summary>
+        public static string UsersNotFounErrorDelete {
+            get {
+                return ResourceManager.GetString("UsersNotFounErrorDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error deleting unregistered User.
+        /// </summary>
+        public static string UsersNotFounOkDelete {
+            get {
+                return ResourceManager.GetString("UsersNotFounOkDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a COMPAS Username.
+        /// </summary>
+        public static string UsersObject {
+            get {
+                return ResourceManager.GetString("UsersObject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operators.
+        /// </summary>
+        public static string UsersOP {
+            get {
+                return ResourceManager.GetString("UsersOP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operator.
+        /// </summary>
+        public static string UsersOperator {
+            get {
+                return ResourceManager.GetString("UsersOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operators.
+        /// </summary>
+        public static string UsersOperators {
+            get {
+                return ResourceManager.GetString("UsersOperators", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Example of Use OP Users Format.
+        /// </summary>
+        public static string UsersOPExampleFormat {
+            get {
+                return ResourceManager.GetString("UsersOPExampleFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download OP Users Format.
+        /// </summary>
+        public static string UsersOPFormat {
+            get {
+                return ResourceManager.GetString("UsersOPFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This Operator has no distribution yet.
+        /// </summary>
+        public static string UsersOpNoDistribution {
+            get {
+                return ResourceManager.GetString("UsersOpNoDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Payroll.
+        /// </summary>
+        public static string UsersPayroll {
+            get {
+                return ResourceManager.GetString("UsersPayroll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Permissions.
+        /// </summary>
+        public static string UsersPermissions {
+            get {
+                return ResourceManager.GetString("UsersPermissions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select Area.
+        /// </summary>
+        public static string UsersPHArea {
+            get {
+                return ResourceManager.GetString("UsersPHArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Distribution.
+        /// </summary>
+        public static string UsersPHDistribution {
+            get {
+                return ResourceManager.GetString("UsersPHDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Group.
+        /// </summary>
+        public static string UsersPHGroup {
+            get {
+                return ResourceManager.GetString("UsersPHGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Operator.
+        /// </summary>
+        public static string UsersPHOperator {
+            get {
+                return ResourceManager.GetString("UsersPHOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Plant.
+        /// </summary>
+        public static string UsersPHPlant {
+            get {
+                return ResourceManager.GetString("UsersPHPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a SSV.
+        /// </summary>
+        public static string UsersPHSSV {
+            get {
+                return ResourceManager.GetString("UsersPHSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Subordinated.
+        /// </summary>
+        public static string UsersPHSubordinate {
+            get {
+                return ResourceManager.GetString("UsersPHSubordinate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Superior.
+        /// </summary>
+        public static string UsersPHSuperior {
+            get {
+                return ResourceManager.GetString("UsersPHSuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Supervisor.
+        /// </summary>
+        public static string UsersPHSupervisor {
+            get {
+                return ResourceManager.GetString("UsersPHSupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a Supervisor.
+        /// </summary>
+        public static string UsersPHSV {
+            get {
+                return ResourceManager.GetString("UsersPHSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Plant.
+        /// </summary>
+        public static string UsersPlant {
+            get {
+                return ResourceManager.GetString("UsersPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This plant does not have areas to manage.
+        /// </summary>
+        public static string UsersPlantNoAreas {
+            get {
+                return ResourceManager.GetString("UsersPlantNoAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This plant / area does not have Operators.
+        /// </summary>
+        public static string UsersPlantNoOP {
+            get {
+                return ResourceManager.GetString("UsersPlantNoOP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This plant does not have SSV.
+        /// </summary>
+        public static string UsersPlantNoSSV {
+            get {
+                return ResourceManager.GetString("UsersPlantNoSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This plant does not have Supervisors.
+        /// </summary>
+        public static string UsersPlantNoSV {
+            get {
+                return ResourceManager.GetString("UsersPlantNoSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Created.
+        /// </summary>
+        public static string UsersResumeCreated {
+            get {
+                return ResourceManager.GetString("UsersResumeCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Exist.
+        /// </summary>
+        public static string UsersResumeExist {
+            get {
+                return ResourceManager.GetString("UsersResumeExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Updated.
+        /// </summary>
+        public static string UsersResumeUpdate {
+            get {
+                return ResourceManager.GetString("UsersResumeUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Please Select Superior of List.
+        /// </summary>
+        public static string UsersSelectSuperior {
+            get {
+                return ResourceManager.GetString("UsersSelectSuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Senior Supervisor.
+        /// </summary>
+        public static string UsersSeniorSupervisor {
+            get {
+                return ResourceManager.GetString("UsersSeniorSupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Show Areas.
+        /// </summary>
+        public static string UsersShowAreas {
+            get {
+                return ResourceManager.GetString("UsersShowAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Show More Info.
+        /// </summary>
+        public static string UsersShowMoreInfo {
+            get {
+                return ResourceManager.GetString("UsersShowMoreInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SSV&apos;s.
+        /// </summary>
+        public static string UsersSSV {
+            get {
+                return ResourceManager.GetString("UsersSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Example of Use SSV Users Format.
+        /// </summary>
+        public static string UsersSSVExampleFormat {
+            get {
+                return ResourceManager.GetString("UsersSSVExampleFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download SSV Users Format.
+        /// </summary>
+        public static string UsersSSVFormat {
+            get {
+                return ResourceManager.GetString("UsersSSVFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Subordinates.
+        /// </summary>
+        public static string UsersSubordinates {
+            get {
+                return ResourceManager.GetString("UsersSubordinates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Superior.
+        /// </summary>
+        public static string UsersSuperior {
+            get {
+                return ResourceManager.GetString("UsersSuperior", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Superior SSV.
+        /// </summary>
+        public static string UsersSuperiorSSV {
+            get {
+                return ResourceManager.GetString("UsersSuperiorSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Superior SV.
+        /// </summary>
+        public static string UsersSuperiorSV {
+            get {
+                return ResourceManager.GetString("UsersSuperiorSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Supervisor.
+        /// </summary>
+        public static string UsersSupervisor {
+            get {
+                return ResourceManager.GetString("UsersSupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Supervisors.
+        /// </summary>
+        public static string UsersSupervisors {
+            get {
+                return ResourceManager.GetString("UsersSupervisors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SV.
+        /// </summary>
+        public static string UsersSV {
+            get {
+                return ResourceManager.GetString("UsersSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Example of SV Users Format.
+        /// </summary>
+        public static string UsersSVExFormat {
+            get {
+                return ResourceManager.GetString("UsersSVExFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download SV Users Format.
+        /// </summary>
+        public static string UsersSVFormat {
+            get {
+                return ResourceManager.GetString("UsersSVFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Management.
+        /// </summary>
+        public static string UsersTitle {
+            get {
+                return ResourceManager.GetString("UsersTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Type.
+        /// </summary>
+        public static string UsersType {
+            get {
+                return ResourceManager.GetString("UsersType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Unregistered Users.
+        /// </summary>
+        public static string UsersUnregister {
+            get {
+                return ResourceManager.GetString("UsersUnregister", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update User.
+        /// </summary>
+        public static string UsersUpdate {
+            get {
+                return ResourceManager.GetString("UsersUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Users.
+        /// </summary>
+        public static string UsersUpload {
+            get {
+                return ResourceManager.GetString("UsersUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Upload Users.
+        /// </summary>
+        public static string UsersUploadTitle {
+            get {
+                return ResourceManager.GetString("UsersUploadTitle", resourceCulture);
             }
         }
         

@@ -8,15 +8,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.GuidesPage
         string searchString = "";
 
         //Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Help", href: "/Help", disabled: true),
-            new BreadcrumbItem("Guides", href: "", disabled: true)
-        }; 
+        private List<BreadcrumbItem> _links;
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["GuidesTitle"], href: "", disabled: true)
+        };
             _Guides = await GuidesServices.GetAllGuidesWhitFile();
         }
 

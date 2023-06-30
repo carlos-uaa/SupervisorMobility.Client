@@ -14,13 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
     public partial class AssyCharts
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assychart", disabled: true),
-        };
-
+        private List<BreadcrumbItem> _links;
 
         //Objects
         private bool hover = true;
@@ -64,6 +58,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart", disabled: true),
+        };
+
             _assychart = await AssyChartServices.GetAssyCharts();
             _plants = await PlantServices.GetPlants();
         }
@@ -168,7 +169,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         async Task DeleteAssyChart(int assychartid)
         {
 
-            bool confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this AssyChart?");
+            bool confirm = await JS.InvokeAsync<bool>("confirm", Localizer["ACquestionDelete"]);
 
             if (confirm)
             {
@@ -179,9 +180,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
         }
+         
 
 
-        
         private async void OpenDialogGOS(string ruta)
         {
             folderError = true;
@@ -196,7 +197,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             if (GosFilesInFolder == null)
             {
                 folderError = true;
-            }else
+            }
+            else
             {
                 folderError = false;
             }
@@ -211,7 +213,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private async void OpenDialogCcp(string ruta)
         {
             folderError = true;
-            CCPrute= ruta;
+            CCPrute = ruta;
             CcpDialog = true;
             Console.WriteLine($"Cpc {ruta}");
 
@@ -244,7 +246,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
         void CloseHoe() => HoeDialog = false;
 
-     
+
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
@@ -302,18 +304,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     if (result == "File downloaded successfully")
                     {
                         var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if(DeleteTemp is not null)
+                        if (DeleteTemp is not null)
                         {
                             Console.WriteLine($"Download GOS - fileDownlaod Succes");
                         }
                     }
 
                 }
-                    catch(Exception ex) {
+                catch (Exception ex)
+                {
                     Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
                 }
-        }
-           
+            }
+
         }
     }
 }

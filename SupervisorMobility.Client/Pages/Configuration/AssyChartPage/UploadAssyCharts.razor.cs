@@ -13,13 +13,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
     public partial class UploadAssyCharts
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assychart"),
-            new BreadcrumbItem("Upload Assy Chart", href: "/UploadAssyCharts", disabled: true),
-        };
+        private List<BreadcrumbItem> _links;
 
         //Objects to Interacting with the archive upload
         private string FileName;
@@ -44,6 +38,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+            new BreadcrumbItem(text: Localizer["ACUploadAC"], href: "/UploadAssyCharts", disabled: true),
+        };
             _plants = await PlantServices.GetPlants();
         }
 
@@ -74,7 +75,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             if (!regexcsv.IsMatch(e.File.Name) && !regexlsx.IsMatch(e.File.Name))
             {
-                ErrorMessageToDisplay = $"Only CSV / XLSX files can be uploaded";
+                ErrorMessageToDisplay = Localizer["ACmsgOnlyCSV"];
             }
             else
             {
@@ -193,7 +194,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     catch (Exception ex)
                     {
 
-                        ErrorMessageToDisplay = "File Corrupted/ File Content Error / Error of procesing. ";
+                        ErrorMessageToDisplay = Localizer["ACmsgError"];
                         Console.WriteLine($"{ex.Message}");
                         showTableToShow = false;
                     }//endtrycatch

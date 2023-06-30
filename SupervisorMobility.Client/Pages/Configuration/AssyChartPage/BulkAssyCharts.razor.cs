@@ -10,16 +10,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
     public partial class BulkAssyCharts
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assychart"),
-            new BreadcrumbItem("Bulk Assy Chart", href: "/BulkAssyCharts", disabled: true),
-        };
-
+        private List<BreadcrumbItem> _links;
         protected async override Task OnInitializedAsync()
         {
+
+            _links = new List<BreadcrumbItem>
+        {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+            new BreadcrumbItem(text: Localizer["ACBulkAC"], href: "", disabled: true),
+        };
             _plants = await PlantServices.GetPlants();
         }
 

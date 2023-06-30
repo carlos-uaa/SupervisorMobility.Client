@@ -5,11 +5,12 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
 
 @if(logged == true)
 {
     @*Title*@
-    <PageTitle>Supervisor Mobility | Detail Users</PageTitle>
+    <PageTitle>Supervisor Mobility | @Localizer["UsersDetailsTitle"]</PageTitle>
     @*Breadcrumb links*@
     <MudBreadcrumbs Class="mb-10" Items="_links">
         <ItemTemplate Context="item">
@@ -30,13 +31,13 @@
                         @if (_user.IsActive == true)
                         {
                             <MudText Align="Align.Center" Class="pt-2">
-                                <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["UsersActive"]</MudChip>
                             </MudText>
                         }
                         else
                         {
                             <MudText Align="Align.Center" Class="pa-4">
-                                <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["UsersInactive"]</MudChip>
                             </MudText>
                         }
                     </MudCardContent>
@@ -49,7 +50,7 @@
                         <MudCard>
                             <MudCardHeader>
                                 <CardHeaderContent>
-                                    <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">Update User</MudText>
+                                    <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">@Localizer["UsersUpdate"]</MudText>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
                                     <MudChip Variant="Variant.Text" Color="Color.Info" Class="mr-15 mt-5">User ID @_user.UserId</MudChip>
@@ -63,24 +64,24 @@
                                 }
                                 <MudItem>
                                     <MudItem>
-                                        <MudText Typo="Typo.h6" Class="mt-5">Permissions</MudText>
+                                        <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersPermissions"]</MudText>
                                     </MudItem>
                                     <MudItem >
           
                                             @switch(_user.UserType)
                                             {
-                                                case 1: 
-                                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">Admin</MudChip>
+                                                case 1:
+                                                <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary">@Localizer["UsersAdmin"]</MudChip>
                                                 break; 
                                                 case 2:
-                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Senior Supervisor</MudChip>
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">@Localizer["UsersSeniorSupervisor"]</MudChip>
 
                                                     break;
                                                 case 3:
-                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">Supervisor</MudChip>
+                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary">@Localizer["UsersSupervisor"]</MudChip>
                                                     break;
                                                 case 4:
-                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">Operator</MudChip>
+                                                <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">@Localizer["UsersOperator"]</MudChip>
                                                     break;
                                             }
                                     </MudItem>
@@ -90,29 +91,29 @@
 
                                 <MudItem>
                                     <MudItem>
-                                        <MudText Typo="Typo.h6" Class="mt-5">General Info</MudText>
+                                        <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersGeneralInfo"]</MudText>
                                     </MudItem>
                                     <MudItem>
                                         @if (_user.UserType != 4)
                                         {
                                             <MudItem class="d-flex flex-column justify-center align-self-center">
-                                                <MudTextField Label="Email" ReadOnly=true @bind-Value="@_user.Email" />
+                                                <MudTextField Label="@Localizer["UsersEmail"]" ReadOnly=true @bind-Value="@_user.Email" />
                                             </MudItem>
                                         }
                                         @if (_user.UserType == 4)
                                         {
                                             <MudItem class="d-flex flex-column justify-center align-self-center">
-                                                <MudTextField Label="Payroll" ReadOnly=true @bind-Value="@_user.Payroll" />
+                                                <MudTextField Label="@Localizer["UsersPayroll"]" ReadOnly=true @bind-Value="@_user.Payroll" />
                                             </MudItem>
                                         }
                                         @if(_user.UserType != 1)
                                         {
-                                            <MudTextField Label="Plant" ReadOnly=true @bind-Value="@_user.Plant.Description" />
+                                            <MudTextField Label="@Localizer["UsersPlant"]" ReadOnly=true @bind-Value="@_user.Plant.Description" />
                                             @if(_user.UserType == 2)
                                             {
                                                 @if (_user.Areas?.Count > 0)
                                                 {
-                                                    <MudText Typo="Typo.h6" Class="mt-5">Areas</MudText>
+                                                    <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
                                                     @foreach(var area in _user.Areas)
                                                     {
                                                         <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@area.Code - @area.Description </MudChip>
@@ -122,24 +123,25 @@
                                                 else
                                                 {
                                                     <MudAlert Severity="Severity.Info" Class="mt-5">
-                                                        This SSV has no areas yet
+                                                        @Localizer["UsersNoAreasSSV"]
                                                     </MudAlert>
                                                 }
                                             }
                                             else
                                             {
-                                                <MudText Typo="Typo.h6" Class="mt-5">Area</MudText>
+                                                <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
                                                 <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_user.Area.Code - @_user.Area.Description </MudChip>
                                             }
                                             @if(_user.UserType == 4)
                                             {
-                                                <MudText Typo="Typo.h6" Class="mt-5">Distribution</MudText>
+                                                <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersDistribution"]</MudText>
                                                 if(_user.DistributionId != null){
                                                     <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_user.Distribution.Code - @_user.Distribution.Description </MudChip>
                                                 }
                                                 else{
                                                     <MudAlert Severity="Severity.Info" Class="mt-1">
-                                                        This Operator has no distribution yet
+                                                        
+                                                        @Localizer["UsersOpNoDistribution"]
                                                     </MudAlert>
                                                 }
                                             }
@@ -153,7 +155,7 @@
                                 {
                                     <MudItem>
                                         <MudItem>
-                                            <MudText Typo="Typo.h6" Class="mt-5">Superior</MudText>
+                                            <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersSuperior"]</MudText>
                                         </MudItem>
                                         <MudItem>
                                             @if(_user.Superior != null)
@@ -161,20 +163,20 @@
                                                 switch (_user.Superior.UserType)
                                                 {
                                                     case 1:
-                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Class="pl-5 pr-5">Admin - @_user.Superior.Name</MudChip>
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Class="pl-5 pr-5">@Localizer["UsersAdmin"] - @_user.Superior.Name</MudChip>
                                                         break;
                                                     case 2:
-                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">SSV - @_user.Superior.Name</MudChip>
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSSV"] - @_user.Superior.Name</MudChip>
                                                         break;
                                                     case 3:
-                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">Supervisor - @_user.Superior.Name</MudChip>
+                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSV"] - @_user.Superior.Name</MudChip>
                                                         break;
                                                 }
                                             }
                                             else
                                             {
                                                 <MudAlert Severity="Severity.Info" Class="mt-2">
-                                                    This user has no superior yet.
+                                                    @Localizer["UsersNoSuperior"]
                                                 </MudAlert>
                                             }
                                         </MudItem>
@@ -184,7 +186,7 @@
                                 {
                                     <MudItem>
                                         <MudItem>
-                                            <MudText Typo="Typo.h6" Class="mt-5">Subordinates</MudText>
+                                            <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersSubordinates"]</MudText>
                                         </MudItem>
                                         <MudItem>
                                             @if (_user.Subordinates?.Count > 0)
@@ -194,13 +196,13 @@
                                                     switch (subordinate.UserType)
                                                     {
                                                         case 2:
-                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">SSV - @subordinate.Name</MudChip>
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSeniorSupervisor"] - @subordinate.Name</MudChip>
                                                             break;
                                                         case 3:
-                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">Supervisor - @subordinate.Name</MudChip>
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSupervisor"] - @subordinate.Name</MudChip>
                                                             break;
                                                         case 4:
-                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Dark" Class="pl-5 pr-5">Operator - @subordinate.Name</MudChip> 
+                                                            <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Dark" Class="pl-5 pr-5">@Localizer["UsersOperator"] - @subordinate.Name</MudChip>
                                                             break;
                                                     }
                                                 }
@@ -209,7 +211,7 @@
                                             else
                                             {
                                                 <MudAlert Severity="Severity.Info" Class="mt-2">
-                                                    This user has no subordinates yet.
+                                                    @Localizer["UsersNoSubordinate"]
                                                 </MudAlert>
                                             }
                                     </MudItem>
@@ -219,11 +221,11 @@
                                 {
                                     <MudItem>
                                         <MudItem>
-                                            <MudText Typo="Typo.h6" Class="mt-5">More Data For Admin</MudText>
+                                            <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersMoreData"]</MudText>
                                         </MudItem>
                                         <MudItem class="d-flex flex-column justify-center align-self-center">
-                                            <MudTextField Label="Created Date" ReadOnly=true @bind-Value="@_user.CreatedDate" />
-                                            <MudTextField Label="Last Modification Date" ReadOnly=true @bind-Value="@_user.LastUpdated" />
+                                            <MudTextField Label="@Localizer["ACCD"]" ReadOnly=true @bind-Value="@_user.CreatedDate" />
+                                            <MudTextField Label="@Localizer["ACMD"]" ReadOnly=true @bind-Value="@_user.LastUpdated" />
                                             @if(_user.UserType == 1)
                                             {
                                                 <MudTextField Label="Disabled User Date" ReadOnly=true @bind-Value="@_user.DisabledDate" />
@@ -234,7 +236,7 @@
                                 }
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10">Close</MudButton>
+                                <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10">@Localizer["Close"]</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>

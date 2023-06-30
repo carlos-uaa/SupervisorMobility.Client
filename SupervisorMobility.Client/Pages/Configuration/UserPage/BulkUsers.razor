@@ -1,9 +1,9 @@
 ﻿@page "/usersmanagement/BulkUsers"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 @inject IFileUploadAndDownloadService FileUpDoServices
-
+@inject IStringLocalizer<Resource1> Localizer
 @*Title*@
-<PageTitle>Supervisor Mobility | Bulk Users</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["UsersBulk"]</PageTitle>
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -16,11 +16,11 @@
 <MudGrid id="Bulk">
     <MudItem xl="10" xs="10">
         <MudItem class="align-center justify-center mud-width-full">
-            <MudText Typo="Typo.h6">Users Bulk</MudText>
+            <MudText Typo="Typo.h6">@Localizer["UsersBulk"]</MudText>
         </MudItem>
        
         <MudItem class="my-2">
-            <MudButton OnClick="DoBulkUsers" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Download All Users</MudButton>
+            <MudButton OnClick="DoBulkUsers" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">@Localizer["UsersDownloadAll"]</MudButton>
         </MudItem>
     </MudItem>
     <MudItem xl="2" xs="2" Class="align-center justify-center">
@@ -32,13 +32,19 @@
 
 
 @code {
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
+    private List<BreadcrumbItem> _links;
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Users", href: "/usersmanagement"),
-            new BreadcrumbItem("Bulk Users", href: "", disabled: true),
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["UsersTitle"], href: "usersmanagement"),
+            new BreadcrumbItem(text: Localizer["UsersBulk"], href: "", disabled: true)
         };
+    }
 
     private async Task DoBulkUsers()
     {

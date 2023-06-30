@@ -27,19 +27,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         Distribution _distributionValues = new();
 
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assychart"),
-            new BreadcrumbItem("Update Assy Chart", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         //objects
         AssyChart _assychart = new();
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
-        List<Product> _products = new();
         List<Distribution> _distributions { get; set; } = new();
 
         bool isGosFolder = false;
@@ -57,12 +50,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+            new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
+        };
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
 
             _plants = await PlantServices.GetPlants();
             _areas = await AreaServices.GetAreas(_assychart.PlantId);
             _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
-            _products = await ProductServices.GetProducts();
+        
 
             _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
 

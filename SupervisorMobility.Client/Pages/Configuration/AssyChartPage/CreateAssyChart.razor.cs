@@ -42,17 +42,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         MudMessageBox GOSmbox { get; set; }
 
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Assy Chart", href: "/assychart"),
-            new BreadcrumbItem("New Assy Chart", href: "", disabled: true),
-        };
+        private List<BreadcrumbItem> _links;
 
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+            new BreadcrumbItem(text: Localizer["ACNewAC"], href: "", disabled: true),
+        };
             _plants = await PlantServices.GetPlants();
             _products = await ProductServices.GetProducts();
         }

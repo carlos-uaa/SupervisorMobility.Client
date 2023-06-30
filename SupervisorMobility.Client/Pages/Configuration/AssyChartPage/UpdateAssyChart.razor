@@ -1,7 +1,7 @@
 ﻿@page "/assychart/updateassychart/{assychartId:int}"
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Update Assy Chart</PageTitle>
+<PageTitle>Supervisor Mobility |@Localizer["ACUpdateAC"]</PageTitle>
 
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
@@ -10,7 +10,7 @@
 @inject IProductService ProductServices
 @inject IJSRuntime JsRuntime
 @inject IBridgeCDMSService CDMSServices
-
+@inject IStringLocalizer<Resource1> Localizer
 @inject NavigationManager NavigationManager
 
 
@@ -30,16 +30,17 @@
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Update Assy Chart</MudText>
+                        <MudText Typo="Typo.h6">@Localizer["ACUpdate"]</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
-                        <MudChip Variant="Variant.Text" Color="Color.Success">Update Assy Chart</MudChip>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["ACUpdate"]</MudChip>
                     </CardHeaderActions>
                 </MudCardHeader>
                 @*Mud select of plants *@
                 <MudCardContent>
-                    <MudSelect T="int" Label="Plant" Variant="Variant.Text" Placeholder="Select a Plant" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.PlantId" For="@(() => @_assychart.PlantId)" SelectedValuesChanged="UpdateAreas">
-                        <MudSelectItem Disabled="true" Value="@_assychart.PlantId">Select a Plant</MudSelectItem>
+                    
+                    <MudSelect T="int" Label="@Localizer["ACLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["ACPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.PlantId" For="@(() => _assychart.PlantId)" SelectedValuesChanged="UpdateAreas">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHPlant"]</MudSelectItem>
                         @foreach (var type in _plants)
                         {
                             <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
@@ -48,8 +49,8 @@
 
                     @*Mud select of Areas *@
 
-                    <MudSelect T="int" Label="Area" Variant="Variant.Text" Placeholder="Select a Area" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.AreaId" For="@(() => @_assychart.AreaId)" SelectedValuesChanged="UpdateDistributions">
-                        <MudSelectItem Disabled="true" Value="@_assychart.AreaId">Select a Area</MudSelectItem>
+                    <MudSelect T="int" Label="@Localizer["ACLabelArea"]" Variant="Variant.Text" Placeholder="@Localizer["ACPHArea"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.AreaId" For="@(() => _assychart.AreaId)" SelectedValuesChanged="UpdateDistributions">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHArea"]</MudSelectItem>
                         @foreach (var type in _areas)
                         {
                             <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
@@ -58,37 +59,33 @@
 
                     @*Mud select of Distributions *@
 
-                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.DistributionId" For="@(() => @_assychart.DistributionId)" SelectedValuesChanged="UpdateOperationProducts">
-                        <MudSelectItem Disabled="true" Value="@_assychart.DistributionId">Select a Distribution</MudSelectItem>
+                    <MudSelect T="int" Label="@Localizer["ACLabelDistribution"]" Placeholder="@Localizer["ACPHDistribution"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.DistributionId" For="@(() => _assychart.DistributionId)" SelectedValuesChanged="UpdateOperationProducts">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHDistribution"]</MudSelectItem>
                         @foreach (var type in _distributions)
                         {
                             <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                         }
                     </MudSelect>
 
-                    @*Operation*@
                     @*Operation *@
-                    <MudSelect T="int" Label="Operation" Placeholder="Select a Operation" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.OperationId" For="@(() => _assychart.OperationId)">
-                        <MudSelectItem Disabled="true" Value="0">Select a Operation</MudSelectItem>
+                    <MudSelect T="int" Label="@Localizer["ACLabelOperation"]" Placeholder="@Localizer["ACPHOperation"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.OperationId" For="@(() => _assychart.OperationId)">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHOperation"]</MudSelectItem>
                         @foreach (var type in _distributionValues.Operations)
                         {
                             <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                         }
                     </MudSelect>
 
-
                     @*Mud select of Model/Product *@
-                    <MudSelect T="int" Label="Product" Placeholder="Select a Product" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.ProductId" For="@(() => @_assychart.ProductId)">
-                        <MudSelectItem Disabled="true" Value="@_assychart.ProductId">Select a Product</MudSelectItem>
-                        @foreach (var type in _products)
+                    <MudSelect T="int" Label="@Localizer["ACLabelProduct"]" Placeholder="@Localizer["ACPHProduct"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.ProductId" For="@(() => @_assychart.ProductId)">
+                        <MudSelectItem Disabled="true" Value="@_assychart.ProductId">@Localizer["ACPHProduct"]</MudSelectItem>
+                        @foreach (var type in _distributionValues.Products)
                         {
                             <MudSelectItem Value="type.ProductId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                         }
                     </MudSelect>
-                    <br/>
-                    <br/>
-                    <br/>
-
+                    <br>
+                    <br>
 
                     @*GOS*@
 
@@ -97,8 +94,8 @@
                         @if (rootNodeGOS.TreeItems.Count > 0)
                         {
                             <MudPaper Width="600px" Elevation="0">
-                                <MudTextField Label="Selected GOS Folder" ReadOnly="true"
-                                      @bind-Value="@_assychart.GOS" For="@(() => @_assychart.GOS)" />
+                                <MudTextField Label="@Localizer["ACLabelGOSSelect"]" ReadOnly="true"
+                                @bind-Value="@_assychart.GOS" For="@(() => @_assychart.GOS)" />
                                 <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
                                     <ItemTemplate>
                                         <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @_assychart.GOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
@@ -108,7 +105,7 @@
                         }
                         else
                         {
-                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading GOS Directory...</MudAlert>
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer["ACGOSDirectory"]</MudAlert>
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
                     }
@@ -116,7 +113,7 @@
                     {
                         if (folderGOSError)
                         {
-                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
                         }
                     }
 
@@ -129,8 +126,8 @@
                         {
 
                             <MudPaper Width="600px" Elevation="0">
-                                <MudTextField Label="Selected CCP Folder" ReadOnly="true"
-                                      @bind-Value="@_assychart.CCP" For="@(() => @_assychart.CCP)" />
+                                <MudTextField Label="@Localizer["ACLabelCCPSelect"]" ReadOnly="true"
+                                @bind-Value="@_assychart.CCP" For="@(() => @_assychart.CCP)" />
                                 <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
                                     <ItemTemplate>
                                         <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @_assychart.CCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
@@ -140,7 +137,7 @@
                         }
                         else
                         {
-                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading CCP Directory...</MudAlert>
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer["ACCCPDirectory"]</MudAlert>
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
                     }
@@ -148,7 +145,7 @@
                     {
                         if (folderCCPError)
                         {
-                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
                         }
                     }
 
@@ -171,10 +168,8 @@
                         @if (rootNodeHOE.TreeItems.Count > 0)
                         {
                             <MudPaper Width="600px" Elevation="0">
-                               
-                                    <MudTextField Label="Selected CCP Folder" ReadOnly="true"
-                                      Value="@_assychart.HOE.Replace('§', ' ')" For="@(() => @_assychart.HOE)" />
-                                
+
+                                <MudTextField Label="@Localizer["ACLabelHOESelect"]" ReadOnly="true" Value="@_assychart.HOE.Replace('§', ' ')" />
 
                                 <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems">
                                     <ItemTemplate>
@@ -185,7 +180,7 @@
                         }
                         else
                         {
-                            <MudAlert Severity="Severity.Info" Style="text-align: center">Loading HOE Directory..</MudAlert>
+                            <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer["ACHOEDirectory"]</MudAlert>
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                         }
 
@@ -194,12 +189,10 @@
                     {
                         if (folderHOEError)
                         {
-                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> Server does not respond </MudAlert>
+                            <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
                         }
                     }
-                   
 
-                  
 
 
                     @* Is Active *@
@@ -215,30 +208,30 @@
     </MudGrid>
 </EditForm>
 
-<MudMessageBox @ref="GOSmbox" Title="Notice GOS Path">
+<MudMessageBox @ref="GOSmbox" Title="@Localizer["ACNoticeGOS"]">
     <MessageContent>
-        The provided path `@_assychart.GOS`  is not a final directory. <br>
-        <b><i>Please provide a valid path</i></b>
+        @Localizer["ACProviderPath"] `@_assychart.GOS`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
     </MessageContent>
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
     </YesButton>
 </MudMessageBox>
 
-<MudMessageBox @ref="HOEmbox" Title="Notice HOE Path">
+<MudMessageBox @ref="HOEmbox" Title="@Localizer["ACNoticeHOE"]">
     <MessageContent>
-        The provided path `@_assychart.HOE.Replace('§', ' ')`  is not a final directory. <br>
-        <b><i>Please provide a valid path</i></b>
+        @Localizer["ACProviderPath"] `@_assychart.HOE.Replace('§', ' ')`   @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
     </MessageContent>
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
     </YesButton>
 </MudMessageBox>
 
-<MudMessageBox @ref="CCPmbox" Title="Notice CCP Path">
+<MudMessageBox @ref="CCPmbox" Title="@Localizer["ACNoticeCCP"]">
     <MessageContent>
-        The provided path `@_assychart.CCP`  is not a final directory. <br>
-        <b><i>Please provide a valid path</i></b>
+        @Localizer["ACProviderPath" ] `@_assychart.CCP`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
     </MessageContent>
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>

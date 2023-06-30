@@ -4,10 +4,10 @@
 @inject IFileUploadAndDownloadService FileServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+@inject IStringLocalizer<Resource1> Localizer
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Guide Details</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["GuidesDetailsTitle"]</PageTitle>
 
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
@@ -27,13 +27,13 @@
                 @if (_guide.IsActive == true)
                 {
                     <MudText Align="Align.Center" Class="pt-2">
-                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["UsersActive"]</MudChip>
                     </MudText>
                 }
                 else
                 {
                     <MudText Align="Align.Center" Class="pa-4">
-                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["UsersInactive"]</MudChip>
                     </MudText>
                 }
             </MudCardContent>
@@ -46,9 +46,9 @@
                 <MudCard>
                     <MudCardHeader>
                         <CardHeaderContent>
-                            <MudTextField Label="Guide Description" Disabled=true
+                            <MudTextField Label="@Localizer["GuidesDescription"]" Disabled=true
                                           @bind-Value="@_guide.Description" For="@(() => @_guide.Description)" />
-                            <MudText Typo="Typo.h6">File Upload Details</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["GuidesFU"]</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
@@ -66,7 +66,7 @@
                                 <MudButton Color="Color.Surface" Class="d-flex justify-center flex-row align-content-center align-center"
                                            @onclick="@(() => DownloadFile(_guide.FileUploadId, _guide.FileUpload?.FileName) )">
                                     <MudItem>
-                                        <MudText>Download</MudText>
+                                        <MudText>@Localizer["Download"]</MudText>
                                         <MudIcon Icon="@Icons.Material.Filled.Download" aria-label="Cancel" Color="Color.Primary"></MudIcon>
                                         <MudChip Text="@_guide.FileUpload?.FileName" Color="Color.Transparent" />
 
@@ -81,18 +81,18 @@
 
                             </MudItem>
                             <MudItem class="d-flex flex-column justify-center align-self-center">
-                                <MudTextField Label="File Id" Disabled=true
+                                <MudTextField Label="@Localizer["GuidesId"]" Disabled=true
                                               @bind-Value="@_guide.FileUploadId" For="@(() => @_guide.FileUploadId)" />
-                                <MudTextField Label="File Name" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.FileName" />
-                                <MudTextField Label="Storage Name" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.StorageFileName" />
-                                <MudTextField Label="Upload Date" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.UploadDate" />
+                                <MudTextField Label="@Localizer["GuidesFileName"]" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.FileName" />
+                                <MudTextField Label="@Localizer["GuidesStorageName"]" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.StorageFileName" />
+                                <MudTextField Label="@Localizer["GuidesUploadData"]" Class="mt-3" Disabled=true Value="@_guide.FileUpload?.UploadDate" />
                             </MudItem>
                         </MudItem>
 
 
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Href="/GuidesManagement" Variant="Variant.Filled" Class="ml-4">Close</MudButton>
+                        <MudButton Href="/GuidesManagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Close"]</MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -112,15 +112,16 @@
 
     private Guide _guide { get; set; } = new Guide();
 
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-           new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Guides Management", href: "/GuidesManagement"),
-        };
+    private List<BreadcrumbItem> _links;
 
     protected async override Task OnInitializedAsync()
     {
+        _links = new List<BreadcrumbItem>
+        {
+           new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: @Localizer["GMTitle"], href: "/GuidesManagement"),
+        };
         _guide = await GuidesServices.GetGuideByIdWhitFile(guideId);
     }
 
