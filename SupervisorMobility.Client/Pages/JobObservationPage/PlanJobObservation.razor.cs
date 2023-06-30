@@ -48,10 +48,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         int[] models = new int[5];
         string[] cycles = new string[5] { "", "", "", "", "" };
 
-        public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-          "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
-          "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
-
         //timer
         const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
@@ -85,12 +81,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Job Observation", href: "/jobobservation"),
-            new BreadcrumbItem("Plan Job Observation", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
 
         //User
@@ -106,6 +97,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+             _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
+                new BreadcrumbItem(text: Localizer["planJobObservation"], href: "", disabled: true)
+            };
+
             _jobObservation.Supervisor = new();
 
             await GetUserAsync();
@@ -499,7 +497,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Select a distribution and an operation", Severity.Error);
+                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
                 return;
             }
             visiblePast = true;

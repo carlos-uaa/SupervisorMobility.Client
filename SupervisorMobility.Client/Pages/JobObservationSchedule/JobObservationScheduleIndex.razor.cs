@@ -80,15 +80,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         {
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: @Localizer["home"], href: "#"),
-                new BreadcrumbItem(text: @Localizer["jobObservationSchedule"], href: "", disabled: true)
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["jobObservationSchedule"], href: "", disabled: true)
             };
 
             if (!await HasPropertyAsync())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error You have to log in", Severity.Error);
+                Snackbar.Add(Localizer["errorYouHaveToLogIn"], Severity.Warning);
                 NavigationManager.NavigateTo($"/");
             }
             else
