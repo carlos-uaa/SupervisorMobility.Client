@@ -8,13 +8,7 @@ namespace SupervisorMobility.Client.Pages.PATPage
     public partial class CreatePAT
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("PATs", href: "/PAT"),
-            new BreadcrumbItem("New PAT", href: "", disabled: true)
-        };
-
+        private List<BreadcrumbItem> _links;
         // Objects
         PAT _pat = new();
         List<Plant> _plants { get; set; } = new();
@@ -40,13 +34,20 @@ namespace SupervisorMobility.Client.Pages.PATPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem("PAT", href: "/PAT"),
+            new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
+        };
+
 
             logged = await HasPropertyAsync();
             if (!logged)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error You have to log in", Severity.Error);
+                Snackbar.Add(Localizer["errorYouHaveToLogIn"], Severity.Warning);
                 NavigationManager.NavigateTo($"/");
             }
             else

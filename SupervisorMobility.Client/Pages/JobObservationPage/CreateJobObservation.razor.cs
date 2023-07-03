@@ -84,12 +84,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Job Observation", href: "/jobobservation"),
-            new BreadcrumbItem("New Job Observation", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
 
         //User
@@ -102,6 +97,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
+                new BreadcrumbItem(text: Localizer["create"] + " " +  Localizer["jobObservation"], href: "", disabled: true)
+            };
+
             _jobObservation.Supervisor = new();
 
             await GetUserAsync();
