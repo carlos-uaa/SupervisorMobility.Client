@@ -916,11 +916,38 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Add Distribution.
+        /// </summary>
+        public static string DistributionAdd {
+            get {
+                return ResourceManager.GetString("DistributionAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Add Exist Distribution.
+        /// </summary>
+        public static string DistributionAddExistTitle {
+            get {
+                return ResourceManager.GetString("DistributionAddExistTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Distribution Code.
         /// </summary>
         public static string DistributionCode {
             get {
                 return ResourceManager.GetString("DistributionCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Distribution To Product.
+        /// </summary>
+        public static string DistributionCreate {
+            get {
+                return ResourceManager.GetString("DistributionCreate", resourceCulture);
             }
         }
         
@@ -952,11 +979,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Details.
+        /// </summary>
+        public static string DistributionDetailsText {
+            get {
+                return ResourceManager.GetString("DistributionDetailsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Update Distribution.
         /// </summary>
         public static string DistributionEdit {
             get {
                 return ResourceManager.GetString("DistributionEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Exist Distribution.
+        /// </summary>
+        public static string DistributionExist {
+            get {
+                return ResourceManager.GetString("DistributionExist", resourceCulture);
             }
         }
         
@@ -970,6 +1015,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a New distribution In Product.
+        /// </summary>
+        public static string DistributionNewProduct {
+            get {
+                return ResourceManager.GetString("DistributionNewProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Canot Add This Distribution has exist.
+        /// </summary>
+        public static string DistributionNoAdd {
+            get {
+                return ResourceManager.GetString("DistributionNoAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Distribution Status.
         /// </summary>
         public static string DistributionStatus {
@@ -979,11 +1042,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Update For Product.
+        /// </summary>
+        public static string DistributionUpdateProduct {
+            get {
+                return ResourceManager.GetString("DistributionUpdateProduct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Download.
         /// </summary>
         public static string Download {
             get {
                 return ResourceManager.GetString("Download", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit.
+        /// </summary>
+        public static string Edit {
+            get {
+                return ResourceManager.GetString("Edit", resourceCulture);
             }
         }
         
@@ -1393,6 +1474,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Is active?.
+        /// </summary>
+        public static string IsActive {
+            get {
+                return ResourceManager.GetString("IsActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Job Observations.
         /// </summary>
         public static string jobObservations {
@@ -1506,6 +1596,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string JOTUpdate {
             get {
                 return ResourceManager.GetString("JOTUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Loading Data.
+        /// </summary>
+        public static string LoadingData {
+            get {
+                return ResourceManager.GetString("LoadingData", resourceCulture);
             }
         }
         
