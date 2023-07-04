@@ -93,12 +93,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         public JobObservation pastJob = new();
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Job Observation", href: "/jobobservation"),
-            new BreadcrumbItem("Update Job Observation", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         //User
         private string json = string.Empty;
@@ -124,6 +119,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
+                new BreadcrumbItem(text: Localizer["update"] + " " + Localizer["jobObservation"], href: "", disabled: true)
+            };
+
             logged = await HasPropertyAsync();
             if (!logged)
             {

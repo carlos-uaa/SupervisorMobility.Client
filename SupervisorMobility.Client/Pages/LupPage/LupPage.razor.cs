@@ -29,11 +29,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("LUP", href: "/lup", disabled: true),
-        };
+        private List<BreadcrumbItem> _links;
 
         //User
         private string json = string.Empty;
@@ -43,12 +39,19 @@ namespace SupervisorMobility.Client.Pages.LupPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem("LUP", href: "/lup", disabled: true),
+            };
+
             logged = await HasPropertyAsync();
             if (!logged)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error You have to log in", Severity.Error);
+                Snackbar.Add(Localizer["errorYouHaveToLogIn"], Severity.Warning);
                 NavigationManager.NavigateTo($"/");
             }
             else
@@ -238,15 +241,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
         private async Task<bool> HasPropertyAsync()
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
-
-        // Create product
-        void CreateLup()
-        {
-            NavigationManager.NavigateTo($"lup/createlup");
-        }
-
-
-        // Delete product
+        // Delete lup
         async Task DeleteLup(int lupId)
         {
             _lup.RemoveAll(l => l.LupId == lupId);

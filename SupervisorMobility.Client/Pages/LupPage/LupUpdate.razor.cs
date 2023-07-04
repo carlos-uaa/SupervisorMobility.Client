@@ -14,12 +14,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
         [Parameter]
         public int LupId { get; set; }
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("LUP", href: "/lup"),
-            new BreadcrumbItem("Update Lup", href: "/", disabled: true),
-        };
+        private List<BreadcrumbItem> _links;
 
         public Lup _lup { get; set; } = new();
         public JobObservation jobObservation { get; set; } = new();
@@ -36,6 +31,13 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         protected async override Task OnInitializedAsync()
         {
+             _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem("LUP", href: "/lup"),
+                new BreadcrumbItem(text: Localizer["update"] + " LUP", href: "/", disabled: true),
+            };
+
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
             jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
         }

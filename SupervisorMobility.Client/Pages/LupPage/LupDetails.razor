@@ -10,6 +10,7 @@
 @inject IJobObservationService JobObservationService
 @inject ILupService LupServices
 @inject IFileUploadAndDownloadService FilesServices
+@inject IStringLocalizer<Resource> Localizer
 
 @inject NavigationManager NavigationManager
 
@@ -19,18 +20,6 @@
 @* Lup *@
 <MudGrid Justify="Justify.Center">
     <MudItem lg="10" md="12" sm="12" xs="12">
-        @if (_lup.IsActive == true)
-{
-    <MudText>
-                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">Active</MudChip>
-    </MudText>
-}
-else
-{
-    <MudText>
-                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Inactive</MudChip>
-    </MudText>
-}
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">
                 Lup @_lup.LupId
@@ -41,16 +30,16 @@ else
                 <tbody>
                     <tr>
                         <td style="width:50%">
-                            <MudDatePicker @bind-Date="_lup.CreatedDate" Label="Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                            <MudDatePicker @bind-Date="_lup.CreatedDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
                         </td>
                         <td> 
                         @if(_lup.EndDate == null)
                         {
-                            <MudText>End Date: Not yet completed</MudText>
+                                <MudText> @Localizer["endDate"]:  @Localizer["notYetCompleted"]</MudText>
                         }
                         else
                         {
-                            <MudDatePicker @bind-Date="_lup.EndDate" Label="End Date" Color="Color.Info" AdornmentColor="Color.Info" />
+                            <MudDatePicker @bind-Date="_lup.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" />
                         }
                         </td>
                     </tr>
@@ -61,12 +50,12 @@ else
                     <tr>
                         <th>
                             <MudText Style="font-weight:bold;">
-                                Pillar
+                                @Localizer["pillar"]
                             </MudText>
                         </th>
                         <th>
                             <MudText Style="text-align:center; font-weight:bold;">
-                                Opportunity area detected
+                                @Localizer["opportunityAreaDetected"]
                             </MudText>
                         </th>
                     </tr>
@@ -120,7 +109,7 @@ else
                         @if (_lup.Pillar == 5)
                         {
                         <td>
-                            Otros
+                             @Localizer["other"]
                         </td>
                         <td>
                                 <MudText>@_lup.Oportunity</MudText>
@@ -132,9 +121,9 @@ else
             <MudSimpleTable Style="overflow-x: auto;" Bordered>
                 <tbody>
                     <tr>
-                        <td style="font-weight:bold; width: 20%">Job Observation Id</td>
+                        <td style="font-weight:bold; width: 20%"> @Localizer["jobObservation"] Id</td>
                         <td>
-                            <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudTooltip Text=@Localizer["goToJobObservation"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
                                     <MudChip Variant="Variant.Text" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @_lup.JobObservationId</MudChip>
                                 </MudBadge>
@@ -144,7 +133,7 @@ else
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-weight:bold">Observer</td>
+                        <td style="font-weight:bold"> @Localizer["observer"]</td>
                         <td>@_lup.Observer</td>
                     </tr>
                     <tr>
@@ -158,27 +147,27 @@ else
                     <tr>
                         @if (!(_lup.Justification == null || _lup.Justification.Length == 0) && _lup.Status == 4)
                         {
-                            <td style="font-weight:bold">Justification</td>
+                            <td style="font-weight:bold"> @Localizer["justification"]</td>
                             <td>@_lup.Justification</td>
                         }
                     </tr>
                     <tr>
-                        <td style="font-weight:bold">Status</td>
+                        <td style="font-weight:bold">@Localizer["status"]</td>
                         <td>
                             @switch (_lup.Status)
                             {
                                 case 1:
-                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
                                     break;
                                 case 2:
-                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
                                     break;
                                 case 3:
-                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
                                     break;
-                                case 4:  
-                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
-                                    break; 
+                                case 4:
+                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                    break;
                             }
                             
                         </td>
@@ -190,7 +179,7 @@ else
                     <tr>
                         <td>
                             <MudText Typo="Typo.h6">
-                                Evidence
+                                @Localizer["evidence"]
                             </MudText>
                         </td>
                     </tr>
@@ -265,7 +254,7 @@ else
                                                     <img src="Images/error.png" Height="70" Width="70" />
                                                     break;
                                             }
-                                            <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                            <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
                                                 <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
                                                     <MudItem>
                                                         <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
@@ -279,7 +268,7 @@ else
                             }
                             else
                             {
-                                <span>No files uploaded yet</span>
+                                <span> @Localizer["noFilesUploadedYet"]</span>
                             }
                         </td>
                     </tr>

@@ -8,9 +8,10 @@
 @inject ISnackbar Snackbar
 @inject IFileUploadAndDownloadService FilesServices
 @inject IJobObservationService JobObservationService
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Update Lup</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["update"] Lup</PageTitle>
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -21,8 +22,8 @@
 <EditForm Model="_lup" OnValidSubmit="EditLup">
 <MudGrid Justify="Justify.Center">
     <MudItem lg="10" md="12" sm="12" xs="12">
-            <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="@_lup.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
-        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+@*            <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="@_lup.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+*@        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">
                 Lup @_lup.LupId
             </MudText>
@@ -32,16 +33,16 @@
                 <tbody>
                     <tr>
                         <td style="width:50%">
-                            <MudDatePicker @bind-Date="_lup.CreatedDate" Label="Start Date" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
+                            <MudDatePicker @bind-Date="_lup.CreatedDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" />
                         </td>
-                        <td>
-                            @if (_lup.EndDate == null)
+                        <td> 
+                            @if(_lup.EndDate == null)
                             {
-                                <MudText>End Date: Not yet completed</MudText>
+                                    <MudText> @Localizer["endDate"]:  @Localizer["notYetCompleted"]</MudText>
                             }
                             else
                             {
-                                <MudDatePicker @bind-Date="_lup.EndDate" Label="End Date" Color="Color.Info" AdornmentColor="Color.Info" />
+                                <MudDatePicker @bind-Date="_lup.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" />
                             }
                         </td>
                     </tr>
@@ -52,12 +53,12 @@
                     <tr>
                         <th>
                             <MudText Style="font-weight:bold;">
-                                Pillar
+                                @Localizer["pillar"]
                             </MudText>
                         </th>
                         <th>
                             <MudText Style="text-align:center; font-weight:bold;">
-                                Opportunity area detected
+                                @Localizer["opportunityAreaDetected"]
                             </MudText>
                         </th>
                     </tr>
@@ -111,7 +112,7 @@
                         @if (_lup.Pillar == 5)
                         {
                             <td>
-                                Otros
+                                @Localizer["other"]
                             </td>
                             <td>
                                     <MudTextField T="string" @bind-Value="_lup.Oportunity" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
@@ -123,9 +124,9 @@
             <MudSimpleTable Style="overflow-x: auto;" Bordered>
                 <tbody>
                     <tr>
-                        <td style="font-weight:bold; width: 20%">Job Observation Id</td>
+                        <td style="font-weight:bold; width: 20%"> @Localizer["jobObservation"] Id</td>
                         <td>
-                            <MudTooltip Text="Go to Job observation" Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudTooltip Text=@Localizer["goToJobObservation"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
                                     <MudChip Variant="Variant.Text" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @_lup.JobObservationId</MudChip>
                                 </MudBadge>
@@ -135,7 +136,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-weight:bold">Observer</td>
+                            <td style="font-weight:bold"> @Localizer["observer"]</td>
                         <td>@_lup.Observer</td>
                     </tr>
                     <tr>
@@ -151,21 +152,21 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-weight:bold">Status</td>
+                        <td style="font-weight:bold">@Localizer["status"]</td>
                         <td>
                             @switch (_lup.Status)
                             {
                                 case 1:
-                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">New</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
                                     break;
                                 case 2:
-                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">In Progress</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
                                     break;
                                 case 3:
-                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Finished</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
                                     break;
                                 case 4:
-                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Canceled</MudChip>
+                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
                                     break;
                             }
 
@@ -178,7 +179,7 @@
                     <tr>
                         <td>
                             <MudText Typo="Typo.h6">
-                                Evidence
+                                    @Localizer["evidence"]
                             </MudText>
                         </td>
                     </tr>
@@ -256,7 +257,7 @@
                                                     <img src="Images/error.png" Height="70" Width="70" />
                                                     break;
                                         }
-                                        <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
                                             <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
                                                 <MudItem>
                                                     <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
@@ -270,7 +271,7 @@
                         }
                         else 
                         {
-                            <span>No files uploaded yet</span>
+                                    <span> @Localizer["noFilesUploadedYet"]</span>
                         }
                          </td>
                     </tr>
@@ -281,7 +282,7 @@
                                            @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
                                 <ButtonTemplate Context="evidence">
                                     <MudPaper Height="300px" Outlined="true" Class="@DragClass">
-                                        <MudText Typo="Typo.h6">Drag and drop evidence files here or click</MudText>
+                                                <MudText Typo="Typo.h6"> @Localizer["dragAndDropEvidenceFilesHereOrClick"]</MudText>
 
                                         <MudGrid Class="d-flex justify-center flex-row align-content-center align-center">
                                             @foreach (var file in fileNames)
@@ -364,8 +365,8 @@
                                 </ButtonTemplate>
                             </MudFileUpload>
                             <MudToolBar DisableGutters="true" Class="gap-4">
-                                <MudButton StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="Upload" Disabled="@(upload)" Color="Color.Info" Variant="Variant.Filled">Upload</MudButton>
-                                <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+                                <MudButton StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="Upload" Disabled="@(upload)" Color="Color.Info" Variant="Variant.Filled"> @Localizer["uploadFile"]</MudButton>
+                                <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Error" Variant="Variant.Filled"> @Localizer["clear"]</MudButton>
                             </MudToolBar>
                         </MudStack>
                         </td>
@@ -374,10 +375,10 @@
             </MudSimpleTable>
         </MudItem>
         <MudCardActions>
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save progress</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => FinishedLup())">Finished</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCancelDialog())">Cancel Lup</MudButton>
-                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => GoBack())">Go Back</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto"> @Localizer["saveProgress"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => FinishedLup())"> @Localizer["finish"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCancelDialog())"> @Localizer["cancel"] Lup</MudButton>
+                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => GoBack())"> @Localizer["goBack"]</MudButton>
         </MudCardActions>
     </MudItem>
 </MudGrid>
@@ -388,12 +389,12 @@
 <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
     <DialogContent>
         <MudContainer Style="min-height:40vh; max-height: 75vh; overflow-y: scroll; text-align: center">
-            <MudText Typo="Typo.h6">Write down the justification to cancel the Lup.</MudText>
+            <MudText Typo="Typo.h6"> @Localizer["writeDownTheJustificationToCancelTheLup"]</MudText>
             <MudTextField T="string" @bind-Value="_lup.Justification" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="10" Class="mt-8" />
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Info" @onclick="(() => CancelLup())">Save</MudButton>
-        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+        <MudButton Color="Color.Info" @onclick="(() => CancelLup())"> @Localizer["save"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close"> @Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
