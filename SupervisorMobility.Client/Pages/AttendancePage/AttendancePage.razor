@@ -3,9 +3,11 @@
 @inject IJSRuntime JS
 @inject IAttendanceService AttendanceServices
 @inject IUserService UserServices
+@inject IStringLocalizer<Resource2> Localizer2
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Configuration</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer2["attendance"]</PageTitle>
 
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
@@ -236,11 +238,7 @@ else
 
 
 @code {
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Attendance", href: "", disabled: true)
-        };
+    private List<BreadcrumbItem> _links;
 
     List<Attendance>? peopleList = null;
     string searchString = "";
@@ -256,6 +254,11 @@ else
 
     protected async override Task OnInitializedAsync()
     {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text:Localizer["home"], href: "#"),
+            new BreadcrumbItem(text:Localizer2["attendance"], href: "", disabled: true)
+        };
         try
         {
             json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
