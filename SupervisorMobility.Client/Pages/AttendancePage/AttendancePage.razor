@@ -3,9 +3,11 @@
 @inject IJSRuntime JS
 @inject IAttendanceService AttendanceServices
 @inject IUserService UserServices
+@inject IStringLocalizer<Resource2> Localizer2
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Configuration</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer2["attendance"]</PageTitle>
 
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
@@ -83,11 +85,11 @@ else
                 <MudCard Style="max-width:300px; min-width: 150px">
                     <MudCardContent Style="justify-content:center">
                         <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon> SSV </MudText>
-                        <MudSelect T="User" Label="SSV" Variant="Variant.Outlined" Placeholder="Select an SSV" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SSV_Selected" For="@(() => SSV_Selected)" SelectedValuesChanged="UpdateSupervisors">
-                            <MudSelectItem Disabled="true" Value="SSV_Selected">Select an ssv</MudSelectItem>
+                        <MudSelect T="User" Label="SSV" Variant="Variant.Outlined" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SSV_Selected" For="@(() => SSV_Selected)" SelectedValuesChanged="UpdateSupervisors">
+                            <MudSelectItem Disabled="true" Value="SSV_Selected">@Localizer2["select a ssv"]</MudSelectItem>
                             @foreach (var type in _ssv)
                             {
-                                <MudSelectItem Value="type">@($"{type.Name} - has {type.Subordinates?.Count} subordinates")</MudSelectItem>
+                                <MudSelectItem Value="type">@($"{type.Name} - {Localizer2["has"]} {type.Subordinates?.Count} {Localizer2["subordinates"]}")</MudSelectItem>
                             }
                         </MudSelect>
                     </MudCardContent>
@@ -104,8 +106,8 @@ else
                 <MudCard Style="max-width:300px; min-width: 150px">
                     <MudCardContent Style="justify-content:center">
                         <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.SupervisorAccount"></MudIcon> SV </MudText>
-                        <MudSelect T="User" Label="SV" Variant="Variant.Outlined" Placeholder="Select an SV" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SV_Selected" For="@(() => SV_Selected)" SelectedValuesChanged="ShowAttendance">
-                            <MudSelectItem Disabled="true" Value="SV_Selected">Select an sv</MudSelectItem>
+                        <MudSelect T="User" Label="SV" Variant="Variant.Outlined" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SV_Selected" For="@(() => SV_Selected)" SelectedValuesChanged="ShowAttendance">
+                            <MudSelectItem Disabled="true" Value="SV_Selected">@Localizer2["select a ssv"]</MudSelectItem>
                             @foreach (var type in _sv)
                             {
                                 <MudSelectItem Value="type">@($"{type.Name}")</MudSelectItem>
@@ -124,7 +126,7 @@ else
                 <MudContainer>
                     <MudGrid class="d-flex flex-column justify-center align-self-center">
                         <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">No Personal Found</MudText>
+                            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer2["no personal found"]</MudText>
                         </MudItem>
                         <MudItem Class="d-flex">
                             <MudSpacer />
@@ -141,7 +143,7 @@ else
                 <MudContainer>
                     <MudGrid class="d-flex flex-column justify-center align-self-center">
                         <MudItem class="d-flex justify-center align-self-center ">
-                            <MudText Typo="Typo.h6" Class="align-item-center center">Please select filters...</MudText>
+                            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer2["please select filters"]</MudText>
                         </MudItem>
                         <MudItem Class="d-flex">
                             <MudSpacer />
@@ -173,10 +175,10 @@ else
                             </MudItem><MudSpacer />
                             <MudItem Class="d-flex">
                                 <MudSpacer />
-                                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                <MudTextField @bind-Value="searchString" Placeholder="@Localizer2["search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                                 <MudSpacer />
                                 <MudButton OnClick="UpdateList">
-                                    <MudText>Save Attendance</MudText>
+                                    <MudText>@Localizer2["save attendance"]</MudText>
                                     <MudIcon Icon="@Icons.Material.Filled.SaveAs" aria-label="Save" Color="Color.Primary"></MudIcon>
                                 </MudButton>
                                 <MudSpacer />
@@ -187,13 +189,13 @@ else
 
 
                     <HeaderContent>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Payroll)">Payroll</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Area?.Description)">Area</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Distribution?.Description)">Distribution</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Group?.Description)">Group</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Name)">Name</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Compas)">Compas</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Station)">Station</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Payroll)">@Localizer2["payroll"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Area?.Description)">@Localizer2["area"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Distribution?.Description)">@Localizer2["distribution"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Group?.Description)">@Localizer2["group"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Name)">@Localizer2["name"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Compas)">@Localizer2["compas"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Station)">@Localizer2["station"]</MudTableSortLabel></MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Payroll">
@@ -236,11 +238,7 @@ else
 
 
 @code {
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Attendance", href: "", disabled: true)
-        };
+    private List<BreadcrumbItem> _links;
 
     List<Attendance>? peopleList = null;
     string searchString = "";
@@ -256,6 +254,11 @@ else
 
     protected async override Task OnInitializedAsync()
     {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text:Localizer["home"], href: "#"),
+            new BreadcrumbItem(text:Localizer2["attendance"], href: "", disabled: true)
+        };
         try
         {
             json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
