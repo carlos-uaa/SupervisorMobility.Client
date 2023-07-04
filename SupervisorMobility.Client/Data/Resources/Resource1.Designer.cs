@@ -916,6 +916,69 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Code.
+        /// </summary>
+        public static string DistributionCode {
+            get {
+                return ResourceManager.GetString("DistributionCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Distribution.
+        /// </summary>
+        public static string DistributionDelete {
+            get {
+                return ResourceManager.GetString("DistributionDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Description.
+        /// </summary>
+        public static string DistributionDescription {
+            get {
+                return ResourceManager.GetString("DistributionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a See Details of Distribution.
+        /// </summary>
+        public static string DistributionDetails {
+            get {
+                return ResourceManager.GetString("DistributionDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update Distribution.
+        /// </summary>
+        public static string DistributionEdit {
+            get {
+                return ResourceManager.GetString("DistributionEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Id.
+        /// </summary>
+        public static string DistributionId {
+            get {
+                return ResourceManager.GetString("DistributionId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Status.
+        /// </summary>
+        public static string DistributionStatus {
+            get {
+                return ResourceManager.GetString("DistributionStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Download.
         /// </summary>
         public static string Download {
@@ -930,6 +993,114 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string EditGroup {
             get {
                 return ResourceManager.GetString("EditGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Glosary Word.
+        /// </summary>
+        public static string GlosaryCreateWord {
+            get {
+                return ResourceManager.GetString("GlosaryCreateWord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Word.
+        /// </summary>
+        public static string GlosaryDelete {
+            get {
+                return ResourceManager.GetString("GlosaryDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this Word?.
+        /// </summary>
+        public static string GlosaryDeleteMsg {
+            get {
+                return ResourceManager.GetString("GlosaryDeleteMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Word Description.
+        /// </summary>
+        public static string GlosaryDescription {
+            get {
+                return ResourceManager.GetString("GlosaryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Word.
+        /// </summary>
+        public static string GlosaryEdit {
+            get {
+                return ResourceManager.GetString("GlosaryEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Word Id.
+        /// </summary>
+        public static string GlosaryId {
+            get {
+                return ResourceManager.GetString("GlosaryId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Word.
+        /// </summary>
+        public static string GlosaryName {
+            get {
+                return ResourceManager.GetString("GlosaryName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Word.
+        /// </summary>
+        public static string GlosaryNew {
+            get {
+                return ResourceManager.GetString("GlosaryNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Glosary Word.
+        /// </summary>
+        public static string GlosaryNewWord {
+            get {
+                return ResourceManager.GetString("GlosaryNewWord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Glosario.
+        /// </summary>
+        public static string GlosaryTitle {
+            get {
+                return ResourceManager.GetString("GlosaryTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update Glosary Word.
+        /// </summary>
+        public static string GlosaryUpdateTitle {
+            get {
+                return ResourceManager.GetString("GlosaryUpdateTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Glosary Word Details.
+        /// </summary>
+        public static string GlosaryWordDetails {
+            get {
+                return ResourceManager.GetString("GlosaryWordDetails", resourceCulture);
             }
         }
         
@@ -1425,6 +1596,141 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string notifyReadTitle {
             get {
                 return ResourceManager.GetString("notifyReadTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this Product?.
+        /// </summary>
+        public static string ProductMsgDelete {
+            get {
+                return ResourceManager.GetString("ProductMsgDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Add Exist Distribution.
+        /// </summary>
+        public static string ProductsAddDistribution {
+            get {
+                return ResourceManager.GetString("ProductsAddDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product Code.
+        /// </summary>
+        public static string ProductsCode {
+            get {
+                return ResourceManager.GetString("ProductsCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Product.
+        /// </summary>
+        public static string ProductsCreate {
+            get {
+                return ResourceManager.GetString("ProductsCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create Distribution.
+        /// </summary>
+        public static string ProductsCreateDistribution {
+            get {
+                return ResourceManager.GetString("ProductsCreateDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Delete Product.
+        /// </summary>
+        public static string ProductsDelete {
+            get {
+                return ResourceManager.GetString("ProductsDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product Description.
+        /// </summary>
+        public static string ProductsDescription {
+            get {
+                return ResourceManager.GetString("ProductsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a See Details Product.
+        /// </summary>
+        public static string ProductsDetails {
+            get {
+                return ResourceManager.GetString("ProductsDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product Details.
+        /// </summary>
+        public static string ProductsDetailsTitle {
+            get {
+                return ResourceManager.GetString("ProductsDetailsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distributions.
+        /// </summary>
+        public static string ProductsDistributions {
+            get {
+                return ResourceManager.GetString("ProductsDistributions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update Product.
+        /// </summary>
+        public static string ProductsEdit {
+            get {
+                return ResourceManager.GetString("ProductsEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Product Id.
+        /// </summary>
+        public static string ProductsId {
+            get {
+                return ResourceManager.GetString("ProductsId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Product.
+        /// </summary>
+        public static string ProductsNew {
+            get {
+                return ResourceManager.GetString("ProductsNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Products.
+        /// </summary>
+        public static string ProductsTitle {
+            get {
+                return ResourceManager.GetString("ProductsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Update Product.
+        /// </summary>
+        public static string ProductsUpdate {
+            get {
+                return ResourceManager.GetString("ProductsUpdate", resourceCulture);
             }
         }
         

@@ -15,6 +15,7 @@ using MudBlazor;
 using SupervisorMobility.Client;
 using SupervisorMobility.Client.Shared;
 using SupervisorMobility.Client.Services;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
 {
@@ -23,18 +24,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
         [CascadingParameter]
         public Dictionary<string, Glosary> _glosaryInfo { get; set; }
 
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>{
-            new BreadcrumbItem("Home", href: "/", disabled:false),
-            new BreadcrumbItem("Configuration", href: "/configuration", disabled:false),
-            new BreadcrumbItem("Glosary", href: "", disabled: true)
-        };
-
+        private List<BreadcrumbItem> _links;
         // Objects
         public List<Glosary> _glosary { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>{
+            new BreadcrumbItem(text: Localizer["home"], href: "/", disabled:false),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration", disabled:false),
+            new BreadcrumbItem(text: Localizer["GlosaryTitle"], href: "", disabled: true)
+            };
+
             _glosary = await GlosaryService.GetGlosary();
         }
 
@@ -45,7 +47,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
 
         async Task DeleteGlosaryWord(int glosaryWordId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Word?");
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"{Localizer["GlosaryDeleteMsg"]}");
 
             if (confirm)
             {

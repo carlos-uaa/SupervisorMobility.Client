@@ -6,12 +6,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
     public partial class Products
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Products", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         public List<Product> _products { get; set; } = new();
@@ -21,6 +16,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["ProductsTitle"],  href: "", disabled: true)
+        };
             _products = await ProductService.GetProducts();
         }
         
