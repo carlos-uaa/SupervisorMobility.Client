@@ -61,11 +61,137 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Area.
+        /// </summary>
+        public static string area {
+            get {
+                return ResourceManager.GetString("area", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attendance.
         /// </summary>
         public static string attendance {
             get {
                 return ResourceManager.GetString("attendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compas.
+        /// </summary>
+        public static string compas {
+            get {
+                return ResourceManager.GetString("compas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Distribution.
+        /// </summary>
+        public static string distribution {
+            get {
+                return ResourceManager.GetString("distribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group.
+        /// </summary>
+        public static string group {
+            get {
+                return ResourceManager.GetString("group", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to has.
+        /// </summary>
+        public static string has {
+            get {
+                return ResourceManager.GetString("has", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string name {
+            get {
+                return ResourceManager.GetString("name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Personal Found.
+        /// </summary>
+        public static string no_personal_found {
+            get {
+                return ResourceManager.GetString("no personal found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Payroll.
+        /// </summary>
+        public static string payroll {
+            get {
+                return ResourceManager.GetString("payroll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select filters.
+        /// </summary>
+        public static string please_select_filters {
+            get {
+                return ResourceManager.GetString("please select filters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Attendance.
+        /// </summary>
+        public static string save_attendance {
+            get {
+                return ResourceManager.GetString("save attendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search.
+        /// </summary>
+        public static string search {
+            get {
+                return ResourceManager.GetString("search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a SSV.
+        /// </summary>
+        public static string select_a_ssv {
+            get {
+                return ResourceManager.GetString("select a ssv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Station.
+        /// </summary>
+        public static string station {
+            get {
+                return ResourceManager.GetString("station", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to subordinates.
+        /// </summary>
+        public static string subordinates {
+            get {
+                return ResourceManager.GetString("subordinates", resourceCulture);
             }
         }
     }
