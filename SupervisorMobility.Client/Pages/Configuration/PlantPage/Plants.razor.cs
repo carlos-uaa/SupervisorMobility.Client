@@ -8,12 +8,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
     {
 
         //Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
 
 
@@ -31,6 +26,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+             _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "", disabled: true)
+            };
+
             _plants = await PlantService.GetPlants();
         }
 

@@ -5,9 +5,10 @@
 @inject IDistributionService DistributionServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
-<PageTitle>Supervisor Mobility | Add Exist Product</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["addExistingProduct"]</PageTitle>
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -24,16 +25,16 @@
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Add Exist Product</MudText>
+                            <MudText Typo="Typo.h6">@Localizer["addExistingProduct"]</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
-                        <MudChip Variant="Variant.Text" Color="Color.Success">Exist Product</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["addProduct"]</MudChip>
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
                     <MudGrid Class="d-flex flex-row mb-5">
-                            <MudSelect T="int" Label="Product" Variant="Variant.Text" Placeholder="Select a Product to add" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ProductId" For="@(() => ProductId)" SelectedValuesChanged="UpdateProductDisplay">
-                            <MudSelectItem Disabled="true" Value="0">Select a Product</MudSelectItem>
+                        <MudSelect T="int" Label="@Localizer["product"]" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ProductId" For="@(() => ProductId)" SelectedValuesChanged="UpdateProductDisplay">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
                             @foreach (var product in _products)
                             {
                                 <MudSelectItem Value="product.ProductId">@($"{product.Code} - {product.Description}")</MudSelectItem>
@@ -47,21 +48,21 @@
                     {
                         <MudGrid Class="d-flex flex-column justify-center align-self-center">
                             <MudItem>
-                                <MudText Typo="Typo.h6">Product details</MudText>
+                                    <MudText Typo="Typo.h6">@Localizer["productDetails"]</MudText>
 
                             </MudItem>
                             <MudItem>
                                 @if (useButton)
                                 {
-                                    <MudText Typo="Typo.h6">Canot Add This Product because is added</MudText>
+                                        <MudText Typo="Typo.h6">@Localizer["cannotAddThisProductBecauseIsAlreadyAdded"]</MudText>
                                 }
                             </MudItem>
                             <MudItem>
-                                <MudTextField Label="Product description" Disabled
+                                    <MudTextField Label="@Localizer["description"]" Disabled
                                           @bind-Value="_product.Description" For="@(() => _product.Description)" />
-                                <MudTextField Label="Code" Class="mt-3" Disabled
+                                    <MudTextField Label="@Localizer["code"]" Class="mt-3" Disabled
                                           @bind-Value="_product.Code" For="@(() => _product.Code)" />
-                                <MudSwitch Class="mt-3" Label="Is active?" Disabled @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                @*<MudSwitch Class="mt-3" Label="Is active?" Disabled @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
 
                             </MudItem>
 
@@ -72,8 +73,8 @@
                 </MudCardContent>
                 <MudCardActions>
 
-                    <MudButton ButtonType="ButtonType.Submit" Disabled="useButton" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Add Product</MudButton>
-                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">Cancel</MudButton>
+                        <MudButton ButtonType="ButtonType.Submit" Disabled="useButton" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["addProduct"]</MudButton>
+                        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["cancel"]</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -106,6 +107,9 @@ else
 
     public List<Product> _products { get; set; } = new List<Product>();
 
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -114,21 +118,19 @@ else
         _area = await AreaServices.GetAreaById(PlantId, AreaId);
         _distribution = await DistributionServices.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
 
+        _links= new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+        };
+
 
         _links.Add(new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"));
         _links.Add(new BreadcrumbItem($"{_area.Description}", href: $"plants/{PlantId}/areas/{AreaId}"));
         _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"));
-        _links.Add(new BreadcrumbItem("Add Existent Product", href: "", disabled: true));
+        _links.Add(new BreadcrumbItem(text: Localizer["addProduct"], href: "", disabled: true));
 
     }
-
-    // Breadcrumb links
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-           new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration")
-        };
-
 
     // Cancel submit form
     void CancelCreateOrUpdate()
@@ -139,7 +141,7 @@ else
 
     private void UpdateProductDisplay()
     {
-
+        _product.IsActive = true;
         if (_distribution.Products.Exists(p => p.ProductId == ProductId))
         {
             useButton = true;

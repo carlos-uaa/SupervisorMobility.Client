@@ -14,13 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public int DistributionId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "/plants"),
-        };
-
+        private List<BreadcrumbItem> _links;
         // Objects
         public Plant _plant { get; set; }
         public Area _area { get; set; }
@@ -36,11 +30,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _area = await AreaServices.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionServices.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
 
-
-            _links.Add(new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"));
-            _links.Add(new BreadcrumbItem($"{_area.Description}", href: $"plants/{PlantId}/areas/{AreaId}"));
-            _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"));
-            _links.Add(new BreadcrumbItem("Add Existent Product", href: "", disabled: true));
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"),
+                new BreadcrumbItem($"{_area.Description}", href: $"plants/{PlantId}/areas/{AreaId}"),
+                new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"),
+                new BreadcrumbItem(text: Localizer["createDistributionToProduct"], href: "", disabled: true)
+            };
             showui = true;
 
         }
