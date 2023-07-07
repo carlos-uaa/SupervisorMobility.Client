@@ -1609,6 +1609,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Mark as read.
+        /// </summary>
+        public static string markAsRead {
+            get {
+                return ResourceManager.GetString("markAsRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Este cambio recargará la página, asegúrese de terminar su trabajo antes de hacer el cambio..
         /// </summary>
         public static string msg1Language {
@@ -2991,6 +3000,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string warningLanguage {
             get {
                 return ResourceManager.GetString("warningLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a You don&apos;t have any notifications yet.
+        /// </summary>
+        public static string youDontHaveAnyNoficationsYet {
+            get {
+                return ResourceManager.GetString("youDontHaveAnyNoficationsYet", resourceCulture);
             }
         }
     }
