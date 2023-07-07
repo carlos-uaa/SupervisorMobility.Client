@@ -7,8 +7,10 @@
 @inject IPlantService PlantService
 @inject IOperationService OperationService
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+
 @*Title*@
-<PageTitle>Supervisor Mobility | Product Update</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["updateProducts"]</PageTitle>
 @*Breadcrumb links*@
 <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
@@ -32,13 +34,13 @@
                     @if (_distribution.IsActive == true)
                     {
                         <MudText Align="Align.Center" Class="pt-2">
-                            <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
                         </MudText>
                     }
                     else
                     {
                         <MudText Align="Align.Center" Class="pa-4">
-                            <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
                         </MudText>
                     }
                 </MudCardContent>
@@ -52,25 +54,23 @@
                         <DataAnnotationsValidator />
                         <MudCard>
                             <MudCardHeader>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h6">Product</MudText>
-                                    </CardHeaderContent>
-                                    <CardHeaderActions>
-                                        <MudChip Variant="Variant.Text" Color="Color.Info"> product</MudChip>
-                                    </CardHeaderActions>
-                                </MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">@Localizer["product"]</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudChip Variant="Variant.Text" Color="Color.Info"> @Localizer["updateProduct"]</MudChip>
+                                </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent>
-                                <MudTextField Label="Product description"
+                                <MudTextField Label="@Localizer["description"]"
                                           @bind-Value="_product.Description" For="@(() => _product.Description)" />
-                                <MudTextField Label="Code" Class="mt-3"
+                                <MudTextField Label="@Localizer["code"]" Class="mt-3"
                                           @bind-Value="_product.Code" For="@(() => _product.Code)" />
-                                <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
-                                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => Close())">Cancel</MudButton>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["save"]</MudButton>
+                                <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => Close())">@Localizer["close"]</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </EditForm>
@@ -88,7 +88,7 @@ else
 
     <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
         <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
-            <MudText Typo="Typo.h6" Class="align-item-center center">Loading Data</MudText>
+            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["loadingData"]</MudText>
         </MudItem>
         <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
             <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
@@ -117,13 +117,7 @@ else
     private Product _product { get; set; }
 
     // Breadcrumb links
-    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "/plants"),
-        };
-
+    private List<BreadcrumbItem> _links;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -136,9 +130,18 @@ else
         _distribution = await DistributionService.GetDistributionWithCollections(PlantId, AreaId, DistributionId);
         _product = _distribution.Products.Find(p => p.ProductId == ProductId);
 
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+        };
+
+
         _links.Add(new BreadcrumbItem($"{_plant.Description}", href: $"/plants/{PlantId}"));
         _links.Add(new BreadcrumbItem($"{_area.Description}", href: $"/plants/{PlantId}/areas/{AreaId}"));
-        _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}", disabled: true));
+        _links.Add(new BreadcrumbItem($"{_distribution.Description}", href: $"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"));
+        _links.Add(new BreadcrumbItem(text: Localizer["updateProduct"], href: $"/", disabled: true));
         showui = true;
     }
 
@@ -150,7 +153,7 @@ else
 
     async Task UpdateProductAsync()
     {
-
+        _product.IsActive = true;
         var result = await ProductServices.UpdateProduct(_product);
 
         if (result)

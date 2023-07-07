@@ -15,16 +15,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public int DistributionId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "/plants"),
-            new BreadcrumbItem("PlantDetail", href: ""),
-            new BreadcrumbItem("AreaDetail", href: ""),
-            new BreadcrumbItem("DistributionDetail", href: ""),
-            new BreadcrumbItem("New Operation", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         Plant _plant = new();
@@ -33,6 +24,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         Operation _operation = new();
 
         // Initialization
+        protected async override Task OnInitializedAsync()
+        {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["newOperation"], href: "", disabled: true)
+
+            };
+        }
+
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);

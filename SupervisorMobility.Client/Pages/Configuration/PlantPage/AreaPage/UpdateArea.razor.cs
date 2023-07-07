@@ -12,20 +12,26 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         public int areaId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "/plants"),
-            new BreadcrumbItem("PlantDetail", href: ""),
-            new BreadcrumbItem("UpdateArea", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         Plant _plant = new();
         public Area _area { get; set; } = new();
 
         // Initialization
+        protected async override Task OnInitializedAsync()
+        {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["update"] + " " + Localizer["area"], href: "", disabled: true)
+            };
+
+        }
+
         protected override async Task OnParametersSetAsync()
         {
             Area dbArea = await AreaService.GetAreaById(plantId, areaId);
@@ -42,6 +48,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         // Update area
         async void UpdateAreaAsync()
         {
+            _area.IsActive = true;
             var result = await AreaService.UpdateArea(plantId, _area);
 
             if (result)

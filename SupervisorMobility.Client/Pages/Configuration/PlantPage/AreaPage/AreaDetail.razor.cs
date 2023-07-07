@@ -13,19 +13,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         public int AreaId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Plants", href: "/plants"),
-            new BreadcrumbItem("PlantDetail", href: ""),
-            new BreadcrumbItem("AreaDetail", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         // Objects
         Plant _plant = new();
         Area _area = new();
         public List<Distribution> _distributions { get; set; } = new();
+
+        protected async override Task OnInitializedAsync()
+        {
+             _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["areaDetails"], href: "", disabled: true)
+            };
+
+        }
 
         // Initialization
         protected override async Task OnParametersSetAsync()

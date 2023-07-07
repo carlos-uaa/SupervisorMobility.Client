@@ -6,11 +6,7 @@ namespace SupervisorMobility.Client.Pages.Configuration
     public partial class ConfigurationIndex
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "#"),
-            new BreadcrumbItem("Configuration", href: "", disabled: true)
-        };
+        private List<BreadcrumbItem> _links;
 
         //User
         private string json = string.Empty;
@@ -19,6 +15,11 @@ namespace SupervisorMobility.Client.Pages.Configuration
 
         protected async override Task OnInitializedAsync()
         {
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "", disabled: true)
+            };
             logged = await HasPropertyAsync();
             if (!logged)
             {
