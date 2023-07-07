@@ -1078,6 +1078,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a File upload details.
+        /// </summary>
+        public static string FileDetails {
+            get {
+                return ResourceManager.GetString("FileDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Create Glosary Word.
         /// </summary>
         public static string GlosaryCreateWord {
