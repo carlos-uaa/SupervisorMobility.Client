@@ -169,7 +169,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         async Task DeleteAssyChart(int assychartid)
         {
 
-            bool confirm = await JS.InvokeAsync<bool>("confirm", Localizer["ACquestionDelete"]);
+            bool confirm = await JS.InvokeAsync<bool>("confirm", $"{@Localizer["ACquestionDelete"]}");
 
             if (confirm)
             {
