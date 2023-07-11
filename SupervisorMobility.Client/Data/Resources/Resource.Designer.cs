@@ -466,6 +466,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Assy Chart.
+        /// </summary>
+        public static string assyChart {
+            get {
+                return ResourceManager.GetString("assyChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Attendance.
         /// </summary>
         public static string attendance {
@@ -534,6 +543,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string changeDate {
             get {
                 return ResourceManager.GetString("changeDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Checklist categories.
+        /// </summary>
+        public static string checklistCategories {
+            get {
+                return ResourceManager.GetString("checklistCategories", resourceCulture);
             }
         }
         
@@ -907,6 +925,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Document types.
+        /// </summary>
+        public static string documentTypes {
+            get {
+                return ResourceManager.GetString("documentTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Download.
         /// </summary>
         public static string download {
@@ -1096,6 +1123,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Glosary.
+        /// </summary>
+        public static string glosary {
+            get {
+                return ResourceManager.GetString("glosary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Go Back.
         /// </summary>
         public static string goBack {
@@ -1119,6 +1155,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string group {
             get {
                 return ResourceManager.GetString("group", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Groups.
+        /// </summary>
+        public static string groups {
+            get {
+                return ResourceManager.GetString("groups", resourceCulture);
             }
         }
         
@@ -1335,6 +1380,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string jobObservationSchedule {
             get {
                 return ResourceManager.GetString("jobObservationSchedule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job observation types.
+        /// </summary>
+        public static string jobObservationTypes {
+            get {
+                return ResourceManager.GetString("jobObservationTypes", resourceCulture);
             }
         }
         
@@ -2595,6 +2649,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string userNotFoundPleaseContactYourAdmin {
             get {
                 return ResourceManager.GetString("userNotFoundPleaseContactYourAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Users Managment.
+        /// </summary>
+        public static string usersManagment {
+            get {
+                return ResourceManager.GetString("usersManagment", resourceCulture);
             }
         }
         

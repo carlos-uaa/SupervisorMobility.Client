@@ -65,7 +65,6 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 
-
 // Connection to API
 builder.Services.AddScoped<CustomHttpClientService>();
 
