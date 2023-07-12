@@ -599,8 +599,27 @@
 
     protected async override Task OnInitializedAsync()
     {
+
+
         Console.WriteLine($"Start Lenguage: {languageCheck} {CultureInfo.CurrentCulture.Name}");
-        currentLanguage = await js.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+
+        try{
+            Console.WriteLine($"Start Try ca");
+
+            currentLanguage = await js.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+            Console.WriteLine($" Current:'{currentLanguage}'");
+
+            if (string.IsNullOrEmpty(currentLanguage))
+            {
+                await js.InvokeVoidAsync("localStorage.setItem", "i18nextLng", "en-US");
+                currentLanguage = await js.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+
+        }catch(Exception ex){
+            Console.WriteLine($"Exception Load Language: {ex.Message}");
+        }
+
         switch (currentLanguage)
         {
             case "es-ES":
@@ -616,6 +635,7 @@
                 CultureInfo.DefaultThreadCurrentUICulture = cultureInfous;
                 languageCheck = false;
                 break;
+             
         }
 
 
