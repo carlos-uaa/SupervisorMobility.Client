@@ -2311,6 +2311,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a SOS Program.
+        /// </summary>
+        public static string sosProgram {
+            get {
+                return ResourceManager.GetString("sosProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SSV / Area no tiene supervisores..
         /// </summary>
         public static string ssvAreaHasNoSupervisors {
