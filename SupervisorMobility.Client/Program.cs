@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
+using SupervisorMobility.Client.Services.SOSReviewService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -63,6 +64,7 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
+builder.Services.AddScoped<ISOSReviewService, SOSReviewService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 
 // Connection to API
