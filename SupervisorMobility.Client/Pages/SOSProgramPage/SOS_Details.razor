@@ -1,0 +1,133 @@
+﻿@page "/SOSDetails/{sosId:int}"
+
+@using System.Net.Http.Json
+@using MudBlazor
+@using System.Globalization;
+
+@inject NavigationManager NavigationManager
+@inject IUserService UsersServices
+@inject IAreaService AreasServices
+@inject IOperationService OperationsServices
+@inject IPATService PATsServices
+@inject IJSRuntime JSRuntime
+@inject IILUService ILUServices
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["sosDetails"]</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
+    <MudText Typo="Typo.h6">@Localizer["sosDetails"] </MudText>
+    <MudItem Style="justify-content: end" Class="ml-auto">
+        <MudItem Class="d-flex">
+            <img src="Images/logo.png" Height="50" />
+        </MudItem>
+    </MudItem>
+</MudItem>
+<MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
+    <thead>
+        <tr>
+            <th>
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
+                    <MudText Class="ml-2">@Localizer["area"]</MudText>
+                </MudItem>
+            </th>
+            <th style="width:20vw">
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
+                    <MudText Class="ml-2">@Localizer["distribution"]</MudText>
+                </MudItem>
+            </th>
+            <th>@Localizer["applicationYear"]</th>
+            <th>Supervisor</th>
+            <th>SSV</th>
+            <th>@Localizer["date"]</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+@code {
+    [Parameter]
+    public int sosId { get; set; }
+
+    private List<BreadcrumbItem> _links;
+
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
+            new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
+        };
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+            StateHasChanged();
+        }
+
+
+    }
+
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+        {
+            user = new();
+        }
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
+
+
+}
