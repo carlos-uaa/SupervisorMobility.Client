@@ -12,6 +12,7 @@
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
 @inject IJobObservationService JobObservationService
+@inject ISOSReviewService SOSReviewServices
 @inject IUserService UsersService
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
@@ -26,46 +27,134 @@
         <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
     </ItemTemplate>
 </MudBreadcrumbs>
+@if (_SosReviewList == null)
+{
+    <text>
+        @Localizer["loading"] ...
+    </text>
+}
+else if (_SosReviewList.Count == 0)
+{
+    <MudContainer>
 
-    <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
-    <MudText Typo="Typo.h6">@Localizer["sosProgram"] </MudText>
-        <MudItem Style="justify-content: end" Class="ml-auto">
-            <MudItem Class="d-flex">
-                <img src="Images/logo.png" Height="50"/>
-            </MudItem>
-        </MudItem>
-    </MudItem>
-    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
-    <thead>
-        <tr>
-            <th>
-                <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
-                    <MudText Class="ml-2">@Localizer["area"]</MudText>
-                </MudItem>
-            </th>
-            <th style="width:20vw">
-                <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
-                    <MudText Class="ml-2">@Localizer["distribution"]</MudText>
-                </MudItem>
-            </th>
-            <th>@Localizer["applicationYear"]</th>
-            <th>Supervisor</th>
-            <th>SSV</th>
-            <th>@Localizer["date"]</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-            </td>
-            <td>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </tbody>
-</MudSimpleTable>
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoSosCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton @onclick="(() => CreateSosReview())">
+                <MudText>@Localizer["createSOS"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Pat" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+    <MudTable SortLabel="SortBy" Class="styled-table table-striped" FixedHeader=true Height="55vh"
+              Items="@_SosReviewList" Hover Striped="true" Filter="new Func<SOSReviewProgram,bool>(FilterFunc1)">
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+        <ToolBarContent>
+            <MudText Typo="Typo.h6" Align="Align.Center">SOS</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="@searchString1" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
+            <MudSpacer />
+            @if (user.UserType == 1 || user.UserType == 3)
+            {
+                <MudButton @onclick="(() => CreateSosReview())">
+                    <MudText>@Localizer["createSOS"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                </MudButton>
+
+            }
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.SOSid)" Enabled="true">SOS ID</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.Status)"><MudText>@Localizer["status"]</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.UserA?.Name)"><MudText>SSV @Localizer["group"] A</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.UserB?.Name)"><MudText>SSV @Localizer["group"] B</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.UserC?.Name)"><MudText>SSV @Localizer["group"] C</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.Area?.Description)"><MudText>@Localizer["area"]</MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.AplicationYear)"><MudText>@Localizer["applicationYear"] </MudText></MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">@Localizer["actions"]</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="SOS ID">
+                <MudText Align="Align.Center">@context.SOSid</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["status"]>
+                <MudText Align="Align.Center">
+                    @switch (context.Status)
+                    {
+                        case 1:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                            break;
+                        case 2:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["approved"]</MudChip>
+                            break;
+                    }
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="SSV A">
+                <MudText Align="Align.Center">@context.UserA?.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="SSV B">
+                <MudText Align="Align.Center">@context.UserB?.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="SSV C">
+                <MudText Align="Align.Center">@context.UserC?.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["area"]>
+                <MudText Align="Align.Center">@context.Area?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["applicationYear"]>
+                <MudText Align="Align.Center">@context.AplicationYear</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["actions"]>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => SosReviewDetails(context.SOSid))" @ontouchstart="(() => SosReviewDetails(context.SOSid))">@Localizer["sosDetails"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.SOSid))" @ontouchstart="(() => OpenDeleteDialog(context.SOSid))">@Localizer["delete"] SOS</MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                    @* <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => PatDetails(context.PATid))"></MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))"></MudIconButton>*@
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@*Delete Pat modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["areYouSueYourWantToDeleteThisSOS"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => DeleteSosReview(deleteSosReviewId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+    </DialogActions>
+</MudDialog>

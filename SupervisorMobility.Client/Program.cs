@@ -27,12 +27,12 @@ global using SupervisorMobility.Client.Services.BridgeCDMSService;
 global using SupervisorMobility.Client.Services.NotificationService;
 global using SupervisorMobility.Client.Services.AttendanceService;
 global using SupervisorMobility.Client.Services.ILUService;
+global using SupervisorMobility.Client.Services.SOSReviewService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using SupervisorMobility.Client.Services.SOSReviewService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

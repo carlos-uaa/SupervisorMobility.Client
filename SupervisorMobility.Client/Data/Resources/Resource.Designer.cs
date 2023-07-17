@@ -385,6 +385,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this SOS?.
+        /// </summary>
+        public static string areYouSueYourWantToDeleteThisSOS {
+            get {
+                return ResourceManager.GetString("areYouSueYourWantToDeleteThisSOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a are you sure you want to approve this PAT?.
         /// </summary>
         public static string areYouSureYouWantToApproveThisPAT {
@@ -705,6 +714,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string createPlant {
             get {
                 return ResourceManager.GetString("createPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create SOS.
+        /// </summary>
+        public static string createSOS {
+            get {
+                return ResourceManager.GetString("createSOS", resourceCulture);
             }
         }
         
@@ -2460,6 +2478,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string thereAreNoProductsCreatedForThisDistribution {
             get {
                 return ResourceManager.GetString("thereAreNoProductsCreatedForThisDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no sos created.
+        /// </summary>
+        public static string thereAreNoSosCreated {
+            get {
+                return ResourceManager.GetString("thereAreNoSosCreated", resourceCulture);
             }
         }
         
