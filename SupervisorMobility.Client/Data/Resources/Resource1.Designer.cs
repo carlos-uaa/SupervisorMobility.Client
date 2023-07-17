@@ -196,6 +196,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Critical Type.
+        /// </summary>
+        public static string ACCriticalLabel {
+            get {
+                return ResourceManager.GetString("ACCriticalLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Delete AssyChart.
         /// </summary>
         public static string ACDelete {
@@ -588,6 +597,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string ACPHArea {
             get {
                 return ResourceManager.GetString("ACPHArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select Critical Type.
+        /// </summary>
+        public static string ACPHCritical {
+            get {
+                return ResourceManager.GetString("ACPHCritical", resourceCulture);
             }
         }
         

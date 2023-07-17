@@ -14,6 +14,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public DateTime CreationDate { get; set; }
         public DateTime ModificationDate { get; set; }
         //Linkers
+        public int CriticalType { get; set; }
+
         //Product info
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Product/Model")]
