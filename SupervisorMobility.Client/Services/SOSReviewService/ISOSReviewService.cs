@@ -5,7 +5,7 @@
 
         Task<List<SOSReviewProgram>> GetAllSOSReviews(bool includeCollections);
 
-        Task<SOSReviewProgram> GetSOSById(int id);
+        Task<SOSReviewProgram> GetSOSById(int id, bool includeCollections = false);
 
         Task<SOSReviewProgram> CreateSOSRevier(SOSReviewProgram product);
 

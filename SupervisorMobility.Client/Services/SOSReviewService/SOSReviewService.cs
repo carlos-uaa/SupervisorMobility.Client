@@ -70,9 +70,9 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<SOSReviewProgram> GetSOSById(int sosid)
+        public async Task<SOSReviewProgram> GetSOSById(int sosid, bool includeCollections = false)
         {
-            var response = await _http.GetAsync($"SOSReview/{sosid}");
+            var response = await _http.GetAsync($"SOSReview/{sosid}?includeCollections={includeCollections}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<SOSReviewProgram>();
