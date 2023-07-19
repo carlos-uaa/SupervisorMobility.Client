@@ -105,12 +105,7 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
                 return true;
             if (element.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.UserA.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.UserB.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.UserC.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+           
             if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))

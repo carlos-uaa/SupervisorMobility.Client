@@ -164,12 +164,12 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
         // Create Pat
         async void CreateSOSReviewAsync()
         {
-            if (user.UserType == 1)
-            {
-                _sosReview.UserAid = ssvAId;
-                _sosReview.UserBid = ssvBId;
-                _sosReview.UserCid = ssvCId;
-            }
+            //if (user.UserType == 1)
+            //{
+            //    _sosReview.UserAid = ssvAId;
+            //    _sosReview.UserBid = ssvBId;
+            //    _sosReview.UserCid = ssvCId;
+            //}
 
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
