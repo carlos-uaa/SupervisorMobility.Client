@@ -80,10 +80,10 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
         }
 
         // Delete pat
-        async Task DeleteSosReview(int patId)
+        async Task DeleteSosReview(int sosReviewId)
         {
-            //_PATs.RemoveAll(pat => pat.PATid == patId);
-            //await PATsServices.DeletePat(patId);
+            _SosReviewList.RemoveAll(sos => sos.SOSid == sosReviewId);
+            await SOSReviewServices.DeleteSOSReview(sosReviewId);
 
             visibleDelete = false;
         }

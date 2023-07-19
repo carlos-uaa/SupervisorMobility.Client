@@ -1,0 +1,173 @@
+﻿@page "/sosProgram/createSosReview"
+
+@inject NavigationManager NavigationManager
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionService
+@inject IOperationService OperationService
+@inject IPATService PATsServices
+@inject IJSRuntime JSRuntime
+@inject IUserService UsersService
+@inject ISOSReviewService SOSReviewServices
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility |  @Localizer["createSOS"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Form*@
+<EditForm Model="_sosReview" OnValidSubmit="CreateSOSReviewAsync">
+    <DataAnnotationsValidator />
+    <MudGrid Class="d-flex " Style="flex-direction: column; align-content: center;">
+        <MudItem>
+            <MudCard Style="min-width: 50vw">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6"> @Localizer["sosDetails"]</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success"> @Localizer["new"] SOS</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (user.UserType == 1)
+                    {
+                        @*Mud select for Plants for Admin*@
+                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.PlantId" For="@(() => _sosReview.PlantId)" SelectedValuesChanged="ShowAreas">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                            @foreach (var type in _plants)
+                            {
+                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @*Mud select for Plants *@
+                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.PlantId" For="@(() => _sosReview.PlantId)" SelectedValuesChanged="ShowAreas">
+                            @foreach (var type in _plants)
+                            {
+                                if (type.PlantId == user.PlantId)
+                                {
+                                    <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    }
+
+
+                    @if (_sosReview.PlantId != 0 && user.UserType == 1)
+                    {
+                        @*Mud select for Areas for Admin *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.AreaId" For="@(() => _sosReview.AreaId)" SelectedValuesChanged="ShowSSV">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else if (_sosReview.PlantId != 0 && user.UserType == 2)
+                    {
+                        @*Mud select for Areas for SSV *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.AreaId" For="@(() => _sosReview.AreaId)" SelectedValuesChanged="ShowSSV">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                            @foreach (var type in user.Areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else if (_sosReview.PlantId != 0)
+                    {
+                        @*Mud select for Areas for SV *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.AreaId" For="@(() => _sosReview.AreaId)" SelectedValuesChanged="ShowSSV">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                if (type.AreaId == user.AreaId)
+                                {
+                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @*Mud select for Areas *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosReview.AreaId" For="@(() => _sosReview.AreaId)" Disabled>
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                        </MudSelect>
+                    }
+
+                    <MudDatePicker @bind-Date="_sosReview.CreationDate" Label=@Localizer["createDate"] PickerVariant="PickerVariant.Dialog" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
+
+                    @if(user.UserType == 1){
+                        @if(_sosReview.PlantId != 0 && _sosReview.AreaId != 0)
+                        {
+                            @*Mud select for SSV A,B, C for Admin *@
+                            <MudSelect T="int" Label="SSV A" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvAId" For="@(() => ssvAId)" SelectedValuesChanged="ShowSupervisors">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
+                                @foreach (var ssv in _SSVs)
+                                {
+                                    if(!(ssv.UserId == ssvBId || ssv.UserId == ssvCId)){
+                                        <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                            <MudSelect T="int" Label="SSV B" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvBId" For="@(() => ssvBId)" SelectedValuesChanged="ShowSupervisors">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
+                                @foreach (var ssv in _SSVs)
+                                {
+                                    if (!(ssv.UserId == ssvAId || ssv.UserId == ssvCId))
+                                    {
+                                        <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                            <MudSelect T="int" Label="SSV C" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvCId" For="@(() => ssvCId)" SelectedValuesChanged="ShowSupervisors">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
+                                @foreach (var ssv in _SSVs)
+                                {
+                                    if (!(ssv.UserId == ssvAId || ssv.UserId == ssvBId))
+                                    {
+                                        <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    else
+                    {
+                        @*Mud select for SSV A, B, C *@
+                        <MudSelect T="int" Label="SSV A" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvAId" For="@(() => ssvAId)">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                        </MudSelect>
+                        <MudSelect T="int" Label="SSV B" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvBId" For="@(() => ssvBId)">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                        </MudSelect>
+                        <MudSelect T="int" Label="SSV C" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvCId" For="@(() => ssvCId)">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                        </MudSelect>
+                    }
+
+
+
+                    }
+
+
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["create"] SOS</MudButton>
+                    <MudButton Href="/PAT" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>

@@ -7,11 +7,11 @@
 
         Task<SOSReviewProgram> GetSOSById(int id, bool includeCollections = false);
 
-        Task<SOSReviewProgram> CreateSOSRevier(SOSReviewProgram product);
+        Task<SOSReviewProgram> CreateSOSReview(SOSReviewProgram product);
 
-        Task<bool> UpdateProduct(SOSReviewProgram product);
+        Task<bool> UpdateSOSReview(SOSReviewProgram product);
 
-        Task DeleteProduct(int id);
+        Task DeleteSOSReview(int id);
 
     }
 }

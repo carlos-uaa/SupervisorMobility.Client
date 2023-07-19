@@ -21,7 +21,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
 
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
-        public async Task<SOSReviewProgram> CreateSOSRevier(SOSReviewProgram SOSReview)
+        public async Task<SOSReviewProgram> CreateSOSReview(SOSReviewProgram SOSReview)
         {
             var response = await _http.PostAsJsonAsync($"SOSReview", SOSReview);
 
@@ -38,7 +38,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task DeleteProduct(int id)
+        public async Task DeleteSOSReview(int id)
         {
             var response = await _http.DeleteAsync($"SOSReview/{id}");
 
@@ -82,7 +82,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<bool> UpdateProduct(SOSReviewProgram sosentity)
+        public async Task<bool> UpdateSOSReview(SOSReviewProgram sosentity)
         {
             var response = await _http.PutAsJsonAsync($"SOSReview/{sosentity.SOSid}", sosentity);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)

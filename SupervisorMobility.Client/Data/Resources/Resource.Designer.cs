@@ -673,6 +673,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create Date.
+        /// </summary>
+        public static string createDate {
+            get {
+                return ResourceManager.GetString("createDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Create Distribution To Product.
         /// </summary>
         public static string createDistributionToProduct {

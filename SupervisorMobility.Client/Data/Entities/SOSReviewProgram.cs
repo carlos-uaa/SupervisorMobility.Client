@@ -18,10 +18,10 @@ namespace SupervisorMobility.Client.Data.Entities
         public User? UserC { get; set; }
 
 
-        public int? PlantId { get; set; }
+        public int PlantId { get; set; }
         public Plant? Plant { get; set; }
 
-        public int? AreaId { get; set; }
+        public int AreaId { get; set; }
 
         public Area? Area { get; set; }
 
