@@ -529,6 +529,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Can do it with help.
+        /// </summary>
+        public static string canDoItWithHelp {
+            get {
+                return ResourceManager.GetString("canDoItWithHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Can do it yourself.
+        /// </summary>
+        public static string canDoItYourself {
+            get {
+                return ResourceManager.GetString("canDoItYourself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Can instruct others.
+        /// </summary>
+        public static string canInstructOthers {
+            get {
+                return ResourceManager.GetString("canInstructOthers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Can not Add This Product because is already added.
         /// </summary>
         public static string cannotAddThisProductBecauseIsAlreadyAdded {
@@ -1294,6 +1321,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Incumbent operator.
+        /// </summary>
+        public static string incumbentOperator {
+            get {
+                return ResourceManager.GetString("incumbentOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Inexperienced operator.
+        /// </summary>
+        public static string inexperiencedOperator {
+            get {
+                return ResourceManager.GetString("inexperiencedOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a In Progress.
         /// </summary>
         public static string inProgress {
@@ -1645,6 +1690,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a New SOS Review Program.
+        /// </summary>
+        public static string newSOSReviewProgram {
+            get {
+                return ResourceManager.GetString("newSOSReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a New Start Date.
         /// </summary>
         public static string newStartDate {
@@ -1911,6 +1965,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string payroll {
             get {
                 return ResourceManager.GetString("payroll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Personnel in training period.
+        /// </summary>
+        public static string personnelInTrainingPeriod {
+            get {
+                return ResourceManager.GetString("personnelInTrainingPeriod", resourceCulture);
             }
         }
         
@@ -2347,7 +2410,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Program.
+        ///   Busca una cadena traducida similar a SOS Program Review.
         /// </summary>
         public static string sosProgram {
             get {

@@ -14,12 +14,10 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
 
-        List<User> _allSSVs = new();
-        List<User> _SSVs = new();
+        List<User> _allSupervisors = new();
+        List<User> _Supervisors = new();
 
-        public int ssvAId;
-        public int ssvBId;
-        public int ssvCId;
+        public int supervisorId;
 
         public string SupervisorName = string.Empty;
 
@@ -63,16 +61,15 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
                         _sosReview.PlantId = 0;
                         _sosReview.AreaId = 0;
 
-                        _allSSVs = await UsersService.GetUserByTypeAndCollection(2);
-
-                    }
-                    else if (user.UserType == 2)
-                    {
-
+                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
 
                     }
                     else if(user.UserType == 3)
                     {
+                        _sosReview.PlantId = (int)user.PlantId;
+                        _sosReview.AreaId = (int)user.AreaId;
+
+                        _sosReview.Supervisorid = user.UserId;
 
                     }
                 }
@@ -110,11 +107,17 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
 
         private async void ShowAreas()
         {
-            _SSVs.Clear();
-            
-            ssvAId = 0;
-            ssvBId = 0;
-            ssvCId = 0;
+            _Supervisors.Clear();
+
+            foreach (User sv in _allSupervisors)
+            {
+                if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
+                {
+                    _Supervisors.Add(sv);
+                }
+            }
+
+            supervisorId = 0;
             _sosReview.AreaId = 0;
 
             _areas = await AreaServices.GetAreas(_sosReview.PlantId);
@@ -122,41 +125,19 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
             StateHasChanged();
         }
 
-        private async void ShowSSV()
+        private async void ShowSupervisors()
         {
 
-            _SSVs.Clear();
-            ssvAId = 0;
-            ssvBId = 0;
-            ssvCId = 0;
+            _Supervisors.Clear();
+            supervisorId = 0;
 
-            foreach (User ssv in _allSSVs)
+            foreach (User sv in _allSupervisors)
             {
-                if (ssv.PlantId == _sosReview.PlantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == _sosReview.AreaId) != -1)
+                if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
                 {
-                    _SSVs.Add(ssv);
+                    _Supervisors.Add(sv);
                 }
             }
-
-            StateHasChanged();
-
-
-
-
-        }
-
-        private void ShowSupervisors()
-        {
-            _SSVs.Clear();
-
-            foreach (User ssv in _allSSVs)
-            {
-                if (ssv.PlantId == _sosReview.PlantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == _sosReview.AreaId) != -1)
-                {
-                    _SSVs.Add(ssv);
-                }
-            }
-
 
             StateHasChanged();
         }
@@ -164,12 +145,10 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
         // Create Pat
         async void CreateSOSReviewAsync()
         {
-            //if (user.UserType == 1)
-            //{
-            //    _sosReview.UserAid = ssvAId;
-            //    _sosReview.UserBid = ssvBId;
-            //    _sosReview.UserCid = ssvCId;
-            //}
+            if (user.UserType == 1)
+            {
+                _sosReview.Supervisorid = supervisorId;
+            }
 
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
