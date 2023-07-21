@@ -46,6 +46,7 @@
                                 @if (LogedUser.UserType <= 1)
                                 {
                                     <MudSwitch Class="ma-1" Label="@Localizer["UsersAdmin"]" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
+                                    <MudSwitch Class="ma-1" Label="@Localizer["UsersManager"]" @bind-Checked="@IsManager" @onclick="@(() => setActiveUser(5))" Color="Color.Warning" UnCheckedColor="Color.Dark" />
                                     <MudSwitch Class="ma-1" Label="@Localizer["UsersSeniorSupervisor"]" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                 }
                                 @if (LogedUser.UserType <= 2)
@@ -75,6 +76,11 @@
                                     case 4:
                                         <MudPaper Elevation="0">
                                             <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark">@Localizer["UsersOperator"]</MudChip>
+                                        </MudPaper>
+                                        break;
+                                    case 5:
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning">@Localizer["UsersManager"]</MudChip>
                                         </MudPaper>
                                         break;
                                 }
@@ -189,7 +195,16 @@
                             <MudTextField @bind-Value="areaInfo" Label="@Localizer["UsersLabelArea"]" ReadOnly="true" Variant="Variant.Outlined" />
                             <MudTextField @bind-Value="grupInfo" Label="@Localizer["UsersLabelGroup"]" ReadOnly="true" Variant="Variant.Outlined" />
                         }
-
+                        else if(_user.UserType == 5){
+                            @*Mud select of Plants for Manager*@
+                            <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+                                @foreach (var type in _plants)
+                                {
+                                    <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
 
 
 
@@ -388,7 +403,7 @@
                                     {
                                         
 
-                                        @if (_user.UserType > 2)
+                                        @if (_user.UserType > 2 && _user.UserType != 5)
                                         {
                                             <MudItem class="d-flex d-flex-column justify-center">
                                                 <MudText Typo="Typo.h6"> @Localizer["UsersSuperior"] </MudText>
@@ -724,6 +739,7 @@
                                         @switch (_user.UserType)
                                         {
                                             case 1:
+                                            case 5:
                                                 @if (SeniorsSupervisors?.Count > 0)
                                                 {
                                                     <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSeniorSupervisorOfList" For="@(() => selectedSeniorSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
@@ -832,6 +848,7 @@
     private List<User> SeniorsSupervisors = new List<User>();
     private List<User> Supervisors = new List<User>();
     private List<User> Operators = new List<User>();
+    private List<User> Managers = new List<User>();
 
     List<Plant> _plants { get; set; } = new();
     List<Area> _areas = new();
@@ -856,6 +873,7 @@
     private bool IsSeniorSupervisor = false;
     private bool IsSupervisor = false;
     private bool IsOperator = false;
+    private bool IsManager = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -925,13 +943,18 @@
             switch (item.UserType)
             {
                 case 2:
-                    SeniorsSupervisors.Add(item);
+                    if(item.PlantId == auxPlant){
+                        SeniorsSupervisors.Add(item);
+                    }
                     break;
                 case 3:
                     Supervisors.Add(item);
                     break;
                 case 4:
                     Operators.Add(item);
+                    break;
+                case 5:
+                    Managers.Add(item);
                     break;
             }
         }
@@ -1033,8 +1056,9 @@
         IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
         IsSupervisor = userType == 3 && !IsSupervisor;
         IsOperator = userType == 4 && !IsOperator;
+        IsManager = userType == 5 && !IsManager;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -1096,7 +1120,8 @@
                     _user.GroupId = 0;
                 }
                 break;
-
+            case 5: RemoveSuperiorUser(); break;
+                
         }
 
 
@@ -1162,6 +1187,7 @@
         switch(LogedUser.UserType){
             case 1:
             case 2:
+            case 5:
                 areaInfo = "";
                 plantInfo = "";
                 grupInfo = "";

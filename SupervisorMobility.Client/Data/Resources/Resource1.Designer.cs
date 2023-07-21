@@ -2428,6 +2428,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Gerente.
+        /// </summary>
+        public static string UsersManager {
+            get {
+                return ResourceManager.GetString("UsersManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a More Data For Admin.
         /// </summary>
         public static string UsersMoreData {
