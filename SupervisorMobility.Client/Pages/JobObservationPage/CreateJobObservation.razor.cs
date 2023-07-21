@@ -35,6 +35,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         Lup lup { get; set; } = new();
         List<Lup> _lup { get; set; } = new();
 
+        List<AssyChart> _assycharts { get; set; }
+
         public JobObservation _jobObservation { get; set; } = new();
 
         public string areaS;
@@ -301,6 +303,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.OperationId = 0;
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
+            _assycharts?.Clear();
+
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
 
@@ -308,6 +312,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             _jobObservation.SupervisorId = 0;
             _supervisors.Clear();
+            _assycharts?.Clear();
             if (user.UserType == 1)
             {
                 foreach (User sv in _allSupervisors)
@@ -354,10 +359,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowOperations()
         {
+            _assycharts?.Clear();
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+            _assycharts = await AssychartsServices.GetAssyChartsByDistribution(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            await Task.Delay(150);
 
             distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
             StateHasChanged();
@@ -1688,8 +1696,152 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
         }
 
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        private bool CcpDialog = false;
+        private bool HoeDialog = false;
+        private bool GosDialog = false;
+        private bool searchAssychart = false;
+
+        private CDMS_CCP_Archives? CcpFilesInFolder;
+        private CDMS_HOE_Archives? HoeFilesInFolder;
+        private CDMS_GOS_Archives? GosFilesInFolder;
+
+        private bool folderError = false;
+        private string messageErrorFolders;
 
 
+        private string HOErute = "";
+        private string CCPrute = "";
+        private string GOSrute = "";
+        private async void OpenDialogGOS(string ruta)
+        {
+            GOSrute = ruta;
+            GosDialog = true;
+            folderError = false;
 
+            Console.WriteLine($"gos {ruta}");
+
+            GosFilesInFolder = new CDMS_GOS_Archives();
+
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
+            if (GosFilesInFolder == null)
+                folderError = true;
+
+
+            StateHasChanged();
+        }
+        void CloseGos() => GosDialog = false;
+
+        private async void OpenDialogCcp(string ruta)
+        {
+            CCPrute = ruta;
+            CcpDialog = true;
+            folderError = false;
+            Console.WriteLine($"Cpc {ruta}");
+
+            CcpFilesInFolder = new CDMS_CCP_Archives();
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
+            if (CcpFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
+        }
+        void CloseCcp() => CcpDialog = false;
+
+        private async void OpenDialogHoe(string ruta)
+        {
+            HOErute = ruta;
+            HoeDialog = true;
+            Console.WriteLine($"hoe {ruta}");
+
+            folderError = false;
+            HoeFilesInFolder = new CDMS_HOE_Archives();
+            HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
+            if (HoeFilesInFolder == null)
+                folderError = true;
+
+            StateHasChanged();
+        }
+        void CloseHoe() => HoeDialog = false;
+
+
+        private async Task DownloadFileFromURL(string urlroute, string namefile)
+        {
+            var fileName = namefile;
+            var fileURL = urlroute;
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+
+        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
+        {
+            var fileName = namefile;
+            var fileURL = urlroute;
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
+        {
+
+            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
+
+            if (DownloadLink is not null)
+            {
+                var fileName = namefile;
+                var fileURL = DownloadLink?.operation.URL;
+
+                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+
+                try
+                {
+                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+                    if (result == "File downloaded successfully")
+                    {
+                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
+                        if (DeleteTemp is not null)
+                        {
+                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+                }
+            }
+        }
+        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
+        {
+            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
+
+            if (DownloadLink is not null)
+            {
+                var fileName = namefile;
+                var fileURL = DownloadLink?.operation.URL;
+
+                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+
+                try
+                {
+                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+                    if (result == "File downloaded successfully")
+                    {
+                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
+                        if (DeleteTemp is not null)
+                        {
+                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+                }
+            }
+
+        }
+
+    /////
     }
 }
