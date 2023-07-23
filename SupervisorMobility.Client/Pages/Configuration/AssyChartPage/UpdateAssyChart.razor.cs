@@ -67,7 +67,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
 
 
-            GOSFolders = await CDMSServices.GetFoldersGOS();
+            try
+            {
+                GOSFolders = await CDMSServices.GetFoldersGOS();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get GOS Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
+
             if (GOSFolders != null)
             {
                 folderGOSError = false;
@@ -78,7 +87,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 folderGOSError = true;
             }
 
-            CCPFolders = await CDMSServices.GetFoldersCCP();
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+            }
+
             if (CCPFolders != null)
             {
                 folderCCPError = false;
@@ -89,8 +107,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 folderCCPError = true;
             }
 
-
-            HOEFolders = await CDMSServices.GetFoldersHOE();
+            try
+            {
+                HOEFolders = await CDMSServices.GetFoldersHOE();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get HOE Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
             if (HOEFolders != null)
             {
                 folderHOEError = false;

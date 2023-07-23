@@ -40,7 +40,8 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FOLDERS CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -75,6 +76,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                     var result = await response.Content.ReadFromJsonAsync<CDMS_CCP_Archives>();
                     return result;
+                }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FILES CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -139,6 +145,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                     var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
                     return result;
                 }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET LINK CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -178,6 +189,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                     var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
                     return result;
                 }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"DELETE TEMP CCP FILE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -204,7 +220,8 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FOLDERS HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -238,6 +255,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 {
                     var result = await response.Content.ReadFromJsonAsync<CDMS_HOE_Archives>();
                     return result;
+                }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FILES HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -317,7 +339,6 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         //GOS
         public async Task<CDMS_GOS_Directory> GetFoldersGOS()
         {
-            
 
             try
             {
@@ -330,7 +351,8 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FOLDERS GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -363,6 +385,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 {
                     var result = await response.Content.ReadFromJsonAsync<CDMS_GOS_Archives>();
                     return result;
+                }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET FILES GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -425,6 +452,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                     var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
                     return result;
                 }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -462,6 +494,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 {
                     var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
                     return result;
+                }
+                else
+                {
+                    //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"DELETE TEMP GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)

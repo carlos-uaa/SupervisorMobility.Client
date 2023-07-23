@@ -120,7 +120,7 @@ else
                     </MudButton>
                     <MudSpacer />
                     <MudButton Href="/usersmanagement/BulkUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Warning">
-                          @Localizer["UsersBulk"]
+                        @Localizer["UsersBulk"]
                     </MudButton>
                     <MudSpacer />
                     <MudButton Href="/usersmanagement/CreateUser" EndIcon="@Icons.Material.Filled.PersonAddAlt1" IconColor="Color.Warning">
@@ -388,8 +388,6 @@ else
     private bool FilterFunc(User element)
     {
 
-
-
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
         if (element.ObjectId != null)
@@ -424,8 +422,83 @@ else
             if ((bool)element.Group?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
         }
-        if ($"{element.UserId} {element.Payroll} {element.Name} {element.Plant?.Description} {element.Area?.Description} {element.Group?.Description} {element.ObjectId} {element.Email}".Contains(searchString))
-            return true;
+
+        if (element.Name.Split(" ").Length > 3)
+        {
+ 
+            var splitedname = element.Name.Split(", ");
+     
+
+        if (splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
+        {
+            var nombres = splitedname[1].Split(' ');
+            var apellidos = splitedname[0].Split(' ');
+
+
+            if ($"{nombres[0]} {nombres[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;  
+                
+           if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]}".Contains(searchString))
+                return true;  
+
+          if ($"{apellidos[0]} {apellidos[1]} {nombres[0]}".Contains(searchString))
+                    return true;
+
+            if ($"{nombres[0]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;
+
+            if ($"{nombres[0]} {apellidos[0]}".Contains(searchString))
+                return true;
+        }
+        else if (splitedname[0].Contains(' ') && !splitedname[1].Contains(' '))
+        {
+                var apellidos = splitedname[0].Split(' ');
+
+                if ($"{splitedname[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;
+
+                if ($"{apellidos[0]} {apellidos[1]} {splitedname[1]}".Contains(searchString))
+                return true;
+                
+                if ($"{apellidos[0]} {splitedname[1]}".Contains(searchString))
+                return true;
+        }
+            else if (!splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
+            {
+                var nombres = splitedname[1].Split(' ');
+
+                if ($"{splitedname[0]} {nombres[0]} {nombres[1]}".Contains(searchString))
+                    return true;
+
+                if ($"{nombres[0]} {nombres[1]} {splitedname[0]}".Contains(searchString))
+                    return true;
+
+                if ($"{nombres[0]} {splitedname[0]}".Contains(searchString))
+                    return true;
+            }
+        else
+        {
+            var nombres = splitedname[1].Split(' ');
+            var apellidos = splitedname[0].Split(' ');
+
+            if (nombres.Length == 2)
+                if ($"{nombres[0]} {nombres[1]} {nombres[2]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                    return true;
+
+            if (nombres.Length > 2)
+                if ($"{nombres[0]} {nombres[1]} {nombres[2]}  {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                    return true;
+
+            if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]} {nombres[2]}".Contains(searchString))
+                return true;
+        }
+
+        }
+
+
+
+
+
         return false;
     }
 

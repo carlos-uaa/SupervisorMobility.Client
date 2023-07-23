@@ -45,17 +45,82 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private List<BreadcrumbItem> _links;
 
         //Inizialize
-        protected async override Task OnInitializedAsync()
+        protected override async void OnInitialized()
         {
             _links = new List<BreadcrumbItem>
-        {
+            {
                 new BreadcrumbItem(text: Localizer["home"], href: "#"),
-            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
-            new BreadcrumbItem(text: Localizer["ACNewAC"], href: "", disabled: true),
-        };
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+                new BreadcrumbItem(text: Localizer["ACNewAC"], href: "", disabled: true),
+            };
             _plants = await PlantServices.GetPlants();
             _products = await ProductServices.GetProducts();
+
+            try
+            {
+                GOSFolders = await CDMSServices.GetFoldersGOS();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get GOS Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
+
+            if (GOSFolders != null)
+            {
+                folderGOSError = false;
+                rootNodeGOS = ConstruirArbolGOS(GOSFolders.operation);
+            }
+            else
+            {
+                folderGOSError = true;
+            }
+
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+            }
+
+            if (CCPFolders != null)
+            {
+                folderCCPError = false;
+                rootNodeCCP = ConstruirArbolCCP(CCPFolders.operation);
+            }
+            else
+            {
+                folderCCPError = true;
+            }
+
+            try
+            {
+                HOEFolders = await CDMSServices.GetFoldersHOE();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get HOE Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
+            if (HOEFolders != null)
+            {
+                folderHOEError = false;
+                rootNodeHOE = ConstruirArbolHOE(HOEFolders.operation);
+
+
+            }
+            else
+            {
+                folderHOEError = true;
+            }
+
+
+
+            StateHasChanged();
         }
 
 
@@ -85,7 +150,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            if(_newassychart.GOS != "")
+            if (_newassychart.GOS != "")
             {
                 GosFilesInFolder = await CDMSServices.GetFilesGOS(_newassychart.GOS);
                 if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
@@ -99,11 +164,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     isGosFolder = true;
                 }
             }
-            else { isGosFolder = true;}
+            else { isGosFolder = true; }
 
             CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            if(_newassychart.CCP != "")
+            if (_newassychart.CCP != "")
             {
                 CcpFilesInFolder = await CDMSServices.GetFilesCCP(_newassychart.CCP);
                 if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
@@ -124,7 +189,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             HoeFilesInFolder = new CDMS_HOE_Archives();
 
-            if(_newassychart.HOE != "")
+            if (_newassychart.HOE != "")
             {
                 HoeFilesInFolder = await CDMSServices.GetFilesHOE(_newassychart.HOE);
                 if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
@@ -156,7 +221,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             }
 
 
-            
+
         }
 
         void CancelCreateAssyChart()
@@ -186,54 +251,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-        protected override async void OnInitialized()
-        {
-            GOSFolders = await CDMSServices.GetFoldersGOS();
-            if(GOSFolders != null)
-            {
-                folderGOSError = false;
-                rootNodeGOS = ConstruirArbolGOS(GOSFolders.operation);
-            }
-            else
-            {
-                folderGOSError = true;
-            }
 
-            CCPFolders = await CDMSServices.GetFoldersCCP();
-            if(CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = ConstruirArbolCCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
-
-
-            HOEFolders = await CDMSServices.GetFoldersHOE();
-            if(HOEFolders != null)
-            {
-                folderHOEError = false;
-                rootNodeHOE = ConstruirArbolHOE(HOEFolders.operation);
-
-
-            }
-            else
-            {
-                folderHOEError = true;
-            }
-
-
-
-            StateHasChanged();
-        }
-        
         public class TreeItemData
         {
             public string Nombre { get; set; }
             public string Ruta { get; set; }
-            public bool EsDirectorio { get; set; } 
+            public bool EsDirectorio { get; set; }
             public HashSet<TreeItemData> TreeItems { get; set; } = new HashSet<TreeItemData>();
 
             public TreeItemData()
@@ -263,8 +286,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             await Task.Delay(50);
             return parentNode.TreeItems;
-        } 
-        
+        }
+
 
         public TreeItemData ConstruirArbolCCP(List<FolderCCP> elementos)
         {
@@ -304,7 +327,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             // Imprimir el árbol
             return root;
-        } 
+        }
         public TreeItemData ConstruirArbolHOE(List<FolderHOE> elementos)
         {
             TreeItemData root = new TreeItemData { Nombre = "Raíz", Ruta = "", EsDirectorio = true };

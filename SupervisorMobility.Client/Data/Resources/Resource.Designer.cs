@@ -1798,6 +1798,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Without Critical Type.
+        /// </summary>
+        public static string OPCritical {
+            get {
+                return ResourceManager.GetString("OPCritical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Open CCP Folder.
         /// </summary>
         public static string openCCPFolder {

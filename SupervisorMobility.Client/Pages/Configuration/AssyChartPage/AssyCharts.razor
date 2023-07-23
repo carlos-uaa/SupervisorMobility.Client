@@ -10,6 +10,7 @@
 @inject IAreaService AreaServices
 @inject IDistributionService DistributionServices
 @inject IStringLocalizer<Resource1> Localizer
+@inject IStringLocalizer<Resource> Localizer0
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["ACTitle"]</PageTitle>
@@ -90,8 +91,8 @@ else
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.GOS)">@Localizer["ACGOS"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CCP)">@Localizer["ACCCP"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.HOE)">@Localizer["ACHOE"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.CriticalType)">@Localizer["ACCriticalLabel"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Operation?.Description)">@Localizer["ACOperation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.CriticalType)">@Localizer["ACCriticalLabel"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x?.Product?.Description)">@Localizer["ACModel"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.CreationDate)">@Localizer["ACCD"]</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<AssyChart, object>(x=>x.ModificationDate)">@Localizer["ACMD"]</MudTableSortLabel></MudTh>
@@ -160,24 +161,30 @@ else
                         }
 
                     </MudTd>
-                    <MudTd DataLabel="@Localizer["ACCriticalLabel"]">
-                        @switch(context.CriticalType){
-                            case 1:
-                                <MudText Align="Align.Center">A</MudText>
-                            break;
-                            case 2:
-                                <MudText Align="Align.Center">B</MudText>
-                            break; 
-                            case 3:
-                                <MudText Align="Align.Center">C</MudText>
-                            break;
-                           default:
-                           break;
-                        }
-                    </MudTd>  
                     <MudTd DataLabel="@Localizer["ACOperation"]">
                         <MudText Align="Align.Center">@context.Operation?.Description</MudText>
                     </MudTd>
+                    <MudTd DataLabel="@Localizer["ACCriticalLabel"]">
+                        @if (context.Operation != null)
+                        {
+                            @switch (context.Operation?.CriticalType)
+                            {
+                                case 1:
+                                    <MudText Align="Align.Center">A</MudText>
+                                    break;
+                                case 2:
+                                    <MudText Align="Align.Center">B</MudText>
+                                    break;
+                                case 3:
+                                    <MudText Align="Align.Center">C</MudText>
+                                    break;
+                                default:
+                                    <MudText Align="Align.Center">@Localizer0["OPCritical"]</MudText>
+                                    break;
+                            }
+                        }
+                    </MudTd>
+
                     <MudTd DataLabel="@Localizer["ACModel"]">
                         <MudText Align="Align.Center">@context.Product?.Description</MudText>
                     </MudTd>
@@ -404,7 +411,9 @@ else
                                     <MudSpacer />
 
                                 </MudItem>
-                            }else{
+                            }
+                            else
+                            {
                                 <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                             }
                         }
@@ -452,21 +461,21 @@ else
 
                                 </MudItem>
                             }
-                           @* @if (seedistribution)
-                            {
-                                Mud select of Distributions 
-                                <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
+                            @* @if (seedistribution)
+                        {
+                        Mud select of Distributions
+                        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="3">
 
-                                    <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" AnchorOrigin="Origin.BottomCenter" @bind-Value="distributionId" For="@(() => distributionId)" SelectedValuesChanged="UpdateDistirbutionAssyChart">
-                                        <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
-                                        @foreach (var type in _distributions)
-                                        {
-                                            <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
+                        <MudSelect T="int" Label="Distribution" Placeholder="Select a Distribution" AnchorOrigin="Origin.BottomCenter" @bind-Value="distributionId" For="@(() => distributionId)" SelectedValuesChanged="UpdateDistirbutionAssyChart">
+                        <MudSelectItem Disabled="true" Value="0">Select a Distribution</MudSelectItem>
+                        @foreach (var type in _distributions)
+                        {
+                        <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                        </MudSelect>
 
-                                </MudPaper>
-                            }*@
+                        </MudPaper>
+                        }*@
                         </MudPaper>
                     </MudItem>
                     @if (areaId != 0)
@@ -1119,7 +1128,7 @@ else
                 else if (CcpFilesInFolder.operation.Count == 0)
                 {
 
-                   <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
                         <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
                             <img src="Images/navegador.png" Height="140" Width="140" />
                         </MudItem>

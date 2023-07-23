@@ -11,6 +11,7 @@
 @inject IJSRuntime JsRuntime
 @inject IBridgeCDMSService CDMSServices
 @inject IStringLocalizer<Resource1> Localizer
+@inject IStringLocalizer<Resource> Localizer0
 @inject NavigationManager NavigationManager
 
 
@@ -68,13 +69,44 @@
                     </MudSelect>
 
                     @*Operation *@
-                    <MudSelect T="int" Label="@Localizer["ACLabelOperation"]" Placeholder="@Localizer["ACPHOperation"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.OperationId" For="@(() => _assychart.OperationId)">
-                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHOperation"]</MudSelectItem>
-                        @foreach (var type in _distributionValues.Operations)
-                        {
-                            <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                        }
-                    </MudSelect>
+
+                    <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
+                        <MudItem xs="9" sm="9" lg="9" md="9">
+                            <MudSelect T="int" Label="@Localizer["ACLabelOperation"]" Placeholder="@Localizer["ACPHOperation"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.OperationId" For="@(() => _assychart.OperationId)">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHOperation"]</MudSelectItem>
+                                @foreach (var type in _distributionValues.Operations)
+                                {
+                                    <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem> 
+                        <MudItem xs="3" sm="3" lg="3" md="3">
+                            @if (_assychart.OperationId != 0)
+                            {
+                                
+                                    @switch (_distributionValues.Operations.Find(op => op.OperationId == _assychart.OperationId).CriticalType)
+                                    {
+                                        case 1:
+                                            <MudTextField  Class="mt-3" AnchorOrigin="Origin.BottomCenter" ReadOnly Value="'A'" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                            break;
+                                        case 2:
+                                            <MudTextField  Class="mt-3" AnchorOrigin="Origin.BottomCenter" ReadOnly Value="'B'" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                            break;
+                                        case 3:
+                                            <MudTextField  Class="mt-3" AnchorOrigin="Origin.BottomCenter" ReadOnly Value="'C'" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                            break;
+                                        default:
+                                            <MudTextField Class="mt-3" AnchorOrigin="Origin.BottomCenter" ReadOnly Value="@Localizer0["OPCritical"]" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                            break;
+                                    }
+                               
+                            }
+                        </MudItem>
+                    </MudItem>
+
+                
+
+                    
 
                     @*Mud select of Model/Product *@
                     <MudSelect T="int" Label="@Localizer["ACLabelProduct"]" Placeholder="@Localizer["ACPHProduct"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.ProductId" For="@(() => @_assychart.ProductId)">
@@ -85,14 +117,7 @@
                         }
                     </MudSelect>
 
-                    <MudSelect T="int" Label="@Localizer["ACCriticalLabel"]" Placeholder="@Localizer["ACPHCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_assychart.CriticalType" For="@(() => @_assychart.CriticalType)">
-                        <MudSelectItem Disabled="true" Value="0">@Localizer["ACPHCritical"]</MudSelectItem>
-
-                        <MudSelectItem Value="1">@($"A")</MudSelectItem>
-                            <MudSelectItem Value="2">@($"B")</MudSelectItem>
-                            <MudSelectItem Value="3">@($"C")</MudSelectItem>
-
-                        </MudSelect>
+                   
                     <br>
                     <br>
 
