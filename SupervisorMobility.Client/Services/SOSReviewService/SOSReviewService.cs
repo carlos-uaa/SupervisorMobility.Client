@@ -36,7 +36,9 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             }
 
             return null;
-        }
+        } 
+        
+      
 
         public async Task DeleteSOSReview(int id)
         {
@@ -92,5 +94,52 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
 
             return false;
         }
+
+        public async Task<List<SOSRegisterJobObservation>> GetSOSRegisters(int sosid)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"SOSReview/Registers/{sosid}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var SOS_registerList = JsonSerializer.Deserialize<List<SOSRegisterJobObservation>>(content, _options);
+
+                    response.Dispose();
+
+                    return SOS_registerList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de registros SOS REGISTERS: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public async Task<SOSRegisterJobObservation> CreateSOSRegister(int SOSid, int month, int year, JobObservation JobEntity)
+        {
+
+            //int SOSid, int month, int year,
+            var response = await _http.PostAsJsonAsync($"SOSReview/Registers/{SOSid}?month={month}&year={year}", JobEntity);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var Final_SOS_Review = await response.Content.ReadFromJsonAsync<SOSRegisterJobObservation>();
+                return Final_SOS_Review;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Create SOS Review: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+        }
+
+       
     }
 }

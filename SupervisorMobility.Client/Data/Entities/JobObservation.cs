@@ -28,7 +28,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int DistributionId { get; set; }
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operation")]
-        public int OperationId { get; set; }
+        public int OperationId { get; set; }    
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Supervisor")]
         public int SupervisorId { get; set; }

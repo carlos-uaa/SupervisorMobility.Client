@@ -12,6 +12,8 @@
         Task<bool> UpdateSOSReview(SOSReviewProgram product);
 
         Task DeleteSOSReview(int id);
+        Task<SOSRegisterJobObservation> CreateSOSRegister(int SOSid, int month, int year, JobObservation JobEntity);
+        Task<List<SOSRegisterJobObservation>> GetSOSRegisters(int sosid);
 
     }
 }
