@@ -13,6 +13,7 @@
 @inject IJSRuntime JS
 @inject IILUService ILUServices
 @inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
 @inject IDistributionService DistributionServices
 @inject ISOSReviewService SOSServices
@@ -390,13 +391,129 @@ else
                     @Localizer["createJobObservation"]
                 </MudText>
             </MudItem>
-
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-
-
+                        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Details
+                </MudText>
+                @*<MudSimpleTable Dense="@dense" Hover="@hover" ReadOnly="@ronly"*@
+                <MudSimpleTable HorizontalScrollbar="true">
+                    <tbody>
+                        <tr>
+                            <td style="width:50%">
+                                @*Mud select of Plants*@
+                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.PlantId">
+                                    <MudSelectItem Disabled="true" Value="@_NewJobObservation.PlantId">@_NewJobObservation.Plant?.Code - @_NewJobObservation.Plant?.Description</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                           @* <td class="d-flex">
+                                <MudDatePicker @bind-Date="_NewJobObservation.StartDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly />
+                                <MudDatePicker @bind-Date="_NewJobObservation.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" MinDate="_NewJobObservation.StartDate" Class="pt-2" ReadOnly/>
+                            </td>*@
+                        </tr>
+                        <tr>
+                            <td>
+                                @*Mud select of Areas *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.AreaId">
+                                    <MudSelectItem Disabled="true" Value="@_NewJobObservation.AreaId">@_NewJobObservation.Area?.Code - @_NewJobObservation.Area?.Description</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                            <td >
+                                <MudTextField T="string" @bind-Value="_NewJobObservation.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" />
+@*                              <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly/>
+                                <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly />*@
+                            </td>
+                        </tr>
+                        <tr>
+                           @* <td class="d-flex">
+                                
+                                <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.DistributionId">
+                                    <MudSelectItem Disabled="true" Value="@_NewJobObservation.DistributionId">@_NewJobObservation.Distribution?.Code - @_NewJobObservation.Distribution?.Description</MudSelectItem>
+                                </MudSelect>
+                               
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.OperationId">
+                                    <MudSelectItem Disabled="true" Value="@_NewJobObservation.OperationId">@_NewJobObservation.Operation?.Code - @_NewJobObservation.Operation?.Description</MudSelectItem>
+                                </MudSelect>
+                            </td>
+                            
+                            <td>
+                                <MudTextField T="string" @bind-Value="_NewJobObservation.Operator.Name" Label=@Localizer["operator"] Class="mr-4" />
+                            </td>
+                            *@
+                        </tr>
+                    </tbody>
+                        </MudSimpleTable>
             </MudItem>
 
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Options
+                </MudText>
+                                    <MudSwitch Class="ma-1" Label="Set Operation" @bind-Checked="@AddOperation" @onclick="@(() => SwitchOperations())" Color="Color.Primary" UnCheckedColor="Color.Dark" />
+                                    <MudSwitch Class="ma-1" Label="Set Operator" @bind-Checked="@AddOperator" @onclick="@(() => SwitchOperators())" Color="Color.Primary" UnCheckedColor="Color.Dark" />
 
+            </MudItem>
+            @if(AddOperation){
+
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Select Operation
+                </MudText>
+                    <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
+                        <MudItem xs="9" sm="9" lg="9" md="9">
+                            @if(showOperations){
+                            <MudSelect T="int" Label="@Localizer1["ACLabelOperation"]" Placeholder="@Localizer1["ACPHOperation"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.OperationId" For="@(() => _NewJobObservation.OperationId)">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer1["ACPHOperation"]</MudSelectItem>
+                                @foreach (var type in _Operations)
+                                {
+                                    <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            }
+               
+                        </MudItem>
+                        <MudItem xs="3" sm="3" lg="3" md="3">
+                            @if (_NewJobObservation.OperationId != 0)
+                            {
+
+                                @switch (_Operations?.Find(op => op.OperationId == _NewJobObservation.OperationId).CriticalType)
+                                {
+                                    case 1:
+                                        <MudTextField ReadOnly Value="'A'" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                        break;
+                                    case 2:
+                                        <MudTextField ReadOnly Value="'B'" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                        break;
+                                    case 3:
+                                        <MudTextField ReadOnly Value="'C'" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                        break;
+                                    default:
+                                        <MudTextField ReadOnly Value="@Localizer["OPCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Label="@Localizer["ACCriticalLabel"]" Align="Align.Center"></MudTextField>
+                                        break;
+                                }
+
+                            }
+                        </MudItem>
+                    </MudItem>
+            </MudItem>
+
+            }
+
+            @if(AddOperator){
+
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Select Operator
+                </MudText>
+                    <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_NewJobObservation.OperatorId" For="@(() => _NewJobObservation.OperatorId)">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
+                                            @foreach (var type in _Subordinates)
+                                            {
+                                                <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+            </MudItem>
+            }
 
 
 
@@ -855,6 +972,9 @@ else
 
     private List<SOSRegisterJobObservation> _SosRegisters = new();
 
+    private List<User> _Subordinates = new();
+    private List<Operation> _Operations = new();
+
     private Dictionary<(int, int), List<SOSRegisterJobObservation>?> SOS_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<SOSRegisterJobObservation>?>();
 
     //User
@@ -862,6 +982,12 @@ else
     public User user = new();
     public bool logged = false;
     public bool ShowTable = false;
+
+
+    bool AddOperation = false;
+    bool AddOperator = false;
+    bool showOperations = false;
+    bool showOperators = false;
 
     private bool SeeDialogCreateJobObservation = false;
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
@@ -912,11 +1038,11 @@ else
     {
         SOS_Registers_Matrix?.Clear();
         _SosRegisters?.Clear();
-             
 
-        
+
+
         _SosRegisters = await SOSServices.GetSOSRegisters(SOS_Review.SOSid);
-   
+
 
         foreach (var dist in _distributions)
         {
@@ -925,13 +1051,13 @@ else
                 var matchingRegisters = _SosRegisters?
                    .Where(r => r.DistributionId == dist.DistributionId && r.Year <= SOS_Review.AplicationYear)
                    .ToList();
-               
+
 
                 SOS_Registers_Matrix.Add((dist.DistributionId, i), matchingRegisters);
 
             }
         }
-                Console.WriteLine("end");
+        Console.WriteLine("end");
 
         ShowTable = true;
         StateHasChanged();
@@ -958,6 +1084,24 @@ else
         _NewRegister.Month = month;
         _NewRegister.Year = (int)SOS_Review.AplicationYear;
 
+        _NewJobObservation.PlantId = (int)SOS_Review.PlantId;
+        _NewJobObservation.Plant = SOS_Review.Plant;
+        _NewJobObservation.AreaId = (int)SOS_Review.AreaId;
+        _NewJobObservation.Area = SOS_Review.Area;
+        _NewJobObservation.DistributionId = (int)_NewRegister.DistributionId;
+        _NewJobObservation.Distribution = _distributions.Find(d => d.DistributionId == (int)_NewRegister.DistributionId);
+
+        _NewJobObservation.SupervisorId = (int)SOS_Review.Supervisorid;
+        _NewJobObservation.Supervisor = SOS_Review.Supervisor;
+
+
+        _NewJobObservation.Option = 2;
+        _NewJobObservation.Type = 3;
+        _NewJobObservation.Status = 7;
+        _NewJobObservation.IsActive = true;
+
+
+
         SeeDialogCreateJobObservation = true;
         StateHasChanged();
     }
@@ -972,20 +1116,6 @@ else
     private async void CreateJobObservation()
     {
         SeeDialogCreateJobObservation = false;
-
-        _NewJobObservation.PlantId = (int)SOS_Review.PlantId;
-        _NewJobObservation.AreaId = (int)SOS_Review.AreaId;
-        _NewJobObservation.DistributionId = (int)_NewRegister.DistributionId;
-
-        _NewJobObservation.SupervisorId = (int)SOS_Review.Supervisorid;
-
-
-        _NewJobObservation.OperationId = 0;
-
-        _NewJobObservation.Option = 2;
-        _NewJobObservation.Type = 3;
-        _NewJobObservation.Status = 7;
-        _NewJobObservation.IsActive = true;
 
 
         var result = await SOSServices.CreateSOSRegister(SOS_Review.SOSid, _NewRegister.Month, _NewRegister.Year, _NewJobObservation);
@@ -1002,6 +1132,34 @@ else
 
     }
 
+
+    private async void SwitchOperators()
+    {
+        _Subordinates?.Clear();
+        if(AddOperator){
+            _Subordinates = await UsersServices.GetSubordinates(SOS_Review.Supervisor.UserId);
+        }
+
+        StateHasChanged();
+    }
+
+    private async void SwitchOperations()
+    {
+
+        _Operations?.Clear();
+
+        Console.WriteLine($"Operations {AddOperation}");
+        if(AddOperation){
+            _Operations = await OperationsServices.GetOperations(SOS_Review.PlantId, SOS_Review.AreaId, (int)_NewRegister.DistributionId);
+            showOperations = true;
+        }
+        else
+        {
+            showOperations = false;
+        }
+
+        StateHasChanged();
+    }
 
     private bool CcpDialog = false;
     private bool HoeDialog = false;
