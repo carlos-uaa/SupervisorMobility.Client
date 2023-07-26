@@ -996,6 +996,21 @@
                             <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
                         </td>
                     </tr>
+                    @if((user.UserType == 1 || user.UserType == 5) && _jobObservation.Status == 6){
+                        <tr>
+                            <th colspan="2">
+                                <MudText Style="text-align:center; font-weight:bold;">
+                                    @Localizer["addFeedback"]
+                                </MudText>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <MudTextField T="string" @bind-Value="_jobObservation.ReleasedFeedback" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                            </td>
+                        </tr>
+
+                    }
                     </tbody>
                 </MudSimpleTable>
             </MudItem>
@@ -1005,7 +1020,7 @@
 
                 @if(_jobObservation.Status != 6){
                     if(user.UserType == 1 || user.UserType == 3){
-                                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
                     }
                     if((_jobObservation.Status == 1 || _jobObservation.Status == 3) && user.UserType != 4){
                         <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">@Localizer["changeDate"]</MudButton>
@@ -1016,6 +1031,9 @@
                     <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">@Localizer["cancel"]</MudButton>
                 }
                 else{
+                    @if(user.UserType == 1 || user.UserType == 5){
+                        <MudButton StartIcon="@Icons.Material.Filled.Feedback" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto mr-4"  @onclick="(() => AddReleasedFeedback())">@Localizer["addFeedback"]</MudButton>
+                    }
                     <MudButton Variant="Variant.Filled" Class="ml-auto" @onclick="(() => CancelUpdateJobObservation())">@Localizer["goBack"]</MudButton>
                 }
                 </MudItem>

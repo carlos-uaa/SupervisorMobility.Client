@@ -150,7 +150,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                             }
                         }
                     }
-
+                    else if(user.UserType == 5)
+                    {
+                        plantId = (int)user.PlantId;
+                        areaId = 0;
+                        groupId = 0;
+                        ssvId = 0;
+                        supervisorId = 0;
+                        _areas = await AreaServices.GetAreas(plantId);
+                        _allSSVs = await UsersService.GetUserByTypeAndCollection(2);
+                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
+                    }
                 }
                     StateHasChanged();
             }
@@ -286,8 +296,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private async void ShowAreas()
         {
+            _jobObservations = new();
+            foreach(var jobobs in _allJobObservations)
+            {
+                if(jobobs.PlantId == plantId)
+                {
+                    _jobObservations.Add(jobobs);
+                }
+            }
 
-            _jobObservations = _allJobObservations;
             ssvId = 0;
             _SSVs.Clear();
 
@@ -326,6 +343,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     }
                 }
 
+                _jobObservations = new();
+                foreach (var jobobs in _allJobObservations)
+                {
+                    if (jobobs.PlantId == plantId && jobobs.AreaId == areaId)
+                    {
+                        _jobObservations.Add(jobobs);
+                    }
+                }
+
+
             }
             else if(user.UserType == 2)
             {
@@ -352,43 +379,104 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     }
                 }
             }
-            StateHasChanged();
-        }
-
-        private void ShowSupervisors()
-        {            
-            
-            _supervisors.Clear();
-            supervisorId = 0;
-            
-            User SeniorSV = new();
-            foreach(User usr in _allSSVs)
+            else if(user.UserType == 5)
             {
-                if(usr.UserId == ssvId)
+                supervisorId = 0;
+                _supervisors.Clear();
+
+                _SSVs.Clear();
+                ssvId = 0;
+
+
+                foreach (User ssv in _allSSVs)
                 {
-                    SeniorSV = usr;
+                    if (ssv.PlantId == plantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == areaId) != -1)
+                    {
+                        _SSVs.Add(ssv);
+                    }
                 }
-            }
 
-
-            _jobObservations = new();
-            foreach (var jobobs in _allJobObservations)
-            {
-                foreach(User usr in SeniorSV.Subordinates)
+                _jobObservations = new();
+                foreach (var jobobs in _allJobObservations)
                 {
-                    if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                    if (jobobs.PlantId == plantId && jobobs.AreaId == areaId)
                     {
                         _jobObservations.Add(jobobs);
                     }
                 }
             }
 
+            StateHasChanged();
+        }
 
+        private void ShowSupervisors()
+        {
 
-            foreach (User sv in _allSupervisors)
+            _supervisors.Clear();
+            supervisorId = 0;
+            
+            if(user.UserType != 5)
             {
-                if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
-                    _supervisors.Add(sv);
+                User SeniorSV = new();
+                foreach(User usr in _allSSVs)
+                {
+                    if(usr.UserId == ssvId)
+                    {
+                        SeniorSV = usr;
+                    }
+                }
+
+
+                _jobObservations = new();
+                foreach (var jobobs in _allJobObservations)
+                {
+                    foreach(User usr in SeniorSV.Subordinates)
+                    {
+                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+                }
+
+                foreach (User sv in _allSupervisors)
+                {
+                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                        _supervisors.Add(sv);
+                }
+
+            }
+            else
+            {
+                User SeniorSV = new();
+                foreach(User usr in _allSSVs)
+                {
+                    if(usr.UserId == ssvId)
+                    {
+                        SeniorSV = usr;
+                    }
+                }
+
+                foreach (User sv in _allSupervisors)
+                {
+                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                        _supervisors.Add(sv);
+                }
+
+
+                _jobObservations = new();
+                foreach (var jobobs in _allJobObservations)
+                {
+
+                    foreach(User usr in SeniorSV.Subordinates)
+                    {
+                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+                }
+
             }
             StateHasChanged();
         }

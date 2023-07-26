@@ -123,22 +123,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             }
                         }
 
-                        _filterJobObservation = _jobObservations;
-                        _filterPlannedJobObservation = _plannedJobObservation;
-                        _filterInProgressJobObservation = _inProgressJobObservation;
-                        _filterLateJobObservation = _lateJobObservation;
-                        _filterUnderReviewJobObservation = _underReviewJobObservation;
-                        _filterRejectedJobObservation = _rejectedJobObservation;
-                        _filterFinishedJobObservation = _finishedJobObservation;
-
-
-                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-
                     }
                     else if(user.UserType == 2)
                     {
@@ -169,25 +153,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             }
                         }
 
-                        _filterJobObservation = _jobObservations;
-                        _filterPlannedJobObservation = _plannedJobObservation;
-                        _filterInProgressJobObservation = _inProgressJobObservation;
-                        _filterLateJobObservation = _lateJobObservation;
-                        _filterUnderReviewJobObservation = _underReviewJobObservation;
-                        _filterRejectedJobObservation = _rejectedJobObservation;
-                        _filterFinishedJobObservation = _finishedJobObservation;
-
-
-                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-
                     }
 
-                    else
+                    else if(user.UserType == 3)
                     {
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
@@ -210,22 +178,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             }
                         }
 
-                        _filterJobObservation = _jobObservations;
-                        _filterPlannedJobObservation = _plannedJobObservation;
-                        _filterInProgressJobObservation = _inProgressJobObservation;
-                        _filterLateJobObservation = _lateJobObservation;
-                        _filterUnderReviewJobObservation = _underReviewJobObservation;
-                        _filterRejectedJobObservation = _rejectedJobObservation;
-                        _filterFinishedJobObservation = _finishedJobObservation;
-
-
-                        totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-                        totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-                        totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-                        totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-                        totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-                        totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-
                         _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
                         //operator User
@@ -239,6 +191,54 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         }
 
                     }
+                    else if(user.UserType == 5)
+                    {
+                        ClearFilters();
+                        _plants = await PlantServices.GetPlants();
+                        plantId = (int)user.PlantId;
+                        _areas = await AreaServices.GetAreas(plantId);
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                        foreach (var jobobs in _jobObservationsAux)
+                        {
+                            if (plantId == jobobs.PlantId)
+                            {
+                                foreach (User usr in user.Subordinates)
+                                {
+                                    if (jobobs.Supervisor.SuperiorId == usr.UserId)
+                                    {
+                                        _jobObservations.Add(jobobs);
+                                        switch (jobobs.Status)
+                                        {
+                                            case 1: _plannedJobObservation.Add(jobobs); break;
+                                            case 2: _inProgressJobObservation.Add(jobobs); break;
+                                            case 3: _lateJobObservation.Add(jobobs); break;
+                                            case 4: _underReviewJobObservation.Add(jobobs); break;
+                                            case 5: _rejectedJobObservation.Add(jobobs); break;
+                                            case 6: _finishedJobObservation.Add(jobobs); break;
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    _filterJobObservation = _jobObservations;
+                    _filterPlannedJobObservation = _plannedJobObservation;
+                    _filterInProgressJobObservation = _inProgressJobObservation;
+                    _filterLateJobObservation = _lateJobObservation;
+                    _filterUnderReviewJobObservation = _underReviewJobObservation;
+                    _filterRejectedJobObservation = _rejectedJobObservation;
+                    _filterFinishedJobObservation = _finishedJobObservation;
+
+
+                    totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+                    totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+                    totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+                    totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+                    totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+                    totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
+
                 }
             }
         }
@@ -378,6 +378,32 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             case 6: _finishedJobObservation.Add(jobobs); break;
                         }
 
+                    }
+                }
+            }
+            else if(user.UserType == 5)
+            {
+                foreach (var jobobs in _jobObservationsAux)
+                {
+                    if (plantId == jobobs.PlantId)
+                    {
+                        foreach (User usr in user.Subordinates)
+                        {
+                            if (jobobs.Supervisor.SuperiorId == usr.UserId && jobobs.AreaId == areaId)
+                            {
+                                _jobObservations.Add(jobobs);
+                                switch (jobobs.Status)
+                                {
+                                    case 1: _plannedJobObservation.Add(jobobs); break;
+                                    case 2: _inProgressJobObservation.Add(jobobs); break;
+                                    case 3: _lateJobObservation.Add(jobobs); break;
+                                    case 4: _underReviewJobObservation.Add(jobobs); break;
+                                    case 5: _rejectedJobObservation.Add(jobobs); break;
+                                    case 6: _finishedJobObservation.Add(jobobs); break;
+                                }
+
+                            }
+                        }
                     }
                 }
             }

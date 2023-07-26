@@ -142,6 +142,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Add Feedback.
+        /// </summary>
+        public static string addFeedback {
+            get {
+                return ResourceManager.GetString("addFeedback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Add ILU Level.
         /// </summary>
         public static string addILULevel {

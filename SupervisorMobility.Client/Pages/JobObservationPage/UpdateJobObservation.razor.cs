@@ -1034,9 +1034,35 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             }
         }
 
+        public async Task AddReleasedFeedback()
+        {
 
-        //Job observations
-        private async void ShowAreas()
+
+            if (_jobObservation.ReleasedFeedback == null || _jobObservation.ReleasedFeedback == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Feedback is missing!", Severity.Warning);
+                visibleSign = false;
+                return;
+            }
+
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
+            if (result)
+            {
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
+
+            //Job observations
+            private async void ShowAreas()
         {
             _jobObservation.AreaId = 0;
             _jobObservation.DistributionId = 0;

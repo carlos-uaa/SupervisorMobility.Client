@@ -28,30 +28,35 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["jobObservationSchedule"]</PageTitle>
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-    </ItemTemplate>
-</MudBreadcrumbs>
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <MudItem>
+        <MudBreadcrumbs Items="_links">
+            <ItemTemplate Context="item">
+                <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+    <MudItem Style="text-align: end">
+        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+            <ActivatorContent>
+                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">@Localizer["planned"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Block" IconColor="Color.Info">@Localizer["plannedWithSSVCoaching"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">@Localizer["inProgress"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">@Localizer["late"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.IncompleteCircle" IconColor="Color.Info">@Localizer["underReview"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error">@Localizer["rejected"]</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">@Localizer["finished"]</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </MudItem>
+</div>
+
 @*Form*@
 <MudGrid Justify="Justify.Center">
     <MudItem lg="12" md="12" sm="12" xs="12">
-        <MudItem Style="text-align: end">
-            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                <ActivatorContent>
-                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
-                </ActivatorContent>
-                <ChildContent> 
-                    <MudMenuItem Icon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">@Localizer["planned"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Block" IconColor="Color.Info">@Localizer["plannedWithSSVCoaching"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">@Localizer["inProgress"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">@Localizer["late"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.IncompleteCircle" IconColor="Color.Info">@Localizer["underReview"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error">@Localizer["rejected"]</MudMenuItem>
-                    <MudMenuItem Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">@Localizer["finished"]</MudMenuItem>
-                </ChildContent>
-            </MudMenu>
-        </MudItem>
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudText Typo="Typo.h6">@Localizer["jobObservationSchedule"]</MudText>
         </MudItem>
@@ -135,7 +140,7 @@
 
                             </td>
                             <td>
-                                @if (user.UserType == 1)
+                                @if (user.UserType == 1 || user.UserType == 5)
                                 {
                                     @if (plantId != 0)
                                     {
@@ -186,7 +191,7 @@
                         </tr>
                         <tr>
                             <td>
-                                @if (user.UserType == 1)
+                                @if (user.UserType == 1 || user.UserType == 5)
                                 {
                                     @*Mud select of Groups for Admin*@
                                     <MudSelect T="int" Label=@Localizer["group"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@groupId" For="@(() => groupId)">
@@ -244,14 +249,45 @@
 
                                     <MudTextField T="string" @bind-Value="ssv" Label="SSV" Required="true" OnlyValidateIfDirty="true" ReadOnly />
                                 }
+                                else if (user.UserType == 5)
+                                {
+                                    @if (plantId != 0 && areaId != 0)
+                                    {
+                                        @if(user.Subordinates!.Count > 0){
+                                            @*Mud select for SSV for Admin *@
+                                            <MudSelect T="int" Label="SSV" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)" SelectedValuesChanged="ShowSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["allSSV"]</MudSelectItem>
+                                                @foreach (var ssv in user.Subordinates)
+                                                {
+                                                    @*if (ssv.PlantId == plantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == areaId) != -1){*@
+                                                        <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                                    @*}*@
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                @Localizer["ssvHasNoSupervisors"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @*Mud select for SSV *@
+                                        <MudSelect T="int" Label="SSV" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)" >
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+
+                                }
 
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                @if (user.UserType == 1)
+                                @if (user.UserType == 1 || user.UserType == 5)
                                 {
-
                                     @if (ssvId != 0 && plantId != 0)
                                     {
                                         @if (_supervisors.Count > 0)
@@ -435,7 +471,7 @@
                                             var time1 = jobobs.StartDate?.ToString("HH:mm");
                                             var time2 = jobobs.EndDate?.ToString("HH:mm");
 
-                                            if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date && plantId == jobobs.PlantId && areaId == jobobs.AreaId)
+                                            if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                                             {
                                                 //Ends the same day
                                                 if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)

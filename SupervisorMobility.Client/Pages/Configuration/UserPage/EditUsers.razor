@@ -111,6 +111,7 @@
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSeniorSupervisor"]" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSupervisor"]" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersOperator"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="@Localizer["UsersManager"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(5))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                     </MudItem>
                                 </MudItem>
 
@@ -376,6 +377,19 @@
                                             </MudItem>
                                         }
                                     }
+                                    @if (_user.UserType == 5)
+                                    {
+                                        @*Mud select of Plants *@
+                                        <MudSelect T="int" Label="@Localizer["UsersPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+                                            @foreach (var type in _plants)
+                                            {
+                                                <MudSelectItem Value="type.PlantId">@(
+                                        $"{type.Code}-{type.Description}"
+                                        )</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        }
                                 }
                                 
 
@@ -414,6 +428,8 @@
                                                                         <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"> @Localizer["UsersAdmin"] </MudChip>
                                                                     break;
                                                                 case 2:
+                                                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> SSV </MudChip>
+                                                                    break;
                                                                 case 3:
                                                                         <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSupervisor"] </MudChip>
                                                                     break;
@@ -434,7 +450,7 @@
                                             {
 
 
-                                                @if (_user.UserType > 2)
+                                                @if (_user.UserType > 2 && _user.UserType != 5)
                                                 {
                                                     <MudItem class="d-flex d-flex-column justify-center">
                                                         <MudText Typo="Typo.h6"> @Localizer["UsersSuperior"] </MudText>
@@ -621,6 +637,7 @@
                                                         @switch (_user.UserType)
                                                         {
                                                             case 1:
+                                                            case 5:
                                                                 @if (SeniorsSupervisors?.Count > 0)
                                                                 {
                                                                     <MudItem class="d-flex flex-column justify-center">
@@ -741,6 +758,8 @@
                                                                                     <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"> @Localizer["UsersAdmin"] </MudChip>
                                                                                 break;
                                                                             case 2:
+                                                                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> SSV </MudChip>
+                                                                                break;
                                                                             case 3:
                                                                                     <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSupervisor"] </MudChip>
                                                                                 break;
@@ -768,6 +787,7 @@
                                                 @switch (_user.UserType)
                                                 {
                                                     case 1:
+                                                    case 5:
                                                         @if (SeniorsSupervisors?.Count > 0)
                                                         {
                                                             <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSSV"]" @bind-Value="@selectedSeniorSupervisorOfList" For="@(() => selectedSeniorSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
@@ -940,6 +960,7 @@ else
     private bool IsSeniorSupervisor = false;
     private bool IsSupervisor = false;
     private bool IsOperator = false;
+    private bool IsManager = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -982,6 +1003,7 @@ else
         IsSeniorSupervisor = (_user.UserType == 2);
         IsSupervisor = (_user.UserType == 3);
         IsOperator = (_user.UserType == 4);
+        IsManager = (_user.UserType == 5);
 
 
         //Console.WriteLine(_user.Superior.Name);
@@ -1029,6 +1051,7 @@ else
         switch (_user.UserType)
         {
             case 1:
+            case 5:
                 foreach (User user in SeniorsSupervisors.ToList())
                 {
                     if (_user.Subordinates?.ToList().FindIndex(u => u.UserId == user.UserId) != -1)
@@ -1157,8 +1180,9 @@ else
         IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
         IsSupervisor = userType == 3 && !IsSupervisor;
         IsOperator = userType == 4 && !IsOperator;
+        IsOperator = userType == 5 && !IsManager;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -1221,6 +1245,7 @@ else
                     _user.GroupId = 0;
                 }
                 break;
+            case 5: RemoveSuperiorUser(); break;
 
         }
 
@@ -1245,7 +1270,12 @@ else
             switch (item.UserType)
             {
                 case 2:
-                    SeniorsSupervisors.Add(item);
+                   if(LogedUser.UserType == 1){
+                        SeniorsSupervisors.Add(item);
+                    }
+                    else if(item.PlantId == auxPlant){
+                        SeniorsSupervisors.Add(item);
+                    }
                     break;
                 case 3:
                     Supervisors.Add(item);
