@@ -33,6 +33,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
+using DocumentFormat.OpenXml.Spreadsheet;
+using AutoMapper;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -40,6 +43,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Services
 builder.Services.AddLocalization();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
@@ -84,10 +88,60 @@ builder.Services.AddMsalAuthentication(options =>
 
 await builder.Build().RunAsync();
 
+public class AutoMapperProfiles : Profile
+{
+    public AutoMapperProfiles()
+    {
+        CreateMap<int?, int>().ConvertUsing<IntTypeConverter>();
+
+
+        CreateMap<JobObservation, JobObservationNulls>()
+            .ForMember(dest => dest.PlantId, opt => opt.MapFrom(src => src.PlantId != 0 ? src.PlantId : (int?)null))
+            .ForMember(dest => dest.Plant, opt => opt.MapFrom(src => src.Plant != null ? src.Plant : null))
+            .ForMember(dest => dest.AreaId, opt => opt.MapFrom(src => src.AreaId != 0 ? (int?)src.AreaId : null))
+            .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.Area != null ? src.Area : null))
+            .ForMember(dest => dest.DistributionId, opt => opt.MapFrom(src => src.DistributionId != 0 ? (int?)src.DistributionId : null))
+            .ForMember(dest => dest.Distribution, opt => opt.MapFrom(src => src.Distribution != null ? src.Distribution : null))
+            .ForMember(dest => dest.OperationId, opt => opt.MapFrom(src => src.OperationId != 0 ? (int?)src.OperationId : null))
+            .ForMember(dest => dest.Operation, opt => opt.MapFrom(src => src.Operation != null ? src.Operation : null))
+            .ForMember(dest => dest.SupervisorId, opt => opt.MapFrom(src => src.SupervisorId != 0 ? (int?)src.SupervisorId : null))
+            .ForMember(dest => dest.Supervisor, opt => opt.MapFrom(src => src.Supervisor != null ? src.Supervisor : null))
+            .ForMember(dest => dest.OperatorId, opt => opt.MapFrom(src => src.OperatorId != 0 ? (int?)src.OperatorId : null))
+            .ForMember(dest => dest.Operator, opt => opt.MapFrom(src => src.Operator != null ? src.Operator : null));
+
+
+        CreateMap<JobObservationNulls, JobObservation>()
+            .ForMember(dest => dest.PlantId, opt => opt.MapFrom(src => src.PlantId != null ? src.PlantId : 0))
+            .ForMember(dest => dest.Plant, opt => opt.MapFrom(src => src.Plant != null ? src.Plant : new Plant()))
+            .ForMember(dest => dest.AreaId, opt => opt.MapFrom(src => src.AreaId != null ? (int?)src.AreaId : 0))
+            .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.Area != null ? src.Area : new Area()))
+            .ForMember(dest => dest.DistributionId, opt => opt.MapFrom(src => src.DistributionId != null ? (int?)src.DistributionId : 0))
+            .ForMember(dest => dest.Distribution, opt => opt.MapFrom(src => src.Distribution != null ? src.Distribution : new Distribution()))
+            .ForMember(dest => dest.OperationId, opt => opt.MapFrom(src => src.OperationId != null ? (int?)src.OperationId : 0))
+            .ForMember(dest => dest.Operation, opt => opt.MapFrom(src => src.Operation != null ? src.Operation : new Operation()))
+            .ForMember(dest => dest.SupervisorId, opt => opt.MapFrom(src => src.SupervisorId != null ? (int?)src.SupervisorId : 0))
+            .ForMember(dest => dest.Supervisor, opt => opt.MapFrom(src => src.Supervisor != null ? src.Supervisor : new User()))
+            .ForMember(dest => dest.OperatorId, opt => opt.MapFrom(src => src.OperatorId != null ? (int?)src.OperatorId : 0))
+            .ForMember(dest => dest.Operator, opt => opt.MapFrom(src => src.Operator != null ? src.Operator : new User()));
+
+
+    }
+}
+
+
+public class IntTypeConverter : ITypeConverter<int?, int>
+{
+    public int Convert(int? source, int destination, ResolutionContext context)
+    {
+        return source.HasValue ? source.Value : destination;
+    }
+}
+
+
 public class CustomHttpClientService
 {
     private readonly HttpClient _apiHttpClient;
-    private readonly HttpClient _bridgeHttpClient;                                                                                  
+    private readonly HttpClient _bridgeHttpClient;
     private readonly HttpClient _ADHttpClient;
 
     public CustomHttpClientService()
@@ -107,7 +161,7 @@ public class CustomHttpClientService
     {
         return _ADHttpClient;
     }
-        public HttpClient GetApiHttpClient()
+    public HttpClient GetApiHttpClient()
     {
         return _apiHttpClient;
     }

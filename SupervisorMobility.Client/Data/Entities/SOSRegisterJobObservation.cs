@@ -7,7 +7,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int SOSRegisterJobid { get; set; }
 
         public int? JobObservationId { get; set; }
-        public JobObservation? JobObservation { get; set; }
+        public JobObservationNulls? JobObservation { get; set; }
 
         public int? DistributionId { get; set; }
         public Distribution? Distribution { get; set; }

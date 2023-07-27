@@ -1,29 +1,38 @@
-﻿using Microsoft.JSInterop;
+﻿using AutoMapper;
+using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace SupervisorMobility.Client.Services.JobObservationService
 {
     public class JobObservationService : IJobObservationService
     {
         private readonly HttpClient _http;
+        private readonly IMapper _mapper;
         private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public JobObservationService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public JobObservationService(IMapper mapper, CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
+            _mapper = mapper;
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
-            _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
+            };
         }
 
         public async Task<JobObservation> CreateJobObservation(JobObservation _jobObservation)
         {
             var response = await _http.PostAsJsonAsync($"jobobservations", _jobObservation);
-            var newJobObservation = await response.Content.ReadFromJsonAsync<JobObservation>();
+            var newJobObservation = await response.Content.ReadFromJsonAsync<JobObservationNulls>();
 
-            return newJobObservation;
+            return  _mapper.Map<JobObservation>(newJobObservation);
         }
 
         public async Task DeleteJobObservation(int jobObservationId)
@@ -41,9 +50,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<List<JobObservation>>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<List<JobObservationNulls>>(content, _options);
 
-            return jobObservation;
+            return _mapper.Map<List<JobObservation>>(jobObservation);
         }
         public async Task<List<JobObservationVersion>> GetAllHistoryJobObservations(int jobObservationId)
         {
@@ -86,9 +95,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<List<JobObservation>>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<List<JobObservationNulls>>(content, _options);
 
-            return jobObservation;
+            return _mapper.Map<List<JobObservation>>(jobObservation); ;
         }
 
         public async Task<JobObservation> GetJobObservationWithLup(int jobObservationId)
@@ -101,9 +110,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<JobObservation>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<JobObservationNulls>(content, _options);
 
-            return jobObservation;
+            return _mapper.Map<JobObservation>(jobObservation);
         }
 
 
@@ -117,9 +126,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<JobObservation>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<JobObservationNulls>(content, _options);
 
-            return jobObservation;
+            return _mapper.Map<JobObservation>(jobObservation); ;
         }
 
         public async Task<bool> UpdateJobObservation(JobObservation jobObservation, string loggedUser)

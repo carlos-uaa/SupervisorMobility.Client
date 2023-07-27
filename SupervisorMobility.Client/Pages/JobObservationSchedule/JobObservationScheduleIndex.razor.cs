@@ -1,4 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System;
@@ -22,6 +24,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         public List<JobObservation> _allJobObservations { get; set; } = new();
         public List<JobObservation> _jobObservations { get; set; } = new();
+        
+        private readonly IMapper _mapper;
 
         List<User> _allSSVs = new();
         List<User> _SSVs = new();
@@ -194,17 +198,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //Change the status if the observation is late
         public async Task LateDates()
         {
-            _allJobObservations = await JobObservationService.GetAllJobObservations();
+            //_allJobObservations = await JobObservationService.GetAllJobObservations();
 
-            foreach (var jobobs in _allJobObservations)
-            {
-                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
-                {
-                    jobobs.Status = 3;
+            //foreach (var jobobs in _allJobObservations)
+            //{
+            //    if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
+            //    {
+            //        jobobs.Status = 3;
 
-                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
-                }
-            }
+            //        await JobObservationService.UpdateJobObservation(_mapper.Map<JobObservation>(jobobs), "S.M. System");
+            //    }
+            //}
         }
 
         private void GenerateCalendarHead()
@@ -304,6 +308,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     _jobObservations.Add(jobobs);
                 }
             }
+
 
             ssvId = 0;
             _SSVs.Clear();
