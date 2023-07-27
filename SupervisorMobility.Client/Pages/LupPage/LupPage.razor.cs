@@ -63,7 +63,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
                 if(user != null)
                 {
-                    if(user.UserType == 1)
+                    if (user.UserType == 1)
                     {
                         _plants = await PlantServices.GetPlants();
                         foreach (var jobObs in jobObservationList)
@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
                             }
                         }
                     }
-                    else if(user.UserType == 2)
+                    else if (user.UserType == 2)
                     {
                         plantId = (int)user.PlantId;
                         foreach (var jobObs in jobObservationList)
@@ -111,7 +111,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
                             }
                         }
                     }
-                    else
+                    else if (user.UserType == 3)
                     {
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
@@ -139,7 +139,34 @@ namespace SupervisorMobility.Client.Pages.LupPage
                         }
 
                     }
+                    else if (user.UserType == 5)
+                    {
+                        plantId = (int)user.PlantId;
+                        areaId = 0;
+                        _areas = await AreaServices.GetAreas(plantId);
+                        foreach (var jobObs in jobObservationList)
+                        {
+                            if (jobObs.Lup.Count > 0)
+                            {
+                                foreach (var lup in jobObs.Lup)
+                                {
+                                    if (plantId == jobObs.PlantId)
+                                    {
+                                        _lup.Add(lup);
+                                        switch (lup.Pillar)
+                                        {
+                                            case 1: _lupS.Add(lup); break;
+                                            case 2: _lupQ.Add(lup); break;
+                                            case 3: _lupD.Add(lup); break;
+                                            case 4: _lupC.Add(lup); break;
+                                            case 5: _lupOther.Add(lup); break;
+                                        }
 
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
