@@ -1492,6 +1492,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Last Month.
+        /// </summary>
+        public static string lastMonth {
+            get {
+                return ResourceManager.GetString("lastMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Late.
         /// </summary>
         public static string late {
@@ -1713,6 +1722,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string newStartDate {
             get {
                 return ResourceManager.GetString("newStartDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Next Month.
+        /// </summary>
+        public static string nextMonth {
+            get {
+                return ResourceManager.GetString("nextMonth", resourceCulture);
             }
         }
         
