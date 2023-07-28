@@ -81,13 +81,38 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
-            var prod = _jobObservation.Models.Split('|');
-            models[0] = Int32.Parse(prod[0]);
-            models[1] = Int32.Parse(prod[1]);
-            models[2] = Int32.Parse(prod[2]);
-            models[3] = Int32.Parse(prod[3]);
-            models[4] = Int32.Parse(prod[4]);
-            cycles = _jobObservation.Cicles.Split('|');
+
+            if(_jobObservation.Models != null)
+            {
+                var prod = _jobObservation.Models.Split('|');
+                models[0] = Int32.Parse(prod[0]);
+                models[1] = Int32.Parse(prod[1]);
+                models[2] = Int32.Parse(prod[2]);
+                models[3] = Int32.Parse(prod[3]);
+                models[4] = Int32.Parse(prod[4]);
+
+            }
+            else
+            {
+                models[0] = 0;
+                models[1] = 0;
+                models[2] = 0;
+                models[3] = 0;
+                models[4] = 0;
+            }
+
+            if(_jobObservation.Cicles != null)
+            {
+                cycles = _jobObservation.Cicles.Split('|');
+            }
+            else
+            {
+                cycles[0] = "0";
+                cycles[1] = "0";
+                cycles[2] = "0";
+                cycles[3] = "0";
+                cycles[4] = "0";
+            }
 
             startHour = _jobObservation.StartDate?.TimeOfDay;
             endHour = _jobObservation.EndDate?.TimeOfDay;
