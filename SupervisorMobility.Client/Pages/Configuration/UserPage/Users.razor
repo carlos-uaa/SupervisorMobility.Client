@@ -98,7 +98,7 @@ else
 {
     <MudTable Items="_users" T="User" ReadOnly="true" Height="55vh" FixedHeader=true Class="styled-table table-striped"
               SortLabel="Sort By" Filter="new Func<User,bool>(FilterFunc)"
-              HorizontalScrollbar="true" Virtualize="true">
+              HorizontalScrollbar="true" Virtualize="true"   RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
         <ToolBarContent>
             <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
                 <MudItem class="d-flex justify-center align-self-center ">
@@ -513,4 +513,33 @@ else
     void CloseDeleteModal() => visibleDelete = false;
     private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
+    private int selectedRowNumber = -1;
+    private MudTable<User> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<User> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(User element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{element.UserId}");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
 }

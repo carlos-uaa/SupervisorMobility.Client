@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
 {
@@ -24,7 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         };
             _products = await ProductService.GetProducts();
         }
-        
+
         // Create product
         void CreateProduct()
         {
@@ -60,7 +61,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
             if (element.ProductId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true; 
+                return true;
             if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if ($"{element.ProductId} {element.Code} {element.Description}".Contains(searchString))
@@ -78,6 +79,38 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
             visibleDelete = true;
         }
         void CloseDeleteModal() => visibleDelete = false;
-        private DialogOptions dialogDeleteOptions = new() {CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+      
+        private int selectedRowNumber = -1;
+        private MudTable<Product> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<Product> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(Product element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"products/{element.ProductId}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
     }
+
 }

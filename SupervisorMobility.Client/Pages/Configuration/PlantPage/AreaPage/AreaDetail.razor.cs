@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 {
@@ -84,5 +85,35 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         }
         void CloseDeleteModal() => visibleDelete = false;
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+        private int selectedRowNumber = -1;
+        private MudTable<Distribution> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<Distribution> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(Distribution element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{element.DistributionId}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

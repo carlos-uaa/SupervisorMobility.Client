@@ -40,6 +40,9 @@
                                 <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["UsersInactive"]</MudChip>
                             </MudText>
                         }
+                        <MudItem Class="d-flex d-flex-column justify-center pa-2">
+                        <MudButton Href="/usersmanagement" Variant="Variant.Filled" Align="Align.Center">@Localizer["Close"]</MudButton>
+                        </MudItem>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -49,11 +52,14 @@
                     <MudItem xs="12">
                         <MudCard>
                             <MudCardHeader>
-                                <CardHeaderContent>
-                                    <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">@Localizer["UsersUpdate"]</MudText>
-                                </CardHeaderContent>
                                 <CardHeaderActions>
                                     <MudChip Variant="Variant.Text" Color="Color.Info" Class="mr-15 mt-5">@Localizer["UsersId"] @_user.UserId</MudChip>
+                                </CardHeaderActions>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">@Localizer["UsersDetailsTitle"]</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudButton @onclick="()=>EditUser(_user.UserId)" @ontouchstart="()=>EditUser(_user.UserId)" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10" EndIcon="@Icons.Material.Filled.Edit" IconColor="Color.Info">@Localizer["UsersEdit"]</MudButton>
                                 </CardHeaderActions>
                             </MudCardHeader>
                             <MudCardContent Class="pl-15 pr-15">
@@ -135,6 +141,7 @@
                                                 <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
                                                 <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_user.Area.Code - @_user.Area.Description </MudChip>
                                             }
+
                                             @if(_user.UserType == 4)
                                             {
                                                 <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersDistribution"]</MudText>
@@ -188,7 +195,7 @@
                                         </MudItem>
                                     </MudItem>
                                 }
-                                @if (_user.UserType != 4)
+                                @if (_user.UserType != 4 && _user.UserType != 1)
                                 {
                                     <MudItem>
                                         <MudItem>
@@ -331,5 +338,10 @@
 
     private async Task<bool> HasPropertyAsync()
         => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+    
+        void EditUser(int userId)
+    {
+        NavigationManager.NavigateTo($"/usersmanagement/EditUser/{userId}");
+    }
 
 }

@@ -84,5 +84,34 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
             return false;
         }
 
+        private int selectedRowNumber = -1;
+        private MudTable<Distribution> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<Distribution> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(Distribution element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"products/{ProductId}/distribution/{element.DistributionId}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

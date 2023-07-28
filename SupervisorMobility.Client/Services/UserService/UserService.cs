@@ -190,11 +190,37 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetUserByUserTypeInPlantAndArea(int PlantId, int AreaId, int userType, bool includeCollections)
+        public async Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId, int AreaId, int userType, bool includeCollections)
         {
             try
             {
                 var response = await _http.GetAsync($"Users/ByUserTypeInPlantAndArea?&plantid={PlantId}&areaid={AreaId}&typeUser={userType}&collections={includeCollections}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public async Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"Users/ByUserTypeInPlant?&plantid={PlantId}&typeUser={userType}&collections={includeCollections}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
