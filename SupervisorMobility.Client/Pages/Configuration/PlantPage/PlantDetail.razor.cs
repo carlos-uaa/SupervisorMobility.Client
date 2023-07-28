@@ -84,6 +84,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         {
         }
 
+        void UpdatePlant(int plantId)
+        {
+            NavigationManager.NavigateTo($"plants/updateplant/{plantId}");
+        }
         private string SelectedRowClassFunc(Area element, int rowNumber)
         {
             if (selectedRowNumber == rowNumber)
