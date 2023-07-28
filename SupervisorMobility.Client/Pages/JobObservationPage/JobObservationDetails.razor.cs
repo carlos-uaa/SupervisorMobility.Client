@@ -82,6 +82,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
+            Console.WriteLine("Aaaaaaaaaaaa");
+            Console.WriteLine(_jobObservation.ReleasedFeedback);
+
+
             if(_jobObservation.Models != null)
             {
                 var prod = _jobObservation.Models.Split('|');

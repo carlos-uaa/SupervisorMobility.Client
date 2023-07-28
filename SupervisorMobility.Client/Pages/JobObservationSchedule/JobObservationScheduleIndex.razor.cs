@@ -210,8 +210,38 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             //    }
             //}
         }
+        public async Task LastMonth()
+        {
+            _yearMonth = _yearMonth?.AddMonths(-1);
 
-        private void GenerateCalendarHead()
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            showMonth = month.ToUpper();
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+        }
+
+        public async Task NextMonth()
+        {
+            _yearMonth = _yearMonth?.AddMonths(1);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            showMonth = month.ToUpper();
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+        }
+            private void GenerateCalendarHead()
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
             {
