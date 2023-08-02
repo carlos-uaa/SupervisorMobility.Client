@@ -2185,7 +2185,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Programmed Job Observation.
+        ///   Busca una cadena traducida similar a SOS Review Job Observations.
         /// </summary>
         public static string programmedJobObservation {
             get {

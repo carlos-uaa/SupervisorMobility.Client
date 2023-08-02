@@ -24,6 +24,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         [Parameter]
         public EventCallback<bool> IsVisibleChanged { get; set; }
 
+        [Parameter]
+        public string ProgrammedStartDate { get; set; }
+
         public JobObservation _jobObservation { get; set; } = new();
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
@@ -103,9 +106,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
+            Console.WriteLine("aaaa");
+            Console.WriteLine(ProgrammedStartDate);
+            if(ProgrammedStartDate != "")
+            {
+                ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
 
-            startHour = _jobObservation.StartDate?.TimeOfDay;
-            endHour = _jobObservation.EndDate?.TimeOfDay;
+                _jobObservation.StartDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
+                _jobObservation.EndDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
+            }
+            else
+            {
+                startHour = _jobObservation.StartDate?.TimeOfDay;
+                endHour = _jobObservation.EndDate?.TimeOfDay;
+
+            }
 
             _operators = await UsersService.GetUserByType(4);
             //operator User
@@ -173,11 +188,39 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async Task PlanNewJobObservation()
         {
+            if (_jobObservation.StartDate == null)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select the Start Date first", Severity.Warning);
+                return;
+            }
+            if (_jobObservation.EndDate == null)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select the End Date first", Severity.Warning);
+                return;
+            }
+            if (_jobObservation.OperationId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select the Operation first", Severity.Warning);
+                return;
+            }
+            if (_jobObservation.OperatorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select the Operator first", Severity.Warning);
+                return;
+            }
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                Snackbar.Add($"Write down the anomaly first", Severity.Warning);
                 return;
             }
 

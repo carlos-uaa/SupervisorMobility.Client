@@ -773,9 +773,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         public async Task LateDates()
         {
-            foreach(var jobobs in _jobObservationsAux)
+            _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+
+            foreach (var jobobs in _jobObservationsAux)
             {
-                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
+                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
                 {
                     jobobs.Status = 3;
 

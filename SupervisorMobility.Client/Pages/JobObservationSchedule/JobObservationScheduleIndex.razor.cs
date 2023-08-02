@@ -24,7 +24,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         public List<JobObservation> _allJobObservations { get; set; } = new();
         public List<JobObservation> _jobObservations { get; set; } = new();
-        
+
+        public List<JobObservation> _SOSJobobservation { get; set; } = new();
+
         private readonly IMapper _mapper;
 
         List<User> _allSSVs = new();
@@ -107,6 +109,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
                     _jobObservations = _allJobObservations;
 
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
                     totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
                     _plants = await PlantServices.GetPlants();
@@ -197,24 +200,42 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         //Change the status if the observation is late
         public async Task LateDates()
         {
-            //_allJobObservations = await JobObservationService.GetAllJobObservations();
+            _allJobObservations = await JobObservationService.GetAllJobObservations();
 
-            //foreach (var jobobs in _allJobObservations)
-            //{
-            //    if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
-            //    {
-            //        jobobs.Status = 3;
+            foreach (var jobobs in _allJobObservations)
+            {
+                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
+                {
+                    jobobs.Status = 3;
 
-            //        await JobObservationService.UpdateJobObservation(_mapper.Map<JobObservation>(jobobs), "S.M. System");
-            //    }
-            //}
+                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
+                }
+            }
         }
 
 
         private async Task HandleVisibleChanged(bool newValue)
         {
+            plantId = 0;
+            ssvId = 0;
+            _SSVs.Clear();
+
+            supervisorId = 0;
+            _supervisors.Clear();
+
+            _supervisors.Clear();
+            supervisorId = 0;
+
+            areaId = 0;
+            _allJobObservations = await JobObservationService.GetAllJobObservations();
+
+            _jobObservations = _allJobObservations;
+
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             visible2 = newValue;
-            // Puedes realizar cualquier lógica adicional aquí si es necesario
+            StateHasChanged();
+
         }
 
         public async Task LastMonth()
@@ -231,6 +252,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
             StateHasChanged();
@@ -250,6 +272,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
             StateHasChanged();
@@ -364,7 +387,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
-
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
 
@@ -454,7 +477,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     }
                 }
             }
-
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
@@ -528,6 +551,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 }
 
             }
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
@@ -542,6 +566,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     _jobObservations.Add(jobobs);
                 }
             }
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
@@ -559,6 +584,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
@@ -591,6 +617,39 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         void Close2() => visible2 = false;
 
 
+        //Button Programmed Job observation Modal (SOS)
+        private bool visible3 = false;
+
+        public string programmedStartDate = "";
+        private void OpenDialog4(string date)
+        {      
+            date = date.Replace("/", "-");
+            programmedStartDate = date;
+            visible3 = true;
+        }
+        void Close3() => visible3 = false;
+
+
+        private string searchString = "";
+
+        private bool FilterFunc(JobObservation element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.JobObservationId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Operator.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{element.JobObservationId} {element.Supervisor.Name} {element.Operator}".Contains(searchString))
+                return true;
+            return false;
+        }
     }
 
 }
