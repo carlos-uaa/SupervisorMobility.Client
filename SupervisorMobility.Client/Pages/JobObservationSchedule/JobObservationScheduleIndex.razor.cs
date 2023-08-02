@@ -40,12 +40,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         public int plantId;
         public int areaId;
         public int groupId;
-
+        public bool displayInfo { get; set; }
         public string supervisor { get; set; } = "Pedro";
-
-        private string proceso { get; set; }
-        private string area { get; set; }
-        private string grupo { get; set; }
         private string ssv { get; set; } = "Azael";
 
         List<string> monthNames = new List<string>();
@@ -59,7 +55,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         DisplayNameLabelClass model = new();
 
 
-
+        public int totalProgrammed;
 
 
         public class DisplayNameLabelClass
@@ -82,6 +78,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            displayInfo = true;
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "#"),
@@ -109,6 +106,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     _allJobObservations = await JobObservationService.GetAllJobObservations();
 
                     _jobObservations = _allJobObservations;
+
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
@@ -210,6 +209,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             //    }
             //}
         }
+
+
+        private async Task HandleVisibleChanged(bool newValue)
+        {
+            visible2 = newValue;
+            // Puedes realizar cualquier lógica adicional aquí si es necesario
+        }
+
         public async Task LastMonth()
         {
             _yearMonth = _yearMonth?.AddMonths(-1);
@@ -224,6 +231,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
+            StateHasChanged();
         }
 
         public async Task NextMonth()
@@ -240,6 +250,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
+            StateHasChanged();
         }
             private void GenerateCalendarHead()
         {
@@ -352,6 +365,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
 
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
 
         }
@@ -441,6 +455,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 }
             }
 
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
 
@@ -513,6 +528,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 }
 
             }
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
 
@@ -526,6 +542,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     _jobObservations.Add(jobobs);
                 }
             }
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
         }
 
@@ -542,6 +559,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+            StateHasChanged();
         }
 
         void JobObservationUpdate(int jobObservationId)
@@ -559,6 +578,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         void Close() => visible = false;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+        //Programmed Job observation Modal (SOS)
+        private bool visible2 = false;
+        private int jobId2;
+        private void OpenDialog3(int id)
+        {
+            jobId2 = id;
+            visible2 = true;
+        }
+        void Close2() => visible2 = false;
+
 
     }
 

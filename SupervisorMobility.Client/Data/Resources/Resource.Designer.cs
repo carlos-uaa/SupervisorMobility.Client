@@ -2176,6 +2176,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Programmed.
+        /// </summary>
+        public static string programmed {
+            get {
+                return ResourceManager.GetString("programmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Programmed Job Observation.
+        /// </summary>
+        public static string programmedJobObservation {
+            get {
+                return ResourceManager.GetString("programmedJobObservation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Quality.
         /// </summary>
         public static string quality {
@@ -2487,15 +2505,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string status {
             get {
                 return ResourceManager.GetString("status", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Symbology to be used.
-        /// </summary>
-        public static string symbologyToBeUsed {
-            get {
-                return ResourceManager.GetString("symbologyToBeUsed", resourceCulture);
             }
         }
         
