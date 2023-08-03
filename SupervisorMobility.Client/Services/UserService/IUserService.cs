@@ -13,22 +13,23 @@ namespace SupervisorMobility.Client.Services.UserService
 
         //READ
         //get  Users
-        Task<List<User>> GetUsers();
-        Task<List<User>> GetUsersWhitCollections();
+  
         Task<List<User>> GetSubordinates(int SupervisorId);
         Task<User> GetUser(int UserId);
         Task<User> GetUserWhitObjectId(string ObjectId);
         Task<User> GetUserByObjectIdWithCollections(string ObjectId);
         Task<User> GetUserByEmailWithCollections(string email);
         Task<User> GetUserAndCollection(int UserId);
-        Task<List<User>> GetUserByTypeAndCollection(int userType);
-        Task<List<User>> GetUserByType(int userType);
-        Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId,int AreaId,int userType, bool includeCollections);
-        Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections);
+
+        Task<List<User>> GetUsers(bool includeCollections, bool includeSubordinates);
+        Task<List<User>> GetUserByType(int userType, bool includeCollections, bool includeSubordinates);
+        Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId,int AreaId,int userType, bool includeCollections, bool includeSubordinates);
+        Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections, bool includeSubordinates);
 
         //UPDATE
         Task<bool> UpdateUser(int UserId, User _newUser);
-
+        Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId);
+      
         //DELETE
         Task DeleteUser(int UserId);
 

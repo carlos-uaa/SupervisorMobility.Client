@@ -1,0 +1,162 @@
+﻿@page "/plants/{plantId:int}/areas/{areaId:int}/distributions/{distributionId:int}/operations/detailsoperation/{operationId:int}"
+@inject IDistributionService DistributionService
+@inject IAreaService AreaService
+@inject IPlantService PlantService
+@inject IOperationService OperationService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["updateOperation"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == Localizer["plantDetails"])
+        {
+            <MudButton @onclick="(() => GoToPlant())" Variant="Variant.Text" Color="Color.Info">@_plant.Description</MudButton>
+        }
+        else if (item.Text == Localizer["areaDetails"])
+        {
+            <MudButton @onclick="(() => GoToArea())" Variant="Variant.Text" Color="Color.Info">@_area.Description</MudButton>
+        }
+        else if (item.Text == Localizer["distributionDetails"])
+        {
+            <MudButton @onclick="(() => GoToDistribution())" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_distribution.Description</MudButton>
+        }
+        else if (item.Text == Localizer["updateOperation"])
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@Localizer["operationDetails"] / @_operation.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
+@*Form*@
+
+<EditForm Model="_operation" OnValidSubmit="UpdateOperationAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@Localizer["operationDetails"]</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                            <MudButton EndIcon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateOperationRedirect(OperationId))" @ontouchstart="(() => UpdateOperationRedirect(OperationId))">@Localizer["editOperation"] </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField ReadOnly Label="@Localizer["description"]"
+                    @bind-Value="_operation.Description" For="@(() => _operation.Description)" />
+                    <MudTextField ReadOnly Label="@Localizer["code"]" Class="mt-3"
+                    @bind-Value="_operation.Code" For="@(() => _operation.Code)" />
+
+                    <MudSelect ReadOnly T="int" Label="@Localizer1["ACCriticalLabel"]" Placeholder="@Localizer1["ACPHCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_operation.CriticalType" For="@(() => _operation.CriticalType)">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer1["ACPHCritical"]</MudSelectItem>
+
+                        <MudSelectItem Value="1">@($"A")</MudSelectItem>
+                            <MudSelectItem Value="2">@($"B")</MudSelectItem>
+                            <MudSelectItem Value="3">@($"C")</MudSelectItem>
+                            <MudSelectItem Value="5">@($"{Localizer["OPCritical"]}")</MudSelectItem>
+
+                        </MudSelect>
+                        @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["close"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+    @code {
+    // Parameters
+    [Parameter]
+    public int PlantId { get; set; }
+
+    [Parameter]
+    public int AreaId { get; set; }
+
+    [Parameter]
+    public int DistributionId { get; set; }
+
+    [Parameter]
+    public int OperationId { get; set; }
+
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links;
+
+    // Objects
+    Plant _plant = new();
+    Area _area = new();
+    Distribution _distribution = new();
+    public Operation _operation { get; set; } = new();
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
+                new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
+            };
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _plant = await PlantService.GetPlantById(PlantId);
+        _area = await AreaService.GetAreaById(PlantId, AreaId);
+        _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
+        _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
+    }
+
+    // Links
+    void GoToPlant()
+    {
+        NavigationManager.NavigateTo($"plants/{PlantId}");
+    }
+
+    void GoToArea()
+    {
+        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
+    }
+
+    void GoToDistribution()
+    {
+        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+    }
+
+    // Update operation
+    async void UpdateOperationAsync()
+    {
+        _operation.IsActive = true;
+        var result = await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
+
+        if (result)
+        {
+            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+    }
+
+    void UpdateOperationRedirect(int operationId)
+    {
+        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/updateoperation/{operationId}");
+    }
+
+    // Cancel submit form
+    void CancelCreateOrUpdate()
+    {
+        NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+    }
+
+}

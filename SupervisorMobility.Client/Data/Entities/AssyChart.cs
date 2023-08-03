@@ -32,8 +32,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int AreaId { get; set; }
         public Area Area { get; set; }
         //Distribution Info
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Distribution")]
+        //[Required]
+        //[Range(1, int.MaxValue, ErrorMessage = "Please indicate a Distribution")]
         public int DistributionId { get; set; }
         public Distribution Distribution { get; set; }
         //Operation Info

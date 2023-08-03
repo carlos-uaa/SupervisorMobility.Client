@@ -205,15 +205,15 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
                         //operator User
-                        users = await UsersService.GetUsers();
-                        foreach (var operatorUser in users)
-                        {
-                            if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
-                            {
-                                operatorUsers.Add(operatorUser);
-                            }
-                        }
-
+                        //users = await UsersService.GetUsers(false, false);
+                        //foreach (var operatorUser in users)
+                        //{
+                        //    if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
+                        //    {
+                        //        operatorUsers.Add(operatorUser);
+                        //    }
+                        //}
+                        operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
                     }
                     else if(user.UserType == 5)
                     {
@@ -495,14 +495,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
             //operator User
-            users = await UsersService.GetUsers();
-            foreach (var operatorUser in users)
-            {
-                if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
-                {
-                    operatorUsers.Add(operatorUser);
-                }
-            }
+            //users = await UsersService.GetUsers();
+            //foreach (var operatorUser in users)
+            //{
+            //    if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
+            //    {
+            //        operatorUsers.Add(operatorUser);
+            //    }
+            //}
+            operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
+
             StateHasChanged();
 
         }

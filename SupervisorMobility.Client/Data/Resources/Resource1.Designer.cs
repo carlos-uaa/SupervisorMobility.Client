@@ -2005,6 +2005,60 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Assign to another supervisor: If you choose this option, your current subordinates will be automatically reassigned to another user who will assume responsibility for supervising and working with them going forward. The reassignment will be done to ensure a smooth transition. If you have questions or would like to discuss alternatives, please contact us for assistance. We are here to facilitate the promotion process and ensure appropriate changes..
+        /// </summary>
+        public static string UEPromoAssignMSG {
+            get {
+                return ResourceManager.GetString("UEPromoAssignMSG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Transfer to another.
+        /// </summary>
+        public static string UEPromoContinueAssign {
+            get {
+                return ResourceManager.GetString("UEPromoContinueAssign", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Continue without.
+        /// </summary>
+        public static string UEPromoContinueNoAssign {
+            get {
+                return ResourceManager.GetString("UEPromoContinueNoAssign", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Attention! Upon promotion, you will lose direct management of current subordinates. You have two options:.
+        /// </summary>
+        public static string UEPromoMsg {
+            get {
+                return ResourceManager.GetString("UEPromoMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Continue unassigned: If you choose this option, you will lose your current subordinates, and they will not be reassigned to another supervisor. This will mean that you will no longer be in charge of their direct management..
+        /// </summary>
+        public static string UEPromoNoAssignMSG {
+            get {
+                return ResourceManager.GetString("UEPromoNoAssignMSG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Warning.
+        /// </summary>
+        public static string UEWarning {
+            get {
+                return ResourceManager.GetString("UEWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Extra Properties.
         /// </summary>
         public static string UserExtras {
@@ -2019,6 +2073,44 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Users {
             get {
                 return ResourceManager.GetString("Users", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There has been a change in the supervisor and the supervisor&apos;s areas. It is important to note that one or more subordinates have different areas than the new supervisor.
+        ///
+        ///Please review this information before proceeding..
+        /// </summary>
+        public static string Users_SubDistArea_Body {
+            get {
+                return ResourceManager.GetString("Users_SubDistArea_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a I understand, continue.
+        /// </summary>
+        public static string Users_SubDistArea_Continue {
+            get {
+                return ResourceManager.GetString("Users_SubDistArea_Continue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Back to edition.
+        /// </summary>
+        public static string Users_SubDistArea_Edit {
+            get {
+                return ResourceManager.GetString("Users_SubDistArea_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Attention! Inconsistent Subordinate Areas.
+        /// </summary>
+        public static string Users_SubDistArea_Title {
+            get {
+                return ResourceManager.GetString("Users_SubDistArea_Title", resourceCulture);
             }
         }
         
@@ -2257,6 +2349,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Yes, continue..
+        /// </summary>
+        public static string UsersEditSSVContinue {
+            get {
+                return ResourceManager.GetString("UsersEditSSVContinue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Changes have been made in the areas you manage, which may affect subordinates. Continue?.
+        /// </summary>
+        public static string UsersEditSSVMsg {
+            get {
+                return ResourceManager.GetString("UsersEditSSVMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No, go back to editing.
+        /// </summary>
+        public static string UsersEditSSVStop {
+            get {
+                return ResourceManager.GetString("UsersEditSSVStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a E-mail.
         /// </summary>
         public static string UsersEmail {
@@ -2428,7 +2547,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Gerente.
+        ///   Busca una cadena traducida similar a Manager.
         /// </summary>
         public static string UsersManager {
             get {
@@ -2955,6 +3074,95 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string UsersSV {
             get {
                 return ResourceManager.GetString("UsersSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This supervisor has changed his area of responsibility. You must decide to:
+        ///
+        ///1-Migrate the subordinates to the supervisor&apos;s new area.
+        ///
+        ///2-Reassign the subordinates to a new supervisor.
+        ///
+        ///
+        ///
+        ///Please make a decision to maintain efficient management..
+        /// </summary>
+        public static string UsersSV_Msg_Body {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Reassign to new supervisor..
+        /// </summary>
+        public static string UsersSV_Msg_No_Reassign {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_No_Reassign", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a A change has been made to this supervisor&apos;s superior and area. You must decide to:
+        ///
+        ///
+        ///
+        ///1-Migrate the subordinates to the same area and/or group.
+        ///
+        ///2-Reassign the subordinates to a new supervisor.
+        ///
+        ///
+        ///Please select the option you consider most appropriate to ensure a smooth transition..
+        /// </summary>
+        public static string UsersSV_Msg_SupArea_Body {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_SupArea_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Reassign to new supervisor.&quot;.
+        /// </summary>
+        public static string UsersSV_Msg_SupArea_No_Reassignar {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_SupArea_No_Reassignar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Important! Change of supervisor&apos;s superior and area..
+        /// </summary>
+        public static string UsersSV_Msg_SupArea_Title {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_SupArea_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Migrate to same area and/or group..
+        /// </summary>
+        public static string UsersSV_Msg_SupArea_Yes_Migrar {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_SupArea_Yes_Migrar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Important: Modification in managed area. Do you wish to continue?.
+        /// </summary>
+        public static string UsersSV_Msg_Title {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Migrate to new supervisor area..
+        /// </summary>
+        public static string UsersSV_Msg_Yes_Migrar {
+            get {
+                return ResourceManager.GetString("UsersSV_Msg_Yes_Migrar", resourceCulture);
             }
         }
         

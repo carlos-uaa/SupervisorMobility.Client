@@ -48,6 +48,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
             NavigationManager.NavigateTo($"plants/{PlantId}");
         }
 
+        void FunUpdateArea(int plantId, int areaId)
+        {
+            NavigationManager.NavigateTo($"plants/{plantId}/updatearea/{areaId}");
+        }
+
+
         // Create distribution
         void CreateDistribution()
         {

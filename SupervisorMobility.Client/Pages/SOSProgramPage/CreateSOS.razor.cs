@@ -61,7 +61,7 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
                         _sosReview.PlantId = 0;
                         _sosReview.AreaId = 0;
 
-                        _allSupervisors = await UsersService.GetUserByTypeAndCollection(3);
+                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
 
                     }
                     else if(user.UserType == 3)

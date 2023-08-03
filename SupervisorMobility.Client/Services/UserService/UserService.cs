@@ -21,7 +21,8 @@ namespace SupervisorMobility.Client.Services.UserService
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
-            _options = new JsonSerializerOptions { 
+            _options = new JsonSerializerOptions
+            {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                 PropertyNameCaseInsensitive = true,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
@@ -29,7 +30,7 @@ namespace SupervisorMobility.Client.Services.UserService
             _options.Converters.Add(new IntToStringConverter());
         }
 
-       
+
         public async Task<UsersUploadResult> ProccedToUploadUsers(FileUpload fileinfo)
         {
             var response = await _http.PostAsJsonAsync("Users/FileUpload/Data", fileinfo);
@@ -46,7 +47,7 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-
+        //Upload Users
         public async Task<UsersUploadResult> UploadUsers(List<User> UsersToUpload)
         {
             var response = await _http.PostAsJsonAsync("Users/MasiveUpload", UsersToUpload);
@@ -62,7 +63,7 @@ namespace SupervisorMobility.Client.Services.UserService
             }
             return null;
         }
-
+        //Upload User To Superior
         public async Task<UsersUploadResult> UploadUsersToSuperior(List<User> UsersToUpload, User Superior)
         {
             var response = await _http.PostAsJsonAsync($"Users/MasiveUpload/Superior/{Superior.UserId}", UsersToUpload);
@@ -96,11 +97,11 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return null;
-            
 
-           
+
+
         }
-       
+
         //get User by id
         public async Task<User> GetUser(int UserId)
         {
@@ -112,7 +113,7 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return null;
-        }  
+        }
         //get User by objectid
         public async Task<User> GetUserWhitObjectId(string ObjectId)
         {
@@ -124,7 +125,7 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return null;
-        }   
+        }
         //get User by objectid whitr collection
         public async Task<User> GetUserByObjectIdWithCollections(string ObjectId)
         {
@@ -164,11 +165,39 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetUserByTypeAndCollection(int userType)
+        public async Task<List<User>> GetUsers(bool includeCollections, bool includeSubordinates)
+        {
+
+            try
+            {
+                var response = await _http.GetAsync($"Users?collections={includeCollections}&includeSubordinates={includeSubordinates}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
+
+                    response.Dispose();
+
+                    return UsersList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
+            }
+
+            return null;
+
+        }
+
+        public async Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId, int AreaId, int userType, bool includeCollections, bool includeSubordinates)
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections=true");
+                var response = await _http.GetAsync($"Users/ByUserTypeInPlantAndArea?&plantid={PlantId}&areaid={AreaId}&typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -190,37 +219,11 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId, int AreaId, int userType, bool includeCollections)
+        public async Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections,bool includeSubordinates)
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserTypeInPlantAndArea?&plantid={PlantId}&areaid={AreaId}&typeUser={userType}&collections={includeCollections}");
-
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
-
-                    response.Dispose();
-
-                    return UsersList;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Manejo de excepciones
-                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
-            }
-
-            return null;
-        }
-
-        public async Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections)
-        {
-            try
-            {
-                var response = await _http.GetAsync($"Users/ByUserTypeInPlant?&plantid={PlantId}&typeUser={userType}&collections={includeCollections}");
+                var response = await _http.GetAsync($"Users/ByUserTypeInPlant?&plantid={PlantId}&typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -243,11 +246,11 @@ namespace SupervisorMobility.Client.Services.UserService
         }
 
 
-        public async Task<List<User>> GetUserByType(int userType)
+        public async Task<List<User>> GetUserByType(int userType, bool includeCollections, bool includeSubordinates)
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections=false");
+                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -269,63 +272,9 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetUsers()
-        {
-          
-            try
-            {
-                var response = await _http.GetAsync("Users");
-
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
-
-                    response.Dispose();
-
-                    return UsersList;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Manejo de excepciones
-                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
-            }
-
-            return null;
-           
-        } 
-        public async Task<List<User>> GetUsersWhitCollections()
-        {
-            
-            try
-            {
-                var response = await _http.GetAsync("Users?collections=true");
-
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var UsersList = JsonSerializer.Deserialize<List<User>>(content, _options);
-
-                    response.Dispose();
-
-                    return UsersList;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Manejo de excepciones
-                Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
-            }
-            
-            return null;
-           
-        } 
         public async Task<List<User>> GetSubordinates(int SupervisorId)
         {
-            
+
             try
             {
                 var response = await _http.GetAsync($"Users/{SupervisorId}/Subordinates?collections=true");
@@ -346,9 +295,9 @@ namespace SupervisorMobility.Client.Services.UserService
                 // Manejo de excepciones
                 Console.WriteLine($"Error al obtener la lista de usuarios: {ex.Message}");
             }
-            
+
             return null;
-           
+
         }
         //delete User
         public async Task DeleteUser(int UserId)
@@ -360,9 +309,9 @@ namespace SupervisorMobility.Client.Services.UserService
         public async Task<bool> UpdateUser(int UserId, User UserToUpdate)
         {
 
-            if(UserToUpdate.Areas?.Count > 0)
+            if (UserToUpdate.Areas?.Count > 0)
             {
-                foreach(var area in UserToUpdate.Areas)
+                foreach (var area in UserToUpdate.Areas)
                 {
                     Console.WriteLine(area.AreaId);
                 }
@@ -370,6 +319,30 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             var response = await _http.PutAsJsonAsync($"Users/{UserId}", UserToUpdate);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        public async Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId)
+        {
+
+            foreach (User Sub in _newUser.Subordinates)
+            {
+                Sub.SuperiorId = null;
+                Sub.AreaId = null;
+                Sub.GroupId = null;
+            }
+
+            foreach (User Sub in _userCopy.Subordinates)
+            {
+                _newUser.Subordinates.Add(Sub);
+            }
+
+            var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior/{UserId}?NewSuperiorId={NewSuperiorId}", _newUser);
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;

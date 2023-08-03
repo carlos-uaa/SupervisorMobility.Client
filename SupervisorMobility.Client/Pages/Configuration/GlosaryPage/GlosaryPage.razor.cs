@@ -77,5 +77,36 @@ namespace SupervisorMobility.Client.Pages.Configuration.GlosaryPage
                 return true;
             return false;
         }
+
+        private int selectedRowNumber = -1;
+        private MudTable<Glosary> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<Glosary> tableRowClickEventArgs)
+        {
+        }
+
+       
+        private string SelectedRowClassFunc(Glosary element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                     NavigationManager.NavigateTo($"glosary/updateglosaryword/{element.GlosaryWordId}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

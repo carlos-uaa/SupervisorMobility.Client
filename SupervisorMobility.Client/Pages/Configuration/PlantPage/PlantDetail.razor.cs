@@ -84,7 +84,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         {
         }
 
-        void UpdatePlant(int plantId)
+        void FuncUpdatePlant(int plantId)
         {
             NavigationManager.NavigateTo($"plants/updateplant/{plantId}");
         }

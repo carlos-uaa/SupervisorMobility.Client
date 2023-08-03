@@ -37,25 +37,43 @@
 <MudGrid>
     @*Area info*@
     <MudItem xs="12" sm="6" md="3">
-        <MudCard>
-            <MudCardContent Style="justify-content:center">
-                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
-                <MudText Align="Align.Center">@_distribution.Code</MudText>
-                <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
-                @if (_distribution.IsActive == true)
-                {
-                    <MudText Align="Align.Center" Class="pt-2">
-                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                    </MudText>
-                }
-                else
-                {
-                    <MudText Align="Align.Center" Class="pa-4">
-                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["active"]</MudChip>
-                    </MudText>
-                }
-            </MudCardContent>
-        </MudCard>
+
+
+        <MudButton @onclick="(() => FuncUpdateDistribution())" @ontouchstart="(() => FuncUpdateDistribution())" FullWidth="true" Class="d-flex justify-center">
+            <MudCard Style="height:100%; width: 100%">
+                <MudCardHeader>
+                    <CardHeaderActions>
+                    </CardHeaderActions>
+                    <CardHeaderContent>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_distribution.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                    @if (_distribution.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+
+            </MudCard>
+        </MudButton>
+
+
+            
+       
     </MudItem>
     @*Related operations*@
     <MudItem xs="12" sm="6" md="9">
@@ -63,7 +81,7 @@
             <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["operations"]>
                 @if (_distribution.Operations.Count > 0)
                 {
-                    <MudTable Height="45vh" Items="_distribution.Operations" Hover="true" T="Operation" Filter="new Func<Operation,bool>(FilterOperation)" Class="styled-table table-striped" FixedHeader=true>
+                    <MudTable Height="45vh" Items="_distribution.Operations" Hover="true" T="Operation" Filter="new Func<Operation,bool>(FilterOperation)" Class="styled-table table-striped" FixedHeader=true RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
                         
                         <ToolBarContent>
                             <MudGrid class="d-flex flex-column justify-center align-self-center">
@@ -135,6 +153,7 @@
                                             <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                         </ActivatorContent>
                                         <ChildContent>
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Info" @onclick="(() => OperationDetails(context.OperationId))" @ontouchstart="(() => OperationDetails(context.OperationId))">@Localizer["operationDetails"] </MudMenuItem>
                                             <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateOperation(context.OperationId))" @ontouchstart="(() => UpdateOperation(context.OperationId))">@Localizer["editOperation"] </MudMenuItem>
                                             <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.OperationId))" @ontouchstart="(() => OpenDeleteDialog(context.OperationId))">@Localizer["deleteOperation"]</MudMenuItem>
                                         </ChildContent>
@@ -159,7 +178,7 @@
                 @if (_distribution.Products.Count > 0)
                 {
 
-                    <MudTable Height="45vh" Items="_distribution.Products" Hover="true" T="Product" Filter="new Func<Product,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+                    <MudTable Height="45vh" Items="_distribution.Products" Hover="true" T="Product" Filter="new Func<Product,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true RowClassFunc="@SelectedRowClassFuncProduct" @ref="SelectTableEventProduct" OnRowClick="RowClickEventProduct">
                         <ToolBarContent>
                             <MudGrid class="d-flex flex-column justify-center align-self-center">
                                 

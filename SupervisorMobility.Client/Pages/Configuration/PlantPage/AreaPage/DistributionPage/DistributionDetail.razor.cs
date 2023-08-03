@@ -1,6 +1,8 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage
 {
@@ -89,6 +91,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             visibleDeleteProduct = false;
         }
 
+        void FuncUpdateDistribution()
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/updatedistribution/{DistributionId}");
+        }
         // Update operation
         void UpdateOperation(int operationId)
         {
@@ -103,6 +109,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         void ProductDetails(int productId)
         {
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{productId}/details");
+        } 
+        
+        void OperationDetails(int OperationId)
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/detailsoperation/{OperationId}");
         }
         private string searchString = "";
 
@@ -157,5 +168,62 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         }
         void CloseDeleteProductModal() => visibleDeleteProduct = false;
         private DialogOptions dialogDeleteProductOptions = new() {CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
+        private int selectedRowNumber = -1;
+        private MudTable<Operation> SelectTableEvent;
+        private MudTable<Product> SelectTableEventProduct;
+
+        private void RowClickEvent(TableRowClickEventArgs<Operation> tableRowClickEventArgs)
+        {
+        } 
+        void RowClickEventProduct(TableRowClickEventArgs<Product> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(Operation element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/detailsoperation/{element.OperationId}");
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }  
+        
+        private string SelectedRowClassFuncProduct(Product element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEventProduct.SelectedItem != null && SelectTableEventProduct.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{element.ProductId}/details");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEventProduct.SelectedItem != null && SelectTableEventProduct.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

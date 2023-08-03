@@ -59,12 +59,61 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         };
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
 
-            _plants = await PlantServices.GetPlants();
-            _areas = await AreaServices.GetAreas(_assychart.PlantId);
-            _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
-        
+            try
+            {
+                _plants = await PlantServices.GetPlants();
+            }
+            catch (Exception exe)
+            {
+                Console.WriteLine("Error Get Plants");
+                if (_assychart.PlantId == 0)
+                {
+                    Console.WriteLine("Plant id is null");
+                }
+                Console.WriteLine(exe.Message);
+            }
 
-            _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
+            try
+            {
+                _areas = await AreaServices.GetAreas(_assychart.PlantId);
+            }
+            catch (Exception exe)
+            {
+                Console.WriteLine("Error Get Areas");
+
+                if (_assychart.PlantId == 0)
+                {
+                    Console.WriteLine("Plant id is null");
+                }
+
+                if (_assychart.AreaId == 0)
+                {
+                    Console.WriteLine("Area id is null");
+                }
+                Console.WriteLine(exe.Message);
+            }
+
+            try
+            {
+                _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
+                _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
+            }
+            catch (Exception exe)
+            {
+                Console.WriteLine("Error Get Distribution");
+                if (_assychart.PlantId == 0)
+                {
+                    Console.WriteLine("Plant id is null");
+                }
+
+                if (_assychart.AreaId == 0)
+                {
+                    Console.WriteLine("Area id is null");
+                }
+                Console.WriteLine(exe.Message);
+            }
+
+
 
 
             try
@@ -250,7 +299,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
             }
 
-            
+
         }
 
         void CancelCreateAssyChart()

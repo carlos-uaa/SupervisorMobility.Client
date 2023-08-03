@@ -318,5 +318,37 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             }
 
         }
+
+        private int selectedRowNumber = -1;
+        private MudTable<AssyChart> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<AssyChart> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(AssyChart element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    //NavigationManager.NavigateTo($"/assychart/details/{element.AssyChardId}");
+                    NavigationManager.NavigateTo($"assychart/updateassychart/{element.AssyChardId}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
     }
 }

@@ -85,7 +85,7 @@ else
     
     <MudTable Height="60vh" Items="_Guides" T="Guide" ReadOnly="true" FixedHeader=true 
           SortLabel="Sort By" Filter="new Func<Guide,bool>(FilterFunc)" Class="styled-table table-striped mt-10"
-          HorizontalScrollbar="true">
+          HorizontalScrollbar="true"  RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
         <ToolBarContent>
             <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
                 <MudItem class="d-flex justify-center align-self-center ">
@@ -220,4 +220,35 @@ else
         return false;
     }
 
+
+    private int selectedRowNumber = -1;
+    private MudTable<Guide> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<Guide> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(Guide element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                
+                NavigationManager.NavigateTo($"/GuidesManagement/{element.GuideId}/DetailGuide");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
 }
