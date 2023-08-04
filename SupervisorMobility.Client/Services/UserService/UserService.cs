@@ -170,7 +170,7 @@ namespace SupervisorMobility.Client.Services.UserService
 
             try
             {
-                var response = await _http.GetAsync($"Users?collections={includeCollections}&includeSubordinates={includeSubordinates}");
+                var response = await _http.GetAsync($"Users?includeCollections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
