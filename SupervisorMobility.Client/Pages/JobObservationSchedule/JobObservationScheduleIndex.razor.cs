@@ -122,8 +122,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         groupId = 0;
                         ssvId = 0;
                         supervisorId = 0;
-                        _allSSVs = await UsersService.GetUserByType(2, true, false);
-                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
+                        _allSSVs = await UsersService.GetUserByType(2, true, true);
+                        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                     else if(user.UserType == 2)
                     {
@@ -133,7 +133,9 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssv = user.Name;
                         ssvId = user.UserId;
                         supervisorId = 0;
-                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
+
+                        _allSupervisors = user.Subordinates?.ToList();
+                        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                     else if(user.UserType == 3)
                     {
@@ -164,8 +166,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _areas = await AreaServices.GetAreas(plantId);
-                        _allSSVs = await UsersService.GetUserByType(2, true, false);
-                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
+                        _allSSVs = await UsersService.GetUserByType(2, true, true);
+                        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                 }
                     StateHasChanged();
@@ -512,11 +514,14 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     }
                 }
 
-                foreach (User sv in _allSupervisors)
-                {
-                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
-                        _supervisors.Add(sv);
-                }
+                _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
+                _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+
+                //foreach (User sv in _allSupervisors)
+                //{
+                //    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                //        _supervisors.Add(sv);
+                //}
 
             }
             else
@@ -530,11 +535,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     }
                 }
 
-                foreach (User sv in _allSupervisors)
-                {
-                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
-                        _supervisors.Add(sv);
-                }
+                _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
+                _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+                //foreach (User sv in _allSupervisors)
+                //{
+                //    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                //        _supervisors.Add(sv);
+                //}
 
 
                 _jobObservations = new();

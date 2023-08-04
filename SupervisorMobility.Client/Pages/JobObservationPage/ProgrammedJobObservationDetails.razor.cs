@@ -122,7 +122,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            _operators = await UsersService.GetUserByType(4);
+            _operators = await UsersService.GetUserByType(4,false,false);
             //operator User
             foreach (var operatorUser in _operators)
             {
