@@ -108,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             Console.WriteLine("aaaa");
             Console.WriteLine(ProgrammedStartDate);
-            if(ProgrammedStartDate != "")
+            if(ProgrammedStartDate != "" && ProgrammedStartDate != null)
             {
                 ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
 
@@ -274,7 +274,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 1;
 
-                Console.WriteLine(_jobObservation.EndDate.ToString());
+                Console.WriteLine(LoggedUser.Name);
 
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, LoggedUser.ObjectId);
 

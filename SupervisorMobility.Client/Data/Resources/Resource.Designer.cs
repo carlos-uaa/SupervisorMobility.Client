@@ -2032,6 +2032,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Plan it.
+        /// </summary>
+        public static string planIt {
+            get {
+                return ResourceManager.GetString("planIt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Plan job observation.
         /// </summary>
         public static string planJobObservation {
@@ -2550,6 +2559,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string thereAreNoHistoryVersionsForTheJobObservations {
             get {
                 return ResourceManager.GetString("thereAreNoHistoryVersionsForTheJobObservations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no job observations programmed in SOS for this area..
+        /// </summary>
+        public static string ThereAreNoJobObservationsProgrammedInSOSForThisArea {
+            get {
+                return ResourceManager.GetString("ThereAreNoJobObservationsProgrammedInSOSForThisArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no job observations programmed in SOS for this month..
+        /// </summary>
+        public static string ThereAreNoJobObservationsProgrammedInSOSForThisMonth {
+            get {
+                return ResourceManager.GetString("ThereAreNoJobObservationsProgrammedInSOSForThisMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no job observations programmed in SOS for this plant..
+        /// </summary>
+        public static string ThereAreNoJobObservationsProgrammedInSOSForThisPlant {
+            get {
+                return ResourceManager.GetString("ThereAreNoJobObservationsProgrammedInSOSForThisPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no job observations programmed in SOS for this SSV..
+        /// </summary>
+        public static string ThereAreNoJobObservationsProgrammedInSOSForThisSSV {
+            get {
+                return ResourceManager.GetString("ThereAreNoJobObservationsProgrammedInSOSForThisSSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a There are no job observations programmed in SOS for this supervisor..
+        /// </summary>
+        public static string ThereAreNoJobObservationsProgrammedInSOSForThisSupervisor {
+            get {
+                return ResourceManager.GetString("ThereAreNoJobObservationsProgrammedInSOSForThisSupervisor", resourceCulture);
             }
         }
         
