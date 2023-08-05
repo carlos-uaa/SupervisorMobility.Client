@@ -773,7 +773,7 @@
 
                                                                         <div class="font-weight-bold"><b>@Localizer["UsersAssignedArea"]:</b></div>
 
-                                                                        @if (@item.AreaId is null || @item.AreaId == 0)
+                                                                        @if (@item.AreaId is null || @item.AreaId == 0 && _user.UserType == 2)
                                                                         {
 
                                                                             if (_user.Areas.Count > 0)
@@ -818,7 +818,7 @@
                                                                         </div>
                                                                     </MudCardContent>
 
-                                                                   
+
                                                                     <MudCardActions>
 
                                                                     </MudCardActions>
@@ -1151,18 +1151,10 @@ else
         LogedUser = JsonSerializer.Deserialize<User>(json) ?? new();
 
 
-
-        if (_user.UserType != 1 && _user.UserType != 5)
-        {
-
-            _areas = await AreaServices.GetAreas((int)_user.PlantId);
-            auxPlant = (int)_user.PlantId;
-
-            if(_user.UserType == 3)
-            {
-                auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
-            }
-        }
+        auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
+        auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
+        auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
+        
         _plants = await PlantServices.GetPlants();
         _groups = await GroupServices.GetGroups();
 
@@ -1173,47 +1165,10 @@ else
         IsManager = (_user.UserType == 5);
 
 
-        //Console.WriteLine(_user.Superior.Name);
-        //Console.WriteLine(_user.Superior.Areas.Count);
-
-        //if (_user.Superior != null)
-        //{
-        //    superior = true;
-        //    //await SetSuperiorToUser();
-        //}
-
         selectedSeniorSupervisorOfList = new User();
         selectedSupervisorOfList = new User();
         selectedOperatorOfList = new User();
         selectedAreaOfList = new Area();
-
-        //
-        //_allUsers = await UserServices.GetUsersWhitCollections();
-        //foreach (User item in _allUsers)
-        //{
-        //    if(_user.Superior != null){
-        //        if(_user.SuperiorId == item.UserId){
-        //            _user.Superior = item;
-        //            superior = true;
-        //        }
-        //    }
-
-
-        //    switch (item.UserType)
-        //    {
-        //        case 2:
-        //            SeniorsSupervisors.Add(item);
-        //            break;
-        //        case 3:
-        //            Supervisors.Add(item);
-        //            break;
-        //        case 4:
-        //            if(item.SuperiorId == null || item.SuperiorId == _user.UserId){
-        //                Operators.Add(item);
-        //            }
-        //            break;
-        //    }
-        //}
 
         switch (_user.UserType)
         {
@@ -1225,19 +1180,54 @@ else
                 }
                 else
                 {
-                    Supervisors = await UsersServices.GetUsersByUserTypeInPlant(auxPlant, 3, true, false);
+                    Supervisors = await UsersServices.GetUsersByUserTypeInPlant((int)_user.PlantId, 3, true, false);
                 }
                 break;
             case 3:
                 if (LogedUser.UserType == 1)
                 {
                     SeniorsSupervisors = await UsersServices.GetUserByType(2, true, false);
-                    Operators = await UsersServices.GetUsersByUserTypeInPlant(auxPlant, 4, true, false);
+                     if (_user.AreaId != null && _user.PlantId != null)
+                    {
+                        Operators = await UsersServices.GetUsersByUserTypeInPlantAndArea((int)_user.PlantId,(int) _user.AreaId, 4, true, false);
+                    }
+                    else if (_user.PlantId != null)
+                    {
+                        Operators = await UsersServices.GetUsersByUserTypeInPlant((int)_user.PlantId, 4, true, false);
+                    }
+                    else
+                    {
+                        Operators = await UsersServices.GetUserByType(4, true, false);
+                    }
                 }
                 else
                 {
-                    SeniorsSupervisors = await UsersServices.GetUsersByUserTypeInPlant(auxPlant, 2, true, false);
-                    Operators = await UsersServices.GetUsersByUserTypeInPlantAndArea(auxPlant,auxArea, 4, true, false);
+                    SeniorsSupervisors = await UsersServices.GetUsersByUserTypeInPlant((int)_user.PlantId, 2, true, false);
+                     if (_user.AreaId != null && _user.PlantId != null)
+                    {
+                        Operators = await UsersServices.GetUsersByUserTypeInPlantAndArea((int)_user.PlantId,(int) _user.AreaId, 4, true, false);
+                    }
+                    else if (_user.PlantId != null)
+                    {
+                        Operators = await UsersServices.GetUsersByUserTypeInPlant((int)_user.PlantId, 4, true, false);
+                    }
+                    else
+                    {
+                        Operators = await UsersServices.GetUserByType(4, true, false);
+                    }
+                    //if (LogedUser.AreaId != null && LogedUser.PlantId != null)
+                    //{
+                    //    Operators = await UsersServices.GetUsersByUserTypeInPlantAndArea((int)LogedUser.PlantId, (int)LogedUser.AreaId, 4, true, false);
+                    //}
+                    //else if (LogedUser.PlantId != null)
+                    //{
+                    //    Operators = await UsersServices.GetUsersByUserTypeInPlant((int)LogedUser.PlantId, 4, true, false);
+                    //}
+                    //else
+                    //{
+                    //    Operators = await UsersServices.GetUserByType(4, true, false);
+
+                    //}
                 }
                 break;
             case 5:
@@ -1247,7 +1237,7 @@ else
                 }
                 else
                 {
-                    SeniorsSupervisors = await UsersServices.GetUsersByUserTypeInPlant(auxPlant, 2, true, false);
+                    SeniorsSupervisors = await UsersServices.GetUsersByUserTypeInPlant((int)_user.PlantId, 2, true, false);
                 }
                 break;
         }
@@ -1255,6 +1245,7 @@ else
         //Eliminar duplicados de la lista y al usuario en caso de ser necesario
         switch (_user.UserType)
         {
+            //3
             case 1:
             case 5:
                 //admin o Gerente
@@ -1298,9 +1289,7 @@ else
                 break;
             //SV
             case 3:
-                auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
-                auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
-                auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
+               
 
                 if (_user.Superior != null)
                 {
@@ -1308,7 +1297,6 @@ else
                 }
 
                 plantInfo = _user.Plant?.Description;
-
                 areaInfo = _user.Area?.Description;
                 grupInfo = _user.Group?.Description;
 
@@ -1571,7 +1559,7 @@ else
                 break;
         }
 
-       
+
 
         auxArea = 0;
         auxDistribution = 0;
@@ -1982,7 +1970,7 @@ else
                     {
                         if (LogedUser.UserType == 1)
                         {
-                            Supervisors = await UsersServices.GetUserByType(3,true, false);
+                            Supervisors = await UsersServices.GetUserByType(3, true, false);
                         }
                         else
                         {

@@ -197,7 +197,7 @@ namespace SupervisorMobility.Client.Services.UserService
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserTypeInPlantAndArea?&plantid={PlantId}&areaid={AreaId}&typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
+                var response = await _http.GetAsync($"Users/ByUserTypeInPlantAndArea?&plantid={PlantId}&areaid={AreaId}&typeUser={userType}&includeCollections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -223,7 +223,7 @@ namespace SupervisorMobility.Client.Services.UserService
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserTypeInPlant?&plantid={PlantId}&typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
+                var response = await _http.GetAsync($"Users/ByUserTypeInPlant?&plantid={PlantId}&typeUser={userType}&includeCollections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -250,7 +250,7 @@ namespace SupervisorMobility.Client.Services.UserService
         {
             try
             {
-                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&collections={includeCollections}&includeSubordinates={includeSubordinates}");
+                var response = await _http.GetAsync($"Users/ByUserType?typeUser={userType}&includeCollections={includeCollections}&includeSubordinates={includeSubordinates}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
