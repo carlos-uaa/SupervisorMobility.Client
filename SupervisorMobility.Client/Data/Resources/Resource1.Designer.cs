@@ -934,6 +934,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Details.
+        /// </summary>
+        public static string details {
+            get {
+                return ResourceManager.GetString("details", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Add Distribution.
         /// </summary>
         public static string DistributionAdd {
@@ -1245,6 +1254,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string GMTitle {
             get {
                 return ResourceManager.GetString("GMTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Go back.
+        /// </summary>
+        public static string goBack {
+            get {
+                return ResourceManager.GetString("goBack", resourceCulture);
             }
         }
         
