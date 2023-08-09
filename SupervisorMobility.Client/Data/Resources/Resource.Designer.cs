@@ -250,6 +250,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a All areas.
+        /// </summary>
+        public static string allAreas {
+            get {
+                return ResourceManager.GetString("allAreas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a All Job Observations.
         /// </summary>
         public static string allJobObservations {
@@ -264,6 +273,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string allLup {
             get {
                 return ResourceManager.GetString("allLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All plants.
+        /// </summary>
+        public static string allPlants {
+            get {
+                return ResourceManager.GetString("allPlants", resourceCulture);
             }
         }
         
@@ -957,6 +975,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string descriptionLevel {
             get {
                 return ResourceManager.GetString("descriptionLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Details.
+        /// </summary>
+        public static string details {
+            get {
+                return ResourceManager.GetString("details", resourceCulture);
             }
         }
         
@@ -2410,6 +2437,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Show All.
+        /// </summary>
+        public static string showAll {
+            get {
+                return ResourceManager.GetString("showAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Show all Symbols.
         /// </summary>
         public static string showAllSymbols {
@@ -2478,6 +2514,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string sosProgram {
             get {
                 return ResourceManager.GetString("sosProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS Review Program.
+        /// </summary>
+        public static string sosReviewProgram {
+            get {
+                return ResourceManager.GetString("sosReviewProgram", resourceCulture);
             }
         }
         

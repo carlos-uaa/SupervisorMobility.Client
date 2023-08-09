@@ -277,6 +277,54 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowAreas()
         {
+
+            if (plantId == 0)
+            {
+                areaId = 0;
+                ClearFilters();
+                _jobObservations = new();
+                foreach (var jobobs in _jobObservationsAux)
+                {
+                    if (jobobs.Status != 7)
+                    {
+                        _jobObservations.Add(jobobs);
+                        switch (jobobs.Status)
+                        {
+                            case 1: _plannedJobObservation.Add(jobobs); break;
+                            case 2: _inProgressJobObservation.Add(jobobs); break;
+                            case 3: _lateJobObservation.Add(jobobs); break;
+                            case 4: _underReviewJobObservation.Add(jobobs); break;
+                            case 5: _rejectedJobObservation.Add(jobobs); break;
+                            case 6: _finishedJobObservation.Add(jobobs); break;
+                        }
+
+                    }
+                    else
+                    {
+                        _SOSJobobservation.Add(jobobs);
+                    }
+                }
+                _filterJobObservation = _jobObservations;
+                _filterPlannedJobObservation = _plannedJobObservation;
+                _filterInProgressJobObservation = _inProgressJobObservation;
+                _filterLateJobObservation = _lateJobObservation;
+                _filterUnderReviewJobObservation = _underReviewJobObservation;
+                _filterRejectedJobObservation = _rejectedJobObservation;
+                _filterFinishedJobObservation = _finishedJobObservation;
+                _filterProgrammedJobObservation = _SOSJobobservation;
+
+                totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
+                totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
+                totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
+                totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
+                totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
+                totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
+                totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+                StateHasChanged();
+                return;
+
+            }
+
             areaId = 0;
             color = Color.Default;
             filters = false;
@@ -345,6 +393,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowJobObs()
         {
+            if(areaId == 0)
+            {
+                ShowAreas();
+                return;
+            }
+
             ClearFilters();
             _jobObservations.Clear();
             operatorUsers.Clear();

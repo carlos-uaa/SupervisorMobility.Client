@@ -123,7 +123,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _allSSVs = await UsersService.GetUserByType(2, true, true);
-                        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                     else if(user.UserType == 2)
                     {
@@ -368,6 +367,23 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private async void ShowAreas()
         {
+            if(plantId == 0 && user.UserType == 1)
+            {
+                areaId = 0;
+                groupId = 0;
+                ssvId = 0;
+                 
+                supervisorId = 0;
+
+                _jobObservations = new();
+                _jobObservations = _allJobObservations;
+                _SSVs.Clear();
+                _supervisors.Clear();
+                _supervisors.Clear();
+                StateHasChanged();
+                return;
+            }
+
             _jobObservations = new();
             foreach(var jobobs in _allJobObservations)
             {
@@ -397,6 +413,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private void ShowSSV()
         {
+            if(areaId == 0)
+            {
+                ShowAreas();
+                return;
+            }
 
 
             if (user.UserType == 1)
@@ -486,6 +507,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private void ShowSupervisors()
         {
+            if(ssvId == 0)
+            {
+                ShowSSV();
+                return;
+            }
+
 
             _supervisors.Clear();
             supervisorId = 0;
@@ -565,6 +592,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private void JobObservationsBySupervisor()
         {
+
+            if (supervisorId == 0)
+            {
+                ShowSupervisors();
+                return;
+            }
             _jobObservations = new();
             foreach (var jobobs in _allJobObservations)
             {

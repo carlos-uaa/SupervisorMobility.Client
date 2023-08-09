@@ -133,6 +133,9 @@ else
                         case 6:
                             <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                             break;
+                        case 7:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                            break;
                     }
                 </MudItem>
             </MudItem>
@@ -157,7 +160,7 @@ else
                         <tr>
                             <td style="width:50%">
                                 @*Mud select of Plants*@
-                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.PlantId">
+                                <MudSelect T="int?" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.PlantId">
                                     <MudSelectItem Disabled="true" Value="@_jobObservationVersion.PlantId">@_jobObservationVersion.Plant?.Code - @_jobObservationVersion.Plant?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
@@ -169,7 +172,7 @@ else
                         <tr>
                             <td>
                                 @*Mud select of Areas *@
-                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.AreaId">
+                                <MudSelect T="int?" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.AreaId">
                                     <MudSelectItem Disabled="true" Value="@_jobObservationVersion.AreaId">@_jobObservationVersion.Area?.Code - @_jobObservationVersion.Area?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
@@ -180,11 +183,11 @@ else
                         <tr>
                             <td class="d-flex">
                                 @*Mud select of Distribution *@
-                                <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.DistributionId">
+                                <MudSelect T="int?" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.DistributionId">
                                     <MudSelectItem Disabled="true" Value="@_jobObservationVersion.DistributionId">@_jobObservationVersion.Distribution?.Code - @_jobObservationVersion.Distribution?.Description</MudSelectItem>
                                 </MudSelect>
                                 @*Mud select of Operations *@
-                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.OperationId">
+                                <MudSelect T="int?" Label=@Localizer["operation"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservationVersion.OperationId">
                                     <MudSelectItem Disabled="true" Value="@_jobObservationVersion.OperationId">@_jobObservationVersion.Operation?.Code - @_jobObservationVersion.Operation?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
@@ -1320,17 +1323,41 @@ else
         _jobObservationVersion = await JobObservationService.GetOneHistoryJobObservation(JobObservationId, JobObservationVersionId);
 
         _products = await ProductService.GetProducts();
-        var prod = _jobObservationVersion.Models.Split('|');
-        models[0] = Int32.Parse(prod[0]);
-        models[1] = Int32.Parse(prod[1]);
-        models[2] = Int32.Parse(prod[2]);
-        models[3] = Int32.Parse(prod[3]);
-        models[4] = Int32.Parse(prod[4]);
-        cycles = _jobObservation.Cicles.Split('|');
+
+        if(_jobObservationVersion.Models != null)
+        {
+            var prod = _jobObservationVersion.Models.Split('|');
+            models[0] = Int32.Parse(prod[0]);
+            models[1] = Int32.Parse(prod[1]);
+            models[2] = Int32.Parse(prod[2]);
+            models[3] = Int32.Parse(prod[3]);
+            models[4] = Int32.Parse(prod[4]);
+
+        }
+        else
+        {
+            models[0] = 0;
+            models[1] = 0;
+            models[2] = 0;
+            models[3] = 0;
+            models[4] = 0;
+        }
+
+        if (_jobObservationVersion.Cicles != null)
+        {
+            cycles = _jobObservationVersion.Cicles.Split('|');
+        }
+        else
+        {
+            cycles[0] = "0";
+            cycles[1] = "0";
+            cycles[2] = "0";
+            cycles[3] = "0";
+            cycles[4] = "0";
+        }
 
         startHour = _jobObservation.StartDate?.TimeOfDay;
         endHour = _jobObservation.EndDate?.TimeOfDay;
-        Console.WriteLine(startHour);
 
         if (_jobObservation.PlantId != 0)
         {

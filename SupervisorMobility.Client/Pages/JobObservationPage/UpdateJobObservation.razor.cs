@@ -706,7 +706,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
+                    Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else
@@ -765,7 +765,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
+                    Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else

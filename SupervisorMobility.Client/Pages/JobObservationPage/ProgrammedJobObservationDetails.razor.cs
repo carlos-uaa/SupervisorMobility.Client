@@ -77,9 +77,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
 
-        //Operator user
-        public List<User> _operators = new();
-
 
         TimeSpan? endHour;
         TimeSpan? startHour { get; set; }
@@ -106,8 +103,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
-            Console.WriteLine("aaaa");
-            Console.WriteLine(ProgrammedStartDate);
+
             if(ProgrammedStartDate != "" && ProgrammedStartDate != null)
             {
                 ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
@@ -122,16 +118,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
 
-            _operators = await UsersService.GetUserByType(4,false,false);
-            //operator User
-            foreach (var operatorUser in _operators)
-            {
-                if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
-                {
-                    operatorUsers.Add(operatorUser);
-                }
-            }
-
+            operatorUsers = await UsersService.GetSubordinates(_jobObservation.SupervisorId);
 
             if (_jobObservation.PlantId != 0)
             {
