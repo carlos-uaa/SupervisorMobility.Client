@@ -2,8 +2,10 @@
 using Microsoft.JSInterop;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using KellermanSoftware.CompareNetObjects;
 
 namespace SupervisorMobility.Client.Services.UserService
 {
@@ -246,7 +248,7 @@ namespace SupervisorMobility.Client.Services.UserService
         }
 
 
-        public async Task<List<User>> GetUserByType(int userType, bool includeCollections, bool includeSubordinates)
+        public async Task<List<User>> GetUsersByType(int userType, bool includeCollections, bool includeSubordinates)
         {
             try
             {
@@ -329,17 +331,75 @@ namespace SupervisorMobility.Client.Services.UserService
         public async Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId)
         {
 
-            foreach (User Sub in _newUser.Subordinates)
+            if(_newUser.UserType == _userCopy.UserType)
             {
-                Sub.SuperiorId = null;
-                Sub.AreaId = null;
-                Sub.GroupId = null;
+                foreach (User Sub in _newUser.Subordinates)
+                {
+                    if (_userCopy.Subordinates?.Any(x => x.UserId == Sub.UserId) == true)
+                    {
+                        switch (_newUser.UserType)
+                        {
+                            case 2:
+                                var matchedSubordinate = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
+                                if (matchedSubordinate != null && matchedSubordinate.AreaId != 0)
+                                {
+                                  
+                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinate);
+
+                                    if (result.AreEqual)
+                                    {
+                                        // Los objetos son iguales
+                                        if (_newUser.Areas?.Any(x => x.AreaId == Sub.AreaId) == true)
+                                        {
+                                            Sub.SuperiorId = null;
+                                            Sub.AreaId = null;
+                                            Sub.GroupId = null;
+                                        }
+                                    }
+                                }
+                                break;
+                            case 3:
+                                var matchedSubordinateSV = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
+                                if (matchedSubordinateSV != null && matchedSubordinateSV.AreaId != 0)
+                                {
+
+                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinateSV);
+
+                                    if (result.AreEqual)
+                                    {
+                                        // Los objetos son iguales
+                                        if (_newUser.AreaId == Sub.AreaId)
+                                        {
+                                            Sub.SuperiorId = null;
+                                            Sub.AreaId = null;
+                                            Sub.GroupId = null;
+                                        }
+                                    }
+                                }
+                                break;
+                            case 5:
+                                // Acciones para UserType 5
+                                break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (User Sub in _newUser.Subordinates)
+                {
+                    Sub.SuperiorId = null;
+                    Sub.AreaId = null;
+                    Sub.GroupId = null;
+                }
+
+                foreach (User Sub in _userCopy.Subordinates)
+                {
+                    _newUser.Subordinates.Add(Sub);
+                }
             }
 
-            foreach (User Sub in _userCopy.Subordinates)
-            {
-                _newUser.Subordinates.Add(Sub);
-            }
+           
 
             var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior/{UserId}?NewSuperiorId={NewSuperiorId}", _newUser);
 

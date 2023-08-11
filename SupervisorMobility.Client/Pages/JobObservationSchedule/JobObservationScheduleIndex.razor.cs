@@ -165,7 +165,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _areas = await AreaServices.GetAreas(plantId);
-                        _allSSVs = await UsersService.GetUserByType(2, true, true);
+                        _allSSVs = await UsersService.GetUsersByType(2, true, true);
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                 }

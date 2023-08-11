@@ -203,7 +203,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     cycles[4] = "0";
                 }
 
-                _operators = await UsersService.GetUserByType(4, true, false);
+                _operators = await UsersService.GetUsersByType(4, true, false);
                 //operator User
                 foreach (var operatorUser in _operators)
                 {

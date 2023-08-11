@@ -150,7 +150,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
-                        //_allSupervisors = await UsersService.GetUserByType(3);
+                        //_allSupervisors = await UsersService.GetUsersByType(3);
                         //foreach (User sv in _allSupervisors)
                         //{
                         //    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
@@ -161,7 +161,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                         _supervisors =  await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
 
-                        //_operators = await UsersService.GetUserByType(4);
+                        //_operators = await UsersService.GetUsersByType(4);
                         ////operator User
                         //foreach (var operatorUser in _operators)
                         //{
@@ -180,8 +180,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservation.PlantId = 0;
                         _jobObservation.AreaId = 0;
                         _jobObservation.SupervisorId = 0;
-                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
-                        _operators = await UsersService.GetUserByType(4, true, false);
+                        _allSupervisors = await UsersService.GetUsersByType(3, true, false);
+                        _operators = await UsersService.GetUsersByType(4, true, false);
                     }
 
                 }
@@ -190,8 +190,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                     _jobObservation.PlantId = (int)user.PlantId;
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
-                    //_allSupervisors = await UsersService.GetUserByType(3);
-                    //_operators = await UsersService.GetUserByType(4);
+                    //_allSupervisors = await UsersService.GetUsersByType(3);
+                    //_operators = await UsersService.GetUsersByType(4);
                     _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
 
 
@@ -220,7 +220,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
                         //operator User
-                        _operators = await UsersService.GetUserByType(4, true, false);
+                        _operators = await UsersService.GetUsersByType(4, true, false);
                         //operator User
                         foreach (var operatorUser in _operators)
                         {
@@ -246,7 +246,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
                         //operator User
-                        _operators = await UsersService.GetUserByType(4, true, false);
+                        _operators = await UsersService.GetUsersByType(4, true, false);
                         foreach (var operatorUser in _operators)
                         {
                             if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.SuperiorId == user.UserId)

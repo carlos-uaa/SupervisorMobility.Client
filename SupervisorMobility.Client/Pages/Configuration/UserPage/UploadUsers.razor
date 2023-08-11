@@ -1033,23 +1033,36 @@
                                         else
                                         {
                                             <MudTd DataLabel="@Localizer["UsersAssignedArea"]">
-                                                @if (context.Superior.Areas is not null)
+
+                                                @if (@context.Area != null)
                                                 {
-                                                    if (context.Superior.Areas.Count > 0)
+                                                    <MudTd DataLabel="Area">
+                                                        <MudItem Class="d-flex justify-content-center align-items-center">
+                                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedAreaContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                                        </MudItem>
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    @if (context.Superior.Areas is not null)
                                                     {
-                                                        <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                            <MudSelectItem Disabled="true" Value="@context.Area"> @Localizer["UsersAssignedArea"]</MudSelectItem>
-                                                            @foreach (var item in context.Superior.Areas)
-                                                            {
-                                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                                            }
-                                                        </MudSelect>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudText Typo="Typo.button">@Localizer["UsersNoAreas"]</MudText>
+                                                        if (context.Superior.Areas.Count > 0)
+                                                        {
+                                                            <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                                                <MudSelectItem Disabled="true" Value="@context.Area"> @Localizer["UsersAssignedArea"]</MudSelectItem>
+                                                                @foreach (var item in context.Superior.Areas)
+                                                                {
+                                                                    <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
+                                                                }
+                                                            </MudSelect>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Typo="Typo.button">@Localizer["UsersNoAreas"]</MudText>
+                                                        }
                                                     }
                                                 }
+                                                
                                             </MudTd>
                                         }
                                         break;
@@ -1095,7 +1108,7 @@
                                 {
                                     <MudTd DataLabel="Area">
                                         <MudItem Class="d-flex justify-content-center align-items-center">
-                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedPlantContextItem(context))" Style="cursor:pointer"></MudTextField>
+                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedAreaContextItem(context))" Style="cursor:pointer"></MudTextField>
                                         </MudItem>
                                     </MudTd>
                                 }
@@ -1343,7 +1356,7 @@
 
         _groups = await GroupServices.GetGroups();
 
-        _allUsers = await UsersServices.GetUsers(true, false);
+        //_allUsers = await UsersServices.GetUsers(true, false);
 
         selectedSSVOfList = null;
         selectedSupervisorOfList = null;
@@ -1383,6 +1396,29 @@
 
     private async void AssignType(int value)
     {
+
+
+        switch (value)
+                {
+                    case 1:
+                        _allUsers = await UsersServices.GetUsers(true, false);
+                    break;
+                    case 2:
+                        _allUsers = await UsersServices.GetUsersByType(3,true, false);
+                        break;
+                    case 3:
+                        _allUsers = await UsersServices.GetUsersByType(2,true, false);
+                    break;
+                    case 4:
+                        _allUsers = await UsersServices.GetUsersByType(2,true, false);
+                        _allUsers.AddRange(await UsersServices.GetUsersByType(4,false, false));
+                        break;
+                    case 5:
+                    case 6:
+                         _allUsers = await UsersServices.GetUsersByType(3,true, false);
+                        break;
+         }
+
         uploadtype = value;
         await CancelFunction();
         StateHasChanged();

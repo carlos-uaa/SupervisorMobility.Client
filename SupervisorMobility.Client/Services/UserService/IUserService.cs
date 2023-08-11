@@ -22,7 +22,7 @@ namespace SupervisorMobility.Client.Services.UserService
         Task<User> GetUserAndCollection(int UserId);
 
         Task<List<User>> GetUsers(bool includeCollections, bool includeSubordinates);
-        Task<List<User>> GetUserByType(int userType, bool includeCollections, bool includeSubordinates);
+        Task<List<User>> GetUsersByType(int userType, bool includeCollections, bool includeSubordinates);
         Task<List<User>> GetUsersByUserTypeInPlantAndArea(int PlantId,int AreaId,int userType, bool includeCollections, bool includeSubordinates);
         Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections, bool includeSubordinates);
 

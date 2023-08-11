@@ -65,8 +65,8 @@ namespace SupervisorMobility.Client.Pages.PATPage
                         _pat.PlantId = 0;
                         _pat.AreaId = 0;
 
-                        _allSSVs = await UsersService.GetUserByType(2, true, false);
-                        _allSupervisors = await UsersService.GetUserByType(3, true, false);
+                        _allSSVs = await UsersService.GetUsersByType(2, true, false);
+                        _allSupervisors = await UsersService.GetUsersByType(3, true, false);
 
                     }
                     else if (user.UserType == 3)
