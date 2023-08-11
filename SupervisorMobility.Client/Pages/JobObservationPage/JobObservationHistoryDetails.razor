@@ -1,6 +1,4 @@
-﻿@page "/jobobservation/history/{jobobservationId:int}/details/{JobObservationVersionId:int}"
-
-@using System.ComponentModel.DataAnnotations
+﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
 @using System.Globalization;
 @using System.Net.Http.Json;
@@ -177,7 +175,7 @@ else
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservationVersion.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" />
+                                <MudTextField T="string" @bind-Value="_jobObservationVersion.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" ReadOnly />
                             </td>
                         </tr>
                         <tr>
@@ -192,7 +190,12 @@ else
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="_jobObservationVersion.Operator.Name" Label=@Localizer["operator"] Class="mr-4" />
+                                @if(_jobObservationVersion.Operator != null){
+                                  <MudTextField T="string" @bind-Value="_jobObservationVersion.Operator.Name" Label=@Localizer["operator"] Class="mr-4" ReadOnly/>
+                                }
+                                else{
+                                  <MudTextField T="string" Label=@Localizer["operator"] Class="mr-4" ReadOnly/>
+                                }
                             </td>
                         </tr>
                         <tr>
@@ -1320,6 +1323,7 @@ else
         _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
         _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
 
+
         _jobObservationVersion = await JobObservationService.GetOneHistoryJobObservation(JobObservationId, JobObservationVersionId);
 
         _products = await ProductService.GetProducts();
@@ -1358,6 +1362,7 @@ else
 
         startHour = _jobObservation.StartDate?.TimeOfDay;
         endHour = _jobObservation.EndDate?.TimeOfDay;
+
 
         if (_jobObservation.PlantId != 0)
         {
@@ -1406,6 +1411,7 @@ else
         {
             messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
         }
+
 
     }
 

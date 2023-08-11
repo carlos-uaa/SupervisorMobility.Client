@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -26,6 +27,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
         public List<JobObservation> _jobObservations { get; set; } = new();
 
         public List<JobObservation> _SOSJobobservation { get; set; } = new();
+        public List<JobObservation> _DayJobObservations { get; set; } = new();
 
         private readonly IMapper _mapper;
 
@@ -662,7 +664,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         public string programmedStartDate = "";
         private void OpenDialog4(string date)
-        {      
+        {
+            searchString = "";
             date = date.Replace("/", "-");
             programmedStartDate = date;
             visible3 = true;
@@ -690,6 +693,20 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 return true;
             return false;
         }
+
+
+        //All Job observation Modal 
+        private bool visible5 = false;
+
+        private void OpenDialog5(string date)
+        {
+            searchString = "";
+            var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
+            _DayJobObservations = _jobObservations.Where(j => Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date && j.Status != 7).ToList();
+            visible5 = true;
+        }
+        void Close5() => visible5 = false;
     }
+
 
 }

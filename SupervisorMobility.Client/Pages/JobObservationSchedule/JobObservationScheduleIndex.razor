@@ -432,6 +432,7 @@
                             var day = weeks[weekIndex].Dates[dayIndex].DayName;
                             var wIndex = weekIndex;
                             var dIndex = dayIndex;
+
                             @if (weekIndex == 0 && (day == "31" || day == "30" || day == "29" || day == "28" || day == "27" || day == "26" || day == "25"))
                             {
                                 <td style="text-align: end; width:14.28%;">
@@ -444,6 +445,8 @@
                                 var date = @weeks[weekIndex].Dates[dayIndex].DateValue;
 
                                 var dayName = @weeks[weekIndex].Dates[dayIndex].DayName;
+
+                                var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
                                 <td style="text-align: end; width:14.28%;">
                                     @if (CultureInfo.CurrentCulture.Name == "en-US" || CultureInfo.CurrentCulture.Name == "en")
                                     {
@@ -510,11 +513,9 @@
                                             </MudMenu>
                                         }
                                     }
-
                                     <div style="min-height: 16vh; overflow-y: scroll; max-height: 16vh; scroll-behavior: smooth;" class="scroll scroll1">
                                         @foreach (var jobobs in _jobObservations)
                                         {
-                                            var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
                                             var time1 = jobobs.StartDate?.ToString("HH:mm");
                                             var time2 = jobobs.EndDate?.ToString("HH:mm");
 
@@ -831,6 +832,10 @@
                                             }
                                         }
                                     </div>
+                                    @if (_jobObservations.Where(j => Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date).ToList().Count() > 2)
+                                    {
+                                        <MudButton @onclick="(() => OpenDialog5(date))"  FullWidth=true Style="text-align:center; height: 5px;" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.KeyboardArrowDown"></MudButton>
+                                    }
                                 </td>
 
                             }
@@ -938,5 +943,90 @@
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Info" OnClick="Close3">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@*All day job observations Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible5" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+
+            <MudTable Items="_DayJobObservations" T="JobObservation" Hover Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                      HorizontalScrollbar="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">@Localizer["jobObservations"]</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                    <MudSpacer />
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"]>
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"]>
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudText Align="Align.Center">
+                            @switch (context.Status)
+                            {
+                                case 1:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                                    break;
+                                case 2:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                    break;
+                                case 3:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                    break;
+                                case 4:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                    break;
+                                case 5:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                    break;
+                                case 6:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                    break;
+                            }
+                        </MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Align="Align.Center">
+                            <MudButton @onclick="(() =>  OpenDialog2(context.JobObservationId))" StartIcon="@Icons.Material.Filled.Info" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
+                                @Localizer["details"]
+                            </MudButton>
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="Close5">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
