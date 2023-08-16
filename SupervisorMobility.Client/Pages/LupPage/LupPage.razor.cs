@@ -176,7 +176,31 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         private async void ShowAreas()
         {
-            _lup.Clear();
+            if (plantId == 0)
+            {
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            _lup.Add(lup);
+                            switch (lup.Pillar)
+                            {
+                                case 1: _lupS.Add(lup); break;
+                                case 2: _lupQ.Add(lup); break;
+                                case 3: _lupD.Add(lup); break;
+                                case 4: _lupC.Add(lup); break;
+                                case 5: _lupOther.Add(lup); break;
+                            }
+                        }
+                    }
+                }
+                StateHasChanged();
+                return;
+            }
+
+                _lup.Clear();
             _lupS.Clear();
             _lupQ.Clear();
             _lupD.Clear();
@@ -214,6 +238,11 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
         private void ShowLups()
         {
+            if (areaId == 0)
+            {
+                ShowAreas();
+                return;
+            }
             _lup.Clear();
             _lupS.Clear();
             _lupQ.Clear();

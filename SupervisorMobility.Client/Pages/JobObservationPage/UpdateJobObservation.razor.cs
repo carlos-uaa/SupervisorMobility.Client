@@ -222,7 +222,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                        if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -1293,7 +1293,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                     foreach (var job in pastJobs)
                     {
-                        if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                        if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                             && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                         {
 
@@ -1362,7 +1362,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                    if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 

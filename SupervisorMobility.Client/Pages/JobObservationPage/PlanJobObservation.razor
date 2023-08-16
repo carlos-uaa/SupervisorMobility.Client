@@ -27,18 +27,23 @@
 
 @*Title*@
 <PageTitle>Supervisor Mobility |  @Localizer["jobObservations"]</PageTitle>
-@*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-    </ItemTemplate>
-</MudBreadcrumbs>
-@* Job Observation Form*@
-<EditForm Model="_jobObservation" OnValidSubmit="PlanNewJobObservation">
-    <DataAnnotationsValidator />
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <MudItem>
+        <MudBreadcrumbs Items="_links">
+            <ItemTemplate Context="item">
+                <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
     <MudItem Style="text-align: end">
         <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime"> @Localizer["pastJobObservationLup"]</MudButton>
     </MudItem>
+</div>
+
+@* Job Observation Form*@
+<EditForm Model="_jobObservation" OnValidSubmit="PlanNewJobObservation">
+    <DataAnnotationsValidator />
+
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
     <MudItem lg="10" md="12" sm="12" xs="12">
 
@@ -48,16 +53,16 @@
                     {
                         <MudItem Class="d-flex flex-row align-start justify-center">
 
-                            <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" DisableElevation>
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Show AssyCharts</MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
-                                    <MudExpansionPanels>
+                                    <MudExpansionPanels Elevation="0">
                                         @foreach (AssyChart _assychart in _assycharts)
                                         {
 
-                                            <MudExpansionPanel Text="@_assychart.Operation?.Description">
+                                            <MudExpansionPanel Text="@_assychart.Operation?.Description" >
                                                 <MudItem class="d-flex flex-column justify-center ma-1">
                                                     <MudItem class="d-flex d-flex-column justify-center">
 
@@ -190,27 +195,73 @@
                     <tbody>
                         <tr>
                             <td style="width:50%">
-                                @if(user.UserType == 1){
-                                    @*Mud select for Plants for Admin*@
-                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
-                                        @foreach (var type in _plants)
-                                        {
-                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                else{
-                                    @*Mud select for Plants *@
-                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
-                                        @foreach (var type in _plants)
-                                        {
-                                            if(type.PlantId == user.PlantId){
+                                <div class="d-flex">
+                                    @if(user.UserType == 1){
+                                        @*Mud select for Plants for Admin*@
+                                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                            @foreach (var type in _plants)
+                                            {
                                                 <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                             }
-                                        }
-                                    </MudSelect>
-                                }
+                                        </MudSelect>
+                                    }
+                                    else{
+                                        @*Mud select for Plants *@
+                                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                            @foreach (var type in _plants)
+                                            {
+                                                if(type.PlantId == user.PlantId){
+                                                    <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    }
+
+                                    @if (_jobObservation.PlantId != 0 && user.UserType == 1)
+                                    {
+                                        @*Mud select for Areas for Admin *@
+                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                            @foreach (var type in _areas)
+                                            {
+                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else if (_jobObservation.PlantId != 0 && user.UserType == 2)
+                                    {
+                                        @*Mud select for Areas for SSV *@
+                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                            @foreach (var type in user.Areas)
+                                            {
+                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else if (_jobObservation.PlantId != 0)
+                                    {
+                                        @*Mud select for Areas for SV *@
+                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                            @foreach (var type in _areas)
+                                            {
+                                                if (type.AreaId == user.AreaId)
+                                                {
+                                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        @*Mud select for Areas *@
+                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
+                                            <MudSelectItem Disabled="true" Value="0"> @Localizer["firstSelectAPlant"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                </div>
                             </td>
                             <td class="d-flex">
                                 <MudDatePicker @bind-Date="_jobObservation.StartDate" PickerVariant="PickerVariant.Dialog" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
@@ -219,47 +270,25 @@
                         </tr>
                         <tr>
                             <td>
-                                @if(_jobObservation.PlantId != 0 && user.UserType == 1){
-                                    @*Mud select for Areas for Admin *@
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
-                                        @foreach (var type in _areas)
-                                        {
-                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                else if (_jobObservation.PlantId != 0 && user.UserType == 2)
+                                @*Mud select for Distribution *@
+                                @if (_jobObservation.AreaId != 0)
                                 {
-                                    @*Mud select for Areas for SSV *@
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
-                                        @foreach (var type in user.Areas)
+                                    <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                        <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                                        @foreach (var type in _distributions)
                                         {
-                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            <MudSelectItem Value="type.DistributionId">@(
+                                         $"{type.Code} - {type.Description}"
+                                         )</MudSelectItem>
                                         }
                                     </MudSelect>
                                 }
-                                else if (_jobObservation.PlantId != 0)
+                                else
                                 {
-                                    @*Mud select for Areas for SV *@
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
-                                        @foreach (var type in _areas)
-                                        {
-                                            if(type.AreaId == user.AreaId){
-                                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                            }
-                                        }
-                                    </MudSelect>
+                                    <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                    </MudSelect>                                   
                                 }
-                                else{
-                                    @*Mud select for Areas *@
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="ShowDistributions">
-                                        <MudSelectItem Disabled="true" Value="0"> @Localizer["firstSelectAPlant"]</MudSelectItem>
-                                    </MudSelect>
-                                }
-
                             </td>
                             <td>
                                 @if(user.UserType == 1)
@@ -330,26 +359,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="d-flex">
-                                @*Mud select for Distribution *@
-                                @if (_jobObservation.AreaId != 0)
-                                {
-                                    <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                        <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
-                                        @foreach (var type in _distributions)
-                                        {
-                                            <MudSelectItem Value="type.DistributionId">@(
-                                         $"{type.Code} - {type.Description}"
-                                         )</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                else
-                                {
-                                    <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
-                                    </MudSelect>                                   
-                                }
+                            <td>
 
                                 @if(_jobObservation.DistributionId != 0){
                                     @*Mud select for Operation *@

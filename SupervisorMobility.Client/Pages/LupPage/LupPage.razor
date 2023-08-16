@@ -29,29 +29,39 @@
                     <MudItem Class="d-flex">
                         @if (user.UserType == 1)
                         {
-
                             @*Mud select of Plants for Admin*@
                             <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                <MudSelectItem Value="0">@Localizer["allPlants"]</MudSelectItem>
                                 @foreach (var type in _plants)
                                 {
                                     <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                 }
                             </MudSelect>
-                            @*Mud select of Areas for Admin*@
-                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowLups">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
-                                @foreach (var type in _areas)
-                                {
-                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                }
-                            </MudSelect>
+
+                            @if (plantId != 0)
+                            {
+                                @*Mud select of Areas for Admin*@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowLups">
+                                    <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
+                                    @foreach (var type in _areas)
+                                    {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                @*Mud select for SSV *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                </MudSelect>
+                            }
                         }
                         else if (user.UserType == 2)
                         {
                             @*Mud select of Areas for Admin*@
                             <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowLups">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
                                 @foreach (var type in user.Areas)
                                 {
                                     <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
@@ -61,7 +71,7 @@
                         else if(user.UserType == 5){
                             @*Mud select of Areas for Admin*@
                             <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowLups">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
                                 @foreach (var type in _areas)
                                 {
                                     <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
@@ -75,7 +85,8 @@
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["allLup"]>
                     @if (_lup.Count > 0)
                     {
-                        <MudTable Items="_lup" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <MudTable Items="_lup" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                                  HorizontalScrollbar="true">
                             <ToolBarContent>
                                 <MudGrid class="d-flex flex-column justify-center align-self-center">
                                     <MudItem Class="d-flex">
@@ -177,6 +188,9 @@
                                     </MudText>
                                 </MudTd>
                             </RowTemplate>
+                            <PagerContent>
+                                <MudTablePager />
+                            </PagerContent>
                         </MudTable>
                     }
                     else
@@ -188,7 +202,8 @@
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["safety"]>
                     @if (_lupS.Count > 0)
                     {
-                        <MudTable Items="_lupS" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <MudTable Items="_lupS" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                                  HorizontalScrollbar="true">
                             <ToolBarContent>
                                 <MudGrid class="d-flex flex-column justify-center align-self-center">
                                     <MudItem Class="d-flex">
@@ -355,6 +370,9 @@
                                     </MudText>
                                 </MudTd>
                             </RowTemplate>
+                            <PagerContent>
+                            <MudTablePager />
+                            </PagerContent>
                         </MudTable>
                     }
                     else
@@ -365,7 +383,8 @@
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["delivery"]>
                     @if (_lupD.Count > 0)
                     {
-                        <MudTable Items="_lupD" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <MudTable Items="_lupD" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                                  HorizontalScrollbar="true">
                             <ToolBarContent>
                                 <MudGrid class="d-flex flex-column justify-center align-self-center">
                                     <MudItem Class="d-flex">
@@ -443,6 +462,9 @@
                                     </MudText>
                                 </MudTd>
                             </RowTemplate>
+                                            <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
                         </MudTable>
                     }
                     else
@@ -453,7 +475,8 @@
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["cost"]>
                     @if (_lupC.Count > 0)
                     {
-                        <MudTable Items="_lupC" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <MudTable Items="_lupC" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                                  HorizontalScrollbar="true">
                             <ToolBarContent>
                                 <MudGrid class="d-flex flex-column justify-center align-self-center">
                                     <MudItem Class="d-flex">
@@ -531,6 +554,9 @@
                                     </MudText>
                                 </MudTd>
                             </RowTemplate>
+                                            <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
                         </MudTable>
                     }
                     else
@@ -541,7 +567,8 @@
                 <MudTabPanel Icon="@Icons.Material.Filled.ContentPaste" Text=@Localizer["other"]>
                     @if (_lupOther.Count > 0)
                     {
-                        <MudTable Items="_lupOther" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped">
+                        <MudTable Items="_lupOther" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+                                  HorizontalScrollbar="true">
                             <ToolBarContent>
                                 <MudGrid class="d-flex flex-column justify-center align-self-center">
                                     <MudItem Class="d-flex">
@@ -619,6 +646,9 @@
                                     </MudText>
                                 </MudTd>
                             </RowTemplate>
+                            <PagerContent>
+                                <MudTablePager />
+                            </PagerContent>
                         </MudTable>
                     }
                     else

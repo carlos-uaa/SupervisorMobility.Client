@@ -349,6 +349,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private void ShowOperators()
         {
+            if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
+                ShowPastJobObservations();
             operatorUsers = new();
             _jobObservation.OperatorId = 0;
             //operator User
@@ -391,7 +393,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 foreach (var job in pastJobs)
                 {
-                    if (job.Supervisor.Name == user.Name && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                    if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
                         && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
                     {
 
@@ -794,11 +796,19 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private void OpenDialogPastJobObservations()
         {
+            if (_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["firstSelectASupervisor"], Severity.Warning);
+                return;
+            }
+
             if (!flag)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Select a distribution and an operation", Severity.Error);
+                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
                 return;
             }
             visiblePast = true;
