@@ -124,7 +124,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         groupId = 0;
                         ssvId = 0;
                         supervisorId = 0;
-                        _allSSVs = await UsersService.GetUserByType(2, true, true);
+                        _allSSVs = await UsersService.GetUsersByType(2, true, true);
                     }
                     else if(user.UserType == 2)
                     {

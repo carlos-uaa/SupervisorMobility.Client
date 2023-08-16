@@ -2095,7 +2095,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a There has been a change in the supervisor and the supervisor&apos;s areas. It is important to note that one or more subordinates have different areas than the new supervisor.
+        ///   Busca una cadena traducida similar a There has been a change in the supervisor and the supervisor&apos;s areas. It is important to note that one or more subordinates have different areas than the supervisor.
         ///
         ///Please review this information before proceeding..
         /// </summary>

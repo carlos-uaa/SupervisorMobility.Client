@@ -331,19 +331,35 @@ namespace SupervisorMobility.Client.Services.UserService
         public async Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId)
         {
 
+
             if(_newUser.UserType == _userCopy.UserType)
             {
                 foreach (User Sub in _newUser.Subordinates)
                 {
-                    if (_userCopy.Subordinates?.Any(x => x.UserId == Sub.UserId) == true)
+                    //Verifico que no sean listados de reasignacion
+                    if(_newUser.Subordinates?.Any(x => x.AreaId == -2 ) == true)
                     {
+                        //Incluye usuarios con reasignacion
+                        if(Sub.AreaId != -2)
+                        {
+                            //identifico a los usuarios que se quedan
+                            Sub.SuperiorId = -2;
+                        }
+                        //si tiene un area == -2 significa que debe ser reasignado
+
+                    }
+                    else if (_userCopy.Subordinates?.Any(x => x.UserId == Sub.UserId) == true)
+                    {
+                        //esta es una reasignacion, el usuario permanece en el mismo nivel 
+                        //los usuarios que no pertenecen al area son reasignados a otro
                         switch (_newUser.UserType)
                         {
+                            //saber si los subordinados seran operadores o SV
                             case 2:
+                                //tratamos con sV
                                 var matchedSubordinate = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
                                 if (matchedSubordinate != null && matchedSubordinate.AreaId != 0)
                                 {
-                                  
                                     ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinate);
 
                                     if (result.AreEqual)
@@ -351,34 +367,42 @@ namespace SupervisorMobility.Client.Services.UserService
                                         // Los objetos son iguales
                                         if (_newUser.Areas?.Any(x => x.AreaId == Sub.AreaId) == true)
                                         {
-                                            Sub.SuperiorId = null;
-                                            Sub.AreaId = null;
-                                            Sub.GroupId = null;
+                                            Sub.SuperiorId = -2;
                                         }
                                     }
                                 }
                                 break;
                             case 3:
+                                //tratamos con OPeradores/
                                 var matchedSubordinateSV = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
                                 if (matchedSubordinateSV != null && matchedSubordinateSV.AreaId != 0)
                                 {
-
                                     ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinateSV);
-
                                     if (result.AreEqual)
                                     {
-                                        // Los objetos son iguales
+                                        // el usuario pertenece a la jerarquia
                                         if (_newUser.AreaId == Sub.AreaId)
                                         {
-                                            Sub.SuperiorId = null;
-                                            Sub.AreaId = null;
-                                            Sub.GroupId = null;
+                                            Sub.SuperiorId = -2;
                                         }
                                     }
                                 }
                                 break;
                             case 5:
-                                // Acciones para UserType 5
+                                var matchedSubordinateM = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
+                                if (matchedSubordinateM != null && matchedSubordinateM.PlantId != 0)
+                                {
+                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinateM);
+
+                                    if (result.AreEqual)
+                                    {
+                                        // el usuario pertenece a la jerarquia
+                                        if (_newUser.PlantId == Sub.PlantId)
+                                        {
+                                            Sub.SuperiorId = -2;
+                                        }
+                                    }
+                                }
                                 break;
                         }
                     }
@@ -386,17 +410,27 @@ namespace SupervisorMobility.Client.Services.UserService
             }
             else
             {
-                foreach (User Sub in _newUser.Subordinates)
+                // es una promocion 
+                //este for es para los nuevos subordinados
+
+                if(_newUser.Subordinates?.Count > 0)
                 {
-                    Sub.SuperiorId = null;
-                    Sub.AreaId = null;
-                    Sub.GroupId = null;
+                 foreach (User Sub in _newUser.Subordinates)
+                                {
+                                    Sub.SuperiorId = -2;
+                                }
+                }
+                
+                if(_userCopy.Subordinates?.Count > 0)
+                {
+                    foreach (User Sub in _userCopy.Subordinates)
+                    {
+                        _newUser.Subordinates.Add(Sub);
+                    }
                 }
 
-                foreach (User Sub in _userCopy.Subordinates)
-                {
-                    _newUser.Subordinates.Add(Sub);
-                }
+               
+             
             }
 
            
