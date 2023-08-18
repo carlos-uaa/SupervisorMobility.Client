@@ -224,63 +224,63 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            if (_assychart.GOS != "")
-            {
-                GosFilesInFolder = await CDMSServices.GetFilesGOS(_assychart.GOS);
-                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
-                {
-                    isGosFolder = false;
-                    bool msgGOSBox = await OpenMessageGOS();
+            //if (_assychart.GOS != "")
+            //{
+            //    GosFilesInFolder = await CDMSServices.GetFilesGOS(_assychart.GOS);
+            //    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            //    {
+            //        isGosFolder = false;
+            //        bool msgGOSBox = await OpenMessageGOS();
 
-                }
-                else
-                {
-                    isGosFolder = true;
-                }
-            }
-            else { isGosFolder = true; }
+            //    }
+            //    else
+            //    {
+            //        isGosFolder = true;
+            //    }
+            //}
+            //else { isGosFolder = true; }
 
-            CcpFilesInFolder = new CDMS_CCP_Archives();
+            //CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            if (_assychart.CCP != "")
-            {
-                CcpFilesInFolder = await CDMSServices.GetFilesCCP(_assychart.CCP);
-                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
-                {
-                    isCcpFolder = false;
-                    bool msgCCPBox = await OpenMessageCCP();
-                }
-                else
-                {
-                    isCcpFolder = true;
-                }
-            }
-            else
-            {
-                isCcpFolder = true;
+            //if (_assychart.CCP != "")
+            //{
+            //    CcpFilesInFolder = await CDMSServices.GetFilesCCP(_assychart.CCP);
+            //    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+            //    {
+            //        isCcpFolder = false;
+            //        bool msgCCPBox = await OpenMessageCCP();
+            //    }
+            //    else
+            //    {
+            //        isCcpFolder = true;
+            //    }
+            //}
+            //else
+            //{
+            //    isCcpFolder = true;
 
-            }
+            //}
 
-            HoeFilesInFolder = new CDMS_HOE_Archives();
+            //HoeFilesInFolder = new CDMS_HOE_Archives();
 
-            if (_assychart.HOE != "")
-            {
-                HoeFilesInFolder = await CDMSServices.GetFilesHOE(_assychart.HOE);
-                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
-                {
-                    isHoeFolder = false;
-                    bool msgHOEBox = await OpenMessageHOE();
+            //if (_assychart.HOE != "")
+            //{
+            //    HoeFilesInFolder = await CDMSServices.GetFilesHOE(_assychart.HOE);
+            //    if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+            //    {
+            //        isHoeFolder = false;
+            //        bool msgHOEBox = await OpenMessageHOE();
 
-                }
-                else
-                {
-                    isHoeFolder = true;
-                }
-            }
-            else
-            {
-                isHoeFolder = true;
-            }
+            //    }
+            //    else
+            //    {
+            //        isHoeFolder = true;
+            //    }
+            //}
+            //else
+            //{
+            //    isHoeFolder = true;
+            //}
 
 
 

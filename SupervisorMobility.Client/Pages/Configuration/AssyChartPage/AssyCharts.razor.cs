@@ -24,7 +24,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private string HOErute = "";
         private string CCPrute = "";
         private string GOSrute = "";
-        public List<AssyChart> _assychart { get; set; } = new();
+        public List<AssyChart>? _assychart { get; set; } = null;
         public List<AssyChart> _assychartplant { get; set; } = new();
         public List<AssyChart> _assychartarea { get; set; } = new();
         public List<AssyChart> _assychartdistribution { get; set; } = new();
@@ -136,30 +136,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 return true;
             if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.HOE.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+            //if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if (element.HOE.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
             if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Product.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+            //if (element.Product.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
             if (element.CreationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.ModificationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.GOS}{element.CCP}{element.Operation.Description}{element.Plant.Description}{element.Area.Description}{element.Distribution.Description}".Contains(searchString))
+            if ($"{element.Operation.Description}{element.Plant.Description}{element.Area.Description}{element.Distribution.Description}".Contains(searchString))
                 return true;
             return false;
         }
 
-        private TableGroupDefinition<AssyChart> _groupDefinition = new()
-        {
-            GroupName = "Group",
-            Selector = (e) => e.Product.Description
-        };
 
         void GoToUpdateAssyChart(int assychartid)
         {

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace SupervisorMobility.Client.Data.Entities
 {
@@ -7,20 +8,15 @@ namespace SupervisorMobility.Client.Data.Entities
         public int AssyChardId { get; set; }
         [Required]
         public bool? IsActive { get; set; } = false;
-        public string GOS { get; set; } = string.Empty;
-        public string CCP { get; set; } = string.Empty;
-        public string HOE { get; set; } = string.Empty;
+   
         [Required]
         public DateTime CreationDate { get; set; }
         public DateTime ModificationDate { get; set; }
         //Linkers
         public int CriticalType { get; set; }
 
-        //Product info
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Product/Model")]
-        public int ProductId { get; set; }
-        public Product Product { get; set; }
+        public ICollection<RouteProductAssyChart> RoutesProductsAssyChart { get; set; }
+          = new List<RouteProductAssyChart>();
         //PLANT INFO
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
