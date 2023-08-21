@@ -428,12 +428,17 @@ namespace SupervisorMobility.Client.Services.UserService
                         Sub.SuperiorId = -2;
                     }
                 }
+                else
+                {
+                    _newUser.Subordinates = new List<User>();
+                }
 
                 if (_userCopy.Subordinates?.Count > 0)
                 {
                     foreach (User Sub in _userCopy.Subordinates)
                     {
-                        _newUser.Subordinates.Add(Sub);
+                        Sub.AreaId = -2;
+                        _newUser.Subordinates?.Add(Sub);
                     }
                 }
 
