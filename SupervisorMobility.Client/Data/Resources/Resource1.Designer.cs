@@ -2430,6 +2430,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First Add a Group.
+        /// </summary>
+        public static string UsersFirstGroup {
+            get {
+                return ResourceManager.GetString("UsersFirstGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a First Type a Payroll Number.
         /// </summary>
         public static string UsersFirstPayroll {

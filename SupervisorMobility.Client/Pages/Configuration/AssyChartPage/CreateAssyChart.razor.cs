@@ -17,6 +17,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         public bool modeDisplay { get; set; } = true;
         public bool ProductModalDisplay { get; set; } = false;
 
+        public int auxplant = 0;
+        public int auxarea = 0;
+        public int auxdistribution = 0;
+        public int auxoperation = 0;
+        private bool enablecreate = false;
+
         Product? ProductSelected { get; set; } = null;
         RouteProductAssyChart RouteProductDialogDisplay { get; set; }
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
@@ -137,9 +143,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UpdateAreas()
         {
-            _areas = await AreaServices.GetAreas(_newassychart.PlantId);
-            _newassychart.AreaId = 0;
-            _newassychart.DistributionId = 0;
+            _areas = await AreaServices.GetAreas(auxplant);
+            auxarea = 0;
+            auxdistribution = 0;
             _newassychart.RoutesProductsAssyChart?.Clear();
             StateHasChanged();
 
@@ -148,19 +154,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         private async void UpdateDistributions()
         {
-            _newassychart.DistributionId = 0;
+            auxdistribution = 0;
             _newassychart.RoutesProductsAssyChart?.Clear();
-            _distributions = await DistributionServices.GetDistributionsWithCollections(_newassychart.PlantId, _newassychart.AreaId);
+            _distributions = await DistributionServices.GetDistributionsWithCollections(auxplant, auxarea);
 
             StateHasChanged();
         }
 
         private async void UpdateOperationProducts()
         {
-            _newassychart.OperationId = 0;
+            auxoperation = 0;
             _newassychart.RoutesProductsAssyChart?.Clear();
 
-            _distributionValues = await DistributionServices.GetDistributionWithCollections(_newassychart.PlantId, _newassychart.AreaId, _newassychart.DistributionId);
+            _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
             StateHasChanged();
         }
 
@@ -195,8 +201,79 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             StateHasChanged();
 
         }
-        void CloseProductModal() => ProductModalDisplay = false;
+        private async void  CloseProductModal()
+        {
+            isHoeFolder = false;
+            isGosFolder = false;
+            isCcpFolder = false;
 
+            GosFilesInFolder = new CDMS_GOS_Archives();
+
+            if (RouteProductDialogDisplay.GOS != "")
+            {
+                GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
+                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isGosFolder = false;
+                    bool msgGOSBox = await OpenMessageGOS();
+
+                }
+                else
+                {
+                    isGosFolder = true;
+                }
+            }
+            else { isGosFolder = true; }
+
+            CcpFilesInFolder = new CDMS_CCP_Archives();
+
+            if (RouteProductDialogDisplay.CCP != "")
+            {
+                CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
+                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isCcpFolder = false;
+                    bool msgCCPBox = await OpenMessageCCP();
+                }
+                else
+                {
+                    isCcpFolder = true;
+                }
+            }
+            else
+            {
+                isCcpFolder = true;
+
+            }
+
+            HoeFilesInFolder = new CDMS_HOE_Archives();
+
+            if (RouteProductDialogDisplay.HOE != "")
+            {
+                HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
+                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+                {
+                    isHoeFolder = false;
+                    bool msgHOEBox = await OpenMessageHOE();
+
+                }
+                else
+                {
+                    isHoeFolder = true;
+                }
+            }
+            else
+            {
+                isHoeFolder = true;
+            }
+
+
+            if (isGosFolder && isCcpFolder && isHoeFolder)
+            {
+
+                ProductModalDisplay = false;
+            }
+        }
 
 
         private void AddProductToList(Product selection)
@@ -248,10 +325,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void CreateNewAssyChartAsync()
         {
+            enablecreate = true;
             _newassychart.IsActive = true;
+            _newassychart.PlantId = auxplant;
+            _newassychart.AreaId = auxarea;
+            _newassychart.DistributionId = auxdistribution;
+            _newassychart.OperationId = auxoperation;
+
             _newassychart.CreationDate = DateTime.Now;
 
-            GosFilesInFolder = new CDMS_GOS_Archives();
+            //GosFilesInFolder = new CDMS_GOS_Archives();
 
             //if (_newassychart.GOS != "")
             //{
@@ -311,19 +394,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             //    isHoeFolder = true;
             //}
 
-            isCcpFolder = true;
-            isGosFolder = true;
-            isHoeFolder = true;
-
-            if (isGosFolder && isCcpFolder && isHoeFolder)
-            {
+       
+            //if (isGosFolder && isCcpFolder && isHoeFolder)
+            //{
                 var result = await AssyChartServices.CreateAssyChart(_newassychart);
 
                 if (result != null)
                     NavigationManager.NavigateTo("/assychart");
                 else
                     await JsRuntime.InvokeVoidAsync("alert", "Fail to create Assy Chart, contact admin!"); // Alert
-            }
+            //}
 
 
 

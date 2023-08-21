@@ -26,7 +26,9 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         public async Task<AssyChart> CreateAssyChart(AssyChart _newAssyChart)
         {
             var response = await _http.PostAsJsonAsync($"assycharts", _newAssyChart);
+
             var newAssyChart = await response.Content.ReadFromJsonAsync<AssyChart>();
+            
             return newAssyChart;
         }
         //delete assychart

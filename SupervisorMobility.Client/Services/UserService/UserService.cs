@@ -221,7 +221,7 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections,bool includeSubordinates)
+        public async Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections, bool includeSubordinates)
         {
             try
             {
@@ -330,17 +330,23 @@ namespace SupervisorMobility.Client.Services.UserService
         }
         public async Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId)
         {
+            Console.WriteLine("PromoveUsers Function");
 
-
-            if(_newUser.UserType == _userCopy.UserType)
+            if (_newUser.UserType == _userCopy.UserType)
             {
+                Console.WriteLine("Userttype igual");
+
                 foreach (User Sub in _newUser.Subordinates)
                 {
+                    Console.WriteLine("Foreache");
+
                     //Verifico que no sean listados de reasignacion
-                    if(_newUser.Subordinates?.Any(x => x.AreaId == -2 ) == true)
+                    if (_newUser.Subordinates?.Any(x => x.AreaId == -2) == true)
                     {
+                        Console.WriteLine("Existe alguno con area -2");
+
                         //Incluye usuarios con reasignacion
-                        if(Sub.AreaId != -2)
+                        if (Sub.AreaId != -2)
                         {
                             //identifico a los usuarios que se quedan
                             Sub.SuperiorId = -2;
@@ -350,6 +356,8 @@ namespace SupervisorMobility.Client.Services.UserService
                     }
                     else if (_userCopy.Subordinates?.Any(x => x.UserId == Sub.UserId) == true)
                     {
+                        Console.WriteLine("No exis existe -2");
+
                         //esta es una reasignacion, el usuario permanece en el mismo nivel 
                         //los usuarios que no pertenecen al area son reasignados a otro
                         switch (_newUser.UserType)
@@ -413,15 +421,15 @@ namespace SupervisorMobility.Client.Services.UserService
                 // es una promocion 
                 //este for es para los nuevos subordinados
 
-                if(_newUser.Subordinates?.Count > 0)
+                if (_newUser.Subordinates?.Count > 0)
                 {
-                 foreach (User Sub in _newUser.Subordinates)
-                                {
-                                    Sub.SuperiorId = -2;
-                                }
+                    foreach (User Sub in _newUser.Subordinates)
+                    {
+                        Sub.SuperiorId = -2;
+                    }
                 }
-                
-                if(_userCopy.Subordinates?.Count > 0)
+
+                if (_userCopy.Subordinates?.Count > 0)
                 {
                     foreach (User Sub in _userCopy.Subordinates)
                     {
@@ -429,11 +437,11 @@ namespace SupervisorMobility.Client.Services.UserService
                     }
                 }
 
-               
-             
+
+
             }
 
-           
+
 
             var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior/{UserId}?NewSuperiorId={NewSuperiorId}", _newUser);
 

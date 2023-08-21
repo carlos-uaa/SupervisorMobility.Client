@@ -45,7 +45,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         MudMessageBox CCPmbox { get; set; }
         MudMessageBox GOSmbox { get; set; }
 
-
+        private int auxplant;
+        private int auxarea;
+        private int auxdistribution;
+        private int auxoperation;
 
         //Inizialize
         protected async override Task OnInitializedAsync()
@@ -58,6 +61,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
         };
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
+
+            auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
+            auxarea = _assychart.AreaId != null ? (int)_assychart.AreaId : 0;
+            auxdistribution = _assychart.DistributionId != null ? (int)_assychart.DistributionId : 0;
+            auxoperation = _assychart.OperationId != null ? (int)_assychart.OperationId : 0;
 
             try
             {
@@ -75,7 +83,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             try
             {
-                _areas = await AreaServices.GetAreas(_assychart.PlantId);
+                _areas = await AreaServices.GetAreas(auxplant);
             }
             catch (Exception exe)
             {
@@ -95,8 +103,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             try
             {
-                _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
-                _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
+                _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
+                _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
             }
             catch (Exception exe)
             {
@@ -189,17 +197,20 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         async void UpdateAreas()
         {
-            _areas = await AreaServices.GetAreas(_assychart.PlantId);
+            auxdistribution = 0;
+            auxoperation = 0;
+            _areas = await AreaServices.GetAreas(auxplant);
         }
 
         private async void UpdateDistributions()
         {
-            _distributions = await DistributionServices.GetDistributions(_assychart.PlantId, _assychart.AreaId);
+            auxoperation = 0;
+            _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
         }
 
         private async void UpdateOperationProducts()
         {
-            _distributionValues = await DistributionServices.GetDistributionWithCollections(_assychart.PlantId, _assychart.AreaId, _assychart.DistributionId);
+            _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
         }
         private async Task<bool> OpenMessageHOE()
         {
