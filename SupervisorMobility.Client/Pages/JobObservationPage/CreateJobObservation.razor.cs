@@ -796,6 +796,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private void OpenDialogPastJobObservations()
         {
+            if (!flag)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
+                return;
+            }
             if (_jobObservation.SupervisorId == 0)
             {
                 Snackbar.Clear();
@@ -804,13 +811,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 return;
             }
 
-            if (!flag)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
-                return;
-            }
             visiblePast = true;
         }
 

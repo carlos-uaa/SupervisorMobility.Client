@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 using SupervisorMobility.Client.Services.UserService;
 using System;
 using System.Text.RegularExpressions;
@@ -131,7 +132,7 @@ namespace SupervisorMobility.Client.Pages
 
                     json = JsonSerializer.Serialize<User>(user);
                     await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-
+                    NavigationManager.NavigateTo($"/",true);
                     StateHasChanged();
 
                 }

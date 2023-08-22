@@ -1330,15 +1330,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a File Id.
-        /// </summary>
-        public static string GudiesId {
-            get {
-                return ResourceManager.GetString("GudiesId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Busca una cadena traducida similar a Guide Code.
         /// </summary>
         public static string GuidesCode {
@@ -1447,6 +1438,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a File Id.
+        /// </summary>
+        public static string GuidesId {
+            get {
+                return ResourceManager.GetString("GuidesId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Guide Name.
         /// </summary>
         public static string GuidesName {
@@ -1501,7 +1501,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Upload Data.
+        ///   Busca una cadena traducida similar a Creation Date.
         /// </summary>
         public static string GuidesUploadData {
             get {

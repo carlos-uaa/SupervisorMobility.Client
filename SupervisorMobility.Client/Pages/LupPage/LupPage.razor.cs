@@ -139,7 +139,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
                         }
 
                     }
-                    else if (user.UserType == 5)
+                    else if (user.UserType == 5 || user.UserType == 6)
                     {
                         plantId = (int)user.PlantId;
                         areaId = 0;
@@ -167,6 +167,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
                             }
                         }
                     }
+
                 }
 
             }

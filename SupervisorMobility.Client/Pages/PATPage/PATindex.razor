@@ -28,10 +28,13 @@ else if (_Pats.Count == 0)
         <MudText Align="Align.Center">
             <h4>@Localizer["thereAreNoPATsCreated"]</h4>
             <MudSpacer></MudSpacer>
-            <MudButton @onclick="(() => CreatePat())">
-                <MudText>@Localizer["createPAT"]</MudText>
-                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Pat" Color="Color.Primary"></MudIcon>
-            </MudButton>
+            @if (user.UserType == 1 || user.UserType == 3)
+            {
+                <MudButton @onclick="(() => CreatePat())">
+                    <MudText>@Localizer["createPAT"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Pat" Color="Color.Primary"></MudIcon>
+                </MudButton>
+            }
         </MudText>
     </MudContainer>
 }
@@ -122,11 +125,14 @@ else
                         </ActivatorContent>
                         <ChildContent>
                             <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => PatDetails(context.PATid))" @ontouchstart="(() => PatDetails(context.PATid))">@Localizer["PATDetails"]</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))" @ontouchstart="(() => OpenDeleteDialog(context.PATid))" >@Localizer["delete"] PAT</MudMenuItem>
+                            @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                            {
+                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))" @ontouchstart="(() => OpenDeleteDialog(context.PATid))">@Localizer["delete"] PAT</MudMenuItem>
+                            }
                         </ChildContent>
                     </MudMenu>
-                   @* <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => PatDetails(context.PATid))"></MudIconButton>
-                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))"></MudIconButton>*@
+                    @* <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => PatDetails(context.PATid))"></MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.PATid))"></MudIconButton>*@
                 </MudText>
             </MudTd>
         </RowTemplate>
@@ -182,21 +188,16 @@ else
 
             if (user != null)
             {
-                if (user.UserType == 1)
+                if (user.UserType == 1 || user.UserType == 6)
                 {
-                    Console.WriteLine("Es admin");
                     _Pats = await PATsServices.GetAllPATs();
                 }
                 else if (user.UserType == 2)
                 {
-                    Console.WriteLine("Es SSV");
-
                     _Pats = await PATsServices.GetAllPATSforSSV(user.UserId);
                 }
                 else
                 {
-                    Console.WriteLine("Es SV");
-
                     _Pats = await PATsServices.GetAllPATSforSV(user.UserId);
                 }
             }

@@ -136,7 +136,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         supervisorId = 0;
 
                         _allSupervisors = user.Subordinates?.ToList();
-                        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                     else if(user.UserType == 3)
                     {
@@ -169,6 +168,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         _areas = await AreaServices.GetAreas(plantId);
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
+                    }
+                    else if (user.UserType == 6)
+                    {
+                        plantId = (int)user.PlantId;
+                        areaId = 0;
+                        groupId = (int)user.GroupId;
+                        ssvId = 0;
+                        supervisorId = 0;
+
+                        _allSSVs = await UsersService.GetUsersByType(2, true, true);
                     }
                 }
                     StateHasChanged();
@@ -422,7 +431,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
             }
 
 
-            if (user.UserType == 1)
+            if (user.UserType == 1 || user.UserType == 6)
             {
 
                 supervisorId = 0;

@@ -62,78 +62,79 @@
 {
 
     <MudSimpleTable Dense>
-        <tbody>
-             <tr>
+    <tbody>
+        <tr>
 
-                <td colspan="2" rowspan="2">
-                    <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
-                        <MudText Typo="Typo.h6">@Localizer["sosDetails"] </MudText>
-                    </MudItem>
-                </td>
-                <td colspan="2">
-                    <MudItem Class="d-flex">
-                        <MudIcon Icon="@Icons.Material.Filled.BusinessCenter"> </MudIcon>
-                        <MudText Class="ml-2">@Localizer["area"]</MudText>
-                    </MudItem>
-                </td>
-                <td colspan="2">
-                    <MudItem Class="d-flex">
-                        <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
-                        <MudText Class="ml-2">@Localizer["plant"]</MudText>
-                    </MudItem>
-                </td>
+            <td colspan="2" rowspan="2">
+                <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
+                    <MudText Typo="Typo.h6">@Localizer["sosDetails"] </MudText>
+                </MudItem>
+            </td>
+            <td colspan="2">
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.BusinessCenter"> </MudIcon>
+                    <MudText Class="ml-2">@Localizer["area"]</MudText>
+                </MudItem>
+            </td>
+            <td colspan="2">
+                <MudItem Class="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
+                    <MudText Class="ml-2">@Localizer["plant"]</MudText>
+                </MudItem>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" colspan="2">
+                @SOS_Review.Area?.Description
+            </td>
+            <td rowspan="2" colspan="2">
+                @SOS_Review.Plant?.Description
+            </td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense Bordered=false>
+        <thead>
+            <tr>
             </tr>
             <tr>
-                <td rowspan="2" colspan="2">
-                    @SOS_Review.Area?.Description
-                </td>
-                <td rowspan="2" colspan="2">
-                    @SOS_Review.Plant?.Description
-                </td>
-            </tr>
-        </tbody>
-    </MudSimpleTable>
-    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense Bordered=false>
-    <thead>
-        <tr>
-        </tr>
-        <tr>
-            <th rowspan="2">
-                Item
-            </th>
-            <th rowspan="2">
-                <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.AccountTree"> </MudIcon>
-                    <MudText Class="ml-2">@Localizer["distribution"]</MudText>
-                </MudItem>
-            </th>
-            <th rowspan="2">
-                Nombre de control
-            </th>
-            <th rowspan="2" class="vertical-text">
-
-                <div class="vertical-content">
-                    Programacion
-                </div>
-            </th>
-            <th colspan="12">
-                @SOS_Review.AplicationYear
-            </th>
-            <th colspan="3" rowspan="2">
-                Notas
-            </th>
-
-        </tr>
-
-        <tr>
-            @for(var i = 1; i<=12; i++){
-                <th style="text-align: center">
-                    @textInfo.ToTitleCase(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i))
+                <th rowspan="2">
+                    Item
                 </th>
-            }
-        </tr>
+                <th rowspan="2">
+                    <MudItem Class="d-flex">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountTree"> </MudIcon>
+                        <MudText Class="ml-2">@Localizer["distribution"]</MudText>
+                    </MudItem>
+                </th>
+                <th rowspan="2">
+                    Nombre de control
+                </th>
+                <th rowspan="2" class="vertical-text">
 
-        @* <tr>
+                    <div class="vertical-content">
+                        Programacion
+                    </div>
+                </th>
+                <th colspan="12">
+                    @SOS_Review.AplicationYear
+                </th>
+                <th colspan="3" rowspan="2">
+                    Notas
+                </th>
+
+            </tr>
+
+            <tr>
+                @for (var i = 1; i <= 12; i++)
+                {
+                    <th style="text-align: center">
+                        @textInfo.ToTitleCase(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i))
+                    </th>
+                }
+            </tr>
+
+            @* <tr>
         <th>
         <MudItem Class="d-flex">
         <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
@@ -151,10 +152,10 @@
         <th>SSV</th>
         <th>@Localizer["date"]</th>
         </tr>*@
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
 
-        @foreach (Distribution Distribution_Item in _distributions)
+            @foreach (Distribution Distribution_Item in _distributions)
             {
                 <tr>
                     <td rowspan="2">
@@ -313,11 +314,15 @@
                             {
                                 @if (context?.Count() > 0 && context.FindIndex(j => j.JobObservation?.Status == 7) != -1)
                                 {
-                                    <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))" @ontouchstart="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))">
-                                            @Localizer["createJobObservation"]
-                                        </MudMenuItem>
-                                    </MudMenu>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))" @ontouchstart="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))">
+                                                @Localizer["createJobObservation"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+
+                                    }
 
                                     <div style="min-height: 8vh; overflow-y: scroll; max-height: 8vh; scroll-behavior: smooth;" class="scroll scroll1">
 
@@ -349,18 +354,21 @@
                                         <MudButton @onclick="(() => OpenDialog4(Distribution_Item.DistributionId, currentIndex, 1))" FullWidth=true Style="text-align:center; height: 5px;" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.KeyboardArrowDown"></MudButton>
                                     }
 
-                            }
-                            else
-                            {
-                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))" @ontouchstart="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))">
-                                        @Localizer["createJobObservation"]
-                                    </MudMenuItem>
-                                </MudMenu>
+                                }
+                                else
+                                {
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))" @ontouchstart="(() => OpenDialogCreateJobObservation(currentIndex, Distribution_Item.DistributionId))">
+                                                @Localizer["createJobObservation"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    }
+
+                                }
 
                             }
-
-                }
                         </td>
 
                     }
@@ -502,7 +510,10 @@ else
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+        {
+            <MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        }
         <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
@@ -740,15 +751,26 @@ else
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                            @if(context.Status != 7){
+                            @if (context.Status != 7)
+                            {
                                 <MudButton @onclick="(() =>  OpenDialog2(context.JobObservationId))" StartIcon="@Icons.Material.Filled.Info" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
                                     @Localizer["details"]
                                 </MudButton>
                             }
-                            else{
-                            <MudButton @onclick="(() =>  OpenDialog3(context.JobObservationId))" StartIcon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small">
-                                    @Localizer["planIt"]
-                                </MudButton>
+                            else
+                            {
+                                @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                {
+                                    <MudButton @onclick="(() =>  OpenDialog3(context.JobObservationId))" StartIcon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small">
+                                        @Localizer["planIt"]
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton @onclick="(() =>  OpenDialog3(context.JobObservationId))" StartIcon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small">
+                                        @Localizer["details"]
+                                    </MudButton>
+                                }
                             }
                         </MudText>
                     </MudTd>
@@ -1231,7 +1253,7 @@ else
     private bool SeeDialogCreateJobObservation = false;
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
-    TextInfo  textInfo = CultureInfo.CurrentCulture.TextInfo;
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
     protected async override Task OnInitializedAsync()
     {
@@ -1597,7 +1619,7 @@ else
 
     public string programmedStartDate = "";
     private void OpenDialog4(int DistributionIndex, int MonthIndex, int Type)
-    {      
+    {
         searchString = "";
         _SOSJobobservation = new();
 
@@ -1607,10 +1629,12 @@ else
             {
                 foreach (SOSRegisterJobObservation jobobs in context)
                 {
-                    if(Type == 1 && jobobs.JobObservation.Status == 7){
+                    if (Type == 1 && jobobs.JobObservation.Status == 7)
+                    {
                         _SOSJobobservation.Add(jobobs.JobObservation);
                     }
-                    else if(Type == 2 && jobobs.JobObservation.Status != 7){
+                    else if (Type == 2 && jobobs.JobObservation.Status != 7)
+                    {
                         _SOSJobobservation.Add(jobobs.JobObservation);
                     }
                 }

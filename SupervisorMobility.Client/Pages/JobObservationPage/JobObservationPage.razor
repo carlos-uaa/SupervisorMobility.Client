@@ -62,7 +62,7 @@
                         </MudSelect>
                     }
                 }
-                else if (user.UserType == 2)
+                else if (user.UserType == 2 || user.UserType == 6)
                 {
                     @*Mud select of Areas for Admin*@
                     <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowJobObs">
@@ -73,7 +73,8 @@
                         }
                     </MudSelect>
                 }
-                else if(user.UserType == 5){
+                else if (user.UserType == 5)
+                {
                     @*Mud select of Areas for Admin*@
                     <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowJobObs">
                         <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
@@ -84,7 +85,8 @@
                     </MudSelect>
                 }
                 <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">@Localizer["calendar"]</MudButton>
-                @if(user.UserType != 5){
+                @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                {
                     <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">@Localizer["plan"]</MudButton>
                     <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">@Localizer["create"]</MudButton>
                 }
@@ -234,22 +236,25 @@
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                            <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
                                 </ChildContent>
                             </MudMenu>
 
-                            @*                            
-                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
-                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
-                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>
-                            *@
+                            @*
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>
+                        *@
                         </MudText>
                     </MudTd>
                 </RowTemplate>
@@ -348,8 +353,12 @@
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*               <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -474,14 +483,18 @@
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                       <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*               <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -607,14 +620,18 @@
                     <MudTd>
                         <MudText Align="Align.Center">
 
-                       <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*<MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -739,14 +756,17 @@
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                       <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
-                               <ChildContent>
+                                <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*                          <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -871,14 +891,17 @@
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                       <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
-                               <ChildContent>
+                                <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -1003,14 +1026,17 @@
                     </MudTd>
                     <MudTd>
                         <MudText Align="Align.Center">
-                       <MudMenu Dense=true MaxHeight="300"  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
                                 <ActivatorContent>
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -1141,8 +1167,11 @@
                                 </ActivatorContent>
                                 <ChildContent>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
                                 </ChildContent>
                             </MudMenu>
                             @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
@@ -1180,7 +1209,10 @@
             </MudContainer>
         </DialogContent>
         <DialogActions>
-            <MudIconButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+            @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+            {
+                <MudIconButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+            }
             <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
         </DialogActions>
     </MudDialog>
