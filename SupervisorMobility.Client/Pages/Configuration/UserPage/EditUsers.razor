@@ -112,6 +112,11 @@
                                                     <MudChip Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning">@Localizer["UsersManager"]</MudChip>
                                                 </MudPaper>
                                                 break;
+                                            case 6:
+                                            <MudPaper Elevation="0">
+                                                <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
+                                            </MudPaper>
+                                            break;
                                         }
                                     </MudItem>
 
@@ -121,6 +126,8 @@
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSeniorSupervisor"]" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSupervisor"]" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersOperator"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="@Localizer["lineSupport"]" @bind-Checked="@IsLineSupport" @onclick="@(() => setActiveUser(6))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+
                                     </MudItem>
                                 </MudItem>
 
@@ -151,7 +158,7 @@
 
                                 @if (_user.UserType != 1)
                                 {
-                                    @if (_user.UserType == 2)
+                                    @if (_user.UserType == 2 || _user.UserType == 6)
                                     {
                                         @*Mud select of Plants *@
                                         <MudSelect T="int" Label="@Localizer["UsersPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
@@ -266,7 +273,7 @@
                                     @* Areas Managed*@
 
 
-                                    @if (_user.UserType == 2)
+                                    @if (_user.UserType == 2 || _user.UserType == 6)
                                     {
                                         <MudItem Class="mt-5">
                                             <MudText Typo="Typo.h6">@Localizer["UsersAreasManage"]</MudText>
@@ -402,7 +409,7 @@
 
 
 
-                                @if (_user.UserType != 0)
+                                @if (_user.UserType != 0 && _user.UserType != 6)
                                 {
                                     <MudItem>
                                         <MudItem Class="mt-5">
@@ -1927,6 +1934,7 @@ else
     private bool IsSupervisor = false;
     private bool IsOperator = false;
     private bool IsManager = false;
+    private bool IsLineSupport = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -1979,7 +1987,7 @@ else
         IsSupervisor = (_user.UserType == 3);
         IsOperator = (_user.UserType == 4);
         IsManager = (_user.UserType == 5);
-
+        IsLineSupport = (_user.UserType == 6);
 
         selectedSeniorSupervisorOfList = new User();
         selectedSupervisorOfList = new User();
@@ -2141,6 +2149,24 @@ else
                     _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
                 }
                 break;
+            case 6:
+                auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
+
+                if (auxPlant != 0)
+                {
+                    _areasManager?.Clear();
+                    _areasManager = await AreaServices.GetAreas(auxPlant);
+
+                    foreach (Area areaM in _areasManager.ToList())
+                    {
+                        if (_user.Areas?.ToList().FindIndex(a => a.AreaId == areaM.AreaId) != -1)
+                        {
+                            _areasManager.Remove(areaM);
+                        }
+                    }
+                }
+                break;
+
         }
 
         if (SeniorsSupervisors?.FindIndex(u => u.UserId == _user.UserId) != -1)
@@ -2329,6 +2355,7 @@ else
                 }
                 break;
             case 5: RemoveSuperiorUser(); break;
+            case 6: RemoveSuperiorUser(); break;
 
         }
 

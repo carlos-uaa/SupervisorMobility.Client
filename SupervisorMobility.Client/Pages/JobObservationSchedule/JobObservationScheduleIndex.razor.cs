@@ -109,10 +109,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                 {
                     _allJobObservations = await JobObservationService.GetAllJobObservations();
 
-                    _jobObservations = _allJobObservations;
-
-                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
-                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
@@ -125,6 +121,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
+
+                        _jobObservations = _allJobObservations;
+
+                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
                     else if(user.UserType == 2)
                     {
@@ -136,6 +137,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         supervisorId = 0;
 
                         _allSupervisors = user.Subordinates?.ToList();
+
+                        foreach(var jobobs in _allJobObservations)
+                        {
+                            if(jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+                            {
+                                _jobObservations.Add(jobobs);
+                            }
+                        }
+
+                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
                     else if(user.UserType == 3)
                     {
@@ -149,7 +161,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         ssv = user.Superior.Name;
                         ssvId = (int)user.SuperiorId;
 
-                        _jobObservations = new();
+
                         foreach (var jobobs in _allJobObservations)
                         {
                             if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
@@ -157,6 +169,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                                 _jobObservations.Add(jobobs);
                             }
                         }
+
+                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
                     }
                     else if(user.UserType == 5)
                     {
@@ -167,6 +183,27 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         supervisorId = 0;
                         _areas = await AreaServices.GetAreas(plantId);
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
+
+                        foreach (var jobobs in _allJobObservations)
+                        {
+                            if (plantId == jobobs.PlantId)
+                            {
+                                foreach (User usr in user.Subordinates)
+                                {
+                                    if (jobobs.Supervisor.SuperiorId == usr.UserId)
+                                    {
+                                        if (jobobs.Status != 7)
+                                        {
+                                            _jobObservations.Add(jobobs);
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+
+                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                     else if (user.UserType == 6)
@@ -178,6 +215,16 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         supervisorId = 0;
 
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
+                        
+                        foreach (var jobobs in _allJobObservations)
+                        {
+                            if (jobobs.PlantId == plantId)
+                            {
+                                _jobObservations.Add(jobobs);
+                            }
+                        }
+                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
                 }
                     StateHasChanged();

@@ -146,7 +146,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             {
                                 foreach (User usr in user.Subordinates)
                                 {
-                                    if (jobobs.SupervisorId == usr.UserId)
+                                    if (jobobs.SupervisorId == usr.UserId && jobobs.PlantId == plantId)
                                     {
                                         if(jobobs.Status != 7)
                                         {
@@ -261,23 +261,26 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                         _jobObservationsAux = await JobObservationService.GetAllJobObservations();
                         foreach (var jobobs in _jobObservationsAux)
                         {
-                            if (jobobs.Status != 7)
+                            if(jobobs.PlantId == plantId)
                             {
-                                _jobObservations.Add(jobobs);
-                                switch (jobobs.Status)
+                                if (jobobs.Status != 7)
                                 {
-                                    case 1: _plannedJobObservation.Add(jobobs); break;
-                                    case 2: _inProgressJobObservation.Add(jobobs); break;
-                                    case 3: _lateJobObservation.Add(jobobs); break;
-                                    case 4: _underReviewJobObservation.Add(jobobs); break;
-                                    case 5: _rejectedJobObservation.Add(jobobs); break;
-                                    case 6: _finishedJobObservation.Add(jobobs); break;
-                                }
+                                    _jobObservations.Add(jobobs);
+                                    switch (jobobs.Status)
+                                    {
+                                        case 1: _plannedJobObservation.Add(jobobs); break;
+                                        case 2: _inProgressJobObservation.Add(jobobs); break;
+                                        case 3: _lateJobObservation.Add(jobobs); break;
+                                        case 4: _underReviewJobObservation.Add(jobobs); break;
+                                        case 5: _rejectedJobObservation.Add(jobobs); break;
+                                        case 6: _finishedJobObservation.Add(jobobs); break;
+                                    }
 
-                            }
-                            else
-                            {
-                                _SOSJobobservation.Add(jobobs);
+                                }
+                                else
+                                {
+                                    _SOSJobobservation.Add(jobobs);
+                                }
                             }
                         }
 
