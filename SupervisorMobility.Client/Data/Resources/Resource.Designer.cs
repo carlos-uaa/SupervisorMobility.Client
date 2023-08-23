@@ -2266,6 +2266,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Routes.
+        /// </summary>
+        public static string routes {
+            get {
+                return ResourceManager.GetString("routes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Rute.
         /// </summary>
         public static string rute {

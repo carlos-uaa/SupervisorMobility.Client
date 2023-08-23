@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using static SupervisorMobility.Client.Pages.Configuration.AssyChartPage.CreateAssyChart;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
@@ -45,6 +46,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         MudMessageBox CCPmbox { get; set; }
         MudMessageBox GOSmbox { get; set; }
 
+        public bool EnableUpdate { get; set; } = false;
+        public bool modeDisplay { get; set; } = false;
+        public bool ProductModalDisplay { get; set; } = false;
+
+
+        Product? ProductSelected { get; set; } = null;
+        RouteProductAssyChart RouteProductDialogDisplay { get; set; }
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
+
         private int auxplant;
         private int auxarea;
         private int auxdistribution;
@@ -54,12 +66,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         protected async override Task OnInitializedAsync()
         {
             _links = new List<BreadcrumbItem>
-        {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
-            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
-            new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
-        };
+              {
+                    new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
+                new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
+              };
             _assychart = await AssyChartServices.GetAssyChart(assychartId);
 
             auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
@@ -105,6 +117,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             {
                 _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
                 _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
+
             }
             catch (Exception exe)
             {
@@ -122,6 +135,26 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             }
 
 
+
+
+            try
+            {
+                if (_distributionValues != null)
+                {
+                    foreach (var item in _assychart.RoutesProductsAssyChart)
+                    {
+                        if (_distributionValues.Products.Any(p => p.ProductId == item.ProductId) == true)
+                        {
+                            _distributionValues.Products.RemoveAll(p => p.ProductId == item.ProductId);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error remove duplicates");
+                Console.WriteLine(ex.Message);
+            }
 
 
             try
@@ -231,89 +264,227 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             return result == null ? false : true;
         }
 
-        async void UpdateAssyChartAsync()
+        private async Task<IEnumerable<Product>> SearchProduct(string value)
+        {
+            // In real life use an asynchronous function for fetching data from an api.
+            // await Task.Delay(1000);
+
+            // if text is null or empty, show complete list
+            if (string.IsNullOrEmpty(value))
+                return _distributionValues.Products;
+
+            return _distributionValues.Products.Where(x => x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase) || x.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private async Task SetProductChange(Product ItemSelected)
+        {
+            if (ProductSelected == null)
+                ProductSelected = new();
+
+
+            ProductSelected = ItemSelected;
+
+            StateHasChanged();
+        }
+
+        private void OpenDialogProduct(RouteProductAssyChart itemselected)
+        {
+            RouteProductDialogDisplay = itemselected;
+
+            isHoeFolder = false;
+            isGosFolder = false;
+            isCcpFolder = false;
+
+
+            ProductModalDisplay = true;
+            StateHasChanged();
+
+        }
+        private async void CloseProductModal()
         {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            //if (_assychart.GOS != "")
-            //{
-            //    GosFilesInFolder = await CDMSServices.GetFilesGOS(_assychart.GOS);
-            //    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
-            //    {
-            //        isGosFolder = false;
-            //        bool msgGOSBox = await OpenMessageGOS();
+            if (RouteProductDialogDisplay.GOS != "")
+            {
+                try
+                {
+                    GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
+                    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY" || GosFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isGosFolder = false;
+                        bool msgGOSBox = await OpenMessageGOS();
 
-            //    }
-            //    else
-            //    {
-            //        isGosFolder = true;
-            //    }
-            //}
-            //else { isGosFolder = true; }
+                    }
+                    else
+                    {
+                        isGosFolder = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    isGosFolder = false;
+                    bool msgGOSBox = await OpenMessageGOS();
+                    Console.WriteLine(ex.ToString());
+                }
 
-            //CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            //if (_assychart.CCP != "")
-            //{
-            //    CcpFilesInFolder = await CDMSServices.GetFilesCCP(_assychart.CCP);
-            //    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
-            //    {
-            //        isCcpFolder = false;
-            //        bool msgCCPBox = await OpenMessageCCP();
-            //    }
-            //    else
-            //    {
-            //        isCcpFolder = true;
-            //    }
-            //}
-            //else
-            //{
-            //    isCcpFolder = true;
+            }
+            else { isGosFolder = true; }
 
-            //}
+            CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            //HoeFilesInFolder = new CDMS_HOE_Archives();
+            if (RouteProductDialogDisplay.CCP != "")
+            {
+                try
+                {
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
+                    if (CcpFilesInFolder.message == "NO FILES IN DIRECTORY" || CcpFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isCcpFolder = false;
+                        bool msgCCPBox = await OpenMessageCCP();
+                    }
+                    else
+                    {
+                        isCcpFolder = true;
+                    }
 
-            //if (_assychart.HOE != "")
-            //{
-            //    HoeFilesInFolder = await CDMSServices.GetFilesHOE(_assychart.HOE);
-            //    if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
-            //    {
-            //        isHoeFolder = false;
-            //        bool msgHOEBox = await OpenMessageHOE();
+                }
+                catch (Exception ex)
+                {
+                    isCcpFolder = false;
+                    bool msgCCPBox = await OpenMessageCCP();
+                    Console.WriteLine(ex.ToString());
+                }
 
-            //    }
-            //    else
-            //    {
-            //        isHoeFolder = true;
-            //    }
-            //}
-            //else
-            //{
-            //    isHoeFolder = true;
-            //}
 
+            }
+            else
+            {
+                isCcpFolder = true;
+
+            }
+
+            HoeFilesInFolder = new CDMS_HOE_Archives();
+
+
+
+
+            if (RouteProductDialogDisplay.HOE != "")
+            {
+                try
+                {
+                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
+
+                    if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isHoeFolder = false;
+                        bool msgHOEBox = await OpenMessageHOE();
+
+                    }
+                    else
+                    {
+                        isHoeFolder = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    isHoeFolder = false;
+                    bool msgHOEBox = await OpenMessageHOE();
+                    Console.WriteLine(ex.ToString());
+                }
+
+            }
+            else
+            {
+                isHoeFolder = true;
+            }
 
 
             if (isGosFolder && isCcpFolder && isHoeFolder)
             {
-                _assychart.ModificationDate = DateTime.Now;
-                var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
-
-
-                if (result)
-                {
-                    await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
-                    NavigationManager.NavigateTo("/assychart");
-                }
-                else
-                    await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
+                ProductModalDisplay = false;
             }
+
+            StateHasChanged();
+        }
+
+
+        private void AddProductToList(Product selection)
+        {
+            if (_assychart.RoutesProductsAssyChart == null)
+            {
+                _assychart.RoutesProductsAssyChart = new List<RouteProductAssyChart>();
+            }
+
+
+            if (ProductSelected != null && !_assychart.RoutesProductsAssyChart.Any(a => a.ProductId == selection.ProductId))
+            {
+
+                var product = ObjectCloner.ObjectCloner.DeepClone<Product>(ProductSelected);
+
+                RouteProductAssyChart routeProductAssyChart = new();
+                routeProductAssyChart.Product = product;
+                routeProductAssyChart.ProductId = product.ProductId;
+                routeProductAssyChart.IsActive = true;
+
+                _assychart.RoutesProductsAssyChart.Add(routeProductAssyChart);
+
+                _distributionValues.Products.Remove(selection);
+
+                ProductSelected = null;
+            }
+            StateHasChanged();
+        }
+
+        void DeleteProductToList(RouteProductAssyChart item)
+        {
+            _distributionValues.Products.Add(item.Product);
+            _assychart.RoutesProductsAssyChart?.Remove(item);
+            StateHasChanged();
+
+        }
+
+        void DeleteGOSRoute(RouteProductAssyChart item)
+        {
+            item.GOS = "";
+        }
+        void DeleteCCPRoute(RouteProductAssyChart item)
+        {
+            item.CCP = "";
+        }
+        void DeleteHOERoute(RouteProductAssyChart item)
+        {
+            item.HOE = "";
+        }
+        async void UpdateAssyChartAsync()
+        {
+            EnableUpdate = true;
+
+            _assychart.IsActive = true;
+            _assychart.PlantId = auxplant;
+            _assychart.AreaId = auxarea;
+            _assychart.DistributionId = auxdistribution;
+            _assychart.OperationId = auxoperation;
+
+            _assychart.ModificationDate = DateTime.Now;
+            var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
+
+
+            if (result)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
+                NavigationManager.NavigateTo("/assychart");
+            }
+            else
+                await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
+
 
 
         }
 
-        void CancelCreateAssyChart()
+
+
+        void CancelUpdateAssyChart()
         {
             NavigationManager.NavigateTo("/assychart");
         }

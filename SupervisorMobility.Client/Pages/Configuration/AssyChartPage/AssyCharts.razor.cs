@@ -160,6 +160,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             NavigationManager.NavigateTo($"assychart/updateassychart/{assychartid}");
         }
+          void GoToDetailsAssyChart(int assychartid)
+        {
+            NavigationManager.NavigateTo($"assychart/details/{assychartid}");
+        }
 
         async Task DeleteAssyChart(int assychartid)
         {
@@ -329,7 +333,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
                 {
                     //NavigationManager.NavigateTo($"/assychart/details/{element.AssyChardId}");
-                    NavigationManager.NavigateTo($"assychart/updateassychart/{element.AssyChardId}");
+                  
+                    NavigationManager.NavigateTo($"assychart/details/{element.AssyChardId}");
 
                 }
                 return string.Empty;

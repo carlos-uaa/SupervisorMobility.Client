@@ -15,7 +15,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         List<Distribution> _distributions { get; set; } = new();
 
         public bool modeDisplay { get; set; } = true;
-        public bool ProductModalDisplay { get; set; } = false;
 
         public int auxplant = 0;
         public int auxarea = 0;
@@ -23,6 +22,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         public int auxoperation = 0;
         private bool enablecreate = false;
 
+        public bool ProductModalDisplay { get; set; } = false;
         Product? ProductSelected { get; set; } = null;
         RouteProductAssyChart RouteProductDialogDisplay { get; set; }
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
@@ -197,31 +197,43 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             RouteProductDialogDisplay = itemselected;
 
-            ProductModalDisplay = true;
-            StateHasChanged();
-
-        }
-        private async void  CloseProductModal()
-        {
             isHoeFolder = false;
             isGosFolder = false;
             isCcpFolder = false;
 
+
+            ProductModalDisplay = true;
+            StateHasChanged();
+
+        }
+        private async void CloseProductModal()
+        {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
             if (RouteProductDialogDisplay.GOS != "")
             {
-                GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
-                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                try
+                {
+                    GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
+                    if (GosFilesInFolder.message == "NO FILES IN DIRECTORY" || GosFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isGosFolder = false;
+                        bool msgGOSBox = await OpenMessageGOS();
+
+                    }
+                    else
+                    {
+                        isGosFolder = true;
+                    }
+                }
+                catch (Exception ex)
                 {
                     isGosFolder = false;
                     bool msgGOSBox = await OpenMessageGOS();
+                    Console.WriteLine(ex.ToString());
+                }
 
-                }
-                else
-                {
-                    isGosFolder = true;
-                }
+
             }
             else { isGosFolder = true; }
 
@@ -229,16 +241,28 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             if (RouteProductDialogDisplay.CCP != "")
             {
-                CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
-                if (GosFilesInFolder.message == "NO FILES IN DIRECTORY")
+                try
+                {
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
+                    if (CcpFilesInFolder.message == "NO FILES IN DIRECTORY" || CcpFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isCcpFolder = false;
+                        bool msgCCPBox = await OpenMessageCCP();
+                    }
+                    else
+                    {
+                        isCcpFolder = true;
+                    }
+
+                }
+                catch (Exception ex)
                 {
                     isCcpFolder = false;
                     bool msgCCPBox = await OpenMessageCCP();
+                    Console.WriteLine(ex.ToString());
                 }
-                else
-                {
-                    isCcpFolder = true;
-                }
+
+
             }
             else
             {
@@ -248,19 +272,33 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             HoeFilesInFolder = new CDMS_HOE_Archives();
 
+
+
+
             if (RouteProductDialogDisplay.HOE != "")
             {
-                HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
-                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY")
+                try
+                {
+                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
+
+                    if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                    {
+                        isHoeFolder = false;
+                        bool msgHOEBox = await OpenMessageHOE();
+
+                    }
+                    else
+                    {
+                        isHoeFolder = true;
+                    }
+                }
+                catch (Exception ex)
                 {
                     isHoeFolder = false;
                     bool msgHOEBox = await OpenMessageHOE();
+                    Console.WriteLine(ex.ToString());
+                }
 
-                }
-                else
-                {
-                    isHoeFolder = true;
-                }
             }
             else
             {
@@ -270,9 +308,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             if (isGosFolder && isCcpFolder && isHoeFolder)
             {
-
                 ProductModalDisplay = false;
             }
+
+            StateHasChanged();
+
         }
 
 
@@ -326,6 +366,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         async void CreateNewAssyChartAsync()
         {
             enablecreate = true;
+            StateHasChanged();
             _newassychart.IsActive = true;
             _newassychart.PlantId = auxplant;
             _newassychart.AreaId = auxarea;
