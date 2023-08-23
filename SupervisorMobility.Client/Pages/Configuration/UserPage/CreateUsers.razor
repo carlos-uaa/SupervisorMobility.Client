@@ -54,6 +54,7 @@
                                     <MudSwitch Class="ma-1" Label="@Localizer["UsersSupervisor"]" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                 }
                                 <MudSwitch Class="ma-1" Label="@Localizer["UsersOperator"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                <MudSwitch Class="ma-1" Label="@Localizer["lineSupport"]" @bind-Checked="@IsLineSupport" @onclick="@(() => setActiveUser(6))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                             </MudItem>
                             <MudItem class="d-flex d-flex-column justify-center">
                                 @switch (_user.UserType)
@@ -81,6 +82,11 @@
                                     case 5:
                                         <MudPaper Elevation="0">
                                             <MudChip Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning">@Localizer["UsersManager"]</MudChip>
+                                        </MudPaper>
+                                        break;
+                                    case 6:
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
                                         </MudPaper>
                                         break;
                                 }
@@ -119,7 +125,7 @@
 
                         }
 
-                        @if (_user.UserType == 2)
+                        @if (_user.UserType == 2 || _user.UserType == 6)
                         {
                             @*Mud select of Plants *@
                             <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
@@ -222,7 +228,7 @@
                         @* Areas Managed*@
 
 
-                        @if (_user.UserType == 2)
+                        @if (_user.UserType == 2 || _user.UserType == 6)
                         {
                             <MudItem Class="mt-5">
                                 <MudText Typo="Typo.h6">@Localizer["UsersManageAreas"]</MudText>
@@ -337,7 +343,7 @@
                         }
 
 
-                        @if (_user.UserType != 0)
+                        @if (_user.UserType != 0 && _user.UserType != 6)
                         {
                             <MudItem>
                                 <MudItem Class="mt-5">
@@ -874,6 +880,7 @@
     private bool IsSupervisor = false;
     private bool IsOperator = false;
     private bool IsManager = false;
+    private bool IsLineSupport = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -1060,8 +1067,9 @@
         IsSupervisor = userType == 3 && !IsSupervisor;
         IsOperator = userType == 4 && !IsOperator;
         IsManager = userType == 5 && !IsManager;
+        IsLineSupport = userType == 6 && !IsLineSupport;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -1124,6 +1132,7 @@
                 }
                 break;
             case 5: RemoveSuperiorUser(); break;
+            case 6: RemoveSuperiorUser(); break;
                 
         }
 
@@ -1191,6 +1200,7 @@
             case 1:
             case 2:
             case 5:
+            case 6:
                 areaInfo = "";
                 plantInfo = "";
                 grupInfo = "";

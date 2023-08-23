@@ -1645,6 +1645,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Line Support.
+        /// </summary>
+        public static string lineSupport {
+            get {
+                return ResourceManager.GetString("lineSupport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Loading Data.
         /// </summary>
         public static string LoadingData {
