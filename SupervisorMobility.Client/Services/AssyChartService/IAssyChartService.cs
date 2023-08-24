@@ -18,6 +18,8 @@
         Task<List<AssyChart>> GetAssyChartsByArea(int plantId, int areaId);
         //get all assycharts by distribution
         Task<List<AssyChart>> GetAssyChartsByDistribution(int plantId, int areaId, int distributionId);
+        //get one assyu
+        Task<AssyChart> GetAssyChartJobObservation(int plantId, int areaId, int distributionId);
 
         //UPDATE
         Task<bool> UpdateAssyChart(int assychartId, AssyChart _newAssyChart);

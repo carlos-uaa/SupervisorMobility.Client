@@ -132,7 +132,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                             try
                             {
-                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
                                 if (_assychart == null)
                                     messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                                 else

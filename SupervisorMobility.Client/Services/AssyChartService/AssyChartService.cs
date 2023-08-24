@@ -46,22 +46,53 @@ namespace SupervisorMobility.Client.Services.AssyChartService
         
         public async Task<AssyChart> GetAssyChartAdvance(int plantId, int areaId, int distributionId, int operationId)
         {
-            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}/operation/{operationId}");
+            try
+            {
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<AssyChart>(content, _options);
-                return result;
+                var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}/operation/{operationId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<AssyChart>(content, _options);
+                    return result;
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", $"Error Get Folders: {response.Content.ReadAsStringAsync().Result}");
+                return null;
             }
 
             return null;
 
         }
+
+        public async Task<AssyChart> GetAssyChartJobObservation(int plantId, int areaId, int distributionId)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}/one");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<AssyChart>(content, _options);
+                    return result;
+                }
+
+            }
+            catch(Exception ex)
+            {
+                return null;
+
+            }
+
+            return null;
+
+
+        }
+
 
         public async Task<List<AssyChart>> GetAssyCharts()
         {
@@ -100,7 +131,7 @@ namespace SupervisorMobility.Client.Services.AssyChartService
 
         public async Task<List<AssyChart>> GetAssyChartsByDistribution(int plantId, int areaId, int distributionId)
         {
-            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}");
+            var response = await _http.GetAsync($"assycharts/plant/{plantId}/area/{areaId}/distribution/{distributionId}/list");
 
             if (response.IsSuccessStatusCode)
             {

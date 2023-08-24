@@ -55,6 +55,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         RouteProductAssyChart RouteProductDialogDisplay { get; set; }
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
+        [Inject] private IDialogService DialogService { get; set; }
 
 
         private int auxplant;
@@ -232,18 +233,26 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             auxdistribution = 0;
             auxoperation = 0;
+            ProductSelected = new();
+            _distributionValues = new();
             _areas = await AreaServices.GetAreas(auxplant);
+            StateHasChanged();
         }
 
         private async void UpdateDistributions()
         {
             auxoperation = 0;
+            ProductSelected = new();
+            _distributionValues = new();
             _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
+            StateHasChanged();
         }
 
         private async void UpdateOperationProducts()
         {
+            ProductSelected = new();
             _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
+            StateHasChanged();
         }
         private async Task<bool> OpenMessageHOE()
         {
@@ -431,8 +440,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                 _distributionValues.Products.Remove(selection);
 
-                ProductSelected = null;
             }
+            ProductSelected = new();
+            
             StateHasChanged();
         }
 
@@ -467,18 +477,63 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _assychart.OperationId = auxoperation;
 
             _assychart.ModificationDate = DateTime.Now;
-            var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
 
+            var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(auxplant, auxarea, auxdistribution);
 
-            if (result)
+            if (anyAssyChart != null && anyAssyChart.AssyChardId != _assychart.AssyChardId)
             {
-                await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
-                NavigationManager.NavigateTo("/assychart");
+                var result = await DialogService.ShowMessageBox(
+                      $"{Localizer["AC_Msg_Title"]}",
+                      (MarkupString)$"{Localizer["AC_Msg_Body"]}",
+                      yesText: $"{Localizer["AC_Msg_Continue"]}!", cancelText: $"{Localizer["AC_Msg_BackEdit"]}!");
+
+
+                switch (result)
+                {
+                    case null:
+                        //continuar con la edicion
+                        EnableUpdate = false;
+
+
+                        break;
+                    case true:
+                        //continuar sin reasignar nada
+                        var UpadteAssychart = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
+
+
+                        if (UpadteAssychart)
+                        {
+                            await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
+                            NavigationManager.NavigateTo("/assychart");
+                        }
+                        else
+                            await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
+
+                        break;
+
+                    case false:
+                        break;
+                }
+
             }
             else
-                await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
+            {
+                var result = await AssyChartServices.UpdateAssyChart(assychartId, _assychart);
 
 
+                if (result)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
+                    NavigationManager.NavigateTo("/assychart");
+                }
+                else
+                    await JsRuntime.InvokeVoidAsync("alert", "Fallo Actualizacion!"); // Alert
+
+            }
+
+
+            EnableUpdate = false;
+            StateHasChanged();
 
         }
 

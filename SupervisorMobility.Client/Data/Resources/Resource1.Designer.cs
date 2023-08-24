@@ -61,6 +61,42 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Back to edition.
+        /// </summary>
+        public static string AC_Msg_BackEdit {
+            get {
+                return ResourceManager.GetString("AC_Msg_BackEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a It has been detected that there is already an Asychart incident with the same Plant, Area and Distribution information. What action do you want to take?.
+        /// </summary>
+        public static string AC_Msg_Body {
+            get {
+                return ResourceManager.GetString("AC_Msg_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Continue with the creation.
+        /// </summary>
+        public static string AC_Msg_Continue {
+            get {
+                return ResourceManager.GetString("AC_Msg_Continue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Warning, Assychart already exists!.
+        /// </summary>
+        public static string AC_Msg_Title {
+            get {
+                return ResourceManager.GetString("AC_Msg_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a AssyChart&apos;s Resume.
         /// </summary>
         public static string ACACResume {
@@ -525,6 +561,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string ACNewAC {
             get {
                 return ResourceManager.GetString("ACNewAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This AssyChart has no products added..
+        /// </summary>
+        public static string ACNoProducts {
+            get {
+                return ResourceManager.GetString("ACNoProducts", resourceCulture);
             }
         }
         

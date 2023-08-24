@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         Lup lup { get; set; } = new();
         List<Lup> _lup { get; set; } = new();
 
-        List<AssyChart> _assycharts { get; set; }
+        AssyChart? _assychart { get; set; }
 
         public JobObservation _jobObservation { get; set; } = new();
 
@@ -308,7 +308,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _jobObservation.OperationId = 0;
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
-            _assycharts?.Clear();
+            _assychart = null;
 
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
         }
@@ -317,7 +317,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         {
             _jobObservation.SupervisorId = 0;
             _supervisors.Clear();
-            _assycharts?.Clear();
+            _assychart = null;
             if (user.UserType == 1)
             {
                 foreach (User sv in _allSupervisors)
@@ -366,12 +366,12 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         private async void ShowOperations()
         {
-            _assycharts?.Clear();
+            _assychart = null;
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-            _assycharts = await AssychartsServices.GetAssyChartsByDistribution(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            _assychart = await AssychartsServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
             await Task.Delay(150);
 
             distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);

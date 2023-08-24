@@ -33,7 +33,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         List<User> _supervisors { get; set; } = new();
         List<User> _allSupervisors = new();
 
-        List<AssyChart> _assycharts { get; set; }
+        AssyChart _assychart { get; set; }
 
         List<Lup> _tempLup { get; set; } = new();
         Lup lup { get; set; } = new();
@@ -274,7 +274,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-            _assycharts = await AssychartsServices.GetAssyChartsByDistribution(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            _assychart = await AssychartsServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
             await Task.Delay(150);
             distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
             StateHasChanged();
