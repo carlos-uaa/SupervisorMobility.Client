@@ -10,6 +10,7 @@
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource1> Localizer
+@inject GlobalDataService GlobalData;
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersCreateTitle"]</PageTitle>
@@ -1371,8 +1372,20 @@
         }
 
         var result = await UserServices.CreateUser(_user);
-        if (result != null)
+        if (result != null){
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"User {_user.Name} Created Succesfully", Severity.Info);
+            if(_user.UserType == 4 && LogedUser.UserType == 3){
+                LogedUser = await UserServices.GetUserByObjectIdWithCollections(LogedUser.ObjectId);
+                if(LogedUser != null)
+                {
+                    json = JsonSerializer.Serialize<User>(LogedUser);
+                    await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
+                }
+            }
             NavigationManager.NavigateTo("/usersmanagement");
+        }
         else
             await JS.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
     }
