@@ -21,8 +21,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         //List Plants to do bulk
         private List<Plant> _plants = new List<Plant>();
-        private Dictionary<int,  List<Area>> _areas = new Dictionary<int, List<Area>>();
+        private Dictionary<int, List<Area>> _areas = new Dictionary<int, List<Area>>();
         private Dictionary<int, Dictionary<int, List<Distribution>>> _distributions = new Dictionary<int, Dictionary<int, List<Distribution>>>();
+        private List<Product> _products = new List<Product>();
 
         private List<EventMensaje> List_Events = new();
 
@@ -69,7 +70,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 }
                 _distributions.Add(plant.PlantId, areaDistributions);
             }
-        }
+
+            _products = await ProductsServices.GetProducts();
+
+        }//end OnInitialized
 
 
         async Task OnChange(InputFileChangeEventArgs e)
@@ -79,10 +83,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             FileSource = null;
 
             ErrorMessageToDisplay = string.Empty;
+            List_Events.Clear();
             BulkedData.Clear();
             _assycharts.Clear();
             showTable = false;
-
 
             //Assign new data
             FileName = e.File.Name;
@@ -123,7 +127,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                     }
 
-               
+
                 }
 
                 if (regexlsx.IsMatch(e.File.Name))
@@ -182,14 +186,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 //3  - Mediante Ids
 
                 //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                switch (uploadtype) {
+                switch (uploadtype)
+                {
                     case 1:
-                        if(_plants.Any(P => P.Code == BulkedData[0][1]))
+                        //Con ids
+                        if (_plants.Any(P => P.Code == BulkedData[0][1]))
                         {
                             auxplant = _plants.Index(P => P.Code == BulkedData[0][1]);
-                            if (_plants[auxplant].Description == BulkedData[0][3])
+                            if (_plants[auxplant].Description == BulkedData[0][3] && BulkedData[0][3] != "§")
                             {
-                                
+
                                 Console.WriteLine("La Planta Se actualiza");
                                 var msgPlant = new EventMensaje();
                                 msgPlant.Mensaje = $"Se Actualizara la descripcion de la planta: `{BulkedData[0][1]}` con descripcion `{BulkedData[0][3]}`";
@@ -231,13 +237,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                             {
                                 try
                                 {
-                                    if(auxplant == -2)
+                                    if (auxplant == -2)
                                     {
                                         //Creacion total
 
 
 
-                                        if(!List_Events.Any(e => e.Mensaje.Contains(row[1]))){
+                                        if (!List_Events.Any(e => e.Mensaje.Contains(row[1])))
+                                        {
                                             var msgArea = new EventMensaje();
                                             msgArea.Mensaje = $"Se creara el area {row[1]} en la planta: `{BulkedData[0][1]}`";
                                             msgArea.Tipo = 0;
@@ -249,7 +256,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                         //verificar si existe
 
                                     }
-                                }catch
+                                }
+                                catch
                                 (Exception ex)
                                 {
                                     Console.WriteLine("");
@@ -265,54 +273,69 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                         showTable = true;
                         break;
                     case 2:
+                        //Con codigos
                         Plant Assy_Plant = new();
-                        if (_plants.Any(P => P.Code == BulkedData[0][1]))
+                        if (BulkedData[0][1] != "§")
                         {
-                            //Existe mediante su codigo
-                            auxplant = _plants.Index(P => P.Code == BulkedData[0][1]);
-                            if (_plants[auxplant].Description != BulkedData[0][3])
+                           
+                            if (_plants.Any(P => P.Code == BulkedData[0][1]))
                             {
-                                Assy_Plant = _plants[auxplant];
-                                Console.WriteLine("La Planta Se actualiza");
-                                var msgPlant = new EventMensaje();
-                                msgPlant.Mensaje = $"Se Actualizara la descripcion de la planta: `{BulkedData[0][1]}`. De `{Assy_Plant.Description}` a `{BulkedData[0][3]}`";
-                                Assy_Plant.Description = BulkedData[0][3];
-                                msgPlant.Tipo = 2;
-                                List_Events.Add(msgPlant);
+                                //Existe mediante su codigo
+
+                                auxplant = _plants.Index(P => P.Code == BulkedData[0][1]);
+                                if (_plants[auxplant].Description != BulkedData[0][3] && BulkedData[0][3] != "§")
+                                {
+                                    Assy_Plant = _plants.ElementAt(auxplant);
+                                    Console.WriteLine("La Planta Se actualiza");
+                                    var msgPlant = new EventMensaje();
+                                    msgPlant.Mensaje = $"Se Actualizara la descripcion de la planta: `{BulkedData[0][1]}`. De `{Assy_Plant.Description}` a `{BulkedData[0][3]}`";
+                                    Assy_Plant.Description = BulkedData[0][3];
+                                    msgPlant.Tipo = 2;
+                                    List_Events.Add(msgPlant);
+                                }
+                                else
+                                {
+                                    Assy_Plant = _plants.ElementAt(auxplant);
+                                }
                             }
                             else
                             {
-                                Assy_Plant = _plants[auxplant];
-                                Console.WriteLine("La Planta Existe");
-                                var msgPlant = new EventMensaje();
-                                msgPlant.Mensaje = $"La planta: `{BulkedData[0][1]}` con descripcion `{BulkedData[0][3]} existe`";
-                                msgPlant.Tipo = 1;
-                                List_Events.Add(msgPlant);
+                                // La planta no existe pero se puede crear
+                                 Assy_Plant.Code = BulkedData[0][1];
+                                    
+                                auxplant = -2;
+                                Console.WriteLine("La Planta Se creara");
+
+                                if (BulkedData[0][3] == "§")
+                                {
+                                    Assy_Plant.PlantId = -1;
+
+                                    var msgPlant = new EventMensaje();
+                                    msgPlant.Mensaje = $"Error en `D1`: Falta Descripcion para la Creacion de planta `{BulkedData[0][1]}`.";
+                                    msgPlant.Tipo = 4;
+                                    List_Events.Add(msgPlant);
+                                }
+                                else
+                                {
+                                    var msgPlant = new EventMensaje();
+                                    msgPlant.Mensaje = $"Se creara la planta: `{BulkedData[0][1]}` con descripcion `{BulkedData[0][3]}`";
+                                     Assy_Plant.Description = BulkedData[0][3];
+                                    Assy_Plant.PlantId = -2;
+
+                                    msgPlant.Tipo = 0;
+                                    List_Events.Add(msgPlant);
+                                }
+
                             }
-                         
                         }
                         else
                         {
-                            // La planta no existe pero se puede crear
-                            auxplant = -2;
-                            Assy_Plant.PlantId = -2;
-                            Console.WriteLine("La Planta Se creara");
-
-                            if (BulkedData[0][3] == "§")
-                            {
-                                var msgPlant = new EventMensaje();
-                                msgPlant.Mensaje = $"Error en `D1`: Falta Descripcion para la Creacion de planta `{BulkedData[0][1]}`.";
-                                msgPlant.Tipo = 4;
-                                List_Events.Add(msgPlant);
-                            }
-                            else
-                            {
-                                var msgPlant = new EventMensaje();
-                                msgPlant.Mensaje = $"Se creara la planta: `{BulkedData[0][1]}` con descripcion `{BulkedData[0][3]}`";
-                                msgPlant.Tipo = 0;
-                                List_Events.Add(msgPlant);
-                            }
-                           
+                            auxplant = -3;
+                            //error 
+                            var msgPlant = new EventMensaje();
+                            msgPlant.Mensaje = $"Error en `B1`: Falta PlantaId/Codigo de la planta.";
+                            msgPlant.Tipo = 4;
+                            List_Events.Add(msgPlant);
                         }
 
                         //recorremos el resto de los datos
@@ -331,7 +354,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                             {
                                 AssyChart Assychart_ToAdd = new();
 
-                                if (auxplant != -2)
+                                if (auxplant != -3)
                                 {
                                     Assychart_ToAdd.Plant = Assy_Plant;
                                 }
@@ -339,149 +362,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                 //area
                                 try
                                 {
-                                   
-                                    if (auxplant == -2)
+
+                                    if (auxplant < 0)
                                     {
                                         //si la planta no existe
                                         //Compruebo documento
                                         if (row[1] == "§")
                                         {
-                                                //Mensaje de area no existe, mostrar error
-
-                                                auxarea = -2;
-                                                //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                                                var msgArea = new EventMensaje();
-                                                msgArea.Mensaje = $"Error en `B{BulkedData.Index(r => r == row) + 1}`: Falta AreaId/Code del area .";
-                                                msgArea.Tipo = 4;
-                                                List_Events.Add(msgArea);
-                                        }
-                                        else
-                                        {
-                                            // code existe
-                                            if (row[2] == "§")
-                                            {
-                                                    //Descripcion no existe, lanzar error
-                                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                                                    var msgArea = new EventMensaje();
-                                                    msgArea.Mensaje = $"Error en `C{BulkedData.Index(r => r == row) + 1}`: Falta Descripcion para la Creacion del area `{row[1]}` .";
-                                                    msgArea.Tipo = 4;
-                                                    List_Events.Add(msgArea);
-                                            }
-                                            else
-                                            {
-                                                //compruebo si mensaje de creacion ya existe
-                                                if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains(row[1])))
-                                                {
-                                                    var msgArea = new EventMensaje();
-                                                    msgArea.Mensaje = $"Se creara el area `{row[1]}`n en la planta: `{BulkedData[0][1]}`";
-                                                    msgArea.Tipo = 0;
-                                                    List_Events.Add(msgArea);
-                                                }
-
-                                                Area area = new Area();
-                                                area.Code = row[1];
-                                                area.Description = row[2];
-                                                Assychart_ToAdd.Area = area;
-                                            }
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        //cuando la planta existe
-                                     
-                                        if (row[1] == "§")
-                                        {
-                                            //Codigo vacio se muestra error
-                                            auxarea = -1;
-                                            //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                                            var msgArea = new EventMensaje();
-                                            msgArea.Mensaje = $"Error en `B{BulkedData.Index(r => r == row) + 1}`: Falta AreaId/Code del area .";
-                                            msgArea.Tipo = 4;
-                                            List_Events.Add(msgArea);
-                                        }
-                                        else
-                                        {
-
-                                            if (_areas[auxplant].Any(a => a.Code == row[1]))
-                                            {
-                                                //area si existe
-                                                auxarea = _areas[auxplant].Index(a => a.Code == row[1]);
-
-                                                Assychart_ToAdd.Area = _areas[auxplant][auxarea];
-
-                                                if (_areas[auxplant][auxarea].Description != row[2])
-                                                {
-                                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                                                    Console.WriteLine("La Area Se actualiza");
-                                                    var msgArea = new EventMensaje();
-                                                    msgArea.Mensaje = $"Se Actualizara la descripcion del Area: `{row[1]}`. De `{Assychart_ToAdd.Area.Description}` a `{row[2]}`";
-                                                    Assychart_ToAdd.Area.Description = row[2];
-                                                    msgArea.Tipo = 2;
-                                                    List_Events.Add(msgArea);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //area no existe
-                                                if (row[2] == "§")
-                                                {
-                                                    //Mensaje de error descripcion no existe, no se puede crear
-                                                    auxarea = -1;
-
-                                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
-                                                    var msgArea = new EventMensaje();
-                                                    msgArea.Mensaje = $"Error en `C{BulkedData.Index(r => r == row) + 1}`: Falta Descripcion para la Creacion del area `{row[1]}` .";
-                                                    msgArea.Tipo = 4;
-                                                    List_Events.Add(msgArea);
-                                                }
-                                                else
-                                                {
-
-                                                    //se comprueba si ya existe mensaje para no duplicar
-                                                    if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains(row[1])))
-                                                    {
-                                                        var msgArea = new EventMensaje();
-                                                        msgArea.Mensaje = $"Se creara el area `{row[1]}`n en la planta: `{BulkedData[0][1]}`";
-                                                        msgArea.Tipo = 0;
-                                                        List_Events.Add(msgArea);
-                                                    }
-
-                                                    Area area = new Area();
-                                                    area.Code = row[1];
-                                                    area.Description = row[2];
-                                                    auxarea = -2;
-                                                    Assychart_ToAdd.Area = area;
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                }
-                                catch(Exception ex)
-                                {
-                                    Console.WriteLine("");
-                                    var msgArea = new EventMensaje();
-                                    msgArea.Mensaje = $"Error en `B{BulkedData.Index(r => r == row) + 1}` o `C{BulkedData.Index(r => r == row) + 1}`: Area.";
-                                    msgArea.Tipo = 4;
-                                    List_Events.Add(msgArea);
-
-                                }
-
-                                //Distribucion
-                                try
-                                {
-
-                                    if (auxarea < 0)
-                                    {
-                                        //si la area no existe
-                                        //Compruebo documento
-                                        if (row[1] == "§")
-                                        {
-                                            //Mensaje de area no existe, mostrar error
-
-                                            auxarea = -2;
-                                            //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
+                                            //Mensaje de area no existe, mostrar 
+                                            auxarea = -3;
+                                            //0 Create, 1 Read, 2 Update, 3 Adding, 4 error, 5 advertencia
                                             var msgArea = new EventMensaje();
                                             msgArea.Mensaje = $"Error en `B{BulkedData.Index(r => r == row) + 1}`: Falta AreaId/Code del area .";
                                             msgArea.Tipo = 4;
@@ -492,6 +382,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                             // code existe
                                             if (row[2] == "§")
                                             {
+                                                auxarea = -1;
                                                 //Descripcion no existe, lanzar error
                                                 //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
                                                 var msgArea = new EventMensaje();
@@ -505,11 +396,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                                 if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains(row[1])))
                                                 {
                                                     var msgArea = new EventMensaje();
-                                                    msgArea.Mensaje = $"Se creara el area `{row[1]}`n en la planta: `{BulkedData[0][1]}`";
+                                                    msgArea.Mensaje = $"Se creara el area `{row[1]}` en la planta: `{BulkedData[0][1]}`";
                                                     msgArea.Tipo = 0;
                                                     List_Events.Add(msgArea);
                                                 }
-
+                                                auxarea = -2;
                                                 Area area = new Area();
                                                 area.Code = row[1];
                                                 area.Description = row[2];
@@ -525,7 +416,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                         if (row[1] == "§")
                                         {
                                             //Codigo vacio se muestra error
-                                            auxarea = -1;
+                                            auxarea = -3;
                                             //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
                                             var msgArea = new EventMensaje();
                                             msgArea.Mensaje = $"Error en `B{BulkedData.Index(r => r == row) + 1}`: Falta AreaId/Code del area .";
@@ -535,14 +426,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                                         else
                                         {
 
-                                            if (_areas[auxplant].Any(a => a.Code == row[1]))
+                                            if (_areas.ElementAt(auxplant).Value.Any(a => a.Code == row[1]))
                                             {
                                                 //area si existe
-                                                auxarea = _areas[auxplant].Index(a => a.Code == row[1]);
+                                                auxarea = _areas.ElementAt(auxplant).Value.Index(a => a.Code == row[1]);
 
-                                                Assychart_ToAdd.Area = _areas[auxplant][auxarea];
+                                                Assychart_ToAdd.Area = _areas.ElementAt(auxplant).Value.ElementAt(auxarea);
 
-                                                if (_areas[auxplant][auxarea].Description != row[2])
+                                                if (_areas.ElementAt(auxplant).Value.ElementAt(auxarea).Description != row[2] && row[2] != "§")
                                                 {
                                                     //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
                                                     Console.WriteLine("La Area Se actualiza");
@@ -600,7 +491,244 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                                 }
 
+                                //Distribucion
+                                try
+                                {
+                                    //si la area no existe
+                                    if (auxarea < 0)
+                                    {
+                                        //Compruebo documento
+                                        if (row[3] == "§")
+                                        {
+                                            //Mensaje de distribucion vaciao no existe, mostrar error
 
+                                            auxdistribution = -3;
+                                            //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
+                                            var msgDistribution = new EventMensaje();
+                                            msgDistribution.Mensaje = $"Error en `D{BulkedData.Index(r => r == row) + 1}`: Falta DistributionId/Code de Distribucion .";
+                                            msgDistribution.Tipo = 4;
+                                            List_Events.Add(msgDistribution);
+                                        }
+                                        else
+                                        {
+                                            // code existe
+                                            if (row[4] == "§")
+                                            {
+                                                auxdistribution = -1;
+                                                //Descripcion no existe, lanzar error
+                                                //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
+                                                var msgDistribution = new EventMensaje();
+                                                msgDistribution.Mensaje = $"Error en `E{BulkedData.Index(r => r == row) + 1}`: Falta Descripcion para la Creacion de la distribucion `{row[3]}` .";
+                                                msgDistribution.Tipo = 4;
+                                                List_Events.Add(msgDistribution);
+                                            }
+                                            else
+                                            {
+                                                //compruebo si mensaje de creacion ya existe
+                                                if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains(row[3])))
+                                                {
+                                                    var msgDistribution = new EventMensaje();
+                                                    if (auxarea != -3)
+                                                        msgDistribution.Mensaje = $"Se creara la distribucion `{row[3]}` en la area: `{Assychart_ToAdd.Area?.Code}`";
+                                                    else
+                                                        msgDistribution.Mensaje = $"Se creara la distribucion `{row[3]}` ";
+                                                    msgDistribution.Tipo = 0;
+                                                    List_Events.Add(msgDistribution);
+                                                }
+
+                                                Distribution distri = new Distribution();
+                                                distri.Code = row[3];
+                                                distri.Description = row[4];
+                                                Assychart_ToAdd.Distribution = distri;
+                                                auxdistribution = -2;
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        //cuando la area existe
+
+                                        if (row[3] == "§")
+                                        {
+                                            //Codigo vacio se muestra error
+                                            auxdistribution = -3;
+
+                                            var msgDistribution = new EventMensaje();
+                                            msgDistribution.Mensaje = $"Error en `D{BulkedData.Index(r => r == row) + 1}`: Falta DistributionId/Code de Distribucion .";
+                                            msgDistribution.Tipo = 4;
+                                            List_Events.Add(msgDistribution);
+                                        }
+                                        else
+                                        {
+
+                                            if (_distributions.ElementAt(auxplant).Value.ElementAt(auxarea).Value.Any(a => a.Code == row[3]))
+                                            {
+                                                //distirbucion si existe
+                                                auxdistribution = _distributions.ElementAt(auxplant ).Value.ElementAt(auxarea).Value.Index(a => a.Code == row[3]);
+
+                                                Assychart_ToAdd.Distribution = _distributions.ElementAt(auxplant).Value.ElementAt(auxarea).Value.ElementAt(auxdistribution);
+
+                                                if (_distributions.ElementAt(auxplant).Value.ElementAt(auxarea).Value.ElementAt(auxdistribution).Description != row[4] && row[4] != "§")
+                                                {
+                                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
+                                                    Console.WriteLine("La distribucion Se actualiza");
+
+                                                    var msgDistribution = new EventMensaje();
+                                                    msgDistribution.Mensaje = $"Se Actualizara la descripcion de la distribucion: `{row[3]}`. De `{Assychart_ToAdd.Distribution?.Description}` a `{row[4]}`";
+                                                    Assychart_ToAdd.Distribution.Description = row[4];
+                                                    msgDistribution.Tipo = 2;
+                                                    List_Events.Add(msgDistribution);
+
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //distirbucion no existe
+                                                if (row[4] == "§")
+                                                {
+
+                                                    //Mensaje de error descripcion no existe, no se puede crear
+                                                    auxdistribution = -1;
+
+                                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 
+                                                    var msgDistribution = new EventMensaje();
+                                                    msgDistribution.Mensaje = $"Error en `E{BulkedData.Index(r => r == row) + 1}`: Falta Descripcion para la Creacion de la distribucion `{row[3]}` .";
+                                                    msgDistribution.Tipo = 4;
+                                                    List_Events.Add(msgDistribution);
+                                                }
+                                                else
+                                                {
+
+                                                    //se comprueba si ya existe mensaje para no duplicar
+                                                    if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains(row[3])))
+                                                    {
+                                                        var msgDistribution = new EventMensaje();
+                                                        msgDistribution.Mensaje = $"Se creara la distribucion `{row[3]}`n en la planta: `{BulkedData[0][1]}`";
+                                                        msgDistribution.Tipo = 0;
+                                                        List_Events.Add(msgDistribution);
+                                                    }
+
+                                                    Distribution distri = new Distribution();
+                                                    distri.Code = row[3];
+                                                    distri.Description = row[4];
+                                                    auxdistribution = -2;
+                                                    Assychart_ToAdd.Distribution = distri;
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("");
+                                    var msgDistribucion = new EventMensaje();
+                                    msgDistribucion.Mensaje = $"Error en D{BulkedData.Index(r => r == row) + 1}` o `E{BulkedData.Index(r => r == row) + 1}`: Distribucion.";
+                                    msgDistribucion.Tipo = 4;
+                                    List_Events.Add(msgDistribucion);
+
+                                }
+
+
+                                //creacion de rutas
+
+                                RouteProductAssyChart GOSRute = new();
+
+                                try
+                                {
+                                    if (row[5] == "§")
+                                    {
+                                        // error no product code or id
+                                        //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                        var msgProduct1 = new EventMensaje();
+                                        msgProduct1.Mensaje = $"Error en F{BulkedData.Index(r => r == row) + 1}` falta Product1Id/Code";
+                                        msgProduct1.Tipo = 4;
+                                        List_Events.Add(msgProduct1);
+                                    }
+                                    else
+                                    {
+                                        if (_products.Any(p => p.Code == row[5]))
+                                        {
+                                            var indexGos = _products.Index(p => p.Code == row[5]);
+                                            GOSRute.ProductId = _products.ElementAt(indexGos).ProductId;
+                                            GOSRute.Product = _products.ElementAt(indexGos);
+
+                                        }
+                                        else
+                                        {
+                                            if (row[5] == "§")
+                                            {
+                                                // error no product descripcion missing
+                                                //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                                var msgProduct1 = new EventMensaje();
+                                                msgProduct1.Mensaje = $"Error en G{BulkedData.Index(r => r == row) + 1}` falta descripcion para la creacion del producto";
+                                                msgProduct1.Tipo = 4;
+                                                List_Events.Add(msgProduct1);
+                                            }
+                                            else
+                                            {
+                                                //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                                Product NewGosProduct = new();
+                                                NewGosProduct.Code = row[5];
+                                                NewGosProduct.Description = row[6];
+                                                GOSRute.Product = NewGosProduct;
+
+                                                // varificar que las rutas sean validas o aproximar lo maejor posible
+                                                // pendiente
+                                                //Mensaje de producto no existe y se creara
+                                                
+                                            }
+                                        }
+                                    }
+                                }catch(Exception ex)
+                                {
+                                    Console.WriteLine("GoS Rute");
+                                }
+
+
+
+                                if (auxplant >= 0 && auxplant >= 0 && auxdistribution >= 0)
+                                {
+                                    var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(auxplant, auxarea, auxdistribution);
+
+                                    if (anyAssyChart != null)
+                                    {
+                                        //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                        var msgAssyChart = new EventMensaje();
+                                        msgAssyChart.Mensaje = $"El assychart del renglon {BulkedData.Index(r => r == row) + 1}` ya existe en la base de datos";
+                                        msgAssyChart.Tipo = 5;
+                                        List_Events.Add(msgAssyChart);
+                                    }
+                                    else
+                                    {
+                                        if (!List_Events.Any(e => (e.Mensaje.Contains("creara") || e.Mensaje.Contains("created")) && e.Mensaje.Contains("assychart") && (e.Mensaje.Contains(Assychart_ToAdd.Plant.Code) && e.Mensaje.Contains(Assychart_ToAdd.Area.Code) && e.Mensaje.Contains(Assychart_ToAdd.Distribution.Code))))
+                                        {
+                                            //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                            var msgAssyChart = new EventMensaje();
+                                            msgAssyChart.Mensaje = $"Se creara el assychart de la planta: '{Assychart_ToAdd.Plant?.Code}', Area: '{Assychart_ToAdd.Area?.Code}' y Distribucion: '{Assychart_ToAdd.Distribution?.Code}'";
+                                            msgAssyChart.Tipo = 0;
+                                            List_Events.Add(msgAssyChart);
+
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    //0 Create, 1 Read, 2 Update, 3 Adding, 4 error 5 Advertencia
+                                    var msgAssyChart = new EventMensaje();
+                                    if (auxplant != -3 && auxarea != -3 && auxdistribution != -3)
+                                        msgAssyChart.Mensaje = $"Se creara el assychart de la planta: '{Assychart_ToAdd.Plant?.Code}', Area: '{Assychart_ToAdd.Area?.Code}' y Distribucion: '{Assychart_ToAdd.Distribution?.Code}'";
+                                    else if (auxplant == -3 && auxarea != -3 && auxdistribution != -3)
+                                        msgAssyChart.Mensaje = $"Se creara el assychart del Area: '{Assychart_ToAdd.Area?.Code}' y Distribucion: '{Assychart_ToAdd.Distribution?.Code}' ";
+                                    else if (auxplant == -3 && auxarea == -3 && auxdistribution != -3)
+                                        msgAssyChart.Mensaje = $"Se creara el assychart de la Distribucion: '{Assychart_ToAdd.Distribution?.Code}'";
+
+
+                                    msgAssyChart.Tipo = 0;
+                                    List_Events.Add(msgAssyChart);
+                                }
 
                                 _assycharts.Add(Assychart_ToAdd);
                             }
@@ -609,10 +737,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                         }//End Foreach
 
 
-                        showTable = true;
+                        if (List_Events.Any(e => e.Tipo == 4))
+                        {
+                            showTable = false;
+                        }
+                        else
+                        {
+                            showTable = true;
+                        }
 
-                        break; 
-                    
+                        break;
+
                 }
 
 
@@ -694,10 +829,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 //}//end foreach 
                 //active display table
 
-                StateHasChanged(); 
+                StateHasChanged();
             }//end else
 
-       
+
 
         }//end function on change
 
@@ -717,7 +852,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
                 {
                     //Read the first Sheet from Excel file.
-                    IXLWorksheet workSheet = workBook.Worksheet(1);   
+                    IXLWorksheet workSheet = workBook.Worksheet(1);
 
                     foreach (IXLRow row in workSheet.Rows())
                     {
@@ -743,7 +878,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                     }
 
-                    
+
                 }
             }
 
