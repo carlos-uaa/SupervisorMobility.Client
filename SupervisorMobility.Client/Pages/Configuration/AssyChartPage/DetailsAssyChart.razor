@@ -39,6 +39,9 @@
                 </CardHeaderActions>
             </MudCardHeader>
             @*Mud select of plants *@
+
+            @if(!ShowLoading){
+            
             <MudCardContent>
 
                 <MudSelect T="int" Label="@Localizer1["ACLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer1["ACPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxplant" For="@(() => auxplant)" ReadOnly="true">
@@ -106,9 +109,11 @@
 
                 <MudItem Class="d-flex flex-column justify-center">
 
-                    @if (_distributionValues.Products?.Count == 0 && _assychart.DistributionId != 0)
+                    @if (_assychart.RoutesProductsAssyChart?.Count == 0 )
                     {
-                        <MudAlert Severity="Severity.Warning" Style="text-align: center"> Distribucion No tiene Productos</MudAlert>
+                        <MudAlert Severity="Severity.Info">
+                            This AssyChart No Have Produts Added
+                        </MudAlert>
                     }
                     else
                     {
@@ -264,6 +269,20 @@
 
 
             </MudCardContent>
+            }else{
+                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudProgressCircular Color="@_Colors[context.IndexOf(context)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                            </MudItem>
+                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@context</MudText>
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+            }
+
 
             <MudCardActions>
                 <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CloseDetalils())">@Localizer["Close"]</MudButton>
@@ -873,6 +892,8 @@
     RouteProductAssyChart RouteProductDialogDisplay { get; set; }
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
+    private bool ShowLoading = true;
+
     private bool folderErrorGOS = false;
     private bool folderErrorCCP = false;
     private bool folderErrorHOE = false;
@@ -886,9 +907,25 @@
     private int auxdistribution;
     private int auxoperation;
 
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Dark};
+
+
     //Inizialize
     protected async override Task OnInitializedAsync()
     {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
         _links = new List<BreadcrumbItem>
               {
                     new BreadcrumbItem(text: Localizer["home"], href: "#"),
@@ -897,6 +934,7 @@
                 new BreadcrumbItem(text: Localizer["ACDetails"], href: "", disabled: true),
               };
         _assychart = await AssyChartServices.GetAssyChart(assychartId);
+
 
         auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
         auxarea = _assychart.AreaId != null ? (int)_assychart.AreaId : 0;
@@ -979,6 +1017,10 @@
             Console.WriteLine("Error remove duplicates");
             Console.WriteLine(ex.Message);
         }
+        finally
+        {
+            ShowLoading = false;
+        }
 
 
         StateHasChanged();
@@ -990,7 +1032,7 @@
         NavigationManager.NavigateTo("/assychart");
     }
 
-     void EditAssyChart(int assyId)
+    void EditAssyChart(int assyId)
     {
         NavigationManager.NavigateTo($"/assychart/updateassychart/{assyId}");
     }
@@ -1007,62 +1049,64 @@
 
     private async void OpenDialogProduct(RouteProductAssyChart itemselected)
     {
-        RouteProductDialogDisplay = itemselected;
-
-        ProductModalDisplay = true;
-
-
-        folderErrorGOS = true;
-        GOSrute = itemselected.GOS;
-        GosDialog = true;
-
-        Console.WriteLine($"gos {GOSrute}");
-
-        GosFilesInFolder = new CDMS_GOS_Archives();
-
-        GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-        if (GosFilesInFolder == null)
+        if(itemselected.HOE != "" || itemselected.CCP != "" || itemselected.GOS != "")
         {
+
+            RouteProductDialogDisplay = itemselected;
+
+            ProductModalDisplay = true;
+
+
             folderErrorGOS = true;
-        }
-        else
-        {
-            folderErrorGOS = false;
-        }
+            GOSrute = itemselected.GOS;
+            GosDialog = true;
+
+            Console.WriteLine($"gos {GOSrute}");
+
+            GosFilesInFolder = new CDMS_GOS_Archives();
+
+            GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
+            if (GosFilesInFolder == null)
+            {
+                folderErrorGOS = true;
+            }
+            else
+            {
+                folderErrorGOS = false;
+            }
 
 
-        folderErrorCCP = true;
-        CCPrute = itemselected.CCP;
-        CcpDialog = true;
-        Console.WriteLine($"Cpc {CCPrute}");
-
-        CcpFilesInFolder = new CDMS_CCP_Archives();
-        CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-        if (CcpFilesInFolder == null)
             folderErrorCCP = true;
-        else
-            folderErrorCCP = false;
+            CCPrute = itemselected.CCP;
+            CcpDialog = true;
+            Console.WriteLine($"Cpc {CCPrute}");
+
+            CcpFilesInFolder = new CDMS_CCP_Archives();
+            CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
+            if (CcpFilesInFolder == null)
+                folderErrorCCP = true;
+            else
+                folderErrorCCP = false;
 
 
-        folderErrorHOE = true;
-
-        HOErute = itemselected.HOE;
-        HoeDialog = true;
-        Console.WriteLine($"hoe {itemselected.HOE}");
-        HoeFilesInFolder = new CDMS_HOE_Archives();
-        HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-        if (HoeFilesInFolder == null)
             folderErrorHOE = true;
-        else
-            folderErrorHOE = false;
 
-        StateHasChanged();
+            HOErute = itemselected.HOE;
+            HoeDialog = true;
+            Console.WriteLine($"hoe {itemselected.HOE}");
+            HoeFilesInFolder = new CDMS_HOE_Archives();
+            HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
+            if (HoeFilesInFolder == null)
+                folderErrorHOE = true;
+            else
+                folderErrorHOE = false;
+
+            StateHasChanged();
 
 
+        }
 
 
-
-        StateHasChanged();
     }
 
 

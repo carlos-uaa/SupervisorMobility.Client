@@ -1699,6 +1699,105 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Almost reached the end of the quest! 🕵️‍ Keep the excitement going as we get to the final details..
+        /// </summary>
+        public static string Loadign4 {
+            get {
+                return ResourceManager.GetString("Loadign4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🔍 Exploring the depths of the database.... Looking for plants to start our journey..
+        /// </summary>
+        public static string Loading1 {
+            get {
+                return ResourceManager.GetString("Loading1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Well and how was your day? ☀️.
+        /// </summary>
+        public static string Loading10 {
+            get {
+                return ResourceManager.GetString("Loading10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ⏳ Patience is a virtue, and yours is about to be rewarded!!!Thanks for your understanding!.
+        /// </summary>
+        public static string Loading11 {
+            get {
+                return ResourceManager.GetString("Loading11", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🚀 Browsing the areas in search of the distributions that will guide our way..
+        /// </summary>
+        public static string Loading2 {
+            get {
+                return ResourceManager.GetString("Loading2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🔮 Rummaging through the database to unravel the secrets of the distributions and find the hidden products..
+        /// </summary>
+        public static string Loading3 {
+            get {
+                return ResourceManager.GetString("Loading3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🤞 I swear this is almost over. The data is about to be unveiled..
+        /// </summary>
+        public static string Loading5 {
+            get {
+                return ResourceManager.GetString("Loading5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🏁 Last steps, I promise! We will shortly present you with the data you&apos;ve been waiting for..
+        /// </summary>
+        public static string Loading6 {
+            get {
+                return ResourceManager.GetString("Loading6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ⏳This shouldn&apos;t take too long. We&apos;re getting the data organized for you..
+        /// </summary>
+        public static string Loading7 {
+            get {
+                return ResourceManager.GetString("Loading7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ⏰ We&apos;re almost there, preparing the information in a way that&apos;s easy to understand..
+        /// </summary>
+        public static string Loading8 {
+            get {
+                return ResourceManager.GetString("Loading8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a 🚀 We&apos;re nearing completion. The wait will be worth it when you see the full information..
+        /// </summary>
+        public static string Loading9 {
+            get {
+                return ResourceManager.GetString("Loading9", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Loading Data.
         /// </summary>
         public static string LoadingData {

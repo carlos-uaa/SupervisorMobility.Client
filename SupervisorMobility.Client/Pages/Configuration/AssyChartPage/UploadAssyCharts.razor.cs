@@ -26,8 +26,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private List<Product> _products = new List<Product>();
 
         private List<EventMensaje> List_Events = new();
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
         //Table to display elements in file, verificate data to upload
+       
+        private bool displayLoading = true;
         private bool displayResume = false;
         private bool activeUpload = false;
         private bool showTable = false;
@@ -47,6 +51,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
             _links = new List<BreadcrumbItem>
             {
                     new BreadcrumbItem(text: Localizer["home"], href: "#"),
@@ -54,24 +70,32 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
                 new BreadcrumbItem(text: Localizer["ACUploadAC"], href: "/UploadAssyCharts", disabled: true),
             };
-
-            _plants = await PlantsServices.GetPlants();
-
-            foreach (var plant in _plants)
+            try
             {
-                var areas = await AreasServices.GetAreas(plant.PlantId);
-                _areas.Add(plant.PlantId, areas);
-
-                var areaDistributions = new Dictionary<int, List<Distribution>>();
-                foreach (var area in areas)
+            _plants = await PlantsServices.GetPlants();
+                foreach (var plant in _plants)
                 {
-                    var distributions = await DistributionsServices.GetDistributions(plant.PlantId, area.AreaId);
-                    areaDistributions.Add(area.AreaId, distributions);
+                    var areas = await AreasServices.GetAreas(plant.PlantId);
+                    _areas.Add(plant.PlantId, areas);
+
+                    var areaDistributions = new Dictionary<int, List<Distribution>>();
+                    foreach (var area in areas)
+                    {
+                        var distributions = await DistributionsServices.GetDistributions(plant.PlantId, area.AreaId);
+                        areaDistributions.Add(area.AreaId, distributions);
+                    }
+                    _distributions.Add(plant.PlantId, areaDistributions);
                 }
-                _distributions.Add(plant.PlantId, areaDistributions);
+
+                _products = await ProductsServices.GetProducts();
+            }
+            catch(Exception ex) { }
+            finally
+            {
+                displayLoading = false;
             }
 
-            _products = await ProductsServices.GetProducts();
+
 
         }//end OnInitialized
 

@@ -46,6 +46,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         MudMessageBox CCPmbox { get; set; }
         MudMessageBox GOSmbox { get; set; }
 
+        public bool DisplayLoading { get; set; } = true;
         public bool EnableUpdate { get; set; } = false;
         public bool modeDisplay { get; set; } = false;
         public bool ProductModalDisplay { get; set; } = false;
@@ -63,163 +64,191 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private int auxdistribution;
         private int auxoperation;
 
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Dark };
+
+
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
-            _links = new List<BreadcrumbItem>
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+            try
+            {
+
+
+
+                _links = new List<BreadcrumbItem>
               {
                     new BreadcrumbItem(text: Localizer["home"], href: "#"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
                 new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
               };
-            _assychart = await AssyChartServices.GetAssyChart(assychartId);
+                _assychart = await AssyChartServices.GetAssyChart(assychartId);
 
-            auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
-            auxarea = _assychart.AreaId != null ? (int)_assychart.AreaId : 0;
-            auxdistribution = _assychart.DistributionId != null ? (int)_assychart.DistributionId : 0;
-            auxoperation = _assychart.OperationId != null ? (int)_assychart.OperationId : 0;
+                auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
+                auxarea = _assychart.AreaId != null ? (int)_assychart.AreaId : 0;
+                auxdistribution = _assychart.DistributionId != null ? (int)_assychart.DistributionId : 0;
+                auxoperation = _assychart.OperationId != null ? (int)_assychart.OperationId : 0;
 
-            try
-            {
-                _plants = await PlantServices.GetPlants();
-            }
-            catch (Exception exe)
-            {
-                Console.WriteLine("Error Get Plants");
-                if (_assychart.PlantId == 0)
+                try
                 {
-                    Console.WriteLine("Plant id is null");
+                    _plants = await PlantServices.GetPlants();
                 }
-                Console.WriteLine(exe.Message);
-            }
-
-            try
-            {
-                _areas = await AreaServices.GetAreas(auxplant);
-            }
-            catch (Exception exe)
-            {
-                Console.WriteLine("Error Get Areas");
-
-                if (_assychart.PlantId == 0)
+                catch (Exception exe)
                 {
-                    Console.WriteLine("Plant id is null");
-                }
-
-                if (_assychart.AreaId == 0)
-                {
-                    Console.WriteLine("Area id is null");
-                }
-                Console.WriteLine(exe.Message);
-            }
-
-            try
-            {
-                _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
-                _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
-
-            }
-            catch (Exception exe)
-            {
-                Console.WriteLine("Error Get Distribution");
-                if (_assychart.PlantId == 0)
-                {
-                    Console.WriteLine("Plant id is null");
-                }
-
-                if (_assychart.AreaId == 0)
-                {
-                    Console.WriteLine("Area id is null");
-                }
-                Console.WriteLine(exe.Message);
-            }
-
-
-
-
-            try
-            {
-                if (_distributionValues != null)
-                {
-                    foreach (var item in _assychart.RoutesProductsAssyChart)
+                    Console.WriteLine("Error Get Plants");
+                    if (_assychart.PlantId == 0)
                     {
-                        if (_distributionValues.Products.Any(p => p.ProductId == item.ProductId) == true)
+                        Console.WriteLine("Plant id is null");
+                    }
+                    Console.WriteLine(exe.Message);
+                }
+
+                try
+                {
+                    _areas = await AreaServices.GetAreas(auxplant);
+                }
+                catch (Exception exe)
+                {
+                    Console.WriteLine("Error Get Areas");
+
+                    if (_assychart.PlantId == 0)
+                    {
+                        Console.WriteLine("Plant id is null");
+                    }
+
+                    if (_assychart.AreaId == 0)
+                    {
+                        Console.WriteLine("Area id is null");
+                    }
+                    Console.WriteLine(exe.Message);
+                }
+
+                try
+                {
+                    _distributions = await DistributionServices.GetDistributions(auxplant, auxarea);
+                    _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
+
+                }
+                catch (Exception exe)
+                {
+                    Console.WriteLine("Error Get Distribution");
+                    if (_assychart.PlantId == 0)
+                    {
+                        Console.WriteLine("Plant id is null");
+                    }
+
+                    if (_assychart.AreaId == 0)
+                    {
+                        Console.WriteLine("Area id is null");
+                    }
+                    Console.WriteLine(exe.Message);
+                }
+
+
+
+
+                try
+                {
+                    if (_distributionValues != null)
+                    {
+                        foreach (var item in _assychart.RoutesProductsAssyChart)
                         {
-                            _distributionValues.Products.RemoveAll(p => p.ProductId == item.ProductId);
+                            if (_distributionValues.Products.Any(p => p.ProductId == item.ProductId) == true)
+                            {
+                                _distributionValues.Products.RemoveAll(p => p.ProductId == item.ProductId);
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error remove duplicates");
-                Console.WriteLine(ex.Message);
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error remove duplicates");
+                    Console.WriteLine(ex.Message);
+                }
 
 
-            try
-            {
-                GOSFolders = await CDMSServices.GetFoldersGOS();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get GOS Folder From CDMS");
-                Console.WriteLine(ex.Message);
-            }
+                try
+                {
+                    GOSFolders = await CDMSServices.GetFoldersGOS();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Get GOS Folder From CDMS");
+                    Console.WriteLine(ex.Message);
+                }
 
-            if (GOSFolders != null)
-            {
-                folderGOSError = false;
-                rootNodeGOS = ConstruirArbolGOS(GOSFolders.operation);
-            }
-            else
-            {
-                folderGOSError = true;
-            }
+                if (GOSFolders != null)
+                {
+                    folderGOSError = false;
+                    rootNodeGOS = ConstruirArbolGOS(GOSFolders.operation);
+                }
+                else
+                {
+                    folderGOSError = true;
+                }
 
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-            }
+                try
+                {
+                    CCPFolders = await CDMSServices.GetFoldersCCP();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Get CCP Folder From CCP");
+                    Console.WriteLine(ex.Message);
+                }
 
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = ConstruirArbolCCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
+                if (CCPFolders != null)
+                {
+                    folderCCPError = false;
+                    rootNodeCCP = ConstruirArbolCCP(CCPFolders.operation);
+                }
+                else
+                {
+                    folderCCPError = true;
+                }
 
-            try
-            {
-                HOEFolders = await CDMSServices.GetFoldersHOE();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get HOE Folder From CDMS");
-                Console.WriteLine(ex.Message);
-            }
-            if (HOEFolders != null)
-            {
-                folderHOEError = false;
-                rootNodeHOE = ConstruirArbolHOE(HOEFolders.operation);
-
-
-            }
-            else
-            {
-                folderHOEError = true;
-            }
+                try
+                {
+                    HOEFolders = await CDMSServices.GetFoldersHOE();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Get HOE Folder From CDMS");
+                    Console.WriteLine(ex.Message);
+                }
+                if (HOEFolders != null)
+                {
+                    folderHOEError = false;
+                    rootNodeHOE = ConstruirArbolHOE(HOEFolders.operation);
 
 
+                }
+                else
+                {
+                    folderHOEError = true;
+                }
+
+            }
+            catch(Exception ex)
+            {
+
+            }
+            finally
+            {
+                DisplayLoading = false;
+            }
 
             StateHasChanged();
 

@@ -132,26 +132,56 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+
+            try
+            {   
+                if (element.AssyChardId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            if(element.RoutesProductsAssyChart?.Count > 0)
+            {
+                if(element.RoutesProductsAssyChart.Any(r => r.Product?.Code == searchString) )
+                    return true;
+
+                if (element.RoutesProductsAssyChart.Any(r => r.Product?.Description == searchString))
+                    return true;
+            }
+
+            if(element.Plant != null)
+            {
+                if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            if (element.Area != null)
+            {
+                if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
             //if (element.GOS.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             //    return true;
             //if (element.CCP.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             //    return true;
             //if (element.HOE.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             //    return true;
-            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+            if (element.Operation != null)
+            {
+                if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+          
             //if (element.Product.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             //    return true;
-            if (element.CreationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+           
+            if ($"{element.Operation?.Description} {element.Plant?.Description} {element.Area?.Description}{element.Distribution?.Description}".Contains(searchString))
                 return true;
-            if (element.ModificationDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if ($"{element.Operation.Description}{element.Plant.Description}{element.Area.Description}{element.Distribution.Description}".Contains(searchString))
-                return true;
+
             return false;
         }
 
