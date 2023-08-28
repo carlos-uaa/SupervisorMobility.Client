@@ -113,10 +113,10 @@
                                                 </MudPaper>
                                                 break;
                                             case 6:
-                                            <MudPaper Elevation="0">
-                                                <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
-                                            </MudPaper>
-                                            break;
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
+                                                </MudPaper>
+                                                break;
                                         }
                                     </MudItem>
 
@@ -148,7 +148,7 @@
                                     @bind-Value="@_user.Email" For="@(() => _user.Email)" Variant="@Variant.Text" Clearable />
                                 }
 
-                                @if (_user.UserType > 1)
+                                @if (_user.UserType > 1 && _user.UserType != 6)
                                 {
                                     <MudItem Class="mt-5">
                                         <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
@@ -156,9 +156,9 @@
 
                                 }
 
-                                @if (_user.UserType != 1)
+                                @if (_user.UserType != 1 && _user.UserType == 6)
                                 {
-                                    @if (_user.UserType == 2 || _user.UserType == 6)
+                                    @if (_user.UserType == 2)
                                     {
                                         @*Mud select of Plants *@
                                         <MudSelect T="int" Label="@Localizer["UsersPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
@@ -273,7 +273,7 @@
                                     @* Areas Managed*@
 
 
-                                    @if (_user.UserType == 2 || _user.UserType == 6)
+                                    @if (_user.UserType == 2)
                                     {
                                         <MudItem Class="mt-5">
                                             <MudText Typo="Typo.h6">@Localizer["UsersAreasManage"]</MudText>
@@ -896,7 +896,7 @@
                                                                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSupervisorFromSubordinateList(item))" />
                                                                                     break;
                                                                                 case 4:
-                                                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark" Class="mr-15 mt-5" > @Localizer["UsersOperator"] </MudChip>
+                                                                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark" Class="mr-15 mt-5"> @Localizer["UsersOperator"] </MudChip>
                                                                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteOperatorFromSubordinateList(item))" />
                                                                                     break;
                                                                                 case 5:
@@ -2290,8 +2290,9 @@ else
         IsSupervisor = userType == 3 && !IsSupervisor;
         IsOperator = userType == 4 && !IsOperator;
         IsManager = userType == 5 && !IsManager;
+        IsLineSupport = userType == 6 && !IsLineSupport;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -2943,9 +2944,10 @@ else
 
                     if (ResponseUpdateUser)
                     {
-                        if(_user.UserId == LogedUser.UserId){
+                        if (_user.UserId == LogedUser.UserId)
+                        {
                             LogedUser = await UserServices.GetUserByObjectIdWithCollections(LogedUser.ObjectId);
-                            if(LogedUser != null)
+                            if (LogedUser != null)
                             {
                                 json = JsonSerializer.Serialize<User>(LogedUser);
                                 await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
@@ -3084,14 +3086,15 @@ else
 
                             if (ResponseUpdateUser)
                             {
-                                                        if(_user.UserId == LogedUser.UserId){
-                            LogedUser = await UserServices.GetUserByObjectIdWithCollections(LogedUser.ObjectId);
-                            if(LogedUser != null)
-                            {
-                                json = JsonSerializer.Serialize<User>(LogedUser);
-                                await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
-                            }
-                        }
+                                if (_user.UserId == LogedUser.UserId)
+                                {
+                                    LogedUser = await UserServices.GetUserByObjectIdWithCollections(LogedUser.ObjectId);
+                                    if (LogedUser != null)
+                                    {
+                                        json = JsonSerializer.Serialize<User>(LogedUser);
+                                        await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
+                                    }
+                                }
                                 await JS.InvokeVoidAsync("alert", "Succesful Update!"); // Alert
                                 NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{_user.UserId}");
                                 //NavigationManager.NavigateTo("/usersmanagement");

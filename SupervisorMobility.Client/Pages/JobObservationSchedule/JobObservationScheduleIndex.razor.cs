@@ -113,7 +113,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                     _plants = await PlantServices.GetPlants();
                     _groups = await GroupService.GetGroups();
 
-                    if(user.UserType == 1)
+                    if(user.UserType == 1 || user.UserType == 6)
                     {
                         plantId = 0;
                         areaId = 0;
@@ -205,26 +205,6 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
                         totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
-                    }
-                    else if (user.UserType == 6)
-                    {
-                        plantId = (int)user.PlantId;
-                        areaId = 0;
-                        groupId = (int)user.GroupId;
-                        ssvId = 0;
-                        supervisorId = 0;
-
-                        _allSSVs = await UsersService.GetUsersByType(2, true, true);
-                        
-                        foreach (var jobobs in _allJobObservations)
-                        {
-                            if (jobobs.PlantId == plantId)
-                            {
-                                _jobObservations.Add(jobobs);
-                            }
-                        }
-                        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
-                        totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
                 }
                     StateHasChanged();
@@ -425,7 +405,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
 
         private async void ShowAreas()
         {
-            if(plantId == 0 && user.UserType == 1)
+            if(plantId == 0 && (user.UserType == 1 || user.UserType == 6))
             {
                 areaId = 0;
                 groupId = 0;

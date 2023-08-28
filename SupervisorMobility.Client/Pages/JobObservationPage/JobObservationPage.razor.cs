@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 if(user != null)
                 {
-                    if (user.UserType == 1)
+                    if (user.UserType == 1 || user.UserType == 6)
                     {
                         ClearFilters();
                         _plants = await PlantServices.GetPlants();
@@ -253,38 +253,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                             }
                         }
                     }
-                    if (user.UserType == 6)
-                    {
-                        ClearFilters();
-                        plantId = (int)user.PlantId;
 
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
-                        foreach (var jobobs in _jobObservationsAux)
-                        {
-                            if(jobobs.PlantId == plantId)
-                            {
-                                if (jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
-
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
-                            }
-                        }
-
-                    }
                     _filterJobObservation = _jobObservations;
                     _filterPlannedJobObservation = _plannedJobObservation;
                     _filterInProgressJobObservation = _inProgressJobObservation;

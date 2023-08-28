@@ -67,6 +67,9 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
                     else if(user.UserType == 3)
                     {
                         _sosReview.PlantId = (int)user.PlantId;
+
+                        _areas = await AreaServices.GetAreas(_sosReview.PlantId);
+
                         _sosReview.AreaId = (int)user.AreaId;
 
                         _sosReview.Supervisorid = user.UserId;

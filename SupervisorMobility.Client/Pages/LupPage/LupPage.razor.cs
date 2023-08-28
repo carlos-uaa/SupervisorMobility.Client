@@ -63,7 +63,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
 
                 if(user != null)
                 {
-                    if (user.UserType == 1)
+                    if (user.UserType == 1 || user.UserType == 6)
                     {
                         _plants = await PlantServices.GetPlants();
                         foreach (var jobObs in jobObservationList)
@@ -139,7 +139,7 @@ namespace SupervisorMobility.Client.Pages.LupPage
                         }
 
                     }
-                    else if (user.UserType == 5 || user.UserType == 6)
+                    else if (user.UserType == 5)
                     {
                         plantId = (int)user.PlantId;
                         areaId = 0;
