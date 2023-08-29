@@ -40,8 +40,7 @@ else if (_Pats.Count == 0)
 }
 else
 {
-    <MudTable SortLabel="SortBy" Class="styled-table table-striped" FixedHeader=true Height="55vh"
-              Items="@_Pats" Hover Striped="true" Filter="new Func<PAT,bool>(FilterFunc1)">
+    <MudTable Items="@_Pats" T="PAT" SortLabel="SortBy" Class="styled-table table-striped" FixedHeader=true Height="55vh" Hover Striped="true" Filter="new Func<PAT,bool>(FilterFunc1)" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
         <PagerContent>
             <MudTablePager />
         </PagerContent>
@@ -286,5 +285,35 @@ else
     }
     void CloseDeleteModal() => visibleDelete = false;
     private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+    private int selectedRowNumber = -1;
+    private MudTable<PAT> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<PAT> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(PAT element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                NavigationManager.NavigateTo($"PAT/{element.PATid}");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
 
 }

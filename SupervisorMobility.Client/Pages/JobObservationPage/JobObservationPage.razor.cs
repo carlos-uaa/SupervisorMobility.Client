@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Routing.Constraints;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -1084,5 +1085,46 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         void CloseDeleteModal() => visibleDelete = false;
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
+        //Double clic go to details
+        private DateTime lastTouchTime = DateTime.MinValue;
+        private readonly TimeSpan doubleTouchInterval = TimeSpan.FromMilliseconds(300);
+
+        private void HandleTouchStart(int jobObsId)
+        {
+            DateTime now = DateTime.Now;
+            TimeSpan timeSinceLastTouch = now - lastTouchTime;
+
+            if (timeSinceLastTouch < doubleTouchInterval)
+            {
+                OpenDialog2(jobObsId);
+            }
+
+            lastTouchTime = now;
+        }
+
+        private int selectedRowNumber = -1;
+        private MudTable<JobObservation> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<JobObservation> tableRowClickEventArgs)
+        {
+        }
+
+
+        private string SelectedRowClassFunc(JobObservation element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

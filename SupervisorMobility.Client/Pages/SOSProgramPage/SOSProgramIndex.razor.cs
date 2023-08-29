@@ -48,6 +48,39 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
 
         }
 
+
+        private int selectedRowNumber = -1;
+        private MudTable<SOSReviewProgram> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<SOSReviewProgram> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(SOSReviewProgram element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+                {
+                    NavigationManager.NavigateTo($"sosDetails/{element.SOSid}");
+
+                }
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+
+
         //Local storage user
         private async Task GetUserAsync()
         {
@@ -132,7 +165,6 @@ namespace SupervisorMobility.Client.Pages.SOSProgramPage
         }
         void CloseDeleteModal() => visibleDelete = false;
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
-
 
 
     }

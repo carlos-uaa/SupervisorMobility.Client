@@ -20,6 +20,7 @@
 @inject ISnackbar Snackbar
 @inject IAssyChartService AssychartServices
 @inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 
 @inject NavigationManager NavigationManager
 
@@ -48,51 +49,106 @@ else
                     {
                         <MudItem Class="d-flex flex-row align-start justify-center">
 
-                           @* @if (_assychart.GOS != "")
+                            @if (_assychart.RoutesProductsAssyChart?.Count > 0)
                             {
-                                <MudButton @onclick="(() => OpenDialogGOS(_assychart.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                    <MudTooltip Text=@Localizer["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogGOS(_assychart.GOS))">
-                                        <MudTooltip Text="@_assychart.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.GOS.Split('/').Last()</MudChip>
-                                        </MudTooltip>
-                                    </MudTooltip>
-                                </MudButton>
-                            }
-                            else
-                            {
-                                <MudAlert Severity="Severity.Info">@Localizer["noGOSPath"]</MudAlert>
-                            }
+                                <MudMenu Dense=true AnchorOrigin="Origin.CenterRight" Style="display: flex" TransformOrigin="Origin.TopLeft">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Directorys</MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudExpansionPanels Elevation="0">
 
-                            @if (_assychart.CCP != "")
-                            {
-                                <MudButton @onclick="(() => OpenDialogCcp(_assychart.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                    <MudTooltip Text=@Localizer["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogCcp(_assychart.CCP))">
-                                        <MudTooltip Text="@_assychart.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.CCP.Split('/').Last()</MudChip>
-                                        </MudTooltip>
-                                    </MudTooltip>
-                                </MudButton>
-                            }
-                            else
-                            {
-                                <MudAlert Severity="Severity.Info">@Localizer["noCCPPath"]</MudAlert>
-                            }
+                                            @foreach (RouteProductAssyChart item in _assychart.RoutesProductsAssyChart)
+                                            {
 
-                            @if (_assychart.HOE != "")
-                            {
-                                <MudButton @onclick="(() => OpenDialogHoe(_assychart.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                    <MudTooltip Text=@Localizer["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialogHoe(_assychart.HOE))">
-                                        <MudTooltip Text="@_assychart.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@_assychart.HOE.Split('§').Last()</MudChip>
-                                        </MudTooltip>
-                                    </MudTooltip>
-                                </MudButton>
+                                                <MudExpansionPanel>
+                                                    <TitleContent>
+                                                        <MudSimpleTable Elevation="0">
+                                                            <MudText Class="mt-1">@item.Product?.Description</MudText>
+                                                        </MudSimpleTable>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem class="d-flex flex-column justify-center ma-1">
+                                                            <MudItem class="d-flex d-flex-column justify-center">
+
+                                                                @if (item.GOS != "")
+                                                                {
+                                                                    <MudPaper Elevation="0">
+                                                                        <MudButton @onclick="(() => OpenDialogGOS(item.GOS))" @ontouchstart="(() => OpenDialogGOS(item.GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                                            <MudTooltip Text=@Localizer["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogGOS(item.GOS))" @ontouchstart="(() => OpenDialogGOS(item.GOS))">
+                                                                                <MudTooltip Text="@item.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.GOS.Split('/').Last()</MudChip>
+                                                                                </MudTooltip>
+                                                                            </MudTooltip>
+                                                                        </MudButton>
+
+                                                                    </MudPaper>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudPaper Elevation="0">
+
+                                                                        <MudAlert Severity="Severity.Info">@Localizer["noGOSPath"]</MudAlert>
+                                                                    </MudPaper>
+                                                                }
+
+                                                                @if (@item.CCP != "")
+                                                                {
+                                                                    <MudPaper Elevation="0">
+                                                                        <MudButton @onclick="(() => OpenDialogCcp(item.CCP))" @ontouchstart="(() => OpenDialogCcp(item.CCP))" Style="padding: 0px;" Color="Color.Error">
+                                                                            <MudTooltip Text=@Localizer["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogCcp(item.CCP))" @ontouchstart="(() => OpenDialogCcp(item.CCP))">
+                                                                                <MudTooltip Text="@item.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CCP.Split('/').Last()</MudChip>
+                                                                                </MudTooltip>
+                                                                            </MudTooltip>
+                                                                        </MudButton>
+                                                                    </MudPaper>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudPaper Elevation="0">
+                                                                        <MudAlert Severity="Severity.Info">@Localizer["noCCPPath"]</MudAlert>
+                                                                    </MudPaper>
+                                                                }
+
+                                                                @if (item.HOE != "")
+                                                                {
+                                                                    <MudPaper Elevation="0">
+                                                                        <MudButton @onclick="(() => OpenDialogHoe(item.HOE))" @ontouchstart="(() => OpenDialogHoe(item.HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                                            <MudTooltip Text=@Localizer["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogHoe(item.HOE))" @ontouchstart="(() => OpenDialogHoe(item.HOE))">
+                                                                                <MudTooltip Text="@item.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.HOE.Split('§').Last()</MudChip>
+                                                                                </MudTooltip>
+                                                                            </MudTooltip>
+                                                                        </MudButton>
+                                                                    </MudPaper>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudPaper Elevation="0">
+                                                                        <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
+                                                                    </MudPaper>
+                                                                }
+
+                                                            </MudItem>
+                                                        </MudItem>
+
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            }
+
+
+
+                                        </MudExpansionPanels>
+                                    </ChildContent>
+                                </MudMenu>
                             }
                             else
                             {
-                                <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
+                                <MudAlert Severity="Severity.Info">
+                                    @Localizer1["ACNoProducts"]
+                                </MudAlert>
                             }
-*@
                         </MudItem>
                     }
                     else
@@ -1365,7 +1421,6 @@ else
         startHour = _jobObservation.StartDate?.TimeOfDay;
         endHour = _jobObservation.EndDate?.TimeOfDay;
 
-
         if (_jobObservation.PlantId != 0)
         {
             if (_jobObservation.AreaId != 0)
@@ -1377,7 +1432,7 @@ else
 
                         try
                         {
-                            _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                            _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
                             if (_assychart == null)
                                 messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             else
