@@ -2788,6 +2788,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Time 3.
+        /// </summary>
+        public static string time3 {
+            get {
+                return ResourceManager.GetString("time3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Time 4.
+        /// </summary>
+        public static string time4 {
+            get {
+                return ResourceManager.GetString("time4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Time 5.
+        /// </summary>
+        public static string time5 {
+            get {
+                return ResourceManager.GetString("time5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Today.
         /// </summary>
         public static string today {

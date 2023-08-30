@@ -48,6 +48,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         int[] models = new int[5];
         string[] cycles = new string[5];
+        string[] HoeTimes = new string[5];
 
         private bool CcpDialog = false;
         private bool HoeDialog = false;
@@ -83,6 +84,18 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             _products = await ProductService.GetProducts();
 
 
+            if(_jobObservation.HOEStandardTimes != null)
+            {
+                HoeTimes = _jobObservation.HOEStandardTimes.Split('|');
+            }
+            else
+            {
+                HoeTimes[0] = "0";
+                HoeTimes[1] = "0";
+                HoeTimes[2] = "0";
+                HoeTimes[3] = "0";
+                HoeTimes[4] = "0";
+            }
             if(_jobObservation.Models != null)
             {
                 var prod = _jobObservation.Models.Split('|');
@@ -114,6 +127,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 cycles[3] = "0";
                 cycles[4] = "0";
             }
+
+
 
             startHour = _jobObservation.StartDate?.TimeOfDay;
             endHour = _jobObservation.EndDate?.TimeOfDay;
