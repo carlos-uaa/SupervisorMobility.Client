@@ -1,13 +1,7 @@
-﻿using Microsoft.JSInterop;
+﻿
+using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.CDMS;
-using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
-using SupervisorMobility.Client.Pages.Configuration.PlantPage;
-using SupervisorMobility.Client.Services.AssyChartService;
-using SupervisorMobility.Client.Services.UserService;
-using System.Runtime.ConstrainedExecution;
-using static MudBlazor.CategoryTypes;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 {
@@ -25,9 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private string CCPrute = "";
         private string GOSrute = "";
         public List<AssyChart>? _assychart { get; set; } = null;
-        public List<AssyChart> _assychartplant { get; set; } = new();
-        public List<AssyChart> _assychartarea { get; set; } = new();
-        public List<AssyChart> _assychartdistribution { get; set; } = new();
+        public List<AssyChart> _assychartItems { get; set; } = new();
 
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
@@ -37,13 +29,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         bool seearea = false;
         bool seedistribution = false;
 
-        bool showtablePlant = false;
-        bool showtableArea = false;
-        bool showtableDistribution = false;
+   
 
-        private int plantId = 0;
-        private int areaId = 0;
-        private int distributionId = 0;
+        bool Showfilters = false;
+
+
+        bool ShowLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
 
         private bool CcpDialog = false;
         private bool HoeDialog = false;
@@ -54,77 +48,314 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private CDMS_GOS_Archives? GosFilesInFolder;
 
 
+        private int plantId = 0;
+        private bool if_pick_Plant = false;
+        private int areaId = 0;
+        private bool if_pick_Area = false;
+        private int distributionId = 0;
+        private bool if_pick_Distribution = false;
+        private int productId = 0;
+        public int idFilter;
+
+
+
         private bool folderError = false;
 
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
             _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
-            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-            new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart", disabled: true),
-        };
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart", disabled: true),
+            };
 
-            _assychart = await AssyChartServices.GetAssyCharts();
-            _plants = await PlantServices.GetPlants();
+            try
+            {
+                _assychart = await AssyChartServices.GetAssyCharts();
+                _assychartItems = ObjectCloner.ObjectCloner.DeepClone(_assychart);
+                
+                _plants = await PlantServices.GetPlants();
+
+                foreach (var item in _assychart) {
+                    if (!_areas.Any(a=> a.AreaId == item.AreaId))
+                    {
+                        _areas.Add(item.Area);
+                    }
+
+                    if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+                    {
+                        _distributions.Add(item.Distribution);
+                    }
+                }
+
+
+            }catch(Exception ex)
+            {
+
+            }
+            finally{
+                ShowLoading = false;
+            }
+            
         }
 
-        async void UpdateAreas()
+        public void ActiveFilters()
         {
-            _assychartplant.Clear();
-            showtablePlant = false;
-            distributionId = 0;
-            _distributions.Clear();
+            Showfilters = !Showfilters;
+
+            foreach (var item in _assychartItems)
+            {
+                if (!_areas.Any(a => a.AreaId == item.AreaId))
+                {
+                    _areas.Add(item.Area);
+                }
+
+                if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+                {
+                    _distributions.Add(item.Distribution);
+                }
+            }
+        }
+
+        public async void ClearFilters()
+        {
+            idFilter = 0;
+            plantId = 0;
             areaId = 0;
-            _areas.Clear();
-            _areas = await AreaServices.GetAreas(plantId);
-            _assychartplant = await AssyChartServices.GetAssyChartsByPlant(plantId);
-            showtablePlant = true;
+            distributionId = 0;
+            if_pick_Distribution = false;
+            productId = 0;
             StateHasChanged();
+
+            await Filters();
+            StateHasChanged();
+
+            //await Filters();
+        }
+
+
+
+        public void ShowError(string txt)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"{txt}", Severity.Error);
+        }
+
+        async void UpdateAreas_FilterByPlant()
+        {
+            ShowLoading = true;
+            StateHasChanged();
+            try
+            {
+                if_pick_Area = false;
+                if_pick_Distribution = false;
+
+                _distributions.Clear();
+
+                areaId = 0;
+                distributionId = 0;
+
+                _areas.Clear();
+                
+ 
+                if (plantId != 0)
+                {
+
+                    await Filters();
+
+                    foreach (var item in _assychart)
+                    {
+                        if (!_areas.Any(a => a.AreaId == item.AreaId))
+                        {
+                            _areas.Add(item.Area);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+            finally { 
+                ShowLoading = false; 
+                StateHasChanged() ; 
+            }
+            
         }
         //Function Update Distributions on change Area select
 
-        private async void UpdateDistributions()
+        private async void UpdateDistributions_FilterByArea()
         {
-            _assychartarea.Clear();
-            showtableArea = false;
-            distributionId = 0;
-            _distributions.Clear();
-            _distributions = await DistributionServices.GetDistributions(plantId, areaId);
-            _assychartarea = await AssyChartServices.GetAssyChartsByArea(plantId, areaId);
-            showtableArea = true;
+            ShowLoading = true;
+            StateHasChanged();
+            try
+            {
+                if_pick_Distribution = false;
+
+                distributionId = 0;
+                _distributions.Clear();
+
+
+                if (areaId != 0)
+                {
+                  
+                    await Filters();
+
+                    foreach (var item in _assychart)
+                    {
+                        if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+                        {
+                            _distributions.Add(item.Distribution);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                ShowLoading = false;
+                StateHasChanged();
+            }
+
+        }
+
+        private async void SetDistribution(Distribution element)
+        {
+            distributionId = element.DistributionId;
+            Update_FilterByDistribution();
+        }
+        
+        private async void SetArea(Area element)
+        {
+            areaId = element.AreaId;
+            UpdateDistributions_FilterByArea();
+        }
+        private async void Update_FilterByDistribution()
+        {
+            ShowLoading = true;
+            StateHasChanged();
+            try
+            {
+                productId = 0;
+                if_pick_Distribution = true;
+
+
+                if (distributionId != 0)
+                {
+                    await Filters();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                ShowLoading = false;
+                StateHasChanged();
+            }
+
             StateHasChanged();
         }
 
-        private async void UpdateDistirbutionAssyChart()
+
+        private async Task<AsyncVoidMethodBuilder> Filters()
         {
-            _assychartdistribution.Clear();
-            showtableDistribution = false;
-            _assychartdistribution = await AssyChartServices.GetAssyChartsByDistribution(plantId, areaId, distributionId);
-            showtableDistribution = true;
-            StateHasChanged();
+            Console.WriteLine("Entro en filtros");
+            if(plantId != 0)
+            {
+                Console.WriteLine("plant != 0");
+
+                _assychart = _assychartItems.Where(a => a.PlantId == plantId).ToList();
+            }
+
+            if (areaId != 0 && plantId != 0)
+            {
+                Console.WriteLine("P0 A0");
+
+                _assychart = _assychart.Where(a => a.AreaId == areaId).ToList();
+            }else if(areaId != 0)
+            {
+                Console.WriteLine("p0 Ax");
+
+                _assychart = _assychartItems.Where(a => a.AreaId == areaId).ToList();
+            }
+
+            if (areaId != 0 && distributionId != 0 )
+            {
+                Console.WriteLine("Ax Do");
+
+                _assychart = _assychart.Where(a => a.DistributionId == distributionId).ToList();
+            }
+            else if(distributionId != 0)
+            {
+                Console.WriteLine("A0 Dx");
+
+                _assychart = _assychartItems.Where(a => a.DistributionId == distributionId).ToList();
+            }
+
+            if (productId != 0)
+            {
+                Console.WriteLine("Prod X");
+
+                _assychart = _assychart.Where(a => a.RoutesProductsAssyChart?.Any(r => r.ProductId == productId) == true).ToList();
+            }
+
+            if(plantId == 0 && areaId == 0 && distributionId == 0 && productId == 0)
+            {
+                Console.WriteLine("A0");
+
+                _assychart = ObjectCloner.ObjectCloner.DeepClone(_assychartItems);
+            }
+
+            if(idFilter != 0)
+            {
+                _assychart = _assychart.Where(a => a.AssyChardId.ToString().Contains(idFilter.ToString().ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            }
+
+            return new AsyncVoidMethodBuilder();
         }
 
-        private void plantsTab()
+        private async Task<IEnumerable<Area>> SearchArea(string value)
         {
-            seeplant = true;
-            seearea = false;
-            seedistribution = false;
-        }
-        private void areaTab()
-        {
-            seeplant = true;
-            seearea = true;
-            seedistribution = false;
-        }
-        private void distributionTab()
-        {
-            seeplant = true;
-            seearea = true;
-            seedistribution = true;
+            // In real life use an asynchronous function for fetching data from an api.
+            // await Task.Delay(1000);
+
+            // if text is null or empty, show complete list
+            if (string.IsNullOrEmpty(value))
+                return _areas;
+
+            return _areas.Where(x => x.Code.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase) || x.Description.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
         }
 
+        private async Task<IEnumerable<Distribution>> SearchDistribution(string value)
+        {
+            // In real life use an asynchronous function for fetching data from an api.
+            // await Task.Delay(1000);
 
+            // if text is null or empty, show complete list
+            if (string.IsNullOrEmpty(value))
+                return _distributions;
+
+            return _distributions.Where(x => x.Code.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase) || x.Description.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
+        }
 
         //Filtering
 
@@ -134,7 +365,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 return true;
 
             try
-            {   
+            {
                 if (element.AssyChardId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
@@ -143,23 +374,37 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             }
 
-            if(element.RoutesProductsAssyChart?.Count > 0)
+            if (element.RoutesProductsAssyChart?.Count > 0)
             {
-                if(element.RoutesProductsAssyChart.Any(r => r.Product?.Code == searchString) )
+                if (element.RoutesProductsAssyChart.Any(r => r.Product?.Code.ToLower() == searchString.ToLower()))
                     return true;
 
-                if (element.RoutesProductsAssyChart.Any(r => r.Product?.Description == searchString))
+                if (element.RoutesProductsAssyChart.Any(r => r.Product?.Description.ToLower() == searchString.ToLower()))
                     return true;
             }
 
-            if(element.Plant != null)
+            if (element.Plant != null)
             {
-                if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                if (element.Plant.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                    return true; 
+                
+                if (element.Plant.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                     return true;
             }
+
             if (element.Area != null)
             {
-                if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                if (element.Area.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                    return true; 
+                if (element.Area.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }  
+            
+            if(element.Distribution != null)
+            {
+                if (element.Distribution.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (element.Distribution.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 
@@ -171,15 +416,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             //    return true;
             if (element.Operation != null)
             {
-                if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                if (element.Operation.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+                
+                if (element.Operation.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 
-          
+
             //if (element.Product.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             //    return true;
-           
-            if ($"{element.Operation?.Description} {element.Plant?.Description} {element.Area?.Description}{element.Distribution?.Description}".Contains(searchString))
+
+            if ($"{element.Operation?.Description.ToLower()} {element.Plant?.Description.ToLower()} {element.Area?.Description.ToLower()}{element.Distribution?.Description.ToLower()}".Contains(searchString.ToLower()))
                 return true;
 
             return false;
@@ -190,7 +438,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             NavigationManager.NavigateTo($"assychart/updateassychart/{assychartid}");
         }
-          void GoToDetailsAssyChart(int assychartid)
+        void GoToDetailsAssyChart(int assychartid)
         {
             NavigationManager.NavigateTo($"assychart/details/{assychartid}");
         }
@@ -209,7 +457,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
         }
-         
+
 
 
         private async void OpenDialogGOS(string ruta)
@@ -363,7 +611,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
                 {
                     //NavigationManager.NavigateTo($"/assychart/details/{element.AssyChardId}");
-                  
+
                     NavigationManager.NavigateTo($"assychart/details/{element.AssyChardId}");
 
                 }
