@@ -196,6 +196,8 @@ namespace SupervisorMobility.Client.Pages.PATPage
                 _pat.SSVresponsibleID = ssvId;
             }
 
+            _pat.CreationDate = DateTime.UtcNow;
+            _pat.AplicationYear =  _pat.AplicationDate.Value.Year;
             _pat.Status = 1;
 
             var result = await PATsServices.CreatePat(_pat);

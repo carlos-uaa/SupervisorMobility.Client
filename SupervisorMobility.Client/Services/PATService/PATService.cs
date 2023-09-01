@@ -1,6 +1,8 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise.Utilities;
+using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace SupervisorMobility.Client.Services.PATService
 {
@@ -17,7 +19,14 @@ namespace SupervisorMobility.Client.Services.PATService
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _js = jSRuntime;
-            _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
+                
+            };
+            _options.Converters.Add(new IntToStringConverter());
         }
 
         public async Task<PAT> CreatePat(PAT pat)
@@ -83,7 +92,7 @@ namespace SupervisorMobility.Client.Services.PATService
                 if (response.IsSuccessStatusCode)
                 {
                     var PatList = JsonSerializer.Deserialize<List<PAT>>(content, _options);
-
+                    
                     response.Dispose();
 
                     return PatList;
@@ -92,7 +101,7 @@ namespace SupervisorMobility.Client.Services.PATService
             catch (Exception ex)
             {
                 // Manejo de excepciones
-                Console.WriteLine($"Error al obtener la lista de PATS SSV: {ex.Message}");
+                Console.WriteLine($"Error al obtener la lista de PATS: {ex.Message}");
             }
 
             return null;

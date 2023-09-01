@@ -13,6 +13,7 @@ global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
 global using SupervisorMobility.Client.Services.LoginService;
 global using SupervisorMobility.Client.Services.LupService;
+global using SupervisorMobility.Client.Services.TreeServices;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
 global using SupervisorMobility.Client.Services.GuideService;
@@ -35,7 +36,7 @@ using MudBlazor.Services;
 using SupervisorMobility.Client;
 using DocumentFormat.OpenXml.Spreadsheet;
 using AutoMapper;
-
+using System.ComponentModel;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -46,6 +47,7 @@ builder.Services.AddLocalization();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
+builder.Services.AddScoped<ITreeService, TreeService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IPATService, PATService>();
 builder.Services.AddScoped<IILUService, ILUService>();
@@ -93,6 +95,7 @@ public class AutoMapperProfiles : Profile
     public AutoMapperProfiles()
     {
         CreateMap<int?, int>().ConvertUsing<IntTypeConverter>();
+        CreateMap<DateTime?, DateTime>().ConvertUsing<DateTimeTypeConverter>();
 
 
         CreateMap<JobObservation, JobObservationNulls>()
@@ -132,6 +135,13 @@ public class AutoMapperProfiles : Profile
 public class IntTypeConverter : ITypeConverter<int?, int>
 {
     public int Convert(int? source, int destination, ResolutionContext context)
+    {
+        return source.HasValue ? source.Value : destination;
+    }
+}
+public class DateTimeTypeConverter : ITypeConverter<DateTime?, DateTime>
+{
+    public DateTime Convert(DateTime? source, DateTime destination, ResolutionContext context)
     {
         return source.HasValue ? source.Value : destination;
     }

@@ -9,25 +9,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int PATid { get; set; }
         public int Status { get; set; }
         public int SupervisorId { get; set; }
+        public User? Supervisor { get; set; }
 
-        public User? Supervisor
-        {
-            get { return _supervisor; }
-            set
-            {
-                _supervisor = value;
-                if (_supervisor != null)
-                {
-                    SSVresponsibleID = _supervisor.SuperiorId;
-                    AreaId = (int)_supervisor.AreaId;
-                }
-                else
-                {
-                    SSVresponsibleID = null;
-                }
-            }
-        }
-        private User? _supervisor;
 
         public int? SSVresponsibleID { get; set; }
         public User? SSVresponsible { get; set; }
@@ -43,12 +26,8 @@ namespace SupervisorMobility.Client.Data.Entities
 
 
         public DateTime? AplicationDate { get; set; }
-        public int? AplicationYear
-        {
-            get { return AplicationDate?.Year; }
-            set { AplicationDate = value != null ? new DateTime(value.Value, 1, 1) : null; }
-        }
-
+        public int? AplicationYear { get; set; }
+    
 
         public DateTime? CreationDate { get; set; }
 

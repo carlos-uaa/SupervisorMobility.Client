@@ -1699,15 +1699,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Almost reached the end of the quest! 🕵️‍ Keep the excitement going as we get to the final details..
-        /// </summary>
-        public static string Loadign4 {
-            get {
-                return ResourceManager.GetString("Loadign4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Busca una cadena traducida similar a 🔍 Exploring the depths of the database.... Looking for plants to start our journey..
         /// </summary>
         public static string Loading1 {
@@ -1749,6 +1740,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Loading3 {
             get {
                 return ResourceManager.GetString("Loading3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Almost reached the end of the quest! 🕵️‍ Keep the excitement going as we get to the final details..
+        /// </summary>
+        public static string Loading4 {
+            get {
+                return ResourceManager.GetString("Loading4", resourceCulture);
             }
         }
         

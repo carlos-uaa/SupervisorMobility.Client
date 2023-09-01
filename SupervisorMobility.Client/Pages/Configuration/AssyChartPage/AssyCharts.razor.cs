@@ -142,6 +142,20 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             await Filters();
             StateHasChanged();
 
+            foreach (var item in _assychartItems)
+            {
+                if (!_areas.Any(a => a.AreaId == item.AreaId))
+                {
+                    _areas.Add(item.Area);
+                }
+
+                if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+                {
+                    _distributions.Add(item.Distribution);
+                }
+            }
+
+
             //await Filters();
         }
 
