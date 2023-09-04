@@ -49,6 +49,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         int[] models = new int[5];
         string[] cycles = new string[5] { "", "", "", "", "" };
+        string[] HoeTimes = new string[5] { "", "", "", "", "" };
 
         //timer
         const string DEFAULT_TIME = "00:00:00.000";
@@ -372,6 +373,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
                 _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -440,6 +443,8 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
                 _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 

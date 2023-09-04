@@ -177,11 +177,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 }
                 else
                 {
-                    HoeTimes[0] = "0";
-                    HoeTimes[1] = "0";
-                    HoeTimes[2] = "0";
-                    HoeTimes[3] = "0";
-                    HoeTimes[4] = "0";
+                    HoeTimes[0] = "";
+                    HoeTimes[1] = "";
+                    HoeTimes[2] = "";
+                    HoeTimes[3] = "";
+                    HoeTimes[4] = "";
                 }
                 if (_jobObservation.Models !=  null)
                 {
@@ -208,11 +208,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 }
                 else
                 {
-                    cycles[0] = "0";
-                    cycles[1] = "0";
-                    cycles[2] = "0";
-                    cycles[3] = "0";
-                    cycles[4] = "0";
+                    cycles[0] = "";
+                    cycles[1] = "";
+                    cycles[2] = "";
+                    cycles[3] = "";
+                    cycles[4] = "";
                 }
 
                 _operators = await UsersService.GetUsersByType(4, true, false);
