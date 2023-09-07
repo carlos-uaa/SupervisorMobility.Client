@@ -158,7 +158,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationSchedule
                         _areas = await AreaServices.GetAreas(plantId);
                         supervisor = user.Name;
                         supervisorId = user.UserId;
-                        ssv = user.Superior.Name;
+                        ssv = user.Superior?.Name;
                         ssvId = (int)user.SuperiorId;
 
 

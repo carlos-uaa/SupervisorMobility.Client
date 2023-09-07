@@ -15,6 +15,8 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 @inject IStringLocalizer<Resource1> Localizer
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 
 <style>
     .mtc {
@@ -25,7 +27,7 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersUploadTitle"]</PageTitle>
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
+<MudBreadcrumbs Items="_links">
     <ItemTemplate Context="item">
         <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
     </ItemTemplate>
@@ -90,61 +92,75 @@
         </MudItem>
         <MudItem Class="flex-grow-1 d-flex flex-column align-center justify-center my-3 ">
 
+            @if (loggedUser.UserType == 1 || loggedUser.UserType == 5)
+            {
             @*Principal TABS*@
-            <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                @*All Upload*@
-                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAll"]" OnClick="() => AssignType(1)">
-                </MudTabPanel>
-                @*SSV Upload*@
-                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersSSV"]" OnClick="() => AssignType(2)">
+                <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                    @*All Upload*@
 
-                </MudTabPanel>
-                @*SUPERVISORS Upload*@
-                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersSupervisors"]" OnClick="() => AssignType(3)">
-                    <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                        @*Add To SSV Upload*@
-                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["Supervisors"]" OnClick="() => AssignType(3)">
-                        </MudTabPanel>
-                        @*Add Supervisors to SSV*@
-                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAddToSsv"]" OnClick="() => AssignType(4)">
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAll"]" OnClick="() => AssignType(1)">
+                    </MudTabPanel>
+                    @*SSV Upload*@
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersSSV"]" OnClick="() => AssignType(2)">
 
-                            <MudSelect T="User" Label="@Localizer["UsersLabelSSV"]" Placeholder="@Localizer["UsersPHSSV"]" SelectedValuesChanged="@(() => UpdateSelectSSVforSupervisors())" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                <MudSelectItem Disabled="true" Value="selectedSSVOfList"> @Localizer["UsersPHSSV"]</MudSelectItem>
-                                @foreach (var SS in _allUsers)
-                                {
-                                    @if (SS.UserType == 2)
+                    </MudTabPanel>
+
+                    @*SUPERVISORS Upload*@
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersSupervisors"]" OnClick="() => AssignType(3)">
+                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                            @*Add To SSV Upload*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["Supervisors"]" OnClick="() => AssignType(3)">
+                            </MudTabPanel>
+                            @*Add Supervisors to SSV*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAddToSsv"]" OnClick="() => AssignType(4)">
+
+                                <MudSelect T="User" Label="@Localizer["UsersLabelSSV"]" Placeholder="@Localizer["UsersPHSSV"]" SelectedValuesChanged="@(() => UpdateSelectSSVforSupervisors())" @bind-Value="@selectedSSVOfList" For="@(() => selectedSSVOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="selectedSSVOfList"> @Localizer["UsersPHSSV"]</MudSelectItem>
+                                    @foreach (var SS in _allUsers)
                                     {
-                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                        @if (SS.UserType == 2)
+                                        {
+                                            <MudSelectItem Value="SS">@(
+                                                  $"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}"
+                                                  ) </MudSelectItem>
+                                        }
                                     }
-                                }
-                            </MudSelect>
-                        </MudTabPanel>
-                    </MudTabs>
-                </MudTabPanel>
-                @*Operators Upload Upload*@
-                <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersOperators"]" OnClick="() => AssignType(5)">
-                    <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-                        @*Add Operators Upload*@
-                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersOperators"]" OnClick="() => AssignType(5)">
-                        </MudTabPanel>
-                        @*Add Supervisors to SSV*@
-                        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAddToSV"]" OnClick="() => AssignType(6)">
-                            <MudSelect T="User" Label="@Localizer["UsersSupervisors"]" Placeholder="@Localizer["UsersPHSV"]" SelectedValuesChanged="@(() => UpdateSelectSupervisorForOperators())" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> @Localizer["UsersPHSV"]</MudSelectItem>
-                                @foreach (var SS in _allUsers)
-                                {
-                                    @if (SS.UserType == 3)
+                                </MudSelect>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudTabPanel>
+                    @*Operators Upload Upload*@
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersOperators"]" OnClick="() => AssignType(5)">
+                        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+                            @*Add Operators Upload*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersOperators"]" OnClick="() => AssignType(5)">
+                            </MudTabPanel>
+                            @*Add Supervisors to SSV*@
+                            <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersAddToSV"]" OnClick="() => AssignType(6)">
+                                <MudSelect T="User" Label="@Localizer["UsersSupervisors"]" Placeholder="@Localizer["UsersPHSV"]" SelectedValuesChanged="@(() => UpdateSelectSupervisorForOperators())" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> @Localizer["UsersPHSV"]</MudSelectItem>
+                                    @foreach (var SS in _allUsers)
                                     {
-                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                        @if (SS.UserType == 3)
+                                        {
+                                            <MudSelectItem Value="SS">@(
+                                                  $"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}"
+                                                  ) </MudSelectItem>
+                                        }
                                     }
-                                }
-                            </MudSelect>
-                        </MudTabPanel>
-                    </MudTabs>
-
-
-                </MudTabPanel>
+                                </MudSelect>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudTabPanel>
             </MudTabs>
+            }
+            else if(loggedUser.UserType == 3){
+                <MudTabs Rounded="true" Color="@Color.Info" MinimumTabWidth="55vw">
+                    @*Add Operators Upload*@
+                    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer["UsersOperators"]" OnClick="() => AssignType(5)">
+                    </MudTabPanel>
+                </MudTabs>
+            }
         </MudItem>
     </MudItem>
     <MudItem class="align-center justify-center mud-width-full">
@@ -155,7 +171,8 @@
                            Target="_blank"
                            Variant="Variant.Outlined"
                            EndIcon="@Icons.Material.Filled.FileDownload"
-                           Color="Color.Primary">
+                           Color="Color.Primary"
+                           Class="mb-2">
                     <b>@Localizer["UsersAllFormat"]</b>
                 </MudButton>
 
@@ -172,7 +189,8 @@
                            Target="_blank"
                            Variant="Variant.Outlined"
                            EndIcon="@Icons.Material.Filled.FileDownload"
-                           Color="Color.Primary">
+                           Color="Color.Primary"
+                           Class="mb-2">
                     <b>@Localizer["UsersSSVFormat"]</b>
                 </MudButton>
                 <MudButton OnClick="DownloadSSVExample"
@@ -189,7 +207,8 @@
                            Target="_blank"
                            Variant="Variant.Outlined"
                            EndIcon="@Icons.Material.Filled.FileDownload"
-                           Color="Color.Primary">
+                           Color="Color.Primary"
+                           Class="mb-2">
                     <b>@Localizer["UsersSVFormat"]</b>
                 </MudButton>
 
@@ -207,7 +226,7 @@
                            Target="_blank"
                            Variant="Variant.Outlined"
                            EndIcon="@Icons.Material.Filled.FileDownload"
-                           Color="Color.Primary" FullWidth="true">
+                           Color="Color.Primary" FullWidth="true" Class="mb-2">
                     <b>@Localizer["UsersOPFormat"]</b>
                 </MudButton>
                 <MudButton OnClick="DownloadOperatorsExample"
@@ -1062,7 +1081,7 @@
                                                         }
                                                     }
                                                 }
-                                                
+
                                             </MudTd>
                                         }
                                         break;
@@ -1336,31 +1355,13 @@
     //confirmation message edit info
     MudMessageBox mbox { get; set; }
 
+    //Logged User
+    private string json = string.Empty;
+    public User loggedUser = new();
+    public bool logged = false;
+
     protected async override Task OnInitializedAsync()
     {
-        _plants = await PlantsServices.GetPlants();
-
-        foreach (var plant in _plants)
-        {
-            var areas = await AreasServices.GetAreas(plant.PlantId);
-            _areas.Add(areas);
-            var areaDistributions = new Dictionary<int, List<Distribution>>();
-            foreach (var area in areas)
-            {
-                var distributions = await DistributionServices.GetDistributions(plant.PlantId, area.AreaId);
-                areaDistributions.Add(area.AreaId, distributions);
-            }
-            _distributions.Add(plant.PlantId, areaDistributions);
-        }
-
-
-        _groups = await GroupServices.GetGroups();
-
-        //_allUsers = await UsersServices.GetUsers(true, false);
-
-        selectedSSVOfList = null;
-        selectedSupervisorOfList = null;
-
         _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem(text: Localizer["home"], href: "#"),
@@ -1368,7 +1369,70 @@
             new BreadcrumbItem(text: Localizer["UsersTitle"],  href: "/usersmanagement"),
             new BreadcrumbItem(text: Localizer["UsersUploadTitle"], href: "", disabled: true),
         };
+
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+            await GetUserAsync();
+
+            if (loggedUser.UserType == 3)
+            {
+                uploadtype = 5;
+            }
+            StateHasChanged();
+            _plants = await PlantsServices.GetPlants();
+
+            foreach (var plant in _plants)
+            {
+                var areas = await AreasServices.GetAreas(plant.PlantId);
+                _areas.Add(areas);
+                var areaDistributions = new Dictionary<int, List<Distribution>>();
+                foreach (var area in areas)
+                {
+                    var distributions = await DistributionServices.GetDistributions(plant.PlantId, area.AreaId);
+                    areaDistributions.Add(area.AreaId, distributions);
+                }
+                _distributions.Add(plant.PlantId, areaDistributions);
+            }
+
+
+            _groups = await GroupServices.GetGroups();
+
+            //_allUsers = await UsersServices.GetUsers(true, false);
+
+            selectedSSVOfList = null;
+            selectedSupervisorOfList = null;
+
+        }
     }
+
+        //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            loggedUser = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
+            loggedUser = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JS.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
     private List<BreadcrumbItem> _links;
 
@@ -1399,25 +1463,25 @@
 
 
         switch (value)
-                {
-                    case 1:
-                        _allUsers = await UsersServices.GetUsers(true, false);
-                    break;
-                    case 2:
-                        _allUsers = await UsersServices.GetUsersByType(3,true, false);
-                        break;
-                    case 3:
-                        _allUsers = await UsersServices.GetUsersByType(2,true, false);
-                    break;
-                    case 4:
-                        _allUsers = await UsersServices.GetUsersByType(2,true, false);
-                        _allUsers.AddRange(await UsersServices.GetUsersByType(4,false, false));
-                        break;
-                    case 5:
-                    case 6:
-                         _allUsers = await UsersServices.GetUsersByType(3,true, false);
-                        break;
-         }
+        {
+            case 1:
+                _allUsers = await UsersServices.GetUsers(true, false);
+                break;
+            case 2:
+                _allUsers = await UsersServices.GetUsersByType(3, true, false);
+                break;
+            case 3:
+                _allUsers = await UsersServices.GetUsersByType(2, true, false);
+                break;
+            case 4:
+                _allUsers = await UsersServices.GetUsersByType(2, true, false);
+                _allUsers.AddRange(await UsersServices.GetUsersByType(4, false, false));
+                break;
+            case 5:
+            case 6:
+                _allUsers = await UsersServices.GetUsersByType(3, true, false);
+                break;
+        }
 
         uploadtype = value;
         await CancelFunction();
@@ -2726,18 +2790,19 @@
                 {
                     ToInsertIntoList.GroupId = row[4] != "§" ? int.Parse(row[4]) : -1;
 
-                    if(ToInsertIntoList.GroupId != -1 ){
+                    if (ToInsertIntoList.GroupId != -1)
+                    {
 
-                    try
-                    {
-                        ToInsertIntoList.Group = _groups.Find(p => p.GroupId == ToInsertIntoList.GroupId);
-                    }
-                    catch (Exception ex)
-                    {
-                        ErrorMessageToDisplay = $"Document Incorrect Some Group Id For SSV whit email {ToInsertIntoList.Email}";
-                        isOkFile = false;
-                        showTableInUI = false;
-                    }
+                        try
+                        {
+                            ToInsertIntoList.Group = _groups.Find(p => p.GroupId == ToInsertIntoList.GroupId);
+                        }
+                        catch (Exception ex)
+                        {
+                            ErrorMessageToDisplay = $"Document Incorrect Some Group Id For SSV whit email {ToInsertIntoList.Email}";
+                            isOkFile = false;
+                            showTableInUI = false;
+                        }
                     }
                 }
                 catch (Exception ex)

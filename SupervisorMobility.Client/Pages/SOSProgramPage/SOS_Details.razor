@@ -331,16 +331,32 @@
                                             if (jobobs.JobObservation?.Status == 7)
                                             {
                                                 var jobId = (int)jobobs.JobObservation?.JobObservationId;
-                                                <MudTooltip Text="@jobobs.JobObservation?.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3(jobId))">
-                                                    <MudButton @onclick="(() => OpenDialog3(jobId))" Style="padding: 0px;" Color="Color.Warning">
-                                                        <span style="font-size: 11px; cursor:pointer">
-                                                            <span style="font-weight: bold; font-size: 13px">
-                                                                @jobobs.JobObservation?.JobObservationId
-                                                            </span> .  @jobobs.JobObservation?.Operator?.Name
-                                                        </span>
-                                                        <MudIcon Icon="@Icons.Outlined.Info" />
-                                                    </MudButton>
-                                                </MudTooltip>
+                                                if (jobobs.JobObservation?.StartDate?.Month >= DateTime.Now.Month && jobobs.JobObservation?.StartDate?.Year >= DateTime.Now.Year)
+                                                {
+                                                    <MudTooltip Text="@jobobs.JobObservation?.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3(jobId))">
+                                                        <MudButton @onclick="(() => OpenDialog3(jobId))" Style="padding: 0px;" Color="Color.Warning">
+                                                            <span style="font-size: 11px; cursor:pointer">
+                                                                <span style="font-weight: bold; font-size: 13px">
+                                                                    @jobobs.JobObservation?.JobObservationId
+                                                                </span> .  @jobobs.JobObservation?.Operator?.Name
+                                                            </span>
+                                                            <MudIcon Icon="@Icons.Outlined.Info" />
+                                                        </MudButton>
+                                                    </MudTooltip>                     
+                                                }
+                                                else{
+                                                    <MudTooltip Text="@jobobs.JobObservation?.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3(jobId))">
+                                                        <MudButton @onclick="(() => OpenDialog3(jobId))" Style="padding: 0px;" Color="Color.Error">
+                                                            <span style="font-size: 11px; cursor:pointer">
+                                                                <span style="font-weight: bold; font-size: 13px">
+                                                                    @jobobs.JobObservation?.JobObservationId
+                                                                </span> .  @jobobs.JobObservation?.Operator?.Name
+                                                            </span>
+                                                            <MudIcon Icon="@Icons.Outlined.Info" />
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                }
+      
 
 
                                             }
@@ -742,7 +758,13 @@ else
                                     <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                                     break;
                                 case 7:
-                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                                        @if(context.StartDate?.Month >= DateTime.Now.Month && context.StartDate?.Year >= DateTime.Now.Year){
+                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+
+                                        }
+                                        else{
+                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Error" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                                        }
                                     break;
                             }
                         </MudText>

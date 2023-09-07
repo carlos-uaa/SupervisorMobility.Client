@@ -47,7 +47,7 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
         int[] models = new int[5];
         string[] cycles = new string[5] { "", "", "", "", "" };
-        string[] HoeTimes = new string[5] { "", "", "", "", "" };
+        int[] HoeTimes = new int[5];
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
@@ -59,6 +59,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
         bool isRunning = false;
+        bool isRunning2 = false;
+        bool isRunning3 = false;
+        bool isRunning4 = false;
+        bool isRunning5 = false;
         public int opt = 1;
 
         //Glosary
@@ -607,14 +611,21 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             StateHasChanged();
         }
 
-        void StartTimer()
+        void StartTimer(int option)
         {
             startTime = DateTime.Now;
             timer = new System.Timers.Timer(1);
             timer.Elapsed += OnTimedEvent;
             timer.AutoReset = true;
             timer.Enabled = true;
-            isRunning = true;
+            switch (option)
+            {
+                case 1: isRunning = true; break;
+                case 2: isRunning2 = true; break;
+                case 3: isRunning3 = true; break;
+                case 4: isRunning4 = true; break;
+                case 5: isRunning5 = true; break;
+            }
         }
 
         void StopTimer()
@@ -632,28 +643,120 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cycles[0] = centiseconds.ToString(); break;
+                    cycles[0] = centiseconds.ToString(); isRunning = false; break;
                 case 2:
-                    cycles[1] = centiseconds.ToString(); break;
+                    cycles[1] = centiseconds.ToString(); isRunning2 = false; break;
                 case 3:
-                    cycles[2] = centiseconds.ToString(); break;
+                    cycles[2] = centiseconds.ToString(); isRunning3 = false; break;
                 case 4:
-                    cycles[3] = centiseconds.ToString(); break;
+                    cycles[3] = centiseconds.ToString(); isRunning4 = false; break;
                 case 5:
-                    cycles[4] = centiseconds.ToString(); break;
+                    cycles[4] = centiseconds.ToString(); isRunning5 = false; break;
             }
-            isRunning = false;
+
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
             elapsedTime = DEFAULT_TIME;
         }
 
-        void OnTimerChanged()
+        void OnTimerChanged(int option)
         {
-            if (!isRunning)
-                StartTimer();
-            else
+            if(option == 1 && HoeTimes[0] == 0) {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Hoe Standard Time 1", Severity.Warning);
+                return;
+            }
+            else if(option == 2 && HoeTimes[1] == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
+                return;
+            }
+            else if (option == 3 && HoeTimes[2] == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Hoe Standard Time 3", Severity.Warning);
+                return;
+            }
+            else if (option == 4 && HoeTimes[3] == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Hoe Standard Time 4", Severity.Warning);
+                return;
+            }
+            else if (option == 5 && HoeTimes[4] == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Hoe Standard Time 5", Severity.Warning);
+                return;
+            }
+            opt = option;
+
+            if (opt == 1 && !isRunning || opt == 2 && !isRunning2 || opt == 3 && !isRunning3 || opt == 4 && !isRunning4 || opt == 5 && !isRunning5)
+            {
                 StopTimer();
+                switch (opt)
+                {
+                    case 1:
+                        isRunning2 = false;
+                        isRunning3 = false;
+                        isRunning4 = false;
+                        isRunning5 = false;
+                        break;
+                    case 2:
+                        isRunning = false;
+                        isRunning3 = false;
+                        isRunning4 = false;
+                        isRunning5 = false;
+                        break;
+                    case 3:
+                        isRunning = false;
+                        isRunning2 = false;
+                        isRunning4 = false;
+                        isRunning5 = false;
+                        break;
+                    case 4:
+                        isRunning = false;
+                        isRunning2 = false;
+                        isRunning3 = false;
+                        isRunning5 = false;
+                        break;
+                    case 5:
+                        isRunning = false;
+                        isRunning2 = false;
+                        isRunning3 = false;
+                        isRunning4 = false;
+                        break;
+                }
+
+                StartTimer(opt);
+            }
+            else
+            {
+
+                StopTimer();
+                for(int i=0; i<HoeTimes.Length; i++)
+                {
+                    if (cycles[i] != "" && HoeTimes[i] != 0 && int.Parse(cycles[i]) > HoeTimes[i])
+                    {
+                        if(areaD == "" || areaD == null)
+                            areaD = $"Cycle time {i+1} took longer than standard time";
+                        else
+                        {
+                            if(areaD.Contains($"Cycle time {i + 1} took longer than standard time"))
+                            {
+                                continue;
+                            }
+                            areaD = areaD + $", Cycle time {i + 1} took longer than standard time";
+                        }
+                    }
+                }    
+            }
         }
 
         void Option1() => opt = 1;
