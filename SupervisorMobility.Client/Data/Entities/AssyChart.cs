@@ -14,8 +14,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public DateTime ModificationDate { get; set; }
 
 
-        public ICollection<RouteProductAssyChart> RoutesProductsAssyChart { get; set; }
-          = new List<RouteProductAssyChart>();
+        public ICollection<SOSCodePath> RoutesProductsAssyChart { get; set; }
+          = new List<SOSCodePath>();
         //PLANT INFO
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]

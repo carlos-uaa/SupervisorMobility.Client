@@ -31,6 +31,33 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             
             return newAssyChart;
         }
+        
+        public async Task<AssyChart> CreateCodePath(SOSCodePath _newCodePath)
+        {
+            var response = await _http.PostAsJsonAsync($"assycharts/CodePath", _newCodePath);
+
+            var newAssyChart = await response.Content.ReadFromJsonAsync<AssyChart>();
+            
+            return newAssyChart;
+        }
+
+
+        public async Task<List<SOSCodePath>> GetAllCodePaths()
+        {
+            var response = await _http.GetAsync("assycharts/CodePath");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var codePaths = JsonSerializer.Deserialize<List<SOSCodePath>>(content, _options);
+
+            return codePaths;
+        }
+
+
         //delete assychart
         public async Task DeleteAssyChart(int assychartId)
         {
@@ -42,8 +69,32 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             var response = await _http.GetAsync($"assycharts/{assyChartId}");
             var content = await response.Content.ReadFromJsonAsync<AssyChart>(); 
             return content;
-        } 
-        
+        }
+
+        public async Task<SOSCodePath?> GetCodePath(int CodePathId)
+        {
+            try
+            {
+
+                var response = await _http.GetAsync($"assycharts/CodePath/{CodePathId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<SOSCodePath>(content, _options);
+                    return result;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            return null;
+
+        }
+
         public async Task<AssyChart> GetAssyChartAdvance(int plantId, int areaId, int distributionId, int operationId)
         {
             try

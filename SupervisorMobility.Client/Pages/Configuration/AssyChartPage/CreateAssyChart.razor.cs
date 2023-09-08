@@ -330,7 +330,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             if (_newassychart.RoutesProductsAssyChart == null)
             {
-                _newassychart.RoutesProductsAssyChart = new List<RouteProductAssyChart>();
+                _newassychart.RoutesProductsAssyChart = new List<SOSCodePath>();
             }
 
 
@@ -339,7 +339,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
            
                 var product = ObjectCloner.ObjectCloner.DeepClone<Product>(ProductSelected);
 
-                RouteProductAssyChart routeProductAssyChart = new();
+                SOSCodePath routeProductAssyChart = new();
                 routeProductAssyChart.Product = product;
                 routeProductAssyChart.ProductId = product.ProductId;
                 routeProductAssyChart.IsActive = true;
@@ -353,7 +353,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             StateHasChanged();
         }
 
-        void DeleteProductToList(RouteProductAssyChart item)
+        void DeleteProductToList(SOSCodePath item)
         {
             _distributionValues.Products.Add(item.Product);
             _newassychart.RoutesProductsAssyChart?.Remove(item);

@@ -28,5 +28,13 @@
         Task DeleteAssyChart(int assychartId);
 
         Task DownloadAssyChartFormat();
+
+
+        //CODE PATHS
+
+        Task<AssyChart> CreateCodePath(SOSCodePath _newCodePath);
+        Task<List<SOSCodePath>> GetAllCodePaths();
+        Task<SOSCodePath?> GetCodePath(int CodePathId);
+
     }
 }

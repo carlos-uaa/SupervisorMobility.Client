@@ -20,6 +20,9 @@
         public int? ProductId { get; set; }
         public Product? Product { get; set; }
 
+        public int? AssyChardId { get; set; }
+        public AssyChart? AssyChart { get; set; }
+
         public bool? IsActive { get; set; }
     }
 }

@@ -2,6 +2,8 @@
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
+using SupervisorMobility.Client.Services.ProductsService;
 using static SupervisorMobility.Client.Pages.Configuration.AssyChartPage.CreateAssyChart;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
@@ -46,16 +48,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         MudMessageBox HOEmbox { get; set; }
         MudMessageBox CCPmbox { get; set; }
         MudMessageBox GOSmbox { get; set; }
+        MudMessageBox CreateCodePathErrormbox { get; set; }
 
         public bool DisplayLoading { get; set; } = true;
         public bool EnableUpdate { get; set; } = false;
         public bool modeDisplay { get; set; } = false;
         public bool ProductModalDisplay { get; set; } = false;
+        public bool CreatePathCodeModalDisplay { get; set; } = false;
 
 
         Product? ProductSelected { get; set; } = null;
-        RouteProductAssyChart RouteProductDialogDisplay { get; set; }
+        SOSCodePath CodePathDialog { get; set; }
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogOptionsOutClose = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = false };
 
         [Inject] private IDialogService DialogService { get; set; }
 
@@ -68,7 +73,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Dark };
 
+        bool if_add_CD_CCP = false;
+        bool if_add_CD_GOS = false;
+        bool if_add_CD_HOE = false;
 
+        private Product _product = new Product();
+        int IndexProd = -1;
+        private List<Product> _products = new List<Product>();
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
@@ -93,9 +104,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                     new BreadcrumbItem(text: Localizer["home"], href: "#"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
-                new BreadcrumbItem(text: Localizer["ACUpdateAC"], href: "", disabled: true),
+                new BreadcrumbItem(text: Localizer1["ACUpdate"], href: "", disabled: true),
               };
                 _assychart = await AssyChartServices.GetAssyChart(assychartId);
+
+                _products = await ProductsServices.GetProducts();
+
 
                 auxplant = _assychart.PlantId != null ? (int)_assychart.PlantId : 0;
                 auxarea = _assychart.AreaId != null ? (int)_assychart.AreaId : 0;
@@ -242,7 +256,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
@@ -326,13 +340,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             StateHasChanged();
         }
 
-        private void OpenDialogProduct(RouteProductAssyChart itemselected)
+        private void OpenDialogEditCodePath(SOSCodePath itemselected)
         {
-            RouteProductDialogDisplay = itemselected;
+            CodePathDialog = itemselected;
 
             isHoeFolder = false;
             isGosFolder = false;
             isCcpFolder = false;
+
+
+            if_add_CD_CCP = CodePathDialog.CommonDirectionCCP != "";
+            if_add_CD_GOS = CodePathDialog.CommonDirectionGOS != "";
+            if_add_CD_HOE = CodePathDialog.CommonDirectionHOE != "";
 
 
             ProductModalDisplay = true;
@@ -343,11 +362,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            if (RouteProductDialogDisplay.GOS != "")
+            if (CodePathDialog.GOS != "")
             {
                 try
                 {
-                    GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
+                    GosFilesInFolder = await CDMSServices.GetFilesGOS(CodePathDialog.GOS);
                     if (GosFilesInFolder.message == "NO FILES IN DIRECTORY" || GosFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
                         isGosFolder = false;
@@ -372,11 +391,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            if (RouteProductDialogDisplay.CCP != "")
+            if (CodePathDialog.CCP != "")
             {
                 try
                 {
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CodePathDialog.CCP);
                     if (CcpFilesInFolder.message == "NO FILES IN DIRECTORY" || CcpFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
                         isCcpFolder = false;
@@ -408,11 +427,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-            if (RouteProductDialogDisplay.HOE != "")
+            if (CodePathDialog.HOE != "")
             {
                 try
                 {
-                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
+                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(CodePathDialog.HOE);
 
                     if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
@@ -452,7 +471,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             if (_assychart.RoutesProductsAssyChart == null)
             {
-                _assychart.RoutesProductsAssyChart = new List<RouteProductAssyChart>();
+                _assychart.RoutesProductsAssyChart = new List<SOSCodePath>();
             }
 
 
@@ -461,7 +480,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
                 var product = ObjectCloner.ObjectCloner.DeepClone<Product>(ProductSelected);
 
-                RouteProductAssyChart routeProductAssyChart = new();
+                SOSCodePath routeProductAssyChart = new();
                 routeProductAssyChart.Product = product;
                 routeProductAssyChart.ProductId = product.ProductId;
                 routeProductAssyChart.IsActive = true;
@@ -472,11 +491,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             }
             ProductSelected = new();
-            
+
             StateHasChanged();
         }
 
-        void DeleteProductToList(RouteProductAssyChart item)
+        void DeleteProductToList(SOSCodePath item)
         {
             _distributionValues.Products.Add(item.Product);
             _assychart.RoutesProductsAssyChart?.Remove(item);
@@ -484,17 +503,45 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         }
 
-        void DeleteGOSRoute(RouteProductAssyChart item)
+        void DeleteGOSRoute()
         {
-            item.GOS = "";
+            CodePathDialog.GOS = "";
         }
-        void DeleteCCPRoute(RouteProductAssyChart item)
+        void DeleteCCPRoute()
         {
-            item.CCP = "";
+            CodePathDialog.CCP = "";
         }
-        void DeleteHOERoute(RouteProductAssyChart item)
+        void DeleteHOERoute()
         {
-            item.HOE = "";
+            CodePathDialog.HOE = "";
+        }
+        void DeleteGOSRouteCD()
+        {
+            CodePathDialog.CommonDirectionGOS = "";
+        }
+        void DeleteCCPRouteCD()
+        {
+            CodePathDialog.CommonDirectionCCP = "";
+        }
+        void DeleteHOERouteCD()
+        {
+            CodePathDialog.CommonDirectionHOE = "";
+        }
+
+        private void AddRemove_CD_HOE()
+        {
+            if_add_CD_HOE = !if_add_CD_HOE;
+            StateHasChanged();
+        }
+        private void AddRemove_CD_GOS()
+        {
+            if_add_CD_GOS = !if_add_CD_GOS;
+            StateHasChanged();
+        }
+        private void AddRemove_CD_CCP()
+        {
+            if_add_CD_CCP = !if_add_CD_CCP;
+            StateHasChanged();
         }
         async void UpdateAssyChartAsync()
         {
@@ -579,7 +626,55 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             return parentNode.TreeItems;
         }
 
+        public void CreateCodePath()
+        {
+            if (_assychart.RoutesProductsAssyChart == null)
+            {
+                _assychart.RoutesProductsAssyChart = new List<SOSCodePath>();
+            }
 
-   
+
+            SOSCodePath _newCodePathAssyChart = new();
+            _newCodePathAssyChart.AssyChardId = _assychart.AssyChardId;
+            _newCodePathAssyChart.DistributionId = (int)_assychart.DistributionId;
+
+            _newCodePathAssyChart.IsActive = true;
+
+            _assychart.RoutesProductsAssyChart.Add(_newCodePathAssyChart);
+
+
+            CodePathDialog = _newCodePathAssyChart;
+
+            IndexProd = -1;
+            _product = new();
+
+
+            CreatePathCodeModalDisplay = true;
+            StateHasChanged();
+        }//create code open dialog
+
+
+        void UpdateProduct()
+        {
+            _product = _products[IndexProd];
+
+            CodePathDialog.Product = _product;
+            CodePathDialog.ProductId = _product.ProductId;
+
+            StateHasChanged();
+        }
+        async void CloseCreateCodePath()
+        {
+            CreatePathCodeModalDisplay = !(IndexProd != -1 && CodePathDialog.Code != "");
+
+
+            if (CreatePathCodeModalDisplay)
+            {
+                bool? result = await CreateCodePathErrormbox.Show();
+            }
+            StateHasChanged();
+        }
+
+
     }
 }

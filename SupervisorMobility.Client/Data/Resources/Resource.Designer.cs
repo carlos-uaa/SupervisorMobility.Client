@@ -1780,6 +1780,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No CommonDirection CCP Path.
+        /// </summary>
+        public static string noCCPPathCD {
+            get {
+                return ResourceManager.GetString("noCCPPathCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No files uploaded yet.
         /// </summary>
         public static string noFilesUploadedYet {
@@ -1798,11 +1807,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No CommonDirection  GOS Path.
+        /// </summary>
+        public static string noGOSPathCD {
+            get {
+                return ResourceManager.GetString("noGOSPathCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No HOE Path.
         /// </summary>
         public static string noHOEPath {
             get {
                 return ResourceManager.GetString("noHOEPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No CommonDirection HOE Path.
+        /// </summary>
+        public static string noHOEPathCD {
+            get {
+                return ResourceManager.GetString("noHOEPathCD", resourceCulture);
             }
         }
         
@@ -1870,6 +1897,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Open CommonDirection CCP Folder.
+        /// </summary>
+        public static string openCCPFolderCD {
+            get {
+                return ResourceManager.GetString("openCCPFolderCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Open GOS Folder.
         /// </summary>
         public static string openGOSFolder {
@@ -1879,11 +1915,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Open CommonDirection GOS Folder.
+        /// </summary>
+        public static string openGOSFolderCD {
+            get {
+                return ResourceManager.GetString("openGOSFolderCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Open HOE Folder.
         /// </summary>
         public static string openHOEFolder {
             get {
                 return ResourceManager.GetString("openHOEFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Open CommonDirection HOE Folder.
+        /// </summary>
+        public static string openHOEFolderCD {
+            get {
+                return ResourceManager.GetString("openHOEFolderCD", resourceCulture);
             }
         }
         

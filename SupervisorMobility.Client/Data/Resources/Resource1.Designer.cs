@@ -214,6 +214,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Commun Direction CCP Path.
+        /// </summary>
+        public static string ACCCPRuteCD {
+            get {
+                return ResourceManager.GetString("ACCCPRuteCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Creation Date.
         /// </summary>
         public static string ACCD {
@@ -385,6 +394,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Commun Direction GOS Path.
+        /// </summary>
+        public static string ACGOSRuteCD {
+            get {
+                return ResourceManager.GetString("ACGOSRuteCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a HOE.
         /// </summary>
         public static string ACHOE {
@@ -421,6 +439,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Commun Direction HOE Path.
+        /// </summary>
+        public static string ACHOERuteCD {
+            get {
+                return ResourceManager.GetString("ACHOERuteCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a AssyChart Id.
         /// </summary>
         public static string ACId {
@@ -448,6 +475,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Selected Common Direction CCP Folder.
+        /// </summary>
+        public static string ACLabelCCPSelectCD {
+            get {
+                return ResourceManager.GetString("ACLabelCCPSelectCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Distribution.
         /// </summary>
         public static string ACLabelDistribution {
@@ -466,11 +502,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Selected Common Direction GOS Folder.
+        /// </summary>
+        public static string ACLabelGOSSelectCD {
+            get {
+                return ResourceManager.GetString("ACLabelGOSSelectCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Selected HOE Folder.
         /// </summary>
         public static string ACLabelHOESelect {
             get {
                 return ResourceManager.GetString("ACLabelHOESelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Selected Common Direction HOE Folder.
+        /// </summary>
+        public static string ACLabelHOESelectCD {
+            get {
+                return ResourceManager.GetString("ACLabelHOESelectCD", resourceCulture);
             }
         }
         
@@ -1902,6 +1956,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string notifyReadTitle {
             get {
                 return ResourceManager.GetString("notifyReadTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Code &amp; Path Details.
+        /// </summary>
+        public static string PathDetails {
+            get {
+                return ResourceManager.GetString("PathDetails", resourceCulture);
             }
         }
         

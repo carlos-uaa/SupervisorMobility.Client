@@ -6,6 +6,7 @@ global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.ChecklistService;
 global using SupervisorMobility.Client.Services.DistributionService;
+global using SupervisorMobility.Client.Services.HeadCountService;
 global using SupervisorMobility.Client.Services.GroupService;
 global using SupervisorMobility.Client.Services.GlobalDataService;
 global using SupervisorMobility.Client.Services.GlosaryService;
@@ -49,6 +50,7 @@ builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddScoped<ITreeService, TreeService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IHeadCountService, HeadCountService>();
 builder.Services.AddScoped<IPATService, PATService>();
 builder.Services.AddScoped<IILUService, ILUService>();
 builder.Services.AddScoped<IGuideService, GuideService>();
@@ -161,7 +163,7 @@ public class CustomHttpClientService
         _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
         _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
 
-        ////Prod
+        //Prod
         //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
         //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
         //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
