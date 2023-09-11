@@ -10,38 +10,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
     {
         //objects
         AssyChart _newassychart = new();
-        Distribution _distributionValues = new();
-        List<Plant> _plants { get; set; } = new();
-        List<Area> _areas = new();
-        List<Product> _products = new();
-        List<Distribution> _distributions { get; set; } = new();
-
-        public bool modeDisplay { get; set; } = false;
-
-        public int auxplant = 0;
-        public int auxarea = 0;
-        public int auxdistribution = 0;
-        public int auxoperation = 0;
-        private bool enableCloseDialg = false;
-        private bool enablecreate = false;
-
-        public bool ProductModalDisplay { get; set; } = false;
-        Product? ProductSelected { get; set; } = null;
-        RouteProductAssyChart RouteProductDialogDisplay { get; set; }
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
-
-      
-
-        bool isGosFolder = false;
-        bool isCcpFolder = false;
-        bool isHoeFolder = false;
-       
-        
-        private CDMS_CCP_Archives? CcpFilesInFolder;
-        private CDMS_HOE_Archives? HoeFilesInFolder;
-        private CDMS_GOS_Archives? GosFilesInFolder;
-
-
         TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
         TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
         TreeItemData rootNodeHOE { get; set; } = new TreeItemData();
@@ -56,13 +24,58 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool folderCCPError = false;
         private bool folderHOEError = false;
         private bool folderGOSError = false;
-
-        MudMessageBox HOEmbox { get; set; }
-        MudMessageBox CCPmbox { get; set; }
-        MudMessageBox GOSmbox { get; set; }
+        Distribution _distributionValues = new();
 
 
         private List<BreadcrumbItem> _links;
+
+        //objects
+
+
+        bool isGosFolder = false;
+        bool isCcpFolder = false;
+        bool isHoeFolder = false;
+        private CDMS_CCP_Archives? CcpFilesInFolder;
+        private CDMS_HOE_Archives? HoeFilesInFolder;
+        private CDMS_GOS_Archives? GosFilesInFolder;
+        MudMessageBox HOEmbox { get; set; }
+        MudMessageBox CCPmbox { get; set; }
+        MudMessageBox GOSmbox { get; set; }
+        MudMessageBox CreateCodePathErrormbox { get; set; }
+
+        public bool DisplayLoading { get; set; } = true;
+        public bool enablecreate { get; set; } = false;
+        public bool modeDisplay { get; set; } = false;
+        public bool ProductModalDisplay { get; set; } = false;
+        public bool CreatePathCodeModalDisplay { get; set; } = false;
+
+
+        Product? ProductSelected { get; set; } = null;
+        SOSCodePath CodePathDialog { get; set; }
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogOptionsOutClose = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = false };
+
+        [Inject] private IDialogService DialogService { get; set; }
+
+        AssyChart _assychart = new();
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
+        List<Distribution> _distributions { get; set; } = new();
+        private int auxplant;
+        private int auxarea;
+        private int auxdistribution;
+        private int auxoperation;
+        private Product _product = new Product();
+        int IndexProd = -1;
+        private List<Product> _products = new List<Product>();
+
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Dark };
+
+        bool if_add_CD_CCP = false;
+        bool if_add_CD_GOS = false;
+        bool if_add_CD_HOE = false;
+
 
         //Inizialize
         protected override async void OnInitialized()
@@ -203,9 +216,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             StateHasChanged();
         }
 
-        private void OpenDialogProduct(RouteProductAssyChart itemselected)
+        private void OpenDialogProduct(SOSCodePath itemselected)
         {
-            RouteProductDialogDisplay = itemselected;
+            CodePathDialog = itemselected;
 
             isHoeFolder = false;
             isGosFolder = false;
@@ -220,11 +233,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             GosFilesInFolder = new CDMS_GOS_Archives();
 
-            if (RouteProductDialogDisplay.GOS != "")
+            if (CodePathDialog.GOS != "")
             {
                 try
                 {
-                    GosFilesInFolder = await CDMSServices.GetFilesGOS(RouteProductDialogDisplay.GOS);
+                    GosFilesInFolder = await CDMSServices.GetFilesGOS(CodePathDialog.GOS);
                     if (GosFilesInFolder.message == "NO FILES IN DIRECTORY" || GosFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
                         isGosFolder = false;
@@ -249,11 +262,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             CcpFilesInFolder = new CDMS_CCP_Archives();
 
-            if (RouteProductDialogDisplay.CCP != "")
+            if (CodePathDialog.CCP != "")
             {
                 try
                 {
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(RouteProductDialogDisplay.CCP);
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CodePathDialog.CCP);
                     if (CcpFilesInFolder.message == "NO FILES IN DIRECTORY" || CcpFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
                         isCcpFolder = false;
@@ -285,11 +298,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-            if (RouteProductDialogDisplay.HOE != "")
+            if (CodePathDialog.HOE != "")
             {
                 try
                 {
-                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(RouteProductDialogDisplay.HOE);
+                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(CodePathDialog.HOE);
 
                     if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
                     {
@@ -326,40 +339,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
 
-        private void AddProductToList(Product selection)
-        {
-            if (_newassychart.RoutesProductsAssyChart == null)
-            {
-                _newassychart.RoutesProductsAssyChart = new List<SOSCodePath>();
-            }
-
-
-            if (ProductSelected != null && !_newassychart.RoutesProductsAssyChart.Any(a => a.ProductId == selection.ProductId))
-            {
-           
-                var product = ObjectCloner.ObjectCloner.DeepClone<Product>(ProductSelected);
-
-                SOSCodePath routeProductAssyChart = new();
-                routeProductAssyChart.Product = product;
-                routeProductAssyChart.ProductId = product.ProductId;
-                routeProductAssyChart.IsActive = true;
-
-                _newassychart.RoutesProductsAssyChart.Add(routeProductAssyChart);
-
-                _distributionValues.Products.Remove(selection);
-
-            }
-            ProductSelected = new();
-            StateHasChanged();
-        }
-
-        void DeleteProductToList(SOSCodePath item)
-        {
-            _distributionValues.Products.Add(item.Product);
-            _newassychart.RoutesProductsAssyChart?.Remove(item);
-            StateHasChanged();
-
-        }
+     
         void DeleteGOSRoute(RouteProductAssyChart item)
         {
             item.GOS = "";
@@ -469,7 +449,113 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
 
-        
+        void DeleteGOSRoute()
+        {
+            CodePathDialog.GOS = "";
+        }
+        void DeleteCCPRoute()
+        {
+            CodePathDialog.CCP = "";
+        }
+        void DeleteHOERoute()
+        {
+            CodePathDialog.HOE = "";
+        }
+        void DeleteGOSRouteCD()
+        {
+            CodePathDialog.CommonDirectionGOS = "";
+        }
+        void DeleteCCPRouteCD()
+        {
+            CodePathDialog.CommonDirectionCCP = "";
+        }
+        void DeleteHOERouteCD()
+        {
+            CodePathDialog.CommonDirectionHOE = "";
+        }
+
+        private void AddRemove_CD_HOE()
+        {
+            if_add_CD_HOE = !if_add_CD_HOE;
+            StateHasChanged();
+        }
+        private void AddRemove_CD_GOS()
+        {
+            if_add_CD_GOS = !if_add_CD_GOS;
+            StateHasChanged();
+        }
+        private void AddRemove_CD_CCP()
+        {
+            if_add_CD_CCP = !if_add_CD_CCP;
+            StateHasChanged();
+        }
+
+        public void CreateCodePath()
+        {
+            if (_assychart.RoutesProductsAssyChart == null)
+            {
+                _assychart.RoutesProductsAssyChart = new List<SOSCodePath>();
+            }
+
+
+            SOSCodePath _newCodePathAssyChart = new();
+            _newCodePathAssyChart.AssyChardId = _assychart.AssyChardId;
+            _newCodePathAssyChart.DistributionId = (int)_assychart.DistributionId;
+
+            _newCodePathAssyChart.IsActive = true;
+
+            _assychart.RoutesProductsAssyChart.Add(_newCodePathAssyChart);
+
+
+            CodePathDialog = _newCodePathAssyChart;
+
+            IndexProd = -1;
+            _product = new();
+
+
+            CreatePathCodeModalDisplay = true;
+            StateHasChanged();
+        }//create code open dialog
+        private void OpenDialogEditCodePath(SOSCodePath itemselected)
+        {
+            CodePathDialog = itemselected;
+
+            isHoeFolder = false;
+            isGosFolder = false;
+            isCcpFolder = false;
+
+
+            if_add_CD_CCP = CodePathDialog.CommonDirectionCCP != "";
+            if_add_CD_GOS = CodePathDialog.CommonDirectionGOS != "";
+            if_add_CD_HOE = CodePathDialog.CommonDirectionHOE != "";
+
+
+            ProductModalDisplay = true;
+            StateHasChanged();
+
+        }
+
+        void UpdateProduct()
+        {
+            _product = _products[IndexProd];
+
+            CodePathDialog.Product = _product;
+            CodePathDialog.ProductId = _product.ProductId;
+
+            StateHasChanged();
+        }
+
+        async void CloseCreateCodePath()
+        {
+            CreatePathCodeModalDisplay = !(IndexProd != -1 && CodePathDialog.Code != "");
+
+
+            if (CreatePathCodeModalDisplay)
+            {
+                bool? result = await CreateCodePathErrormbox.Show();
+            }
+            StateHasChanged();
+        }
 
     }
 }

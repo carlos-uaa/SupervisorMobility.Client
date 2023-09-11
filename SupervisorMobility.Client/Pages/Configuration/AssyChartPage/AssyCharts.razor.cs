@@ -15,9 +15,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private bool ronly = false;
         private string searchString = "";
 
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
         public List<AssyChart>? _assychart { get; set; } = null;
         public List<AssyChart> _assychartItems { get; set; } = new();
 
@@ -39,13 +36,33 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
 
-        private bool CcpDialog = false;
-        private bool HoeDialog = false;
-        private bool GosDialog = false;
-
+        //Files Path
         private CDMS_CCP_Archives? CcpFilesInFolder;
         private CDMS_HOE_Archives? HoeFilesInFolder;
         private CDMS_GOS_Archives? GosFilesInFolder;
+        //Error Display Rutes Select ONLY
+        private bool folderCCPError = false;
+        private bool folderHOEError = false;
+        private bool folderGOSError = false;
+        //Display Files Errors
+        private bool folderErrorGOS = false;
+        private bool folderErrorCCP = false;
+        private bool folderErrorHOE = false;
+        private string HOErute = "";
+        private string CCPrute = "";
+        private string GOSrute = "";
+        //CommonDirection
+        private bool folderErrorGOSCD = false;
+        private bool folderErrorCCPCD = false;
+        private bool folderErrorHOECD = false;
+        private string HOEruteCD = "";
+        private string CCPruteCD = "";
+        private string GOSruteCD = "";
+        //CommonDirection Files
+        private CDMS_CCP_Archives? CcpFilesInFolderCD;
+        private CDMS_HOE_Archives? HoeFilesInFolderCD;
+        private CDMS_GOS_Archives? GosFilesInFolderCD;
+
 
 
         private int plantId = 0;
@@ -57,7 +74,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private int productId = 0;
         public int idFilter;
 
+        MudTabs FilesViewer;
+        MudTabPanel HOE;
+        MudTabPanel HOECD;
+        MudTabPanel CCP;
+        MudTabPanel CCPCD;
+        MudTabPanel GOS;
+        MudTabPanel GOSCD;
 
+        public bool CodePathModalDisplay { get; set; } = false;
+        SOSCodePath CodePathDialogDisplay { get; set; }
 
         private bool folderError = false;
 
@@ -474,68 +500,134 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-        private async void OpenDialogGOS(string ruta)
+        private async void OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
         {
-            folderError = true;
-            GOSrute = ruta;
-            GosDialog = true;
-
-            Console.WriteLine($"gos {ruta}");
-
-            GosFilesInFolder = new CDMS_GOS_Archives();
-
-            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
-            if (GosFilesInFolder == null)
+            try
             {
-                folderError = true;
+                if (itemselected.HOE != "" || itemselected.CCP != "" || itemselected.GOS != "")
+                {
+
+                    CodePathDialogDisplay = itemselected;
+
+                    CodePathModalDisplay = true;
+
+
+                    folderErrorGOS = true;
+                    GOSrute = itemselected.GOS;
+
+                    Console.WriteLine($"gos {GOSrute}");
+
+                    GosFilesInFolder = new CDMS_GOS_Archives();
+
+                    GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
+                    if (GosFilesInFolder == null)
+                    {
+                        folderErrorGOS = true;
+                    }
+                    else
+                    {
+                        folderErrorGOS = false;
+                    }
+
+
+                    folderErrorCCP = true;
+                    CCPrute = itemselected.CCP;
+                    Console.WriteLine($"Cpc {CCPrute}");
+
+                    CcpFilesInFolder = new CDMS_CCP_Archives();
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
+                    if (CcpFilesInFolder == null)
+                        folderErrorCCP = true;
+                    else
+                        folderErrorCCP = false;
+
+
+                    folderErrorHOE = true;
+
+                    HOErute = itemselected.HOE;
+                    Console.WriteLine($"hoe {itemselected.HOE}");
+                    HoeFilesInFolder = new CDMS_HOE_Archives();
+                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
+                    if (HoeFilesInFolder == null)
+                        folderErrorHOE = true;
+                    else
+                        folderErrorHOE = false;
+
+                    //Common Directions
+                    if (itemselected.CommonDirectionGOS != "")
+                    {
+
+                        folderErrorGOSCD = true;
+                        GOSruteCD = itemselected.CommonDirectionGOS;
+
+                        Console.WriteLine($"gos {GOSruteCD}");
+
+                        GosFilesInFolderCD = new CDMS_GOS_Archives();
+
+                        GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
+                        if (GosFilesInFolderCD == null)
+                        {
+                            folderErrorGOSCD = true;
+                        }
+                        else
+                        {
+                            folderErrorGOSCD = false;
+                        }
+
+                    }
+
+                    if (itemselected.CommonDirectionCCP != "")
+                    {
+                        folderErrorCCPCD = true;
+                        CCPruteCD = itemselected.CommonDirectionCCP;
+                        Console.WriteLine($"Cpc {CCPruteCD}");
+
+                        CcpFilesInFolderCD = new CDMS_CCP_Archives();
+                        CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
+                        if (CcpFilesInFolderCD == null)
+                            folderErrorCCPCD = true;
+                        else
+                            folderErrorCCPCD = false;
+
+                    }
+
+                    if (itemselected.CommonDirectionHOE != "")
+                    {
+
+
+                        folderErrorHOECD = true;
+
+                        HOEruteCD = itemselected.CommonDirectionHOE;
+                        Console.WriteLine($"hoe {HOEruteCD}");
+                        HoeFilesInFolderCD = new CDMS_HOE_Archives();
+                        HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
+                        if (HoeFilesInFolderCD == null)
+                            folderErrorHOECD = true;
+                        else
+                            folderErrorHOECD = false;
+                    }
+
+                    //EndCommon Directions
+
+
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                folderError = false;
+                Console.WriteLine("");
+            }
+            finally
+            {
+
+                StateHasChanged();
+
+                FilesViewer.ActivatePanel(panelSelect);
             }
 
-
-            StateHasChanged();
         }
 
 
-        void CloseGos() => GosDialog = false;
-
-        private async void OpenDialogCcp(string ruta)
-        {
-            folderError = true;
-            CCPrute = ruta;
-            CcpDialog = true;
-            Console.WriteLine($"Cpc {ruta}");
-
-            CcpFilesInFolder = new CDMS_CCP_Archives();
-            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
-            if (CcpFilesInFolder == null)
-                folderError = true;
-            else
-                folderError = false;
-
-            StateHasChanged();
-        }
-        void CloseCcp() => CcpDialog = false;
-
-        private async void OpenDialogHoe(string ruta)
-        {
-            folderError = true;
-
-            HOErute = ruta;
-            HoeDialog = true;
-            Console.WriteLine($"hoe {ruta}");
-            HoeFilesInFolder = new CDMS_HOE_Archives();
-            HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
-            if (HoeFilesInFolder == null)
-                folderError = true;
-            else
-                folderError = false;
-
-            StateHasChanged();
-        }
-        void CloseHoe() => HoeDialog = false;
 
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
@@ -546,6 +638,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             var fileName = namefile;
             var fileURL = urlroute;
             await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+        }
+         private async void CloseModalFiles()
+        {
+            CodePathModalDisplay = false;
+
+            StateHasChanged();
+
         }
         private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
         {
@@ -641,6 +740,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 return string.Empty;
             }
         }
+        private bool FilterFuncDocumentsHOE(HOEDocument element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
 
+            if (element.Nombre.ToString().ToLower().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (element.HOE_Code.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
+        }//filter
     }
 }

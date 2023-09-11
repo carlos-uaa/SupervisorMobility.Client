@@ -34,10 +34,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private List<BreadcrumbItem> _links;
 
         //objects
-        AssyChart _assychart = new();
-        List<Plant> _plants { get; set; } = new();
-        List<Area> _areas = new();
-        List<Distribution> _distributions { get; set; } = new();
+        
 
         bool isGosFolder = false;
         bool isCcpFolder = false;
@@ -64,11 +61,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
         [Inject] private IDialogService DialogService { get; set; }
 
-
+        AssyChart _assychart = new();
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
+        List<Distribution> _distributions { get; set; } = new();
         private int auxplant;
         private int auxarea;
         private int auxdistribution;
         private int auxoperation;
+        private Product _product = new Product();
+        int IndexProd = -1;
+        private List<Product> _products = new List<Product>();
 
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Dark };
@@ -77,9 +80,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         bool if_add_CD_GOS = false;
         bool if_add_CD_HOE = false;
 
-        private Product _product = new Product();
-        int IndexProd = -1;
-        private List<Product> _products = new List<Product>();
+       
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
@@ -467,33 +468,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         }
 
 
-        private void AddProductToList(Product selection)
-        {
-            if (_assychart.RoutesProductsAssyChart == null)
-            {
-                _assychart.RoutesProductsAssyChart = new List<SOSCodePath>();
-            }
-
-
-            if (ProductSelected != null && !_assychart.RoutesProductsAssyChart.Any(a => a.ProductId == selection.ProductId))
-            {
-
-                var product = ObjectCloner.ObjectCloner.DeepClone<Product>(ProductSelected);
-
-                SOSCodePath routeProductAssyChart = new();
-                routeProductAssyChart.Product = product;
-                routeProductAssyChart.ProductId = product.ProductId;
-                routeProductAssyChart.IsActive = true;
-
-                _assychart.RoutesProductsAssyChart.Add(routeProductAssyChart);
-
-                _distributionValues.Products.Remove(selection);
-
-            }
-            ProductSelected = new();
-
-            StateHasChanged();
-        }
+ 
 
         void DeleteProductToList(SOSCodePath item)
         {
