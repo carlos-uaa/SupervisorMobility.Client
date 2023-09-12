@@ -2,5 +2,6 @@
 {
     public interface IHeadCountService
     {
+        Task<FileUpload> UploadHeadCount(MultipartFormDataContent contentfile, int userid);
     }
 }

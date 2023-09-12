@@ -282,6 +282,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 // Acceder a la propiedad "operation" del objeto JObject
                 var operation = (string)responseObject["operation"];
+                Console.WriteLine($"REAL ERRO [{operation}]");
 
                 if (operation == "NO FILES IN DIRECTORY")
                 {

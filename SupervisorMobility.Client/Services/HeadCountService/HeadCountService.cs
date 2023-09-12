@@ -8,6 +8,7 @@ namespace SupervisorMobility.Client.Services.HeadCountService
     {
         private readonly HttpClient _http;
         private readonly HttpClient _httpBridge;
+        private readonly HttpClient _httpExtends;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
@@ -16,6 +17,7 @@ namespace SupervisorMobility.Client.Services.HeadCountService
         {
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _httpExtends = customHttpClientService.GetApiExtendsHttpClient();
             _js = jSRuntime;
             _options = new JsonSerializerOptions
             {
@@ -26,19 +28,18 @@ namespace SupervisorMobility.Client.Services.HeadCountService
             _options.Converters.Add(new IntToStringConverter());
         }
 
-        public async Task<FileUpload> UploadHeadCount(MultipartFormDataContent contentfile)
+        public async Task<FileUpload> UploadHeadCount(MultipartFormDataContent contentfile, int userid)
         {
             Console.WriteLine("upload HeadCountFile");
 
-            var response = await _http.PostAsync($"HeadCount/Upload", contentfile);
+            var response = await _httpExtends.PostAsync($"HeadCount/Upload?UserIdUpload={userid}", contentfile);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<FileUpload>();
-                return result;
+                await _js.InvokeVoidAsync("alert", $"Upload Data Succesful");
+                return new FileUpload();
             }
 
-            await _js.InvokeVoidAsync("alert", $"Error : {response.Content.ReadAsStringAsync().Result}");
             return null;
 
 

@@ -38,6 +38,7 @@ using SupervisorMobility.Client;
 using DocumentFormat.OpenXml.Spreadsheet;
 using AutoMapper;
 using System.ComponentModel;
+using System.Net.Http;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -153,6 +154,7 @@ public class DateTimeTypeConverter : ITypeConverter<DateTime?, DateTime>
 public class CustomHttpClientService
 {
     private readonly HttpClient _apiHttpClient;
+    private readonly HttpClient _apiExtendsHttpClient;
     private readonly HttpClient _bridgeHttpClient;
     private readonly HttpClient _ADHttpClient;
 
@@ -160,11 +162,14 @@ public class CustomHttpClientService
     {
         //Dev
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
+        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
+        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
         _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
         _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
 
         //Prod
         //_apiHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10201/api/") };
+        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10203/api/") };
         //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
         //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
     }
@@ -176,8 +181,12 @@ public class CustomHttpClientService
     public HttpClient GetApiHttpClient()
     {
         return _apiHttpClient;
+    } 
+    
+    public HttpClient GetApiExtendsHttpClient()
+    {
+        return _apiExtendsHttpClient;
     }
-
     public HttpClient GetBridgeHttpClient()
     {
         return _bridgeHttpClient;
