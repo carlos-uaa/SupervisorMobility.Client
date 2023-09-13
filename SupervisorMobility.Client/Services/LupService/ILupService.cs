@@ -3,6 +3,7 @@
     public interface ILupService
     {
         Task<List<Lup>> GetAllLup();
+        Task<List<Lup>> GetLupsByFilters(int year, int operationId);
         Task<Lup> GetLupById(int lupId);
         Task<Lup> GetLupByIdWhitFile(int lupId);
         Task<Lup> CreateLup(Lup lup);

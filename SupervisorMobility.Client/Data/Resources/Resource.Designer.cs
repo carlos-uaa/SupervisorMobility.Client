@@ -1600,6 +1600,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Lup Report.
+        /// </summary>
+        public static string lupReport {
+            get {
+                return ResourceManager.GetString("lupReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Lup will be created when the CREATE JOB OBSERVATION button is clicked..
         /// </summary>
         public static string lupWillBeCreatedWhenTheCreateJobObservationButtonIsClicked {
