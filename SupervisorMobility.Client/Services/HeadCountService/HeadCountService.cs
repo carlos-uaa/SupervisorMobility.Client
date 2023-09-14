@@ -44,5 +44,37 @@ namespace SupervisorMobility.Client.Services.HeadCountService
 
 
         }
+
+        public async Task<bool> UpdateHeadCount(HeadCount ToUpdate, int HeadId)
+        {
+            var response = await _http.PutAsJsonAsync($"HeadCount/{HeadId}", ToUpdate);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<List<HeadCount>> GetAllHeadCout()
+        {
+            Console.WriteLine("Get All HeadCountFile");
+
+            var response = await _httpExtends.GetAsync($"HeadCount");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var HeadCount = JsonSerializer.Deserialize<List<HeadCount>>(content, _options);
+
+                response.Dispose();
+
+                return HeadCount;
+
+            }
+
+            return null;
+        }
     }
 }
