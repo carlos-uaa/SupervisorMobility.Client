@@ -1186,6 +1186,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Drag &amp; Drop.
+        /// </summary>
+        public static string DragAndDrop {
+            get {
+                return ResourceManager.GetString("DragAndDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Edit.
         /// </summary>
         public static string Edit {
@@ -1200,6 +1209,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string EditGroup {
             get {
                 return ResourceManager.GetString("EditGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Data edition.
+        /// </summary>
+        public static string EditHeadCout {
+            get {
+                return ResourceManager.GetString("EditHeadCout", resourceCulture);
             }
         }
         
@@ -1609,6 +1627,411 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a I agree to make changes!.
+        /// </summary>
+        public static string HCAcept {
+            get {
+                return ResourceManager.GetString("HCAcept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Address to which it corresponds.
+        /// </summary>
+        public static string HCCO {
+            get {
+                return ResourceManager.GetString("HCCO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The address is required!.
+        /// </summary>
+        public static string HCCOError {
+            get {
+                return ResourceManager.GetString("HCCOError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a comments.
+        /// </summary>
+        public static string HCComentario {
+            get {
+                return ResourceManager.GetString("HCComentario", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Department Code in Compas.
+        /// </summary>
+        public static string HCCostCenter {
+            get {
+                return ResourceManager.GetString("HCCostCenter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The Department Code (Cost Center) is required!.
+        /// </summary>
+        public static string HCCostCenterError {
+            get {
+                return ResourceManager.GetString("HCCostCenterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a It is required to select an element of the table before continuing with the edition..
+        /// </summary>
+        public static string HCEditMsg {
+            get {
+                return ResourceManager.GetString("HCEditMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Headcount edition.
+        /// </summary>
+        public static string HCEditTitle {
+            get {
+                return ResourceManager.GetString("HCEditTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a You must agree/.
+        /// </summary>
+        public static string HCErrorAcept {
+            get {
+                return ResourceManager.GetString("HCErrorAcept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Load error, the file could not be loaded to server, please communicate to your administrator this error..
+        /// </summary>
+        public static string HCFailUpload {
+            get {
+                return ResourceManager.GetString("HCFailUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Headcount load date.
+        /// </summary>
+        public static string HCFechaAlta {
+            get {
+                return ResourceManager.GetString("HCFechaAlta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Employee function.
+        /// </summary>
+        public static string HCFuncionCompas {
+            get {
+                return ResourceManager.GetString("HCFuncionCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The employee function is required!.
+        /// </summary>
+        public static string HCFuncionCompasError {
+            get {
+                return ResourceManager.GetString("HCFuncionCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a group to which it belongs.
+        /// </summary>
+        public static string HCGrupo {
+            get {
+                return ResourceManager.GetString("HCGrupo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The group to which it belongs is required!.
+        /// </summary>
+        public static string HCGrupoError {
+            get {
+                return ResourceManager.GetString("HCGrupoError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ID SM.
+        /// </summary>
+        public static string HCId {
+            get {
+                return ResourceManager.GetString("HCId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area identifier.
+        /// </summary>
+        public static string HCIDAreaCompas {
+            get {
+                return ResourceManager.GetString("HCIDAreaCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The area ID is required!.
+        /// </summary>
+        public static string HCIDAreaCompasError {
+            get {
+                return ResourceManager.GetString("HCIDAreaCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Department Code.
+        /// </summary>
+        public static string HCIDDepartamentoCompas {
+            get {
+                return ResourceManager.GetString("HCIDDepartamentoCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The apartment code is required!.
+        /// </summary>
+        public static string HCIDDepartamentoCompasError {
+            get {
+                return ResourceManager.GetString("HCIDDepartamentoCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Sub area.
+        /// </summary>
+        public static string HCIDSubAreaCompas {
+            get {
+                return ResourceManager.GetString("HCIDSubAreaCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The Sub area ID is required!.
+        /// </summary>
+        public static string HCIDSubAreaCompasError {
+            get {
+                return ResourceManager.GetString("HCIDSubAreaCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Area to which it perts in compas.
+        /// </summary>
+        public static string HCNameAreaCompas {
+            get {
+                return ResourceManager.GetString("HCNameAreaCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The name Dearea is required!.
+        /// </summary>
+        public static string HCNameAreaCompasError {
+            get {
+                return ResourceManager.GetString("HCNameAreaCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Department name.
+        /// </summary>
+        public static string HCNameDepartamentoCompas {
+            get {
+                return ResourceManager.GetString("HCNameDepartamentoCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The name of the department is required!.
+        /// </summary>
+        public static string HCNameDepartamentoCompasError {
+            get {
+                return ResourceManager.GetString("HCNameDepartamentoCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Subarea name.
+        /// </summary>
+        public static string HCNameSubAreaCompas {
+            get {
+                return ResourceManager.GetString("HCNameSubAreaCompas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The name of Sub area is required!.
+        /// </summary>
+        public static string HCNameSubAreaCompasError {
+            get {
+                return ResourceManager.GetString("HCNameSubAreaCompasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Employee level.
+        /// </summary>
+        public static string HCNivelEmpleado {
+            get {
+                return ResourceManager.GetString("HCNivelEmpleado", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The employee level is required!.
+        /// </summary>
+        public static string HCNivelEmpleadoError {
+            get {
+                return ResourceManager.GetString("HCNivelEmpleadoError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ROR/OFFINE.
+        /// </summary>
+        public static string HCROR_Offline {
+            get {
+                return ResourceManager.GetString("HCROR/Offline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ror/offline is required!.
+        /// </summary>
+        public static string HCROR_OfflineError {
+            get {
+                return ResourceManager.GetString("HCROR/OfflineError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Is it required to operate?.
+        /// </summary>
+        public static string HCRTO {
+            get {
+                return ResourceManager.GetString("HCRTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The user is required to operate, is it a required field?.
+        /// </summary>
+        public static string HCRTOError {
+            get {
+                return ResourceManager.GetString("HCRTOError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Source Null, please communicate this error with your administrator..
+        /// </summary>
+        public static string HCSourceNull {
+            get {
+                return ResourceManager.GetString("HCSourceNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SSFF code.
+        /// </summary>
+        public static string HCSSF {
+            get {
+                return ResourceManager.GetString("HCSSF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SSFF code is required!.
+        /// </summary>
+        public static string HCSSFError {
+            get {
+                return ResourceManager.GetString("HCSSFError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User Code in SSFF.
+        /// </summary>
+        public static string HCSSFF {
+            get {
+                return ResourceManager.GetString("HCSSFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The SSFF field is required!.
+        /// </summary>
+        public static string HCSSFFError {
+            get {
+                return ResourceManager.GetString("HCSSFFError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Type of hiring.
+        /// </summary>
+        public static string HCTipoContratacion {
+            get {
+                return ResourceManager.GetString("HCTipoContratacion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The type of hiring is requrid.
+        /// </summary>
+        public static string HCTipoContratacionError {
+            get {
+                return ResourceManager.GetString("HCTipoContratacionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User who registered Head Count.
+        /// </summary>
+        public static string HCUserAlta {
+            get {
+                return ResourceManager.GetString("HCUserAlta", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The value must be an integer greater or equal to 0..
+        /// </summary>
+        public static string HCValidationInt {
+            get {
+                return ResourceManager.GetString("HCValidationInt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The value of the field cannot be empty..
+        /// </summary>
+        public static string HCValidationString {
+            get {
+                return ResourceManager.GetString("HCValidationString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Headcount.
+        /// </summary>
+        public static string HeadcountTitle {
+            get {
+                return ResourceManager.GetString("HeadcountTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Home.
         /// </summary>
         public static string home {
@@ -1911,6 +2334,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string NoFilesDirectory {
             get {
                 return ResourceManager.GetString("NoFilesDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Please load a file before continuing..
+        /// </summary>
+        public static string NoHCDataMsg {
+            get {
+                return ResourceManager.GetString("NoHCDataMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Information catalog.
+        /// </summary>
+        public static string NoHCDataTitle {
+            get {
+                return ResourceManager.GetString("NoHCDataTitle", resourceCulture);
             }
         }
         
@@ -2289,6 +2730,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string UEWarning {
             get {
                 return ResourceManager.GetString("UEWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Headcount load.
+        /// </summary>
+        public static string UploadHeadCount {
+            get {
+                return ResourceManager.GetString("UploadHeadCount", resourceCulture);
             }
         }
         
@@ -3478,6 +3928,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string UsersUploadTitle {
             get {
                 return ResourceManager.GetString("UsersUploadTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Data exploration.
+        /// </summary>
+        public static string ViewHeadCount {
+            get {
+                return ResourceManager.GetString("ViewHeadCount", resourceCulture);
             }
         }
         
