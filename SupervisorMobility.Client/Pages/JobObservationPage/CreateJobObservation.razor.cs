@@ -386,7 +386,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
 
+        private async void CloseModalFiles()
+        {
+            CodePathModalDisplay = false;
 
+            StateHasChanged();
+
+        }
         private async void ShowPastJobObservations()
         {
             flag = true;
