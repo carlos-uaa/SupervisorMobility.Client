@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.JobObservationPage
@@ -59,9 +60,13 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private bool folderError = false;
         private string messageErrorFolders;
 
+        private List<SOSCodePath> listFilter = new();
+        bool FilterOperation = false;
+
         //Operator user
         public List<User> users = new();
         public List<User> operatorUsers = new();
+
 
         //Edit Date
         TimeSpan? changeStartHour { get; set; }
@@ -181,6 +186,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
             }
 
+            if (searchAssychart)
+            {
+                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+                FilterOperation = true;
+            }
         }
 
         void Closed(MudChip chip)

@@ -386,16 +386,10 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
 
 
-        private async void CloseModalFiles()
-        {
-            CodePathModalDisplay = false;
-
-            StateHasChanged();
-
-        }
         private async void ShowPastJobObservations()
         {
             flag = true;
+           
             operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
             pastjobObservations = new();
             pastLup = new();
@@ -423,6 +417,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
 
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
+
+            listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+            FilterOperation = true;
+
+
             StateHasChanged();
         }
 
@@ -1893,6 +1892,17 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
         SOSCodePath CodePathDialogDisplay { get; set; }
+
+        private List<SOSCodePath> listFilter = new();
+        bool FilterOperation = false;
+
+        private async void CloseModalFiles()
+        {
+            CodePathModalDisplay = false;
+
+            StateHasChanged();
+
+        }
         private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
         {
             searchCodeString = itemselected.Code;

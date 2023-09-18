@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Components
 @using System.Globalization;
 @using System.Net.Http.Json;
+@using System.Text.RegularExpressions;
 
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
@@ -62,85 +63,286 @@
                                     </ActivatorContent>
                                     <ChildContent>
                                         <MudExpansionPanels Elevation="0">
+                                            <MudCheckBox T="bool" @bind-Checked="@FilterOperation" Label="Filter By Operation" />
 
-                                       @*     @foreach (RouteProductAssyChart item in _assychart.RoutesProductsAssyChart)
+                                            @if (!FilterOperation)
                                             {
 
-                                                <MudExpansionPanel>
-                                                    <TitleContent>
-                                                        <MudSimpleTable Elevation="0">
-                                                            <MudText Class="mt-1">@item.Product?.Description</MudText>
-                                                        </MudSimpleTable>
-                                                    </TitleContent>
-                                                    <ChildContent>
-                                                        <MudItem class="d-flex flex-column justify-center ma-1">
-                                                            <MudItem class="d-flex d-flex-column justify-center">
+                                                @foreach (SOSCodePath item in _assychart.RoutesProductsAssyChart)
+                                                {
 
-                                                                @if (item.GOS != "")
-                                                                {
-                                                                    <MudPaper Elevation="0">
-                                                                        <MudButton @onclick="(() => OpenDialogGOS(item.GOS))" @ontouchstart="(() => OpenDialogGOS(item.GOS))" Style="padding: 0px;" Color="Color.Error">
-                                                                            <MudTooltip Text=@Localizer1["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogGOS(item.GOS))" @ontouchstart="(() => OpenDialogGOS(item.GOS))">
-                                                                                <MudTooltip Text="@item.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
-                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.GOS.Split('/').Last()</MudChip>
-                                                                                </MudTooltip>
-                                                                            </MudTooltip>
-                                                                        </MudButton>
+                                                    <MudExpansionPanel Style="width: auto;">
+                                                        <TitleContent>
+                                                            <div Style="align-items: center; display: flex;">
+                                                                <MudText>@item.Code</MudText>
+                                                                <MudChip Icon="@Icons.Material.Filled.DirectionsCar" IconColor="Color.Info" Variant="Variant.Text" Color="Color.Success">@item.Product?.Code - @item.Product?.Description</MudChip>
+                                                            </div>
+                                                        </TitleContent>
+                                                        <ChildContent>
+                                                            <MudItem class="d-flex flex-column justify-center ma-1">
+                                                                <MudItem class="d-flex d-flex-column justify-center">
 
-                                                                    </MudPaper>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <MudPaper Elevation="0">
+                                                                    <MudItem Style="flex-direction: column;">
+                                                                        @if (item.HOE != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, HOE))" @ontouchstart="(() => OpenDialogCodePath(item,HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@Regex.Replace(item.HOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.HOE.Split('§').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+                                                                            </MudPaper>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
+                                                                            </MudPaper>
+                                                                        }
 
-                                                                        <MudAlert Severity="Severity.Info">@Localizer1["noGOSPath"]</MudAlert>
-                                                                    </MudPaper>
-                                                                }
+                                                                        @if (item.CommonDirectionHOE != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, HOECD))" @ontouchstart="(() => OpenDialogCodePath(item, HOECD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openHOEFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@Regex.Replace(item.CommonDirectionHOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionHOE.Split('§').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+                                                                            </MudPaper>
+                                                                        }
 
-                                                                @if (@item.CCP != "")
-                                                                {
-                                                                    <MudPaper Elevation="0">
-                                                                        <MudButton @onclick="(() => OpenDialogCcp(item.CCP))" @ontouchstart="(() => OpenDialogCcp(item.CCP))" Style="padding: 0px;" Color="Color.Error">
-                                                                            <MudTooltip Text=@Localizer1["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogCcp(item.CCP))" @ontouchstart="(() => OpenDialogCcp(item.CCP))">
-                                                                                <MudTooltip Text="@item.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
-                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CCP.Split('/').Last()</MudChip>
-                                                                                </MudTooltip>
-                                                                            </MudTooltip>
-                                                                        </MudButton>
-                                                                    </MudPaper>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <MudPaper Elevation="0">
-                                                                        <MudAlert Severity="Severity.Info">@Localizer1["noCCPPath"]</MudAlert>
-                                                                    </MudPaper>
-                                                                }
+                                                                    </MudItem>
 
-                                                                @if (item.HOE != "")
-                                                                {
-                                                                    <MudPaper Elevation="0">
-                                                                        <MudButton @onclick="(() => OpenDialogHoe(item.HOE))" @ontouchstart="(() => OpenDialogHoe(item.HOE))" Style="padding: 0px;" Color="Color.Error">
-                                                                            <MudTooltip Text=@Localizer1["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialogHoe(item.HOE))" @ontouchstart="(() => OpenDialogHoe(item.HOE))">
-                                                                                <MudTooltip Text="@item.HOE.Replace('§',' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
-                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.HOE.Split('§').Last()</MudChip>
-                                                                                </MudTooltip>
-                                                                            </MudTooltip>
-                                                                        </MudButton>
-                                                                    </MudPaper>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <MudPaper Elevation="0">
-                                                                        <MudAlert Severity="Severity.Info">@Localizer1["noHOEPath"]</MudAlert>
-                                                                    </MudPaper>
-                                                                }
+                                                                    <MudItem Style="flex-direction: column;">
+                                                                        @if (@item.CCP != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, CCP))" @ontouchstart="(() => OpenDialogCodePath(item, CCP))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@item.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CCP.Split('/').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+                                                                            </MudPaper>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudAlert Severity="Severity.Info">@Localizer["noCCPPath"]</MudAlert>
+                                                                            </MudPaper>
+                                                                        }
+                                                                        @if (@item.CommonDirectionCCP != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, CCPCD))" @ontouchstart="(() => OpenDialogCodePath(item, CCPCD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openCCPFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@item.CommonDirectionCCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionCCP.Split('/').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+                                                                            </MudPaper>
+                                                                        }
+                                                                    </MudItem>
 
+                                                                    <MudItem Style="flex-direction: column;">
+                                                                        @if (item.GOS != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, GOS))" @ontouchstart="(() => OpenDialogCodePath(item, GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@item.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.GOS.Split('/').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+
+                                                                            </MudPaper>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+
+                                                                                <MudAlert Severity="Severity.Info">@Localizer["noGOSPath"]</MudAlert>
+                                                                            </MudPaper>
+                                                                        }
+                                                                        @if (item.CommonDirectionGOS != "")
+                                                                        {
+                                                                            <MudPaper Elevation="0">
+                                                                                <MudButton OnClick="(() => OpenDialogCodePath(item, GOSCD))" @ontouchstart="(() => OpenDialogCodePath(item, GOSCD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                    <MudTooltip Text=@Localizer["openGOSFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                        <MudTooltip Text="@item.CommonDirectionGOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionGOS.Split('/').Last()</MudChip>
+                                                                                        </MudTooltip>
+                                                                                    </MudTooltip>
+                                                                                </MudButton>
+
+                                                                            </MudPaper>
+                                                                        }
+                                                                    </MudItem>
+
+
+
+
+
+
+                                                                </MudItem>
                                                             </MudItem>
-                                                        </MudItem>
 
-                                                    </ChildContent>
-                                                </MudExpansionPanel>
-                                            }*@
+                                                        </ChildContent>
+                                                    </MudExpansionPanel>
+                                                }
+                                            }
+                                            else
+                                            {
+
+                                                @if (listFilter.Count > 0)
+                                                {
+                                                    @foreach (SOSCodePath item in listFilter)
+                                                    {
+
+                                                        <MudExpansionPanel Style="width: auto;">
+                                                            <TitleContent>
+                                                                <div Style="align-items: center; display: flex;">
+                                                                    <MudText>@item.Code</MudText>
+                                                                    <MudChip Icon="@Icons.Material.Filled.DirectionsCar" IconColor="Color.Info" Variant="Variant.Text" Color="Color.Success">@item.Product?.Code - @item.Product?.Description</MudChip>
+                                                                </div>
+                                                            </TitleContent>
+                                                            <ChildContent>
+                                                                <MudItem class="d-flex flex-column justify-center ma-1">
+                                                                    <MudItem class="d-flex d-flex-column justify-center">
+
+                                                                        <MudItem Style="flex-direction: column;">
+                                                                            @if (item.HOE != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, HOE))" @ontouchstart="(() => OpenDialogCodePath(item,HOE))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@Regex.Replace(item.HOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.HOE.Split('§').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+                                                                                </MudPaper>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
+                                                                                </MudPaper>
+                                                                            }
+
+                                                                            @if (item.CommonDirectionHOE != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, HOECD))" @ontouchstart="(() => OpenDialogCodePath(item, HOECD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openHOEFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@Regex.Replace(item.CommonDirectionHOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionHOE.Split('§').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+                                                                                </MudPaper>
+                                                                            }
+
+                                                                        </MudItem>
+
+                                                                        <MudItem Style="flex-direction: column;">
+                                                                            @if (@item.CCP != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, CCP))" @ontouchstart="(() => OpenDialogCodePath(item, CCP))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@item.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CCP.Split('/').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+                                                                                </MudPaper>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudAlert Severity="Severity.Info">@Localizer["noCCPPath"]</MudAlert>
+                                                                                </MudPaper>
+                                                                            }
+                                                                            @if (@item.CommonDirectionCCP != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, CCPCD))" @ontouchstart="(() => OpenDialogCodePath(item, CCPCD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openCCPFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@item.CommonDirectionCCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionCCP.Split('/').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+                                                                                </MudPaper>
+                                                                            }
+                                                                        </MudItem>
+
+                                                                        <MudItem Style="flex-direction: column;">
+                                                                            @if (item.GOS != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, GOS))" @ontouchstart="(() => OpenDialogCodePath(item, GOS))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@item.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.GOS.Split('/').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+
+                                                                                </MudPaper>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+
+                                                                                    <MudAlert Severity="Severity.Info">@Localizer["noGOSPath"]</MudAlert>
+                                                                                </MudPaper>
+                                                                            }
+                                                                            @if (item.CommonDirectionGOS != "")
+                                                                            {
+                                                                                <MudPaper Elevation="0">
+                                                                                    <MudButton OnClick="(() => OpenDialogCodePath(item, GOSCD))" @ontouchstart="(() => OpenDialogCodePath(item, GOSCD))" Style="padding: 0px;" Color="Color.Error">
+                                                                                        <MudTooltip Text=@Localizer["openGOSFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                            <MudTooltip Text="@item.CommonDirectionGOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionGOS.Split('/').Last()</MudChip>
+                                                                                            </MudTooltip>
+                                                                                        </MudTooltip>
+                                                                                    </MudButton>
+
+                                                                                </MudPaper>
+                                                                            }
+                                                                        </MudItem>
+
+
+
+
+
+
+                                                                    </MudItem>
+                                                                </MudItem>
+
+                                                            </ChildContent>
+                                                        </MudExpansionPanel>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <MudAlert Severity="Severity.Info">
+                                                        @Localizer1["ACNoProductsFilter"]
+                                                    </MudAlert>
+                                                }
+                                            }
+
+
+
 
 
 
@@ -619,435 +821,1082 @@
 </MudDialog>
 
 
-
-<MudDialog DisableSidePadding="false" @bind-IsVisible="GosDialog" Options="dialogOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
-                    GOS @Localizer["rute"]:  @GOSrute
-                </MudText>
+<MudDialog @bind-IsVisible="CodePathModalDisplay" Options="dialogOptions" Style="    max-height: 95vh;    min-height: 80vh;">
+    <TitleContent>
+        <MudItem style="display: flex;    justify-content: space-evenly;   align-items: flex-end;">
+            <MudText Typo="Typo.subtitle1">@CodePathDialogDisplay.Code</MudText>
+            <MudItem Style="min-width: 35vw;    max-width: 50vw;    align-self: center">
+                <MudTextField @bind-Value="searchCodeString" Placeholder="@Localizer["Search"]" TextChanged="SearchFunction" Adornment="Adornment.Start" Clearable="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
             </MudItem>
-            @if (GosFilesInFolder != null)
+            <MudItem style="display: flex; align-items: center">
+                <MudChip Color="Color.Info">@CodePathDialogDisplay.Product?.Code</MudChip>
+                <MudText Typo="Typo.body1">@CodePathDialogDisplay.Product?.Description</MudText>
+            </MudItem>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudTabs @ref="FilesViewer" Outlined="true" Rounded="true" Border="true" TabPanelHeaderPosition="TabHeaderPosition.Before"
+                 ApplyEffectsToContainer="true" PanelClass="px-6" Style="max-height: 78vh; min-height: 70vh; width: 100%;">
+            @*
+            <MudTabPanel >
+            <TabContent>
+
+            </TabContent>
+            </MudTabPanel>*@
+
+
+            @if (CodePathDialogDisplay.HOE != "")
             {
-
-                @if (GosFilesInFolder.operation.Count() > 0)
-                {
-                    @foreach (GOSDocument DocFile in GosFilesInFolder.operation)
-                    {
-
-                        <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
-                            <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center mt-5">
-                                @switch (DocFile.Extension)
+                <MudTabPanel @ref="HOE">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning"> HOE</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 100%;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        @Localizer1["ACHOERute"]: @Regex.Replace(CodePathDialogDisplay.HOE, @"/(.*?)§", "/").Replace('§', ' ')
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style=" min-width: 70vw; min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (HoeFilesInFolder != null)
                                 {
-                                    case "pdf":
-                                        <img src="Images/pdf.png" Height="70" Width="70" />
+                                    @if (ShowLoading && HoeFilesInFolder.operation.Count == 0)
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+                                    else if (HoeFilesInFolder.operation.Count() > 0)
+                                    {
+                                        @foreach (HOEDocument DocFile in HoeFilesInFolder.operation)
+                                        {
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
 
-                                        break;
-                                    case "doc":
-                                        // Para documentos Word con extensión .doc
-                                        <img src="Images/doc.png" Height="70" Width="70" />
-                                        break;
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "docx":
-                                        <img src="Images/docx.png" Height="70" Width="70" />
-                                        // Para documentos Word con extensión .docx
-                                        break;
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
 
-                                    case "ppt":
-                                        <img src="Images/ppt.png" Height="70" Width="70" />
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
 
-                                        // Para presentaciones PowerPoint con extensión .ppt
-                                        break;
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
 
-                                    case "pptx":
-                                        <img src="Images/pptx.png" Height="70" Width="70" />
-                                        // Para presentaciones PowerPoint con extensión .pptx
-                                        break;
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
 
-                                    case "xls":
-                                        // Para hojas de cálculo Excel con extensión .xls
-                                        <img src="Images/xls.png" Height="70" Width="70" />
-                                        break;
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "xlsx":
-                                        // Para hojas de cálculo Excel con extensión .xlsx
-                                        <img src="Images/xlsx.png" Height="70" Width="70" />
-                                        break;
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "jpg":
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "jpeg":
-                                        // Para imágenes JPEG con extensión .jpg o .jpeg
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "png":
-                                        // Para imágenes PNG con extensión .png
-                                        <img src="Images/png.png" Height="70" Width="70" />
-                                        break;
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
 
-                                    case "gif":
-                                        // Para imágenes GIF con extensión .gif
-                                        <img src="Images/gif.png" Height="70" Width="70" />
-                                        break;
-                                    default:
-                                        <img src="Images/error.png" Height="70" Width="70" />
-                                        break;
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_HOE(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Color="Color.Info">
+                                                                    @DocFile.Nombre
+                                                                </MudChip>
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+
+                                        }
+                                    }
+                                    else if (HoeFilesInFolder.operation.Count == 0)
+                                    {
+                                        if (folderErrorHOE && !ShowLoading)
+                                        {
+                                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                    <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                                </MudItem>
+
+                                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                    </MudItem>
+                                                </MudItem>
+                                            </MudItem>
+                                        }
+                                        else
+                                        {
+                                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                    <img src="Images/navegador.png" Height="140" Width="140" />
+                                                </MudItem>
+
+                                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                    </MudItem>
+                                                </MudItem>
+                                            </MudItem>
+                                        }
+
+
+                                    }
+
                                 }
-                                <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
-                                    <MudButton @onclick="() => DownloadFileFromURL_GOS(DocFile.URL, DocFile.Nombre)">
-                                        <MudItem>
-                                            <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 315px" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
+                                else
+                                {
+
+                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> nullo  @folderErrorHOE  - @ShowLoading </MudText>
+
+                                    if (folderErrorHOE && !ShowLoading)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
                                         </MudItem>
-                                    </MudButton>
-                                </MudTooltip>
-                            </MudItem>
+                                    }
+                                    else if (ShowLoading)
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
 
-                        </MudPaper>
-                    }
-                }
-                else
-                {
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                }
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+
+
+
+                                }
+
+                            </MudCardContent>
+                        </MudCard>
+                    </ChildContent>
+                </MudTabPanel>
 
             }
-            else
+
+            @if (CodePathDialogDisplay.CommonDirectionHOE != "")
             {
-                if (folderError)
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
+                <MudTabPanel @ref="HOECD">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">HOE C.D.</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        @Localizer1["ACHOERuteCD"]: @Regex.Replace(CodePathDialogDisplay.CommonDirectionHOE, @"/(.*?)§", "/").Replace('§', ' ')
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style="max-width: 75vw; min-width: 70vw; min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (HoeFilesInFolderCD != null)
+                                {
+                                    @if (HoeFilesInFolderCD.operation.Count() > 0)
+                                    {
+                                        @foreach (HOEDocument DocFile in HoeFilesInFolderCD.operation)
+                                        {
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
 
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
 
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
 
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["serverNotResponse"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
-                else
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
 
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
 
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
 
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["dataNotFound"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_HOE(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Color="Color.Info">
+
+                                                                    @DocFile.Nombre
+
+                                                                </MudChip>
+
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+
+                                        }
+                                    }
+                                    else if (HoeFilesInFolderCD.operation.Count == 0 && !folderErrorHOECD)
+                                    {
+
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+                                }
+                                else
+                                {
+                                    if (folderErrorHOECD)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["DataNotFound"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                }
+
+                            </MudCardContent>
+                        </MudCard>
+                    </ChildContent>
+                </MudTabPanel>
+
+            }
+
+            @if (CodePathDialogDisplay.GOS != "")
+            {
+                <MudTabPanel @ref="GOS">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning"> GOS</MudChip>
+
+                    </TabContent>
+                    <ChildContent>
+
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        @Localizer1["ACGOSRute"]:  @GOSrute
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style="max-width: 75vw; min-width: 70vw;  min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (GosFilesInFolder != null)
+                                {
+
+                                    @if (GosFilesInFolder.operation.Count() > 0)
+                                    {
+
+
+                                        @foreach (GOSDocument DocFile in GosFilesInFolder.operation)
+                                        {
+
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
+
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
+
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
+
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
+
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
+
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="@Localizer["Download"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_GOS(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+                                        }
+                                    }
+                                    else if (GosFilesInFolder.operation.Count == 0 && !folderErrorGOS)
+                                    {
+
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (folderErrorGOS)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["DataNotFound"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                }
+
+
+                            </MudCardContent>
+                        </MudCard>
+                    </ChildContent>
+                </MudTabPanel>
+
+            }
+
+            @if (CodePathDialogDisplay.CommonDirectionGOS != "")
+            {
+                <MudTabPanel @ref="GOSCD">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning"> GOS C.D.</MudChip>
+
+                    </TabContent>
+                    <ChildContent>
+
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        @Localizer1["ACGOSRuteCD"]: @GOSruteCD
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style="max-width: 75vw; min-width: 70vw;  min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (GosFilesInFolderCD != null)
+                                {
+
+                                    @if (GosFilesInFolderCD.operation.Count() > 0)
+                                    {
+                                        @foreach (GOSDocument DocFile in GosFilesInFolderCD.operation)
+                                        {
+
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
+
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
+
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
+
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
+
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
+
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="@Localizer["Download"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_GOS(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+                                        }
+                                    }
+                                    else if (GosFilesInFolderCD.operation.Count == 0 && !folderErrorGOSCD)
+                                    {
+
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (folderErrorGOSCD)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["DataNotFound"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                }
+
+
+                            </MudCardContent>
+                        </MudCard>
+                    </ChildContent>
+                </MudTabPanel>
+
+            }
+
+            @if (CodePathDialogDisplay.CCP != "")
+            {
+
+                <MudTabPanel @ref="CCP">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning"> CCP</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        CCP Rute: @CCPrute
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style="max-width: 75vw; min-width: 70vw;  min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (CcpFilesInFolder != null)
+                                {
+                                    @if (CcpFilesInFolder.operation.Count() > 0)
+                                    {
+                                        @foreach (CCPDocument DocFile in CcpFilesInFolder.operation)
+                                        {
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
+
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
+
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
+
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
+
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
+
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_CCP(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+                                        }
+                                    }
+                                    else if (CcpFilesInFolder.operation.Count == 0 && !folderErrorCCP)
+                                    {
+
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+                                }
+                                else
+                                {
+                                    if (folderErrorCCP)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["DataNotFound"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                }
+
+
+
+                            </MudCardContent>
+                        </MudCard>
+
+                    </ChildContent>
+                </MudTabPanel>
+            }
+
+            @if (CodePathDialogDisplay.CommonDirectionCCP != "")
+            {
+
+                <MudTabPanel @ref="CCPCD">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning"> CCP C.D.</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+
+                            <MudCardHeader Style=" display: flex;  flex-wrap: wrap;  align-content: center;   flex-direction: column;">
+                                <CardHeaderActions>
+                                    <MudText Typo="Typo.h6">
+                                        @Localizer1["ACCCPRuteCD"]: @CCPruteCD
+                                    </MudText>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Style="max-width: 75vw; min-width: 70vw;  min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                @if (CcpFilesInFolderCD != null)
+                                {
+                                    @if (CcpFilesInFolderCD.operation.Count() > 0)
+                                    {
+                                        @foreach (CCPDocument DocFile in CcpFilesInFolderCD.operation)
+                                        {
+                                            <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
+                                                <MudItem style="text-align:center; display: flex; justify-content: center;" Class="mt-5">
+                                                    @switch (DocFile.Extension)
+                                                    {
+                                                        case "pdf":
+                                                            <img src="Images/pdf.png" Height="35" Width="35" />
+
+                                                            break;
+                                                        case "doc":
+                                                            // Para documentos Word con extensión .doc
+                                                            <img src="Images/doc.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "docx":
+                                                            <img src="Images/docx.png" Height="35" Width="35" />
+                                                            // Para documentos Word con extensión .docx
+                                                            break;
+
+                                                        case "ppt":
+                                                            <img src="Images/ppt.png" Height="35" Width="35" />
+
+                                                            // Para presentaciones PowerPoint con extensión .ppt
+                                                            break;
+
+                                                        case "pptx":
+                                                            <img src="Images/pptx.png" Height="35" Width="35" />
+                                                            // Para presentaciones PowerPoint con extensión .pptx
+                                                            break;
+
+                                                        case "xls":
+                                                            // Para hojas de cálculo Excel con extensión .xls
+                                                            <img src="Images/xls.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "xlsx":
+                                                            // Para hojas de cálculo Excel con extensión .xlsx
+                                                            <img src="Images/xlsx.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpg":
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "jpeg":
+                                                            // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                            <img src="Images/jpg.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "png":
+                                                            // Para imágenes PNG con extensión .png
+                                                            <img src="Images/png.png" Height="35" Width="35" />
+                                                            break;
+
+                                                        case "gif":
+                                                            // Para imágenes GIF con extensión .gif
+                                                            <img src="Images/gif.png" Height="35" Width="35" />
+                                                            break;
+                                                        default:
+                                                            <img src="Images/error.png" Height="35" Width="35" />
+                                                            break;
+                                                    }
+                                                    <MudTooltip Text="Download" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                        <MudButton OnClick="() => DownloadFileFromURL_CCP(DocFile.URL, DocFile.Nombre)">
+                                                            <MudItem>
+                                                                <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 280px; white-space: normal; overflow-wrap: break-word;" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
+                                                            </MudItem>
+                                                        </MudButton>
+                                                    </MudTooltip>
+                                                </MudItem>
+
+                                            </MudPaper>
+                                        }
+                                    }
+                                    else if (CcpFilesInFolderCD.operation.Count == 0 && !folderErrorCCPCD)
+                                    {
+
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/navegador.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoFilesDirectory"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                    }
+                                }
+                                else
+                                {
+                                    if (folderErrorCCPCD)
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name"> @Localizer["ServerNotResponse"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                                <img src="Images/dialogerror.png" Height="140" Width="140" />
+                                            </MudItem>
+
+                                            <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                                <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["Alert"] </MudText>
+
+                                                <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["DataNotFound"]</MudText>
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+                                }
+
+
+
+                            </MudCardContent>
+                        </MudCard>
+
+                    </ChildContent>
+                </MudTabPanel>
             }
 
 
 
-        </MudContainer>
+
+
+        </MudTabs>
+
+
+
+
     </DialogContent>
     <DialogActions>
-        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="CloseGos">@Localizer["close"]</MudButton>
-    </DialogActions>
-</MudDialog>
-
-<MudDialog DisableSidePadding="false" @bind-IsVisible="CcpDialog" Options="dialogOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
-                    CCP @Localizer["rute"]: @CCPrute
-                </MudText>
-            </MudItem>
-
-            @if (CcpFilesInFolder != null)
-            {
-                @if (CcpFilesInFolder.operation.Count() > 0)
-                {
-                    @foreach (CCPDocument DocFile in CcpFilesInFolder.operation)
-                    {
-                        <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
-                            <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center mt-5">
-                                @switch (DocFile.Extension)
-                                {
-                                    case "pdf":
-                                        <img src="Images/pdf.png" Height="70" Width="70" />
-
-                                        break;
-                                    case "doc":
-                                        // Para documentos Word con extensión .doc
-                                        <img src="Images/doc.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "docx":
-                                        <img src="Images/docx.png" Height="70" Width="70" />
-                                        // Para documentos Word con extensión .docx
-                                        break;
-
-                                    case "ppt":
-                                        <img src="Images/ppt.png" Height="70" Width="70" />
-
-                                        // Para presentaciones PowerPoint con extensión .ppt
-                                        break;
-
-                                    case "pptx":
-                                        <img src="Images/pptx.png" Height="70" Width="70" />
-                                        // Para presentaciones PowerPoint con extensión .pptx
-                                        break;
-
-                                    case "xls":
-                                        // Para hojas de cálculo Excel con extensión .xls
-                                        <img src="Images/xls.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "xlsx":
-                                        // Para hojas de cálculo Excel con extensión .xlsx
-                                        <img src="Images/xlsx.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "jpg":
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "jpeg":
-                                        // Para imágenes JPEG con extensión .jpg o .jpeg
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "png":
-                                        // Para imágenes PNG con extensión .png
-                                        <img src="Images/png.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "gif":
-                                        // Para imágenes GIF con extensión .gif
-                                        <img src="Images/gif.png" Height="70" Width="70" />
-                                        break;
-                                    default:
-                                        <img src="Images/error.png" Height="70" Width="70" />
-                                        break;
-                                }
-                                <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
-                                    <MudButton @onclick="() => DownloadFileFromURL_CCP(DocFile.URL, DocFile.Nombre)">
-                                        <MudItem>
-                                            <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 315px" Icon="@Icons.Material.Filled.Download" Text="@DocFile.Nombre" Color="Color.Info" />
-                                        </MudItem>
-                                    </MudButton>
-                                </MudTooltip>
-                            </MudItem>
-
-                        </MudPaper>
-                    }
-                }
-                else
-                {
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                }
-            }
-            else
-            {
-                if (folderError)
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
-
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
-
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["serverNotResponse"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
-                else
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
-
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
-
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["dataNotFound"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
-            }
-
-
-        </MudContainer>
-    </DialogContent>
-    <DialogActions>
-        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="CloseCcp">@Localizer["close"]</MudButton>
-    </DialogActions>
-</MudDialog>
-
-<MudDialog DisableSidePadding="false" @bind-IsVisible="HoeDialog" Options="dialogOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h6">
-                    HOE @Localizer["rute"]: @HOErute.Replace('§',' ')
-                </MudText>
-            </MudItem>
-            @if (HoeFilesInFolder != null)
-            {
-                @if (HoeFilesInFolder.operation.Count() > 0)
-                {
-                    @foreach (HOEDocument DocFile in HoeFilesInFolder.operation)
-                    {
-                        <MudPaper Class="mr-5 mt-5" style="flex: 0 0 calc(28% - 1rem);">
-                            <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center mt-5">
-                                @switch (DocFile.Extension)
-                                {
-                                    case "pdf":
-                                        <img src="Images/pdf.png" Height="70" Width="70" />
-
-                                        break;
-                                    case "doc":
-                                        // Para documentos Word con extensión .doc
-                                        <img src="Images/doc.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "docx":
-                                        <img src="Images/docx.png" Height="70" Width="70" />
-                                        // Para documentos Word con extensión .docx
-                                        break;
-
-                                    case "ppt":
-                                        <img src="Images/ppt.png" Height="70" Width="70" />
-
-                                        // Para presentaciones PowerPoint con extensión .ppt
-                                        break;
-
-                                    case "pptx":
-                                        <img src="Images/pptx.png" Height="70" Width="70" />
-                                        // Para presentaciones PowerPoint con extensión .pptx
-                                        break;
-
-                                    case "xls":
-                                        // Para hojas de cálculo Excel con extensión .xls
-                                        <img src="Images/xls.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "xlsx":
-                                        // Para hojas de cálculo Excel con extensión .xlsx
-                                        <img src="Images/xlsx.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "jpg":
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "jpeg":
-                                        // Para imágenes JPEG con extensión .jpg o .jpeg
-                                        <img src="Images/jpg.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "png":
-                                        // Para imágenes PNG con extensión .png
-                                        <img src="Images/png.png" Height="70" Width="70" />
-                                        break;
-
-                                    case "gif":
-                                        // Para imágenes GIF con extensión .gif
-                                        <img src="Images/gif.png" Height="70" Width="70" />
-                                        break;
-                                    default:
-                                        <img src="Images/error.png" Height="70" Width="70" />
-                                        break;
-                                }
-                                <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
-                                    <MudButton @onclick="() => DownloadFileFromURL_HOE(DocFile.URL, DocFile.Nombre)">
-                                        <MudItem>
-                                            <MudChip Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer;max-width: 315px" Icon="@Icons.Material.Filled.Download" Color="Color.Info">
-                                                @if (DocFile.Nombre.Length > 10)
-                                                {
-                                                    <span class="marquee">@DocFile.Nombre</span>
-                                                }
-                                                else
-                                                {
-                                                    @DocFile.Nombre
-                                                }
-                                            </MudChip>
-
-                                        </MudItem>
-                                    </MudButton>
-                                </MudTooltip>
-                            </MudItem>
-
-                        </MudPaper>
-
-                    }
-                }
-                else
-                {
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                }
-            }
-            else
-            {
-                if (folderError)
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
-
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
-
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["serverNotResponse"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
-                else
-                {
-                    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                            <img src="Images/dialogerror.png" Height="140" Width="140" />
-                        </MudItem>
-
-                        <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-
-                            <MudText Typo="Typo.h4" Align="Align.Center" Label="Name"> @Localizer["alert"] </MudText>
-
-                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["dataNotFound"]</MudText>
-                            </MudItem>
-                        </MudItem>
-                    </MudItem>
-                }
-            }
-
-        </MudContainer>
-    </DialogContent>
-    <DialogActions>
-        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="CloseHoe">@Localizer["close"]</MudButton>
+        <MudButton OnClick="CloseModalFiles" Variant="Variant.Filled">@Localizer["Close"]</MudButton>
     </DialogActions>
 </MudDialog>
