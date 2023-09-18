@@ -72,7 +72,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
 
 
-
+        
         private int plantId = 0;
         private bool if_pick_Plant = false;
         private int areaId = 0;
@@ -517,6 +517,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         {
             searchCodeString = itemselected.Code;
             ShowLoading = true;
+            base.StateHasChanged();
             CodePathModalDisplay = true;
             HoeFilesInFolder = new CDMS_HOE_Archives();
             StateHasChanged();
@@ -765,7 +766,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true,MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, DisableBackdropClick = true, CloseButton = true  };
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
         private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
