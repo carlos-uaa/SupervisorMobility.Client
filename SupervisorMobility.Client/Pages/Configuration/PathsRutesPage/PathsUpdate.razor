@@ -629,30 +629,7 @@
                             </MudCard>
                         
 
-                        @if (Find_Product)
-                        {
-                            <MudCard>
-                                <MudCardContent Style="justify-content:center">
-                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
-                                    <MudText Align="Align.Center">@_product.Code</MudText>
-                                    <MudText Typo="Typo.h5" Align="Align.Center">@_product.Description</MudText>
-                                    @if (_product.IsActive == true)
-                                    {
-                                        <MudText Align="Align.Center" Class="pt-2">
-                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                                        </MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudText Align="Align.Center" Class="pa-4">
-                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
-                                        </MudText>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                        }
-                        else
-                        {
+                       
                             <MudCard>
                                 <MudCardContent Style="justify-content:center">
                                     <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
@@ -690,7 +667,7 @@
                                     }
                                 </MudCardContent>
                             </MudCard>
-                        }
+                        
 
 
                     </MudCardContent>
@@ -1013,6 +990,17 @@
     {
         Update = false;
 
+        SosCode.ProductId = _product.ProductId;
+        SosCode.DistributionId = _distribution.DistributionId;
+
+        var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(_plant.PlantId, _area.AreaId, _distribution.DistributionId);
+
+        if (anyAssyChart != null)
+        {
+            Console.WriteLine("Se añade al assychartr");
+            //se Invoca metodo que añade al assychart
+            SosCode.AssyChardId = anyAssyChart.AssyChardId;
+
 
             var resultAdd = await AssyChartServices.UpdateCodePath(PathId, SosCode);
 
@@ -1020,11 +1008,30 @@
                 NavigationManager.NavigateTo("/PathsRoute");
             else
                 await JS.InvokeVoidAsync("alert", "Fail to updater CodePath, contact admin!"); // Alert
-     
+        }
+        else
+        {
+            Console.WriteLine("Se Crea el assychart");
+
+            AssyChart newAssychart = new();
+            newAssychart.CreationDate = DateTime.Now;
+            newAssychart.PlantId = _plant.PlantId;
+            newAssychart.AreaId = _area.AreaId;
+            newAssychart.DistributionId = _distribution.DistributionId;
+            newAssychart.RoutesProductsAssyChart?.Add(SosCode);
+            newAssychart.IsActive = true;
+            //crear asychasr
+            var result = await AssyChartServices.CreateAssyChart(newAssychart);
+
+            if (result != null)
+                NavigationManager.NavigateTo("/PathsRoute");
+            else
+                await JS.InvokeVoidAsync("alert", "Fail to create Assy Chart, contact admin!"); // Alert
+                                                                                                //se invoca crear assychart
+        }
 
 
-
-                 Update = true;
+        Update = true;
     }
 
     public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
@@ -1269,7 +1276,8 @@
     private void CloseFunctionHoeModal()
     {
         Find_all_tree = (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1);
-        HOEModalDisplay = !Find_all_tree;
+        CloseHOEModal();
+        StateHasChanged();
     }
 
 
