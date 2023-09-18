@@ -303,8 +303,11 @@ namespace SupervisorMobility.Client.Pages.JobObservationPage
                 }
             }
 
-            listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
-            FilterOperation = true;
+            if (searchAssychart)
+            {
+                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+                FilterOperation = true;
+            }
         }
 
         private async Task GetUserAsync()

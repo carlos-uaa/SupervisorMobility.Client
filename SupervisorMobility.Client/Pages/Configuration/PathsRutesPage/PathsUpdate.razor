@@ -1,8 +1,1289 @@
 ﻿@page "/PathsRoute/PathUpdate/{PathId:int}"
 
-<h3>PathsUpdate</h3>
+@using SupervisorMobility.Client.Data.Entities.TreeStruct;
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@using System.Text.RegularExpressions;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IChecklistService ChecklistService
+@inject IAssyChartService AssyChartServices
+@inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
+@inject IProductService ProductsServices
+@inject IPlantService PlantsServices
+@inject IAreaService AreasServices
+@inject IDistributionService DistributionsServices
+@inject ITreeService TreeServices
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+
+<EditForm Model="SosCode" OnValidSubmit="UpdatePathAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@Localizer1["PathUpdate"]</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer1["PathUpdate"]</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+
+                   
+                    @if (ShowLoading)
+                    {
+                        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    }
+                    else
+                    {
+                        <MudTextField Label="@Localizer["Code"]" Class="mt-3"
+                        @bind-Value="SosCode.Code" />
+
+                        <br />
+                        <br />
+
+                        <MudSpacer />
+
+                        @*<MudSelect T="int" Label="@Localizer["UsersLabelDistribution"]" Placeholder="@Localizer["UsersPHDistribution"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@DistributionId" For="@(() => DistributionId)" SelectedValuesChanged="UpdateDistributionDisplay">
+                    <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHDistribution"]</MudSelectItem>
+                    @foreach (var type in _distributions)
+                    {
+                    <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                    }
+                    </MudSelect>*@
+
+
+                        <MudSpacer />
+
+
+                        <MudItem Style="max-height: 70vh; min-width: 70vw; overflow-y: scroll;" Class="gap-4">
+                            <MudButton OnClick="@(e => OpenHOEModal())" FullWidth="false" Class="d-flex justify-center" Style="height:100%; width:100%;">
+                                <MudCard Elevation="3" Outlined="true" Style="min-width: 70vw">
+
+                                    <MudCardContent Style="min-width: 70vw; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction: column; justify-content: space-around;" Class="gap-4">
+                                        <MudItem Style="max-height: 70vh; min-width: 70w; overflow-y: scroll; display: flex; flex-wrap: wrap; justify-content: center;" Class="gap-4">
+                                            @if (Find_all_tree)
+                                            {
+                                                <MudCard>
+                                                    <MudCardContent Style="justify-content:center">
+                                                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+                                                        <MudText Align="Align.Center">@_plant.Code</MudText>
+                                                        <MudText Typo="Typo.h5" Align="Align.Center">@_plant.Description</MudText>
+                                                        @if (_plant.IsActive == true)
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pt-2">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pa-4">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                    </MudCardContent>
+                                                </MudCard>
+                                                <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                                                </MudText>
+                                                <MudCard>
+                                                    <MudCardContent Style="justify-content:center">
+                                                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
+                                                        <MudText Align="Align.Center">@_area.Code</MudText>
+                                                        <MudText Typo="Typo.h5" Align="Align.Center">@_area.Description</MudText>
+                                                        @if (_area.IsActive == true)
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pt-2">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pa-4">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                    </MudCardContent>
+                                                </MudCard>
+                                                <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                                                </MudText>
+                                                <MudCard>
+                                                    <MudCardContent Style="justify-content:center">
+                                                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
+                                                        <MudText Align="Align.Center">@_distribution.Code</MudText>
+                                                        <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                                                        @if (_distribution.IsActive == true)
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pt-2">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pa-4">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                    </MudCardContent>
+                                                </MudCard>
+                                            }
+
+
+                                            @if (Find_Product)
+                                            {
+                                                <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                                                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome"></MudIcon>
+                                                </MudText>
+                                                <MudCard>
+                                                    <MudCardContent Style="justify-content:center">
+                                                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Primary"></MudIcon></MudText>
+                                                        <MudText Align="Align.Center">@_product.Code</MudText>
+                                                        <MudText Typo="Typo.h5" Align="Align.Center">@_product.Description</MudText>
+                                                        @if (_product.IsActive == true)
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pt-2">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+
+                                                            </MudText>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Align="Align.Center" Class="pa-4">
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                                            </MudText>
+                                                        }
+                                                    </MudCardContent>
+                                                </MudCard>
+                                            }
+
+                                        </MudItem>
+
+
+
+                                        <MudTextField Label="@Localizer1["ACLabelHOESelect"]" ReadOnly="true" Value="@Regex.Replace(SosCode.HOE, @"/(.*?)§", "/").Replace('§', ' ')" />
+
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudButton>
+
+
+                        </MudItem>
+
+
+                        <MudItem Style="max-height: 70vh; min-width: 70w; overflow-y: scroll;" Class="gap-4">
+
+
+                            <MudCard Elevation="3" Outlined="true">
+
+                                <MudCardHeader>
+                                    <CardHeaderAvatar>
+                                        @*<MudChip Color="Color.Info">@SosCode.Product?.Code</MudChip>*@
+                                    </CardHeaderAvatar>
+                                    <CardHeaderContent>
+                                        @*<MudText Typo="Typo.body1">@SosCode.Product?.Description</MudText>*@
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                            @if (!if_add_CD_HOE)
+                                            {
+                                                <MudMenuItem Icon="@Icons.Material.Filled.CreateNewFolder" @onclick="(() => AddRemove_CD_HOE())" @ontouchstart="(() => AddRemove_CD_HOE())">
+                                                    Add Common Direction HOE
+                                                </MudMenuItem>
+                                            }
+                                            @if (!if_add_CD_CCP)
+                                            {
+                                                <MudMenuItem Icon="@Icons.Material.Filled.CreateNewFolder" @onclick="(() => AddRemove_CD_CCP())" @ontouchstart="(() => AddRemove_CD_CCP())">
+                                                    Add Common Direction CCP
+                                                </MudMenuItem>
+                                            }
+                                            @if (!if_add_CD_GOS)
+                                            {
+                                                <MudMenuItem Icon="@Icons.Material.Filled.CreateNewFolder" @onclick="(() => AddRemove_CD_GOS())" @ontouchstart="(() => AddRemove_CD_GOS())">
+                                                    Add Common Direction GOS
+                                                </MudMenuItem>
+                                            }
+                                        </MudMenu>
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent Style="min-width: 70vw; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+
+                                    @if (if_add_CD_HOE)
+                                    {
+                                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px; flex: 0 0 calc(32% - 1rem);">
+                                            <MudCardHeader>
+                                                <CardHeaderActions>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.FolderDelete" Color="Color.Error" OnClick="@(() => AddRemove_CD_HOE())" @ontouchstart="@(() => AddRemove_CD_HOE())" />
+                                                    <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning">CommonDirection HOE</MudChip>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Warning" OnClick="@(() => DeleteHOERouteCD())" @ontouchstart="@(() => DeleteHOERouteCD())" />
+
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                @if (HOEFolders != null)
+                                                {
+                                                    @if (rootNodeHOE.TreeItems.Count > 0)
+                                                    {
+                                                        <MudPaper Elevation="0">
+
+                                                            <MudTextField Label="@Localizer1["ACLabelHOESelectCD"]" ReadOnly="true" Value="@Regex.Replace(SosCode.CommonDirectionHOE, @"/(.*?)§", "/").Replace('§', ' ')" />
+
+                                                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" @bind-Value="@SosCode.CommonDirectionHOE" For="@(() => @SosCode.CommonDirectionHOE)" Context="OtherContext" Items="rootNodeHOE.TreeItems">
+                                                                <ItemTemplate>
+                                                                    <MudTreeViewItem Value="@OtherContext" @onclick="@(() => { @SosCode.CommonDirectionHOE = OtherContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre.Split('§').Last()" EndTextTypo="@Typo.caption" />
+                                                                </ItemTemplate>
+                                                            </MudTreeView>
+                                                        </MudPaper>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACHOEDirectory"]</MudAlert>
+                                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                                    }
+
+                                                }
+                                                else
+                                                {
+                                                    if (folderHOEError)
+                                                    {
+                                                        <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer1["ServerNotResponse"] </MudAlert>
+                                                    }
+                                                }
+
+
+
+                                            </MudCardContent>
+                                        </MudCard>
+
+                                    }
+
+                                    <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px; flex: 0 0 calc(32% - 1rem);">
+                                        <MudCardHeader>
+                                            <CardHeaderActions>
+                                                <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning"> GOS</MudChip>
+                                                <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Warning" OnClick="@(() => DeleteGOSRoute())" />
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent>
+                                            @if (GOSFolders != null)
+                                            {
+                                                @if (rootNodeGOS.TreeItems.Count > 0)
+                                                {
+                                                    <MudPaper Elevation="0">
+                                                        <MudTextField Label="@Localizer1["ACLabelGOSSelect"]" ReadOnly="true"
+                                                        @bind-Value="@SosCode.GOS" For="@(() => @SosCode.GOS)" />
+                                                        <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
+                                                            <ItemTemplate>
+                                                                <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @SosCode.GOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
+                                                            </ItemTemplate>
+                                                        </MudTreeView>
+                                                    </MudPaper>
+                                                }
+                                                else
+                                                {
+                                                    <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACGOSDirectory"]</MudAlert>
+                                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (folderGOSError)
+                                                {
+                                                    <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                                }
+                                            }
+
+                                            @if (if_add_CD_GOS)
+                                            {
+                                                <MudPaper Elevation="0">
+                                                    @if (if_add_CD_GOS)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.FolderDelete" Color="Color.Error" OnClick="@(() => AddRemove_CD_GOS())" @ontouchstart="@(() => AddRemove_CD_GOS())" />
+                                                        <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning">CommonDirection GOS</MudChip>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Warning" OnClick="@(() => DeleteGOSRouteCD())" @ontouchstart="@(() => DeleteGOSRouteCD())" />
+                                                    }
+
+                                                </MudPaper>
+
+                                                @if (GOSFolders != null)
+                                                {
+                                                    @if (rootNodeGOS.TreeItems.Count > 0)
+                                                    {
+                                                        <MudPaper Elevation="0">
+                                                            <MudTextField Label="@Localizer1["ACLabelGOSSelectCD"]" ReadOnly="true"
+                                                            @bind-Value="@SosCode.CommonDirectionGOS" For="@(() => @SosCode.CommonDirectionGOS)" />
+                                                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
+                                                                <ItemTemplate>
+                                                                    <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @SosCode.CommonDirectionGOS = GosContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.EsDirectorio" Text="@GosContext.Nombre" EndTextTypo="@Typo.caption" />
+                                                                </ItemTemplate>
+                                                            </MudTreeView>
+                                                        </MudPaper>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACGOSDirectory"]</MudAlert>
+                                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (folderGOSError)
+                                                    {
+                                                        <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                                    }
+                                                }
+                                            }
+                                        </MudCardContent>
+                                    </MudCard>
+                                    <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px; flex: 0 0 calc(32% - 1rem);">
+                                        <MudCardHeader>
+                                            <CardHeaderActions>
+                                                <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning">CCP</MudChip>
+                                                <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Error" OnClick="@(() => DeleteCCPRoute())" />
+
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                        <MudCardContent>
+
+                                            @if (CCPFolders != null)
+                                            {
+                                                @if (rootNodeCCP.TreeItems.Count > 0)
+                                                {
+                                                    <MudPaper Elevation="0">
+                                                        <MudTextField Label="@Localizer1["ACLabelCCPSelect"]" ReadOnly="true"
+                                                        @bind-Value="@SosCode.CCP" For="@(() => @SosCode.CCP)" />
+                                                        <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
+                                                            <ItemTemplate>
+                                                                <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @SosCode.CCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
+                                                            </ItemTemplate>
+                                                        </MudTreeView>
+                                                    </MudPaper>
+                                                }
+                                                else
+                                                {
+                                                    <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACCCPDirectory"]</MudAlert>
+                                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (folderCCPError)
+                                                {
+                                                    <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                                }
+                                            }
+
+                                            @if (if_add_CD_CCP)
+                                            {
+                                                <MudPaper Elevation="1">
+                                                    @if (if_add_CD_CCP)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.FolderDelete" Color="Color.Error" OnClick="@(() => AddRemove_CD_CCP())" @ontouchstart="@(() => AddRemove_CD_CCP())" />
+                                                        <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning">CommonDirection CCP</MudChip>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Warning" OnClick="@(() => DeleteCCPRouteCD())" @ontouchstart="@(() => DeleteCCPRouteCD())" />
+                                                    }
+
+                                                </MudPaper>
+
+                                                @if (CCPFolders != null)
+                                                {
+                                                    @if (rootNodeCCP.TreeItems.Count > 0)
+                                                    {
+                                                        <MudPaper Elevation="0">
+                                                            <MudTextField Label="@Localizer1["ACLabelCCPSelect"]" ReadOnly="true"
+                                                            @bind-Value="@SosCode.CommonDirectionCCP" For="@(() => @SosCode.CommonDirectionCCP)" />
+                                                            <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
+                                                                <ItemTemplate>
+                                                                    <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @SosCode.CommonDirectionCCP = CCPContext.Ruta; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.EsDirectorio" Text="@CCPContext.Nombre" EndTextTypo="@Typo.caption" />
+                                                                </ItemTemplate>
+                                                            </MudTreeView>
+                                                        </MudPaper>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACCCPDirectory"]</MudAlert>
+                                                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (folderCCPError)
+                                                    {
+                                                        <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                                    }
+                                                }
+                                            }
+
+
+                                        </MudCardContent>
+                                    </MudCard>
+
+
+                                </MudCardContent>
+                            </MudCard>
+
+
+
+
+                        </MudItem>
+                    }
+
+                    @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Disabled="@(!Update)" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["Save"]</MudButton>
+                    <MudButton Href="/products" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+<MudDialog @bind-IsVisible="HOEModalDisplay" Options="dialogOptions" @onclose="@(() => CloseFunctionHoeModal())">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer1["Confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+
+        </MudText>
+
+
+            <MudItem Style="max-height: 70vh; min-width: 90vw; overflow-y: scroll;" Class="gap-4">
+
+
+                <MudCard Elevation="3" Outlined="true">
+
+
+                    <MudCardContent Style="min-width: 90vw; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+
+                            <MudCard>
+                                <MudCardContent Style="justify-content:center">
+                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+
+                                    @if (IndexPlant == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAPlant"]
+                                        </MudAlert>
+                                    }
+                                    else
+                                    {
+                                        <MudText Align="Align.Center">@_plant.Code</MudText>
+                                    }
+
+
+                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexPlant" For="@(() => IndexPlant)" SelectedValuesChanged="UpdatePlant">
+                                        <MudSelectItem Value="-1">@Localizer["firstSelectAPlant"]</MudSelectItem>
+
+                                        @for (var i = 0; i < _plants.Count; i++)
+                                        {
+                                            var type = _plants[i];
+                                            <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                    @if (_plant.IsActive == true && IndexPlant != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pt-2">
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                        </MudText>
+                                    }
+                                    else if (IndexPlant != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pa-4">
+                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+
+
+                            <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                            </MudText>
+
+
+
+
+                            <MudCard>
+                                <MudCardContent Style="justify-content:center">
+                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
+                                    @if (IndexPlant == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAPlant"]
+                                        </MudAlert>
+                                    }
+                                    else if (IndexArea == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAnArea"]
+                                        </MudAlert>
+                                    }
+                                    else
+                                    {
+                                        <MudText Align="Align.Center">@_area.Code</MudText>
+                                    }
+
+                                    @if (IndexPlant != -1)
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexArea" For="@(() => IndexArea)" SelectedValuesChanged="UpdateArea">
+
+                                            <MudSelectItem Value="-1">@Localizer["firstSelectAnArea"]</MudSelectItem>
+
+                                            @for (var i = 0; i < _areas.ElementAt(IndexPlant).Value.Count; i++)
+                                            {
+                                                var type = _areas.ElementAt(IndexPlant).Value[i];
+                                                <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+
+                                    @if (_area.IsActive == true && IndexArea != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pt-2">
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                        </MudText>
+                                    }
+                                    else if (IndexArea != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pa-4">
+                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                            <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                            </MudText>
+
+
+
+
+                            <MudCard>
+                                <MudCardContent Style="justify-content:center">
+                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
+                                    @if (IndexPlant == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAPlant"]
+                                        </MudAlert>
+                                    }
+                                    else if (IndexArea == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAnArea"]
+                                        </MudAlert>
+                                    }
+                                    else if (IndexDistr == -1)
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["selectADistributionFirst"]
+                                        </MudAlert>
+                                    }
+                                    else
+                                    {
+                                        <MudText Align="Align.Center">@_distribution.Code</MudText>
+                                    }
+
+                                    @if (IndexPlant != -1 && IndexArea != -1)
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexDistr" For="@(() => IndexDistr)" SelectedValuesChanged="UpdateDistribution">
+                                            <MudSelectItem Value="-1">@Localizer["selectADistributionFirst"]</MudSelectItem>
+
+                                            @for (var i = 0; i < _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.Count; i++)
+                                            {
+                                                var type = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value[i];
+
+
+                                                <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+
+                                    @if (_distribution.IsActive == true && IndexDistr != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pt-2">
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                        </MudText>
+                                    }
+                                    else if (IndexDistr != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pa-4">
+                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        
+
+                        @if (Find_Product)
+                        {
+                            <MudCard>
+                                <MudCardContent Style="justify-content:center">
+                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
+                                    <MudText Align="Align.Center">@_product.Code</MudText>
+                                    <MudText Typo="Typo.h5" Align="Align.Center">@_product.Description</MudText>
+                                    @if (_product.IsActive == true)
+                                    {
+                                        <MudText Align="Align.Center" Class="pt-2">
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                        </MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Align="Align.Center" Class="pa-4">
+                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                        else
+                        {
+                            <MudCard>
+                                <MudCardContent Style="justify-content:center">
+                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
+                                    @if (IndexProd != -1)
+                                    {
+                                        <MudText Align="Align.Center">@_product.Code</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["selectAProduct"]
+                                        </MudAlert>
+                                    }
+
+                                    <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexProd" For="@(() => IndexProd)" SelectedValuesChanged="UpdateProduct">
+                                        <MudSelectItem Value="-1">@Localizer["selectAProduct"]</MudSelectItem>
+
+                                        @for (var i = 0; i < _products.Count; i++)
+                                        {
+                                            var type = _products[i];
+                                            <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    @if (_product.IsActive == true && IndexProd != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pt-2">
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                        </MudText>
+                                    }
+                                    else if (IndexProd != -1)
+                                    {
+                                        <MudText Align="Align.Center" Class="pa-4">
+                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        }
+
+
+                    </MudCardContent>
+                </MudCard>
+
+
+
+
+            </MudItem>
+       
+
+        <MudItem Style="max-height: 70vh; min-width: 90vw; overflow-y: scroll;" Class="gap-4">
+
+
+            <MudCard Elevation="3" Outlined="true">
+
+                <MudCardHeader>
+
+
+                </MudCardHeader>
+                <MudCardContent Style="min-width: 60vw; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+
+
+                    <MudCard Elevation="1" Class="mr-5" Style="min-width: 55vw;">
+                        <MudCardHeader>
+                            <CardHeaderActions>
+                                <MudChip Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Info" Variant="Variant.Outlined">HOE</MudChip>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteHOERoute())" />
+                            </CardHeaderActions>
+
+                        </MudCardHeader>
+                        <MudCardContent>
+
+                            @if (HOEFolders != null)
+                            {
+                                @if (rootNodeHOE.TreeItems.Count > 0)
+                                {
+                                    <MudPaper Elevation="0">
+
+                                        <MudTextField Label="@Localizer1["ACLabelHOESelect"]" ReadOnly="true" Value="@Regex.Replace(SosCode.HOE, @"/(.*?)§", "/").Replace('§', ' ')" />
+
+                                        <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeHOE" Context="OtherContext" Items="rootNodeHOE.TreeItems">
+                                            <ItemTemplate>
+                                                <MudTreeViewItem Value="@OtherContext" @onclick="@((e) => ApplyHOE(OtherContext.Ruta))" LoadingIconColor="Color.Info" CanExpand="@OtherContext.EsDirectorio" Text="@OtherContext.Nombre.Split('§').Last()" EndTextTypo="@Typo.caption" />
+                                            </ItemTemplate>
+                                        </MudTreeView>
+                                    </MudPaper>
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACHOEDirectory"]</MudAlert>
+                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                }
+
+                            }
+                            else
+                            {
+                                if (folderHOEError)
+                                {
+                                    <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer1["ServerNotResponse"] </MudAlert>
+                                }
+                            }
+                        </MudCardContent>
+                    </MudCard>
+
+
+
+                </MudCardContent>
+            </MudCard>
+
+
+
+
+        </MudItem>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseHOEModal" Variant="Variant.Filled">@Localizer1["Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudMessageBox @ref="GOSmbox" Title="@Localizer["ACNoticeGOS"]">
+    <MessageContent>
+        @Localizer["ACProviderPath"] `@SosCode.GOS`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+<MudMessageBox @ref="CCPmbox" Title="@Localizer["ACNoticeCCP"]">
+    <MessageContent>
+        @Localizer["ACProviderPath" ] `@SosCode.CCP`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="HOEmbox" Title="@Localizer1["ACNoticeHOE"]">
+    <MessageContent>
+        @Localizer1["ACProviderPath"] `@SosCode.HOE.Replace('§', ' ')`   @Localizer1["ACFinalProvider"] <br>
+        <b><i>@Localizer1["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
 
 @code {
     [Parameter]
     public int PathId { get; set; }
+
+    bool ShowLoading = true;
+    bool Update = true;
+    bool Find_all_tree = false;
+    bool Find_Product = false;
+    bool ShowMoreInfo = false;
+
+    bool if_add_CD_CCP = false;
+    bool if_add_CD_GOS = false;
+    bool if_add_CD_HOE = false;
+
+
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+    List<BreadcrumbItem> _links;
+
+    private SOSCodePath SosCode = new SOSCodePath();
+
+
+    TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
+    TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
+    TreeItemData rootNodeHOE { get; set; } = new TreeItemData();
+    TreeItemData SelectedNodeCCP { get; set; }
+    TreeItemData SelectedNodeGOS { get; set; }
+    TreeItemData SelectedNodeHOE { get; set; }
+
+    CDMS_GOS_Directory GOSFolders { get; set; } = new CDMS_GOS_Directory();
+    CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
+    CDMS_HOE_Directory HOEFolders { get; set; } = new CDMS_HOE_Directory();
+
+    bool isGosFolder = false;
+    bool isCcpFolder = false;
+    bool isHoeFolder = false;
+    private CDMS_CCP_Archives? CcpFilesInFolder;
+    private CDMS_HOE_Archives? HoeFilesInFolder;
+    private CDMS_GOS_Archives? GosFilesInFolder;
+
+    private bool folderCCPError = false;
+    private bool folderHOEError = false;
+    private bool folderGOSError = false;
+
+    MudMessageBox HOEmbox { get; set; }
+    MudMessageBox CCPmbox { get; set; }
+    MudMessageBox GOSmbox { get; set; }
+
+    public bool HOEModalDisplay { get; set; } = false;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
+    private List<Product> _products = new List<Product>();
+    private List<Plant> _plants = new List<Plant>();
+    private Dictionary<int, List<Area>> _areas = new Dictionary<int, List<Area>>();
+    private Dictionary<int, Dictionary<int, List<Distribution>>> _distributions = new Dictionary<int, Dictionary<int, List<Distribution>>>();
+
+    private Plant _plant = new Plant();
+    private Area _area = new Area();
+    private Distribution _distribution = new Distribution();
+    private Product _product = new Product();
+
+    int IndexPlant = -1;
+    int IndexArea = -1;
+    int IndexDistr = -1;
+    int IndexProd = -1;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+        _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["PathsRoute"], href: "/PathsRoute"),
+                new BreadcrumbItem(text: Localizer["PathsRouteCreate"], href: "/PathsRoute", disabled: true),
+            };
+
+        try
+        {
+            SosCode = await AssyChartServices.GetCodePath(PathId);
+
+            _products = await ProductsServices.GetProducts();
+
+            _plants = await PlantsServices.GetPlants();
+            foreach (var plant in _plants)
+            {
+                var areas = await AreasServices.GetAreas(plant.PlantId);
+                _areas.Add(plant.PlantId, areas);
+
+                var areaDistributions = new Dictionary<int, List<Distribution>>();
+                foreach (var area in areas)
+                {
+                    var distributions = await DistributionsServices.GetDistributions(plant.PlantId, area.AreaId);
+                    areaDistributions.Add(area.AreaId, distributions);
+                }
+                _distributions.Add(plant.PlantId, areaDistributions);
+            }
+
+            try
+            {
+                GOSFolders = await CDMSServices.GetFoldersGOS();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get GOS Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
+
+            if (GOSFolders != null)
+            {
+                folderGOSError = false;
+                rootNodeGOS = TreeServices.ConstruirArbolGOS(GOSFolders.operation);
+            }
+            else
+            {
+                folderGOSError = true;
+            }
+
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+            }
+
+            if (CCPFolders != null)
+            {
+                folderCCPError = false;
+                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+            }
+            else
+            {
+                folderCCPError = true;
+            }
+
+            try
+            {
+                HOEFolders = await CDMSServices.GetFoldersHOE();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get HOE Folder From CDMS");
+                Console.WriteLine(ex.Message);
+            }
+            if (HOEFolders != null)
+            {
+                folderHOEError = false;
+                rootNodeHOE = TreeServices.ConstruirArbolHOE(HOEFolders.operation);
+
+
+            }
+            else
+            {
+                folderHOEError = true;
+            }
+
+
+            _plant = SosCode.AssyChart.Plant;
+            _area = SosCode.AssyChart.Area;
+            _distribution = SosCode.AssyChart.Distribution;
+            _product = SosCode.Product;
+
+            IndexPlant = _plants.FindIndex(p => p.PlantId == SosCode.AssyChart?.PlantId);
+            IndexArea = _areas.ElementAt(IndexPlant).Value.FindIndex(a => a.AreaId == SosCode.AssyChart?.AreaId);
+            IndexDistr = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.FindIndex(d => d.DistributionId == SosCode.DistributionId);
+            IndexProd = _products.FindIndex(p => p.ProductId == SosCode.ProductId);
+
+            Console.WriteLine($"p : {IndexPlant} a: {IndexArea} d: {IndexDistr}  pro: {IndexProd}");
+        }
+        catch (Exception ex)
+        {
+
+        }
+        finally
+        {
+            ShowLoading = false;
+            if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
+                Find_all_tree = true;
+
+            if (IndexProd != -1)
+                Find_Product = true;
+        }
+
+    }
+
+
+    private async void UpdatePathAsync()
+    {
+        Update = false;
+
+
+            var resultAdd = await AssyChartServices.UpdateCodePath(PathId, SosCode);
+
+            if (resultAdd)
+                NavigationManager.NavigateTo("/PathsRoute");
+            else
+                await JS.InvokeVoidAsync("alert", "Fail to updater CodePath, contact admin!"); // Alert
+     
+
+
+
+                 Update = true;
+    }
+
+    public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
+    {
+        await Task.Delay(50);
+        return parentNode.TreeItems;
+    }
+
+    void DeleteGOSRoute()
+    {
+        SosCode.GOS = "";
+    }
+    void DeleteCCPRoute()
+    {
+        SosCode.CCP = "";
+    }
+    void DeleteHOERoute()
+    {
+        SosCode.HOE = "";
+        //if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
+        //    ShowMoreInfo = false;
+    }
+    void DeleteGOSRouteCD()
+    {
+        SosCode.CommonDirectionGOS = "";
+    }
+    void DeleteCCPRouteCD()
+    {
+        SosCode.CommonDirectionCCP = "";
+    }
+    void DeleteHOERouteCD()
+    {
+        SosCode.CommonDirectionHOE = "";
+
+    }
+
+    void UpdatePlant()
+    {
+
+        _plant = _plants.ElementAt(IndexPlant);
+        StateHasChanged();
+    }
+
+    void UpdateArea()
+    {
+        _area = _areas.ElementAt(IndexPlant).Value.ElementAt(IndexArea);
+        StateHasChanged();
+    }
+
+    void UpdateDistribution()
+    {
+        _distribution = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.ElementAt(IndexDistr);
+
+        StateHasChanged();
+    }
+    void UpdateProduct()
+    {
+        _product = _products[IndexProd];
+
+        StateHasChanged();
+    }
+
+    async void ApplyHOE(string Ruta)
+    {
+        ShowMoreInfo = false;
+        Find_all_tree = false;
+        Find_Product = true;
+        SosCode.HOE = Ruta;
+
+        bool isFolder = true;
+
+        try
+        {
+
+
+            try
+            {
+                HoeFilesInFolder = await CDMSServices.GetFilesHOE(SosCode.HOE);
+
+                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                {
+                    isFolder = false;
+                    bool msgHOEBox = await OpenMessageHOE();
+                    Find_Product = false;
+
+                }
+                else
+                {
+                    Console.WriteLine($"HOE Path: {Ruta}");
+                    var StrOutSpace = Ruta.Replace(" ", "");
+
+                    if (StrOutSpace.Contains("/"))
+                    {
+                        var StrPlant = StrOutSpace.Split("/").First().Split(".").Last();
+                        Console.WriteLine($"HOE Plant: {StrPlant}");
+                        var StrArea = StrOutSpace.Split("/").ElementAt(StrOutSpace.Split("/").Count() - 3).Split(".").Last();
+                        Console.WriteLine($"HOE area: {StrArea}");
+                        var StrDistribution = Ruta.Split("/").Last().Split(".").Last().Substring(1);
+                        Console.WriteLine($"HOE distr: {StrDistribution}");
+                        var StrProduct = StrOutSpace.Split("/").ElementAt(StrOutSpace.Split("/").Count() - 2).Split(".").Last();
+                        Console.WriteLine($"HOE product: {StrProduct}");
+
+
+                        if (_plants.Any(p => p.Code == StrPlant) == true)
+                        {
+                            IndexPlant = _plants.FindIndex(p => p.Code == StrPlant);
+                            _plant = _plants.ElementAt(IndexPlant);
+                            Console.WriteLine($"Plant exist:");
+                            if (_areas.ElementAt(IndexPlant).Value.Any(p => p.Code == StrArea) == true)
+                            {
+                                IndexArea = _areas.ElementAt(IndexPlant).Value.FindIndex(p => p.Code == StrArea);
+                                Console.WriteLine($"Area exist:");
+                                _area = _areas.ElementAt(IndexPlant).Value.ElementAt(IndexArea);
+
+                                if (_distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.Any(p => p.Description == StrDistribution) == true)
+                                {
+                                    IndexDistr = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.FindIndex(p => p.Description == StrDistribution);
+                                    _distribution = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.ElementAt(IndexDistr);
+                                    Console.WriteLine($"Distribution exist:");
+                                    Find_all_tree = true;
+                                }
+
+
+
+                            }
+                        }
+
+                        if (_products.Any(p => p.Code == StrProduct) == true)
+                        {
+                            IndexProd = _products.FindIndex(p => p.Code == StrProduct);
+                            _product = _products.ElementAt(IndexProd);
+                            Find_Product = true;
+                        }
+                        else
+                        {
+                            Find_Product = false;
+                        }
+                    }
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMoreInfo = false;
+                Find_all_tree = false;
+                Find_Product = false;
+
+
+                bool msgHOEBox = await OpenMessageHOE();
+                Console.WriteLine(ex.ToString());
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+
+        }
+        finally
+        {
+            if (isFolder)
+                ShowMoreInfo = true;
+
+            StateHasChanged();
+        }
+
+
+
+    }
+
+    private void OpenHOEModal()
+    {
+        isGosFolder = false;
+        isCcpFolder = false;
+        isHoeFolder = false;
+
+        HOEModalDisplay = true;
+        StateHasChanged();
+
+    }
+
+    private async void CloseHOEModal()
+    {
+
+
+        HoeFilesInFolder = new CDMS_HOE_Archives();
+
+        if (SosCode.HOE != "")
+        {
+            try
+            {
+                HoeFilesInFolder = await CDMSServices.GetFilesHOE(SosCode.HOE);
+
+                if (HoeFilesInFolder.message == "NO FILES IN DIRECTORY" || HoeFilesInFolder.message == "INCOMPLETE FIELDS FOR HOE in ⪢ ⪢ ⪢ ⪢ VALIDATE_PAD_HOE" || HoeFilesInFolder.message == "NO FILES OR DIRECTORIES")
+                {
+                    isHoeFolder = false;
+                    bool msgHOEBox = await OpenMessageHOE();
+
+                }
+                else
+                {
+                    isHoeFolder = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                isHoeFolder = false;
+                bool msgHOEBox = await OpenMessageHOE();
+                Console.WriteLine(ex.ToString());
+            }
+
+        }
+        else
+        {
+            isHoeFolder = true;
+        }
+
+
+        if (isHoeFolder)
+        {
+            HOEModalDisplay = false;
+        }
+
+        if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
+            Find_all_tree = true;
+
+        if (IndexProd != -1)
+            Find_Product = true;
+
+        StateHasChanged();
+    }
+
+
+    private async Task<bool> OpenMessageHOE()
+    {
+        bool? result = await HOEmbox.Show();
+
+        return result == null ? false : true;
+    }
+
+    private void CloseFunctionHoeModal()
+    {
+        Find_all_tree = (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1);
+        HOEModalDisplay = !Find_all_tree;
+    }
+
+
+    private void AddRemove_CD_HOE()
+    {
+        if_add_CD_HOE = !if_add_CD_HOE;
+    }
+    private void AddRemove_CD_GOS()
+    {
+        if_add_CD_GOS = !if_add_CD_GOS;
+    }
+    private void AddRemove_CD_CCP()
+    {
+        if_add_CD_CCP = !if_add_CD_CCP;
+    }
+
 }

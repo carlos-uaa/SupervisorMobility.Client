@@ -57,6 +57,17 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             return codePaths;
         }
 
+        public async Task<bool> UpdateCodePath(int CodePathId, SOSCodePath codePath)
+        {
+            var response = await _http.PutAsJsonAsync($"assycharts/CodePath/{CodePathId}", codePath);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
 
         //delete assychart
         public async Task DeleteAssyChart(int assychartId)
@@ -226,7 +237,8 @@ namespace SupervisorMobility.Client.Services.AssyChartService
 
             return false;
         }
-
+          
+       
 
         public async Task DownloadAssyChartFormat()
         {

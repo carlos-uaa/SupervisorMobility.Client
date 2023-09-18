@@ -35,6 +35,8 @@
         Task<AssyChart> CreateCodePath(SOSCodePath _newCodePath);
         Task<List<SOSCodePath>> GetAllCodePaths();
         Task<SOSCodePath?> GetCodePath(int CodePathId);
+        Task<bool> UpdateCodePath(int CodePathId, SOSCodePath codePath);
+
 
     }
 }
