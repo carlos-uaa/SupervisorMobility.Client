@@ -3,7 +3,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Services.LupService;
 
-namespace SupervisorMobility.Client.Pages.LupPage
+namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 {
     public partial class LupPage
     {

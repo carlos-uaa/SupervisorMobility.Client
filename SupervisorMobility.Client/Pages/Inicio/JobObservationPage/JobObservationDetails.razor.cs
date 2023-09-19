@@ -4,7 +4,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Runtime.CompilerServices;
 
-namespace SupervisorMobility.Client.Pages.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class JobObservationDetails
     {

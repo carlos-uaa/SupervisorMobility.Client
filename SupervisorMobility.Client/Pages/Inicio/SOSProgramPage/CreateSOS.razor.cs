@@ -3,7 +3,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
-namespace SupervisorMobility.Client.Pages.SOSProgramPage
+namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
     public partial class CreateSOS
     {

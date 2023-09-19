@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Timers;
 
-namespace SupervisorMobility.Client.Pages.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class PlanJobObservation
     {

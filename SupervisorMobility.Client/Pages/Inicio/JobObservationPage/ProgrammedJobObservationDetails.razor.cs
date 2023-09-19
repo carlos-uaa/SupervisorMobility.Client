@@ -7,7 +7,7 @@ using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace SupervisorMobility.Client.Pages.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class ProgrammedJobObservationDetails
     {

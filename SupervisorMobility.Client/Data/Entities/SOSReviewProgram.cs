@@ -29,7 +29,6 @@ namespace SupervisorMobility.Client.Data.Entities
                     int year = value.Value;
                     if (!(year >= 1 && year <= 9999))
                     {
-
                         AplicationYear = CreationDate?.Year;
                     }
                 }

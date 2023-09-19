@@ -5,7 +5,7 @@ using SupervisorMobility.Client.Services.PATService;
 using System;
 using static MudBlazor.CategoryTypes;
 
-namespace SupervisorMobility.Client.Pages.SOSProgramPage
+namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
     public partial class SOSProgramIndex
     {

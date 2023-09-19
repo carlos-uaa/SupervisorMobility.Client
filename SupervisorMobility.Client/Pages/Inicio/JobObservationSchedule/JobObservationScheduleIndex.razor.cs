@@ -7,7 +7,7 @@ using SupervisorMobility.Client.Data.Entities;
 using System;
 using static MudBlazor.CategoryTypes;
 
-namespace SupervisorMobility.Client.Pages.JobObservationSchedule
+namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 {
     public partial class JobObservationScheduleIndex
     {

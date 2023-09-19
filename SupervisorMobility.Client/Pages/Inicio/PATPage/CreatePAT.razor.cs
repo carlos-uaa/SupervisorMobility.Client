@@ -3,7 +3,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
-namespace SupervisorMobility.Client.Pages.PATPage
+namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
     public partial class CreatePAT
     {

@@ -3,7 +3,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Pages.JobObservationPage.Categories.Category1Page;
 using static MudBlazor.CategoryTypes;
 
-namespace SupervisorMobility.Client.Pages.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class JobObservationIndex
     {

@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
-namespace SupervisorMobility.Client.Pages.LupPage
+namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 {
     public partial class LupUpdate
     {

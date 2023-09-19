@@ -163,7 +163,6 @@ public class CustomHttpClientService
         //Dev
         _apiHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
         _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("http://localhost:10201/api/") };
-        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
         _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.2:3000/") };
         _ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.49.9:4251/") };
 
@@ -172,6 +171,9 @@ public class CustomHttpClientService
         //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.12:10203/api/") };
         //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.117.5:3000/") };
         //_ADHttpClient = new HttpClient { BaseAddress = new Uri("http://10.91.116.212:4251/") };
+
+        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
+
     }
 
     public HttpClient GetADHttpClient()
