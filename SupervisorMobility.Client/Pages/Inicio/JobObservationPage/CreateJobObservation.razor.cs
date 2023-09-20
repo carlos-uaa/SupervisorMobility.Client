@@ -418,8 +418,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
 
-            listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+            if (_assychart != null)
+            {
+                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
             FilterOperation = true;
+            }
 
 
             StateHasChanged();

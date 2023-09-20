@@ -272,7 +272,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+                Console.WriteLine($"Error of Json HOE: {ex.Message}");
 
                 var response = await _httpBridge.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
                 var contentString = await response.Content.ReadAsStringAsync();
@@ -286,7 +286,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (operation == "NO FILES IN DIRECTORY")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    Console.WriteLine($"No Files in Directories");
                     CDMS_HOE_Archives toreturn = new CDMS_HOE_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
