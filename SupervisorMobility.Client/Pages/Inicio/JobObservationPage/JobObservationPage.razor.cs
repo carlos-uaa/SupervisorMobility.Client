@@ -107,12 +107,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if(user != null)
                 {
+                    _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+
                     if (user.UserType == 1 || user.UserType == 6)
                     {
                         ClearFilters();
                         _plants = await PlantServices.GetPlants();
+                        _plants = _plants.OrderBy(p => p.Description).ToList();
 
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if(jobobs.Status != 7)
@@ -140,7 +142,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         ClearFilters();
                         plantId = (int)user.PlantId;
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+
+                        if (user.Areas != null)
+                        {
+                            _areas = user.Areas.ToList();
+                            _areas.OrderBy(a => a.Description).ToList();
+                        }
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if (plantId == jobobs.PlantId)
@@ -177,7 +184,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if(plantId == jobobs.PlantId &&  areaId == jobobs.AreaId && user.UserId == jobobs.SupervisorId)
@@ -220,9 +227,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         ClearFilters();
                         _plants = await PlantServices.GetPlants();
+                        _plants = _plants.OrderBy(p => p.Description).ToList();
+
                         plantId = (int)user.PlantId;
                         _areas = await AreaServices.GetAreas(plantId);
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                        _areas = _areas.OrderBy(a => a.Description).ToList();
+
                         foreach (var jobobs in _jobObservationsAux)
                         {
                             if (plantId == jobobs.PlantId)
@@ -387,6 +397,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             _areas = await AreaServices.GetAreas(plantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
 
             StateHasChanged();
         }

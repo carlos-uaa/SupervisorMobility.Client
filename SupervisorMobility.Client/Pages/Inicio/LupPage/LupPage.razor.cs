@@ -66,6 +66,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     if (user.UserType == 1 || user.UserType == 6)
                     {
                         _plants = await PlantServices.GetPlants();
+                        _plants = _plants.OrderBy(p => p.Description).ToList();
+
                         foreach (var jobObs in jobObservationList)
                         {
                             if (jobObs.Lup.Count > 0)
@@ -88,6 +90,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     else if (user.UserType == 2)
                     {
                         plantId = (int)user.PlantId;
+                        if (user.Areas != null)
+                        {
+                            _areas = user.Areas.ToList();
+                            _areas.OrderBy(a => a.Description).ToList();
+                        }
+
                         foreach (var jobObs in jobObservationList)
                         {
                             if (jobObs.Lup.Count > 0)
@@ -144,6 +152,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                         plantId = (int)user.PlantId;
                         areaId = 0;
                         _areas = await AreaServices.GetAreas(plantId);
+                        _areas = _areas.OrderBy(a => a.Description).ToList();
+
                         foreach (var jobObs in jobObservationList)
                         {
                             if (jobObs.Lup.Count > 0)
@@ -233,6 +243,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
 
             StateHasChanged();
         }

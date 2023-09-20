@@ -109,11 +109,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 {
                     _allJobObservations = await JobObservationService.GetAllJobObservations();
 
-
                     _plants = await PlantServices.GetPlants();
+                    _plants = _plants.OrderBy(p => p.Description).ToList();
+                    
                     _groups = await GroupService.GetGroups();
+                    _groups = _groups.OrderBy(g => g.Description).ToList();
 
-                    if(user.UserType == 1 || user.UserType == 6)
+                    if (user.UserType == 1 || user.UserType == 6)
                     {
                         plantId = 0;
                         areaId = 0;
@@ -121,7 +123,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
-
+                        _allSSVs = _allSSVs.OrderBy(ssv => ssv.Name).ToList();
                         _jobObservations = _allJobObservations;
 
                         _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
@@ -182,7 +184,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         ssvId = 0;
                         supervisorId = 0;
                         _areas = await AreaServices.GetAreas(plantId);
+                        _areas = _areas.OrderBy(a => a.Description).ToList();
+
                         _allSSVs = await UsersService.GetUsersByType(2, true, true);
+                        _allSSVs = _allSSVs.OrderBy(a => a.Name).ToList();
 
                         foreach (var jobobs in _allJobObservations)
                         {
@@ -267,7 +272,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
             areaId = 0;
             _allJobObservations = await JobObservationService.GetAllJobObservations();
-
             _jobObservations = _allJobObservations;
 
             _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
@@ -443,6 +447,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
+
             _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
@@ -475,6 +481,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         _SSVs.Add(ssv);
                     }
                 }
+                _SSVs = _SSVs.OrderBy(ssv => ssv.Name).ToList();
 
                 _jobObservations = new();
                 foreach (var jobobs in _allJobObservations)
@@ -498,7 +505,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
                         _supervisors.Add(sv);
                 }
-
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
                 _jobObservations = new();
                 foreach (var jobobs in _allJobObservations)
@@ -528,6 +535,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         _SSVs.Add(ssv);
                     }
                 }
+                _SSVs = _SSVs.OrderBy(ssv => ssv.Name).ToList();
 
                 _jobObservations = new();
                 foreach (var jobobs in _allJobObservations)
@@ -581,6 +589,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                 _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
                 _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
                 //foreach (User sv in _allSupervisors)
                 //{
@@ -602,6 +611,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                 _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
                 _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
                 //foreach (User sv in _allSupervisors)
                 //{
                 //    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
