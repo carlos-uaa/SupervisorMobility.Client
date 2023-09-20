@@ -117,6 +117,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
 
                 _plants = await PlantServices.GetPlants();
+                _plants = _plants.OrderBy(p => p.Description).ToList();
 
                 if (user.UserType == 1)
                 {
@@ -124,8 +125,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
                     _allSupervisors = await UsersService.GetUsersByType(3, true, false);
-                    _operators = await UsersService.GetUsersByType(4, true, false);
+                    _allSupervisors = _allSupervisors.OrderBy(s => s.Name).ToList();
 
+                    _operators = await UsersService.GetUsersByType(4, true, false);
+                    _operators = _operators.OrderBy(o => o.Name).ToList();
                 }
                 else if (user.UserType == 2)
                 {
@@ -133,7 +136,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
                     _allSupervisors = await UsersService.GetUsersByType(3, true, false);
+                    _allSupervisors = _allSupervisors.OrderBy(s => s.Name).ToList();
+
                     _operators = await UsersService.GetUsersByType(4, true, false);
+                    _operators = _operators.OrderBy(o => o.Name).ToList();
 
                 }
                 else if(user.UserType == 3)
@@ -144,14 +150,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.AreaId = (int)user.AreaId;
 
                     _areas = await AreaServices.GetAreas((int)user.PlantId);
+                    _areas = _areas.OrderBy(a => a.Description).ToList();
+
                     _jobObservation.SupervisorId = user.UserId;
                     _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
 
                     _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-
+                    _distributions = _distributions.OrderBy(d => d.Description).ToList();   
 
                     //operator User
                     _operators = await UsersService.GetUsersByType(4, true, false);
+                    _operators = _operators.OrderBy(o => o.Name).ToList();
+
                     foreach (var operatorUser in _operators)
                     {
                         if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.SuperiorId == user.UserId)
@@ -179,8 +189,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
             _jobObservation.Option = 1;
 
-
-            _plants = await PlantServices.GetPlants();
             //_products = await ProductService.GetProducts();
 
 
@@ -217,6 +225,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
         }
 
         private async void ShowDistributions()
@@ -232,7 +241,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _supervisors.Add(sv);
                     }
                 }
-
             }
             else if(user.UserType == 2) 
             {
@@ -249,6 +257,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+            _distributions = _distributions.OrderBy(d => d.Description).ToList();
             StateHasChanged();
         }
 
@@ -273,8 +282,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+            _products = _products.OrderBy(p => p.Description).ToList();
+
             _jobObservation.OperationId = 0;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+            _operations = _operations.OrderBy(o => o.Description).ToList();
+
             _assychart = await AssychartsServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
             await Task.Delay(150);
             distribution = await DistributionService.GetDistributionById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
