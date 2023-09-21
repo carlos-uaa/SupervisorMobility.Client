@@ -38,6 +38,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         AssyChart? _assychart { get; set; }
 
+
         public JobObservation _jobObservation { get; set; } = new();
 
         public string areaS;
@@ -450,10 +451,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
 
-            if (_assychart != null)
+            if (_assychart != null && _assychart.RoutesProductsAssyChart?.Count > 0)
             {
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
-            FilterOperation = true;
+                FilterOperation = true;
             }
 
 
