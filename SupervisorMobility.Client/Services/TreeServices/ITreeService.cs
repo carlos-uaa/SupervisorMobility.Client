@@ -9,5 +9,7 @@ namespace SupervisorMobility.Client.Services.TreeServices
         public TreeItemData ConstruirArbolHOE(List<FolderHOE> elementos);
 
         public TreeItemData ConstruirArbolGOS(List<FolderGOS> elementos);
+
+        public TreeItemData FindNodeByPath(TreeItemData rootNode, string path);
     }
 }

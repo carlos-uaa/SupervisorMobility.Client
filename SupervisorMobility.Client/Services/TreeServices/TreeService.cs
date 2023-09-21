@@ -123,5 +123,29 @@ namespace SupervisorMobility.Client.Services.TreeServices
             // Imprimir el árbol
             return root;
         }
+
+        public TreeItemData FindNodeByPath(TreeItemData rootNode, string path)
+        {
+            // Divide la ruta en partes
+            string[] pathParts = path.Split('/');
+
+            // Comienza desde la raíz del árbol
+            TreeItemData currentNode = rootNode;
+
+            foreach (string part in pathParts)
+            {
+                // Busca el nodo hijo con el nombre actual
+                currentNode = currentNode.TreeItems.FirstOrDefault(child => child.Nombre == part);
+
+                // Si no se encuentra un nodo hijo con ese nombre, devuelve null
+                if (currentNode == null)
+                {
+                    return null;
+                }
+            }
+
+            // Devuelve el nodo encontrado
+            return currentNode;
+        }
     }
 }
