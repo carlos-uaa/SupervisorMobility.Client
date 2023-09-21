@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using System;
 using System.Globalization;
@@ -114,6 +115,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             };
 
             _jobObservation.Supervisor = new();
+
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+            }
+
+            if (CCPFolders != null)
+            {
+                folderCCPError = false;
+                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+            }
+            else
+            {
+                folderCCPError = true;
+            }
 
             await GetUserAsync();
 
@@ -2005,6 +2027,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         folderErrorCCP = false;
 
                     }
+
+                    nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
+
+                    if (nodoEncontrado != null)
+                    {
+                        // El nodo fue encontrado, puedes trabajar con él aquí
+                        // Por ejemplo, imprimir su nombre
+                        Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
+                    }
+                    else
+                    {
+                        // El nodo no fue encontrado
+                        Console.WriteLine("La ruta no se encontró en el árbol.");
+                    }
                 }
 
 
@@ -2265,7 +2301,51 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
         }
+        TreeItemData nodoEncontrado { get; set; }
+        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
 
-    /////
+        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
+        TreeItemData SelectedNodeCCP { get; set; }
+        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
+        {
+
+            try
+            {
+                ShowLoading = true;
+
+                if (CCPrute != "")
+                {
+                    Console.WriteLine($"CCP {CCPrute}");
+
+                    CcpFilesInFolder = new CDMS_CCP_Archives();
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
+                    if (CcpFilesInFolder == null)
+                        folderErrorCCP = true;
+                    else
+                    {
+                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
+                        folderErrorCCP = false;
+
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
+            }
+            finally
+            {
+                ShowLoading = false;
+                StateHasChanged();
+            }
+
+            return new AsyncVoidMethodBuilder();
+
+        }
+
+        /////
     }
 }
