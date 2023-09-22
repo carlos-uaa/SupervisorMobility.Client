@@ -60,7 +60,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         int[] models = new int[5];
         string[] cycles = new string[5];
-        int[] HoeTimes = new int[5];
+        double[] HoeTimes = new double[5];
         //timer
         const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
@@ -179,14 +179,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     var HOEtime = _jobObservation.HOEStandardTimes.Split('|');
                     for (int i = 0; i < 5; i++)
                     {
-                        HoeTimes[i] = Int32.Parse(HOEtime[i]);
+                        HoeTimes[i] = double.Parse(HOEtime[i]);
                     }
                 }
                 else
                 {
                     for (int i = 0; i < 5; i++)
                     {
-                        HoeTimes[i] = 0;
+                        HoeTimes[i] = 0.0;
                     }
                 }
                 if (_jobObservation.Models !=  null)
@@ -1141,10 +1141,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
 
             TimeSpan hundreths;
-            int centiseconds = 0;
+            double centiseconds = 0.0;
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
-                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+                centiseconds = hundreths.TotalMilliseconds / 600.0;
             }
             else
             {
@@ -1153,16 +1153,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cycles[0] = centiseconds.ToString(); break;
+                    cycles[0] = string.Format("{0:0.00}", centiseconds); break;
                 case 2:
-                    cycles[1] = centiseconds.ToString(); break;
+                    cycles[1] = string.Format("{0:0.00}", centiseconds); break;
                 case 3:
-                    cycles[2] = centiseconds.ToString(); break;
+                    cycles[2] = string.Format("{0:0.00}", centiseconds); break;
                 case 4:
-                    cycles[3] = centiseconds.ToString(); break;
+                    cycles[3] = string.Format("{0:0.00}", centiseconds); break;
                 case 5:
-                    cycles[4] = centiseconds.ToString(); break;
+                    cycles[4] = string.Format("{0:0.00}", centiseconds); break;
             }
+
             DateTime currentTime = e.SignalTime;
             elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0, 12);
             StateHasChanged();
@@ -1188,10 +1189,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         void StopTimer()
         {
             TimeSpan hundreths;
-            int centiseconds = 0;
+            double centiseconds = 0.0;
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
-                centiseconds = (int)hundreths.TotalMilliseconds / 10;
+                centiseconds = hundreths.TotalMilliseconds / 600.0;
             }
             else
             {
@@ -1200,16 +1201,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cycles[0] = centiseconds.ToString(); break;
+                    cycles[0] = string.Format("{0:0.00}", centiseconds); isRunning = false; break;
                 case 2:
-                    cycles[1] = centiseconds.ToString(); break;
+                    cycles[1] = string.Format("{0:0.00}", centiseconds); isRunning2 = false; break;
                 case 3:
-                    cycles[2] = centiseconds.ToString(); break;
+                    cycles[2] = string.Format("{0:0.00}", centiseconds); isRunning3 = false; break;
                 case 4:
-                    cycles[3] = centiseconds.ToString(); break;
+                    cycles[3] = string.Format("{0:0.00}", centiseconds); isRunning4 = false; break;
                 case 5:
-                    cycles[4] = centiseconds.ToString(); break;
+                    cycles[4] = string.Format("{0:0.00}", centiseconds); isRunning5 = false; break;
             }
+
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
@@ -1219,35 +1221,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         void OnTimerChanged(int option)
         {
-            if (option == 1 && HoeTimes[0] == 0)
+            if (option == 1 && HoeTimes[0] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First enter the Hoe Standard Time 1", Severity.Warning);
                 return;
             }
-            else if (option == 2 && HoeTimes[1] == 0)
+            else if (option == 2 && HoeTimes[1] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
                 return;
             }
-            else if (option == 3 && HoeTimes[2] == 0)
+            else if (option == 3 && HoeTimes[2] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First enter the Hoe Standard Time 3", Severity.Warning);
                 return;
             }
-            else if (option == 4 && HoeTimes[3] == 0)
+            else if (option == 4 && HoeTimes[3] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First enter the Hoe Standard Time 4", Severity.Warning);
                 return;
             }
-            else if (option == 5 && HoeTimes[4] == 0)
+            else if (option == 5 && HoeTimes[4] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -1301,17 +1303,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 StopTimer();
                 for (int i = 0; i < HoeTimes.Length; i++)
                 {
-                    if (cycles[i] != "" && HoeTimes[i] != 0 && int.Parse(cycles[i]) > HoeTimes[i])
+                    if (double.TryParse(cycles[i], out double cycleValue) && HoeTimes[i] != 0.0 && cycleValue > HoeTimes[i])
                     {
                         if (areaD == "" || areaD == null)
-                            areaD = $"Cycle time {i + 1} took longer than standard time";
+                            areaD = $"Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})";
                         else
                         {
-                            if (areaD.Contains($"Cycle time {i + 1} took longer than standard time"))
+                            if (areaD.Contains($"Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})"))
                             {
                                 continue;
                             }
-                            areaD = areaD + $", Cycle time {i + 1} took longer than standard time";
+                            areaD = areaD + $", Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})";
                         }
                     }
                 }
