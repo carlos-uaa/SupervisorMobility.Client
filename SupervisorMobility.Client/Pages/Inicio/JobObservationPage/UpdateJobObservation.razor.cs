@@ -71,6 +71,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         bool isRunning3 = false;
         bool isRunning4 = false;
         bool isRunning5 = false;
+
+        string cycle1Color = "";
+        string cycle2Color = "";
+        string cycle3Color = "";
+        string cycle4Color = "";
+        string cycle5Color = "";
+
         public int opt = 1;
 
         //Glosary
@@ -1144,7 +1151,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             double centiseconds = 0.0;
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
-                centiseconds = hundreths.TotalMilliseconds / 600.0;
+                centiseconds = hundreths.TotalMilliseconds / 60000.0;
             }
             else
             {
@@ -1153,15 +1160,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cycles[0] = string.Format("{0:0.00}", centiseconds); break;
+                    cycles[0] = string.Format("{0:0.000}", centiseconds); break;
                 case 2:
-                    cycles[1] = string.Format("{0:0.00}", centiseconds); break;
+                    cycles[1] = string.Format("{0:0.000}", centiseconds); break;
                 case 3:
-                    cycles[2] = string.Format("{0:0.00}", centiseconds); break;
+                    cycles[2] = string.Format("{0:0.000}", centiseconds); break;
                 case 4:
-                    cycles[3] = string.Format("{0:0.00}", centiseconds); break;
+                    cycles[3] = string.Format("{0:0.000}", centiseconds); break;
                 case 5:
-                    cycles[4] = string.Format("{0:0.00}", centiseconds); break;
+                    cycles[4] = string.Format("{0:0.000}", centiseconds); break;
             }
 
             DateTime currentTime = e.SignalTime;
@@ -1178,12 +1185,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             timer.Enabled = true;
             switch (option)
             {
-                case 1: isRunning = true; break;
-                case 2: isRunning2 = true; break;
-                case 3: isRunning3 = true; break;
-                case 4: isRunning4 = true; break;
-                case 5: isRunning5 = true; break;
+                case 1: isRunning = true; cycle1Color = "";  break;
+                case 2: isRunning2 = true; cycle2Color = ""; break;
+                case 3: isRunning3 = true; cycle3Color = ""; break;
+                case 4: isRunning4 = true; cycle4Color = ""; break;
+                case 5: isRunning5 = true; cycle5Color = ""; break;
             }
+
         }
 
         void StopTimer()
@@ -1192,7 +1200,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             double centiseconds = 0.0;
             if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
             {
-                centiseconds = hundreths.TotalMilliseconds / 600.0;
+                centiseconds = hundreths.TotalMilliseconds / 60000.0;
             }
             else
             {
@@ -1201,21 +1209,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             switch (opt)
             {
                 case 1:
-                    cycles[0] = string.Format("{0:0.00}", centiseconds); isRunning = false; break;
+                    cycles[0] = string.Format("{0:0.000}", centiseconds); isRunning = false; break;
                 case 2:
-                    cycles[1] = string.Format("{0:0.00}", centiseconds); isRunning2 = false; break;
+                    cycles[1] = string.Format("{0:0.000}", centiseconds); isRunning2 = false; break;
                 case 3:
-                    cycles[2] = string.Format("{0:0.00}", centiseconds); isRunning3 = false; break;
+                    cycles[2] = string.Format("{0:0.000}", centiseconds); isRunning3 = false; break;
                 case 4:
-                    cycles[3] = string.Format("{0:0.00}", centiseconds); isRunning4 = false; break;
+                    cycles[3] = string.Format("{0:0.000}", centiseconds); isRunning4 = false; break;
                 case 5:
-                    cycles[4] = string.Format("{0:0.00}", centiseconds); isRunning5 = false; break;
+                    cycles[4] = string.Format("{0:0.000}", centiseconds); isRunning5 = false; break;
             }
 
             isRunning = false;
             Console.WriteLine($"Elapsed Time: {elapsedTime}");
             timer.Enabled = false;
             elapsedTime = DEFAULT_TIME;
+
 
         }
 
@@ -1230,6 +1239,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else if (option == 2 && HoeTimes[1] == 0.0)
             {
+
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
@@ -1301,23 +1311,64 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
 
                 StopTimer();
+
+
                 for (int i = 0; i < HoeTimes.Length; i++)
                 {
-                    if (double.TryParse(cycles[i], out double cycleValue) && HoeTimes[i] != 0.0 && cycleValue > HoeTimes[i])
+                    if (double.TryParse(cycles[i], out double cycleValue2) && HoeTimes[i] != 0.0)
                     {
-                        if (areaD == "" || areaD == null)
-                            areaD = $"Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})";
+                        double lowerBound = HoeTimes[i] * 0.95; // Valor mínimo permitido (95% de HoeTimes)
+                        double upperBound = HoeTimes[i] * 1.05; // Valor máximo permitido (105% de HoeTimes)
+
+                        if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "green"; break;
+                                case 1: cycle2Color = "green"; break;
+                                case 2: cycle3Color = "green"; break;
+                                case 3: cycle4Color = "green"; break;
+                                case 4: cycle5Color = "green"; break;
+                            }
+                        }
+                        else if (cycleValue2 < HoeTimes[i])
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "yellow"; break;
+                                case 1: cycle2Color = "yellow"; break;
+                                case 2: cycle3Color = "yellow"; break;
+                                case 3: cycle4Color = "yellow"; break;
+                                case 4: cycle5Color = "yellow"; break;
+                            }
+                        }
                         else
                         {
-                            if (areaD.Contains($"Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})"))
+                            switch (i)
                             {
-                                continue;
+                                case 0: cycle1Color = "red"; break;
+                                case 1: cycle2Color = "red"; break;
+                                case 2: cycle3Color = "red"; break;
+                                case 3: cycle4Color = "red"; break;
+                                case 4: cycle5Color = "red"; break;
                             }
-                            areaD = areaD + $", Cycle time {i + 1} ({cycleValue})took longer than standard time ({HoeTimes[i]})";
+                            if (areaD == "" || areaD == null)
+                                areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
+                            else
+                            {
+                                if (areaD.Contains($"Cycle time {i + 1}"))
+                                {
+                                    continue;
+                                }
+                                areaD = areaD + $", Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
+                            }
                         }
                     }
                 }
+
+
             }
+            StateHasChanged();
         }
 
 
