@@ -1,7 +1,197 @@
-﻿@page "/uwu"
+﻿@page "/camera"
+@using System.Net.Http.Headers;
 
-<h3>Pruebas</h3>
+@inject IJSRuntime js
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IFileUploadAndDownloadService FilesServices
+@inject ILupService LupServices
+
+@*
+<p>FrameCount: @frameCount</p>
+*@
+
+<MudItem>
+    <MudButton @onclick=OpenCameraDialog Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.LinkedCamera">
+        Open Camera
+    </MudButton>
+</MudItem>
+
+
+
+<br />
+@if (!string.IsNullOrEmpty(imageData))
+{
+    <img src=@imageData
+         style="width: 480px; height: 270px;" />
+
+    <MudButton Variant="Variant.Filled" @onclick=UploadEvidence StartIcon="@Icons.Material.Filled.Save" Color="Color.Info">Save</MudButton>
+
+
+}
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="text-align:center">LUP Evidence</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center; max-">
+            <MudPaper Elevation="0">
+            <CameraStreamer @ref=CameraStreamerReference
+                            Width=1920
+                            Height=1080
+                            OnRendered=OnRenderedHandler
+                            OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                            CameraID=@cameraId
+                            
+                                    Autostart />
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <MudItem>
+                        <MudButton @onclick=Stop Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CancelPresentation" Class="mt-2 mb-4">
+                            Close Camera
+                        </MudButton>
+                    </MudItem>
+                    <MudItem Style="text-align: end">
+                        <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CameraAlt" Color="Color.Info" Class="mt-2 mb-4">
+                            Take photo
+                        </MudButton>
+                    </MudItem>
+                </div>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
 
 @code {
-    
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+    private bool visibleCamera = false;
+    private void OpenCameraDialog()
+    {
+        visibleCamera = true;
+
+    }
+    void Close2() => visibleCamera = false;
+
+    private CameraStreamer CameraStreamerReference;
+
+    private string? cameraId = null;
+
+    private int frameCount;
+
+    private string imageData;
+
+    private async void OnRenderedHandler()
+    {
+        frameCount = 0;
+
+        // Check camera-access or ask user, if it's not allowed currently
+        if (await CameraStreamerReference.GetCameraAccessAsync())
+        {
+            // Reloading re-initializes the stream and starts the
+            // stream automatically if the Autostart parameter is set
+            await CameraStreamerReference.ReloadAsync();
+
+            // If Autostart is not set, you have to manually start the stream again
+            /* await CameraStreamerReference.StartAsync(); */
+        }
+    }
+
+    private async void Start()
+    {
+        await CameraStreamerReference.StartAsync();
+    }
+
+    private async void Stop()
+    {
+        visibleCamera = false;
+        StateHasChanged();
+        await CameraStreamerReference.StopAsync();
+    }
+
+    private void OnFrameHandler(string _)
+    {
+        ++frameCount;
+    }
+
+    private async void GetCurrentFrame()
+    {
+        imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+        Stop();
+    }
+    private bool IsValidBase64String(string base64String)
+    {
+        if (string.IsNullOrEmpty(base64String))
+        {
+            return false;
+        }
+
+        try
+        {
+            Convert.FromBase64String(base64String);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    private async Task UploadEvidence()
+    {
+        if (!string.IsNullOrEmpty(imageData))
+        {
+            // Elimina la cabecera si está presente
+            var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+            if (IsValidBase64String(base64Data))
+            {
+                // Convierte base64Data en bytes
+                var imageBytes = Convert.FromBase64String(base64Data);
+
+                using var content = new MultipartFormDataContent();
+                var imageStream = new MemoryStream(imageBytes);
+                var fileContent = new StreamContent(imageStream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                content.Add(
+                    content: fileContent,
+                    name: "\"file\"",
+                    fileName: "captured_image.png");
+
+                // Llama a tu servicio de carga de archivos aquí
+                var result = await FilesServices.UploadEvidences(content, 1);
+
+                if (result is not null)
+                {
+                    Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("Image Added to Lup", Severity.Info);
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("Failed to upload Image to Lup", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("Invalid image data", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add("No image data to upload", Severity.Warning);
+        }
+    }
+
+
 }

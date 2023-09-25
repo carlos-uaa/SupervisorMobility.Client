@@ -1,4 +1,5 @@
-﻿using Blazorise.Extensions;
+﻿using BlazorCameraStreamer;
+using Blazorise.Extensions;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -181,6 +182,7 @@ namespace SupervisorMobility.Client.Pages
         }
         void CloseModal() => visibleText = false;
         private DialogOptions dialogTextOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
 
     }
 }
