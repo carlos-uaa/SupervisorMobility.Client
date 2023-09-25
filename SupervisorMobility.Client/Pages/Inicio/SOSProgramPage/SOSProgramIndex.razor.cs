@@ -10,7 +10,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
     public partial class SOSProgramIndex
     {
 
-        private List<SOSReviewProgram> _SosReviewList { get; set; } = new();
+        bool ShowLoading = true;
+
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+        private List<SOSReviewProgram>? _SosReviewList { get; set; } = new();
         private string searchString1 = "";
 
         private List<BreadcrumbItem> _links;
@@ -21,32 +26,74 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["sosProgram"], href: "/", disabled: true),
             };
 
-            logged = await HasPropertyAsync();
-            if (!logged)
+            
+
+            try
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error You have to log in", Severity.Error);
-                NavigationManager.NavigateTo($"/");
+                ShowLoading = true;
+              
+                logged = await HasPropertyAsync();
+                if (logged)
+                {
+                    await GetUserAsync();
+                    _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true);
+                    StateHasChanged();
+                }
+
             }
-            else
+            catch(Exception ex)
             {
-                await GetUserAsync();
 
-                _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true);
+            }
+            finally
+            {
+                ShowLoading = false;
 
-                StateHasChanged();
             }
 
 
 
         }
+
+
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await js.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
         private int selectedRowNumber = -1;
@@ -81,29 +128,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-        //Local storage user
-        private async Task GetUserAsync()
-        {
-            if (!await TryGetAsync())
-            {
-                user = new();
-            }
-        }
-
-        private async Task<bool> TryGetAsync()
-        {
-            bool hasProperty = await HasPropertyAsync();
-            if (hasProperty)
-            {
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-                user = JsonSerializer.Deserialize<User>(json) ?? new();
-
-            }
-            return hasProperty;
-        }
-
-        private async Task<bool> HasPropertyAsync()
-            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+  
 
 
         // Create pat

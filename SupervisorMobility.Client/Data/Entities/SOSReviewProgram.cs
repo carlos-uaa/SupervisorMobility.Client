@@ -44,6 +44,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public DateTime? ApprovalDate { get; set; }
 
+        public bool SuggestionApplied { get; set; }
         public bool IsActive { get; set; }
     }
 }

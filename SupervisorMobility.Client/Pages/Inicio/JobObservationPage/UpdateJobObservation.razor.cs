@@ -5,6 +5,7 @@ using Microsoft.Identity.Client;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -128,6 +129,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
                 new BreadcrumbItem(text: Localizer["update"] + " " + Localizer["jobObservation"], href: "", disabled: true)
             };
+
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+            }
+
+            if (CCPFolders != null)
+            {
+                folderCCPError = false;
+                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+            }
+            else
+            {
+                folderCCPError = true;
+            }
 
             logged = await HasPropertyAsync();
             if (!logged)
@@ -262,11 +284,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         if (_jobObservation.DistributionId != 0)
                         {
-                            if (_jobObservation.DistributionId != 0)
-                            {
+                            
                                 try
                                 {
-                                    _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+
                                     if (_assychart == null)
                                         messageErrorFolders = "The folders with the information provided were not located.";
                                     else
@@ -277,12 +299,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     messageErrorFolders = "The folders with the information provided were not located.";
                                 }
 
-                            }
-                            else
-                            {
-                                messageErrorFolders = "Job Observation does not contain a valid operation";
-                                Console.WriteLine("missing plant");
-                            }
                         }
                         else
                         {
@@ -1537,56 +1553,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string HOErute = "";
         private string CCPrute = "";
         private string GOSrute = "";
-        private async void OpenDialogGOS(string ruta)
-        {
-            GOSrute = ruta;
-            GosDialog = true;
-            folderError = false;
-
-            Console.WriteLine($"gos {ruta}");
-
-            GosFilesInFolder = new CDMS_GOS_Archives();
-
-            GosFilesInFolder = await CDMSServices.GetFilesGOS(ruta);
-            if (GosFilesInFolder == null)
-                folderError = true;
-
-
-            StateHasChanged();
-        }
-        void CloseGos() => GosDialog = false;
-
-        private async void OpenDialogCcp(string ruta)
-        {
-            CCPrute = ruta;
-            CcpDialog = true;
-            folderError = false;
-            Console.WriteLine($"Cpc {ruta}");
-
-            CcpFilesInFolder = new CDMS_CCP_Archives();
-            CcpFilesInFolder = await CDMSServices.GetFilesCCP(ruta);
-            if (CcpFilesInFolder == null)
-                folderError = true;
-
-            StateHasChanged();
-        }
-        void CloseCcp() => CcpDialog = false;
-
-        private async void OpenDialogHoe(string ruta)
-        {
-            HOErute = ruta;
-            HoeDialog = true;
-            Console.WriteLine($"hoe {ruta}");
-
-            folderError = false;
-            HoeFilesInFolder = new CDMS_HOE_Archives();
-            HoeFilesInFolder = await CDMSServices.GetFilesHOE(ruta);
-            if (HoeFilesInFolder == null)
-                folderError = true;
-
-            StateHasChanged();
-        }
-        void CloseHoe() => HoeDialog = false;
+       
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
@@ -1817,6 +1784,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         folderErrorCCP = false;
 
                     }
+
+                    nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
+
+                    if (nodoEncontrado != null)
+                    {
+                        // El nodo fue encontrado, puedes trabajar con él aquí
+                        // Por ejemplo, imprimir su nombre
+                        Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
+                    }
+                    else
+                    {
+                        // El nodo no fue encontrado
+                        Console.WriteLine("La ruta no se encontró en el árbol.");
+                    }
                 }
 
 
@@ -2001,7 +1982,51 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             return new AsyncVoidMethodBuilder();
         }
 
+        TreeItemData nodoEncontrado { get; set; }
+        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
 
-        
+        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
+        TreeItemData SelectedNodeCCP { get; set; }
+        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
+        {
+
+            try
+            {
+                ShowLoading = true;
+
+                if (CCPrute != "")
+                {
+                    Console.WriteLine($"CCP {CCPrute}");
+
+                    CcpFilesInFolder = new CDMS_CCP_Archives();
+                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
+                    if (CcpFilesInFolder == null)
+                        folderErrorCCP = true;
+                    else
+                    {
+                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
+                        folderErrorCCP = false;
+
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
+            }
+            finally
+            {
+                ShowLoading = false;
+                StateHasChanged();
+            }
+
+            return new AsyncVoidMethodBuilder();
+
+        }
+
+
     }
 }
