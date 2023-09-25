@@ -21,31 +21,42 @@ namespace SupervisorMobility.Client.Services.NotificationService
 
         public async Task<List<Notification>> GetAllNotifications()
         {
+            
             var response = await _http.GetAsync($"notifications");
-            var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"on content");
+                var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"under content");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ApplicationException(content);
-            }
 
-            var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"throw content bad code");
 
-            return notifications;
+                    throw new ApplicationException(content);
+                }
+
+                var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
+                return notifications;
+
+          
+           
+
         } 
         public async Task<List<Notification>> GetAllNotificationsFromUser(int userid)
         {
-            var response = await _http.GetAsync($"notifications/{userid}");
-            var content = await response.Content.ReadAsStringAsync();
+            
+              var response = await _http.GetAsync($"notifications/{userid}");
+                var content = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"GetAllNotificationsFromUser - throw content bad code");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ApplicationException(content);
-            }
+                    throw new ApplicationException(content);
+                }
 
-            var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
+                var notifications = JsonSerializer.Deserialize<List<Notification>>(content, _options);
+                return notifications;
 
-            return notifications;
         }
 
         public async Task<bool> DeleteNotification(int notifyId)
