@@ -10,13 +10,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         public List<JobObservation> jobObservationList { get; set; }
 
-        public List<Lup> _lup { get; set; } = new();
-        public List<Lup> _lupS { get; set; } = new();
-        public List<Lup> _lupQ { get; set; } = new();
-        public List<Lup> _lupD { get; set; } = new();
-        public List<Lup> _lupC { get; set; } = new();
-        public List<Lup> _lupOther { get; set; } = new();
+        public List<LupWithDistribution> _lup { get; set; } = new();
+        public List<LupWithDistribution> _lupS { get; set; } = new();
+        public List<LupWithDistribution> _lupQ { get; set; } = new();
+        public List<LupWithDistribution> _lupD { get; set; } = new();
+        public List<LupWithDistribution> _lupC { get; set; } = new();
+        public List<LupWithDistribution> _lupOther { get; set; } = new();
 
+        LupWithDistribution LupAux = new();
         //Admin
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
@@ -63,126 +64,150 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
                 if(user != null)
                 {
-                    if (user.UserType == 1 || user.UserType == 6)
-                    {
-                        _plants = await PlantServices.GetPlants();
-                        _plants = _plants.OrderBy(p => p.Description).ToList();
+                    GetLupByUser();
 
-                        foreach (var jobObs in jobObservationList)
-                        {
-                            if (jobObs.Lup.Count > 0)
-                            {
-                                foreach (var lup in jobObs.Lup)
-                                {
-                                    _lup.Add(lup);
-                                    switch (lup.Pillar)
-                                    {
-                                        case 1: _lupS.Add(lup); break;
-                                        case 2: _lupQ.Add(lup); break;
-                                        case 3: _lupD.Add(lup); break;
-                                        case 4: _lupC.Add(lup); break;
-                                        case 5: _lupOther.Add(lup); break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (user.UserType == 2)
-                    {
-                        plantId = (int)user.PlantId;
-                        if (user.Areas != null)
-                        {
-                            _areas = user.Areas.ToList();
-                            _areas.OrderBy(a => a.Description).ToList();
-                        }
 
-                        foreach (var jobObs in jobObservationList)
-                        {
-                            if (jobObs.Lup.Count > 0)
-                            {
-                                foreach (var lup in jobObs.Lup)
-                                {
-                                    if (plantId == jobObs.PlantId)
-                                    {
-                                        _lup.Add(lup);
-                                        switch (lup.Pillar)
-                                        {
-                                            case 1: _lupS.Add(lup); break;
-                                            case 2: _lupQ.Add(lup); break;
-                                            case 3: _lupD.Add(lup); break;
-                                            case 4: _lupC.Add(lup); break;
-                                            case 5: _lupOther.Add(lup); break;
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (user.UserType == 3)
-                    {
-                        plantId = (int)user.PlantId;
-                        areaId = (int)user.AreaId;
-                        foreach (var jobObs in jobObservationList)
-                        {
-                            if (jobObs.Lup.Count > 0)
-                            {
-                                foreach (var lup in jobObs.Lup)
-                                {
-                                    if (plantId == jobObs.PlantId && areaId == jobObs.AreaId)
-                                    {
-                                        _lup.Add(lup);
-                                        switch (lup.Pillar)
-                                        {
-                                            case 1: _lupS.Add(lup); break;
-                                            case 2: _lupQ.Add(lup); break;
-                                            case 3: _lupD.Add(lup); break;
-                                            case 4: _lupC.Add(lup); break;
-                                            case 5: _lupOther.Add(lup); break;
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                    else if (user.UserType == 5)
-                    {
-                        plantId = (int)user.PlantId;
-                        areaId = 0;
-                        _areas = await AreaServices.GetAreas(plantId);
-                        _areas = _areas.OrderBy(a => a.Description).ToList();
-
-                        foreach (var jobObs in jobObservationList)
-                        {
-                            if (jobObs.Lup.Count > 0)
-                            {
-                                foreach (var lup in jobObs.Lup)
-                                {
-                                    if (plantId == jobObs.PlantId)
-                                    {
-                                        _lup.Add(lup);
-                                        switch (lup.Pillar)
-                                        {
-                                            case 1: _lupS.Add(lup); break;
-                                            case 2: _lupQ.Add(lup); break;
-                                            case 3: _lupD.Add(lup); break;
-                                            case 4: _lupC.Add(lup); break;
-                                            case 5: _lupOther.Add(lup); break;
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                 }
 
             }
 
 
+        }
+
+        private async void GetLupByUser()
+        {
+            if (user.UserType == 1 || user.UserType == 6)
+            {
+                _plants = await PlantServices.GetPlants();
+                _plants = _plants.OrderBy(p => p.Description).ToList();
+
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            LupAux = new();
+                            LupAux.Lup = lup;
+                            LupAux.Distribution = jobObs.Distribution?.Description;
+                            _lup.Add(LupAux);
+                            switch (lup.Pillar)
+                            {
+                                case 1: _lupS.Add(LupAux); break;
+                                case 2: _lupQ.Add(LupAux); break;
+                                case 3: _lupD.Add(LupAux); break;
+                                case 4: _lupC.Add(LupAux); break;
+                                case 5: _lupOther.Add(LupAux); break;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (user.UserType == 2)
+            {
+                plantId = (int)user.PlantId;
+                if (user.Areas != null)
+                {
+                    _areas = user.Areas.ToList();
+                    _areas.OrderBy(a => a.Description).ToList();
+                }
+
+
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            if (plantId == jobObs.PlantId)
+                            {
+                                LupAux = new();
+                                LupAux.Lup = lup;
+                                LupAux.Distribution = jobObs.Distribution?.Description;
+
+                                _lup.Add(LupAux);
+                                switch (lup.Pillar)
+                                {
+                                    case 1: _lupS.Add(LupAux); break;
+                                    case 2: _lupQ.Add(LupAux); break;
+                                    case 3: _lupD.Add(LupAux); break;
+                                    case 4: _lupC.Add(LupAux); break;
+                                    case 5: _lupOther.Add(LupAux); break;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            else if (user.UserType == 3)
+            {
+                plantId = (int)user.PlantId;
+                areaId = (int)user.AreaId;
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            if (plantId == jobObs.PlantId && areaId == jobObs.AreaId)
+                            {
+                                LupAux = new();
+                                LupAux.Lup = lup;
+                                LupAux.Distribution = jobObs.Distribution?.Description;
+
+                                _lup.Add(LupAux);
+                                switch (lup.Pillar)
+                                {
+                                    case 1: _lupS.Add(LupAux); break;
+                                    case 2: _lupQ.Add(LupAux); break;
+                                    case 3: _lupD.Add(LupAux); break;
+                                    case 4: _lupC.Add(LupAux); break;
+                                    case 5: _lupOther.Add(LupAux); break;
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+            }
+            else if (user.UserType == 5)
+            {
+                plantId = (int)user.PlantId;
+                areaId = 0;
+                _areas = await AreaServices.GetAreas(plantId);
+                _areas = _areas.OrderBy(a => a.Description).ToList();
+
+                foreach (var jobObs in jobObservationList)
+                {
+                    if (jobObs.Lup.Count > 0)
+                    {
+                        foreach (var lup in jobObs.Lup)
+                        {
+                            if (plantId == jobObs.PlantId)
+                            {
+                                LupAux = new();
+                                LupAux.Lup = lup;
+                                LupAux.Distribution = jobObs.Distribution?.Description;
+
+                                _lup.Add(LupAux);
+                                switch (lup.Pillar)
+                                {
+                                    case 1: _lupS.Add(LupAux); break;
+                                    case 2: _lupQ.Add(LupAux); break;
+                                    case 3: _lupD.Add(LupAux); break;
+                                    case 4: _lupC.Add(LupAux); break;
+                                    case 5: _lupOther.Add(LupAux); break;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            StateHasChanged();
         }
 
         private async void ShowAreas()
@@ -195,14 +220,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     {
                         foreach (var lup in jobObs.Lup)
                         {
-                            _lup.Add(lup);
+                            LupAux = new();
+                            LupAux.Lup = lup;
+                            LupAux.Distribution = jobObs.Distribution?.Description;
+
+                            _lup.Add(LupAux);
                             switch (lup.Pillar)
                             {
-                                case 1: _lupS.Add(lup); break;
-                                case 2: _lupQ.Add(lup); break;
-                                case 3: _lupD.Add(lup); break;
-                                case 4: _lupC.Add(lup); break;
-                                case 5: _lupOther.Add(lup); break;
+                                case 1: _lupS.Add(LupAux); break;
+                                case 2: _lupQ.Add(LupAux); break;
+                                case 3: _lupD.Add(LupAux); break;
+                                case 4: _lupC.Add(LupAux); break;
+                                case 5: _lupOther.Add(LupAux); break;
                             }
                         }
                     }
@@ -226,14 +255,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     {
                         if (plantId == jobObs.PlantId)
                         {
-                            _lup.Add(lup);
+                            LupAux = new();
+                            LupAux.Lup = lup;
+                            LupAux.Distribution = jobObs.Distribution?.Description;
+
+                            _lup.Add(LupAux);
                             switch (lup.Pillar)
                             {
-                                case 1: _lupS.Add(lup); break;
-                                case 2: _lupQ.Add(lup); break;
-                                case 3: _lupD.Add(lup); break;
-                                case 4: _lupC.Add(lup); break;
-                                case 5: _lupOther.Add(lup); break;
+                                case 1: _lupS.Add(LupAux); break;
+                                case 2: _lupQ.Add(LupAux); break;
+                                case 3: _lupD.Add(LupAux); break;
+                                case 4: _lupC.Add(LupAux); break;
+                                case 5: _lupOther.Add(LupAux); break;
                             }
 
                         }
@@ -270,14 +303,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     {
                         if (areaId == jobObs.AreaId)
                         {
-                            _lup.Add(lup);
+                            LupAux = new();
+                            LupAux.Lup = lup;
+                            LupAux.Distribution = jobObs.Distribution?.Description;
+
+                            _lup.Add(LupAux);
                             switch (lup.Pillar)
                             {
-                                case 1: _lupS.Add(lup); break;
-                                case 2: _lupQ.Add(lup); break;
-                                case 3: _lupD.Add(lup); break;
-                                case 4: _lupC.Add(lup); break;
-                                case 5: _lupOther.Add(lup); break;
+                                case 1: _lupS.Add(LupAux); break;
+                                case 2: _lupQ.Add(LupAux); break;
+                                case 3: _lupD.Add(LupAux); break;
+                                case 4: _lupC.Add(LupAux); break;
+                                case 5: _lupOther.Add(LupAux); break;
                             }
 
                         }
@@ -312,27 +349,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         // Delete lup
         async Task DeleteLup(int lupId)
         {
-            _lup.RemoveAll(l => l.LupId == lupId);
             await LupServices.DeleteLup(lupId);
 
-            _lup = await LupServices.GetAllLup();
-            _lupS.Clear();
-            _lupQ.Clear();
-            _lupD.Clear();
-            _lupC.Clear();
-            _lupOther.Clear();
+            GetLupByUser();
 
-            foreach (var lup in _lup)
-            {
-                switch (lup.Pillar)
-                {
-                    case 1: _lupS.Add(lup); break;
-                    case 2: _lupQ.Add(lup); break;
-                    case 3: _lupD.Add(lup); break;
-                    case 4: _lupC.Add(lup); break;
-                    case 5: _lupOther.Add(lup); break;
-                }
-            }
             visibleDelete = false;
 
         }
@@ -345,17 +365,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         private string searchString = "";
 
-        private bool FilterFunc(Lup element)
+        private bool FilterFunc(LupWithDistribution element)
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.LupId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Lup.LupId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Lup.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Oportunity.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Lup.Oportunity.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.LupId} {element.Status} {element.Observer}".Contains(searchString))
+            if ($"{element.Lup.LupId} {element.Lup.Status} {element.Lup.Observer}".Contains(searchString))
                 return true;
             return false;
         }
@@ -401,14 +421,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         }
 
         private int selectedRowNumber = -1;
-        private MudTable<Lup> SelectTableEvent;
+        private MudTable<LupWithDistribution> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<Lup> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<LupWithDistribution> tableRowClickEventArgs)
         {
         }
 
 
-        private string SelectedRowClassFunc(Lup element, int rowNumber)
+        private string SelectedRowClassFunc(LupWithDistribution element, int rowNumber)
         {
             if (selectedRowNumber == rowNumber)
             {
