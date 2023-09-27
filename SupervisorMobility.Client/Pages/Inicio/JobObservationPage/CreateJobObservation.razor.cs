@@ -50,7 +50,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         int[] models = new int[5];
         string[] cycles = new string[5] { "", "", "", "", "" };
-        double[] HoeTimes = new double[5];
+        double[] HoeTimes = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0};
 
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +

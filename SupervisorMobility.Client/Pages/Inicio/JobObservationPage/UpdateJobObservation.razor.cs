@@ -137,26 +137,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new BreadcrumbItem(text: Localizer["update"] + " " + Localizer["jobObservation"], href: "", disabled: true)
             };
 
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
-
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
 
             logged = await HasPropertyAsync();
             if (!logged)
@@ -325,12 +305,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("missing plant");
                 }
             }
+            StateHasChanged();
+            try
+            {
+                CCPFolders = await CDMSServices.GetFoldersCCP();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Get CCP Folder From CCP");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
+            }
+
+            if (CCPFolders != null)
+            {
+                folderCCPError = false;
+                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+            }
+            else
+            {
+                folderCCPError = true;
+            }
 
             if (searchAssychart)
             {
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
+
+
         }
 
         private async Task GetUserAsync()
