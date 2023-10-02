@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -73,6 +74,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         TimeSpan? changeStartHour { get; set; }
         TimeSpan? changeEndHour { get; set; }
 
+        string cycle1Color = "";
+        string cycle2Color = "";
+        string cycle3Color = "";
+        string cycle4Color = "";
+        string cycle5Color = "";
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -85,6 +92,110 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+            }
+            else
+            {
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(".", ",");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(".", ",");
+            }
+
+            if (_jobObservation.HOEStandardTimes != null)
+            {
+                HoeTimes = _jobObservation.HOEStandardTimes.Split('|');
+            }
+            else
+            {
+                HoeTimes[0] = "";
+                HoeTimes[1] = "";
+                HoeTimes[2] = "";
+                HoeTimes[3] = "";
+                HoeTimes[4] = "";
+            }
+            if (_jobObservation.Models != null)
+            {
+                var prod = _jobObservation.Models.Split('|');
+                models[0] = Int32.Parse(prod[0]);
+                models[1] = Int32.Parse(prod[1]);
+                models[2] = Int32.Parse(prod[2]);
+                models[3] = Int32.Parse(prod[3]);
+                models[4] = Int32.Parse(prod[4]);
+
+            }
+            else
+            {
+                models[0] = 0;
+                models[1] = 0;
+                models[2] = 0;
+                models[3] = 0;
+                models[4] = 0;
+            }
+
+            if (_jobObservation.Cycles != null)
+            {
+                cycles = _jobObservation.Cycles.Split('|');
+            }
+            else
+            {
+                cycles[0] = "";
+                cycles[1] = "";
+                cycles[2] = "";
+                cycles[3] = "";
+                cycles[4] = "";
+            }
+
+            for (int i = 0; i < HoeTimes.Length; i++)
+            {
+                if (double.TryParse(cycles[i], out double cycleValue2) && double.Parse(HoeTimes[i]) != 0.0)
+                {
+                    double lowerBound = double.Parse(HoeTimes[i]) * 0.95; // Valor mínimo permitido (95% de HoeTimes)
+                    double upperBound = double.Parse(HoeTimes[i]) * 1.05; // Valor máximo permitido (105% de HoeTimes)
+
+                    if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
+                    {
+                        switch (i)
+                        {
+                            case 0: cycle1Color = "green"; break;
+                            case 1: cycle2Color = "green"; break;
+                            case 2: cycle3Color = "green"; break;
+                            case 3: cycle4Color = "green"; break;
+                            case 4: cycle5Color = "green"; break;
+                        }
+                    }
+                    else if (cycleValue2 < double.Parse(HoeTimes[i]))
+                    {
+                        switch (i)
+                        {
+                            case 0: cycle1Color = "yellow"; break;
+                            case 1: cycle2Color = "yellow"; break;
+                            case 2: cycle3Color = "yellow"; break;
+                            case 3: cycle4Color = "yellow"; break;
+                            case 4: cycle5Color = "yellow"; break;
+                        }
+                    }
+                    else
+                    {
+                        switch (i)
+                        {
+                            case 0: cycle1Color = "red"; break;
+                            case 1: cycle2Color = "red"; break;
+                            case 2: cycle3Color = "red"; break;
+                            case 3: cycle4Color = "red"; break;
+                            case 4: cycle5Color = "red"; break;
+                        }
+                    }
+                }
+            }
+
+            StateHasChanged();
 
             try
             {
@@ -106,51 +217,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 folderCCPError = true;
             }
-
-            if (_jobObservation.HOEStandardTimes != null)
-            {
-                HoeTimes = _jobObservation.HOEStandardTimes.Split('|');
-            }
-            else
-            {
-                HoeTimes[0] = "";
-                HoeTimes[1] = "";
-                HoeTimes[2] = "";
-                HoeTimes[3] = "";
-                HoeTimes[4] = "";
-            }
-            if(_jobObservation.Models != null)
-            {
-                var prod = _jobObservation.Models.Split('|');
-                models[0] = Int32.Parse(prod[0]);
-                models[1] = Int32.Parse(prod[1]);
-                models[2] = Int32.Parse(prod[2]);
-                models[3] = Int32.Parse(prod[3]);
-                models[4] = Int32.Parse(prod[4]);
-
-            }
-            else
-            {
-                models[0] = 0;
-                models[1] = 0;
-                models[2] = 0;
-                models[3] = 0;
-                models[4] = 0;
-            }
-
-            if(_jobObservation.Cicles != null)
-            {
-                cycles = _jobObservation.Cicles.Split('|');
-            }
-            else
-            {
-                cycles[0] = "";
-                cycles[1] = "";
-                cycles[2] = "";
-                cycles[3] = "";
-                cycles[4] = "";
-            }
-
 
 
             startHour = _jobObservation.StartDate?.TimeOfDay;

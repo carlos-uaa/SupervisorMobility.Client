@@ -32,8 +32,6 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Supervisor")]
         public int SupervisorId { get; set; }
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operator")]
         public int OperatorId { get; set; }
 
         public bool IsActive { get; set; }
@@ -55,7 +53,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public string HOEStandardTimes { get; set; }
         public string Models { get; set; }
-        public string Cicles { get; set; }
+        public string Cycles { get; set; }
 
         public string SsvCommentary { get; set; }
         public string OperatorCommentary { get; set; }

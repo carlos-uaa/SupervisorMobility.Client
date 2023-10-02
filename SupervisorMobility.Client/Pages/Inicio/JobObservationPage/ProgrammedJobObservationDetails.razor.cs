@@ -289,7 +289,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 1;
@@ -345,7 +345,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 1;

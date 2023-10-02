@@ -532,8 +532,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -597,8 +602,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -1144,8 +1154,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -1222,8 +1237,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -1371,8 +1391,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -1445,8 +1470,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -1594,8 +1624,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -1667,8 +1702,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 //Eventual
@@ -1822,8 +1862,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
@@ -1899,8 +1944,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";

@@ -175,7 +175,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     plannedEndDate = _jobObservation.EndDate;
                 }
 
-                _plants = await PlantServices.GetPlants();
+                if (CultureInfo.CurrentCulture.Name == "en-US")
+                {
+                    if(_jobObservation.HOEStandardTimes != null)
+                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                    if(_jobObservation.Cycles != null) 
+                        _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+                }
+                else
+                {
+                    if (_jobObservation.HOEStandardTimes != null)
+                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(".", ",");
+                    if (_jobObservation.Cycles != null)
+                        _jobObservation.Cycles = _jobObservation.Cycles.Replace(".", ",");
+                }
+
+                    _plants = await PlantServices.GetPlants();
                 //_products = await ProductService.GetProducts();
                 _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
                 _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
@@ -215,15 +230,58 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                if(_jobObservation.Cicles != null)
+                if(_jobObservation.Cycles != null)
                 {
-                    cycles = _jobObservation.Cicles.Split('|');
+                    cycles = _jobObservation.Cycles.Split('|');
                 }
                 else
                 {
                     for (int i = 0; i < 5; i++)
                     {
                         cycles[i] = "";
+                    }
+                }
+
+                for (int i = 0; i < HoeTimes.Length; i++)
+                {
+                    if (double.TryParse(cycles[i], out double cycleValue2) && HoeTimes[i] != 0.0)
+                    {
+                        double lowerBound = HoeTimes[i] * 0.95; // Valor mínimo permitido (95% de HoeTimes)
+                        double upperBound = HoeTimes[i] * 1.05; // Valor máximo permitido (105% de HoeTimes)
+
+                        if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "green"; break;
+                                case 1: cycle2Color = "green"; break;
+                                case 2: cycle3Color = "green"; break;
+                                case 3: cycle4Color = "green"; break;
+                                case 4: cycle5Color = "green"; break;
+                            }
+                        }
+                        else if (cycleValue2 < HoeTimes[i])
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "yellow"; break;
+                                case 1: cycle2Color = "yellow"; break;
+                                case 2: cycle3Color = "yellow"; break;
+                                case 3: cycle4Color = "yellow"; break;
+                                case 4: cycle5Color = "yellow"; break;
+                            }
+                        }
+                        else
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "red"; break;
+                                case 1: cycle2Color = "red"; break;
+                                case 2: cycle3Color = "red"; break;
+                                case 3: cycle4Color = "red"; break;
+                                case 4: cycle5Color = "red"; break;
+                            }
+                        }
                     }
                 }
 
@@ -237,7 +295,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-
+                StateHasChanged();
                 await GetUserAsync();
 
                 if (user != null)
@@ -305,7 +363,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("missing plant");
                 }
             }
-            StateHasChanged();
             try
             {
                 CCPFolders = await CDMSServices.GetFoldersCCP();
@@ -332,7 +389,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
-
 
         }
 
@@ -583,8 +639,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 2;
@@ -638,8 +700,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 2;
@@ -739,8 +806,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -799,8 +871,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -892,8 +969,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -944,8 +1026,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
 
@@ -1040,8 +1127,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
@@ -1091,8 +1183,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cicles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
                 _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
+                if (_jobObservation.HOEStandardTimes != null)
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                if (_jobObservation.Cycles != null)
+                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
