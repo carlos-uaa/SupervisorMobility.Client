@@ -8,9 +8,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int SOSid { get; set; }
         public int Status { get; set; }
 
-        public int? Supervisorid { get; set; }
-        public User? Supervisor { get; set; }
-
+        public ICollection<User>? Supervisors { get; set; }
+  
         public int PlantId { get; set; }
         public Plant? Plant { get; set; }
 

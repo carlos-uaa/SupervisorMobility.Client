@@ -93,7 +93,7 @@ else
                 <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.Status)">@Localizer["status"]</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x?.Supervisor?.Name)">Supervisor</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x?.Supervisors?.FirstOrDefault()?.Name)">Supervisors</MudTableSortLabel>
             </MudTh>
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<SOSReviewProgram, object>(x=>x.Plant?.Description)">@Localizer["plant"]</MudTableSortLabel>
@@ -126,7 +126,29 @@ else
                 </MudText>
             </MudTd>
             <MudTd DataLabel="Supervisor">
-                <MudText Align="Align.Center">@context.Supervisor?.Name</MudText>
+                @*<MudText Align="Align.Center">@context.Supervisor?.Name</MudText>*@
+                 @if (context.Supervisors?.Count > 0)
+                        {
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small">@Localizer["SOS_ShowSupervisors"]</MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var usr in context.Supervisors)
+                                    {
+                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> [@usr.UserId] - @usr.Name </MudChip>
+                                    }
+
+                                </ChildContent>
+                            </MudMenu>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                @Localizer["SOS_NoSupervisors"]
+                            </MudAlert>
+                        }
+
             </MudTd>
             <MudTd DataLabel=@Localizer["plant"]>
                 <MudText Align="Align.Center">@context.Plant?.Description</MudText>

@@ -54,6 +54,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 {
                     await GetUserAsync();
                     _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true);
+                    if(user.UserId == 3)
+                    {
+                    _SosReviewList = _SosReviewList.Where(s => s.Supervisors.Any(x => x.UserId == user.UserId)).ToList();
+
+                    }
                     StateHasChanged();
                 }
 
@@ -163,7 +168,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 return true;
             if (element.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Supervisor.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Supervisors.Any( u => u.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)))
                 return true;
             if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;

@@ -11,6 +11,7 @@
 @inject ISOSReviewService SOSReviewServices
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 
 @*Title*@
 <PageTitle>Supervisor Mobility |  @Localizer["createSOS"]</PageTitle>
@@ -109,17 +110,96 @@
 
                     <MudDatePicker @bind-Date="_sosReview.CreationDate" DateFormat="yyyy" Label=@Localizer["createDate"] PickerVariant="PickerVariant.Dialog" FixDay="1" FixMonth="1" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
 
+                    @if (_sosReview.Supervisors is not null && _sosReview.Supervisors?.ToList().Count > 0)
+                    {
+
+                        <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                    @foreach (var item in _sosReview.Supervisors)
+                    {
+
+                        <MudCard Elevation="1" Class="mr-5" Style="width: 300px; flex: 0 0 calc(28%-1rem);">
+                            <MudCardHeader>
+                                <CardHeaderActions>
+                                    @switch (item.UserType)
+                                    {
+                                        case 3:
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSupervisorList(item))" />
+                                            break;
+                                    }
+
+                                </CardHeaderActions>
+
+                            </MudCardHeader>
+                            <MudCardContent>
+
+                                <div class="font-weight-bold"><b>@Localizer["UserId"]:</b>  @item.UserId</div>
+                                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @item.Name</div>
+
+                                @if (item.AreaId != 0 || item.AreaId != null)
+                                {
+                                    <div class="font-weight-bold"><b>@Localizer1["UsersAssignedArea"]:</b></div>
+                                    <div class="d-flex justify-content-between justify-center">
+
+                                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@item.Area?.Code - @item.Area?.Description </MudChip>
+                                        
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.button">@Localizer["UsersNoAreasSSV"]</MudText>
+                                }
+
+
+
+                            </MudCardContent>
+
+
+                        </MudCard>
+                    }
+                    </MudItem>
+                    }
+
+
                     @if(user.UserType == 1){
                         @if(_sosReview.PlantId != 0 && _sosReview.AreaId != 0)
                         {
                             @*Mud select for SSV A,B, C for Admin *@
-                            <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" For="@(() => supervisorId)">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
-                                @foreach (var sv in _Supervisors)
-                                {
-                                    <MudSelectItem Value="sv.UserId">@($"{sv.Name}")</MudSelectItem>
-                                }
-                            </MudSelect>
+                          
+                            <MudItem class="d-flex d-flex-column justify-center ma-1">
+
+                            
+                                            @if (_Supervisors?.Count > 0 )
+                                            {
+                                                <MudItem xs="12" sm="12" md="12">
+                                                    <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
+                                                         SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} - {e.Area?.Description} - {e.Distribution?.Description}")"
+                                                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
+                                                                     ShowProgressIndicator="true" MaxItems="null">
+                                                        <ItemTemplate Context="e">
+                                                            <MudItem Style="text-align: center">
+                                                                @switch (e.UserType)
+                                                                {
+                                                                    case 3:
+                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                                                        break;
+                                                                }
+                                                            </MudItem>
+                                                            <div class="font-weight-bold"><b>@Localizer["UserId"]:</b>  @e.UserId</div>
+                                                            <div class="font-weight-bold"><b>@Localizer["UsersName"]:</b>  @e.Name</div>
+
+                                                           
+                                                                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+                                                            
+                                                        </ItemTemplate>
+                                                    </MudAutocomplete>
+                                                </MudItem>
+                                                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Supervisor </MudButton>
+                                            }
+                                   
+
+                            </MudItem>
                         }
                         else
                         {
@@ -130,11 +210,45 @@
                         }
 
 
-
                     }
                     else if(user.UserType == 3)
                     {
-                        <MudTextField T="string" @bind-Value="user.Name" Label="Supervisor" Class="mr-4" ReadOnly />
+
+                        <MudItem class="d-flex d-flex-column justify-center ma-1">
+
+                               
+                                    
+                                            @if (_Supervisors?.Count > 0 )
+                                            {
+                                                <MudItem xs="12" sm="12" md="12">
+                                                    <MudAutocomplete Clearable T="User" Label="@Localizer["UsersOperator"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
+                                                         SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} [{e.Payroll}] - {e.Area?.Description} - {e.Distribution?.Description}")"
+                                                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
+                                                                     ShowProgressIndicator="true" MaxItems="null">
+                                                        <ItemTemplate Context="e">
+                                                            <MudItem Style="text-align: center">
+                                                                @switch (e.UserType)
+                                                                {
+                                                                    case 3:
+                                                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer["UsersSupervisor"] </MudChip>
+                                                                        break;
+                                                                }
+                                                            </MudItem>
+                                                            <div class="font-weight-bold"><b>@Localizer["UserId"]:</b>  @e.UserId</div>
+                                                            <div class="font-weight-bold"><b>@Localizer["UsersName"]:</b>  @e.Name</div>
+
+                                                           
+                                                                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+                                                            
+                                                        </ItemTemplate>
+                                                    </MudAutocomplete>
+                                                </MudItem>
+                                                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Supervisor </MudButton>
+                                            }
+                                   
+
+                            </MudItem>
                     }
 
 

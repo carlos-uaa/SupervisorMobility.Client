@@ -72,7 +72,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                         _sosReview.AreaId = (int)user.AreaId;
 
-                        _sosReview.Supervisorid = user.UserId;
+                        _sosReview.Supervisors?.Add(user);
 
                     }
                 }
@@ -80,8 +80,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             StateHasChanged();
 
         }
+        private async Task<IEnumerable<User>> SearchSV(string value)
+        {
+            // In real life use an asynchronous function for fetching data from an api.
+            // await Task.Delay(1000);
 
+            // if text is null or empty, show complete list
+            if (string.IsNullOrEmpty(value))
+                return _Supervisors;
 
+            return _Supervisors.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private User selectedSupervisorOfList = null;
+        private bool ActiveAddSubordinated = false;
+
+        private async void OnSelectedSuperiorFunction(User element, int type)
+        {
+            
+            selectedSupervisorOfList = element;
+          
+
+            if (selectedSupervisorOfList != new User() )
+            {
+                ActiveAddSubordinated = false;
+            }
+            else
+            {
+                ActiveAddSubordinated = true;
+            }
+
+        }
         //Local storage user
         private async Task GetUserAsync()
         {
@@ -89,6 +118,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 user = new();
             }
+        }
+
+        private void AddSupervisor(User selection)
+        {
+            if (_sosReview.Supervisors == null)
+            {
+                _sosReview.Supervisors = new List<User>();
+            }
+
+
+            if (selectedSupervisorOfList != null && !_sosReview.Supervisors.Contains(selection))
+            {
+
+                _sosReview.Supervisors.Add(selection);
+
+                _Supervisors.Remove(selection);
+
+                selectedSupervisorOfList = null;
+                ActiveAddSubordinated = true;
+            }
+            StateHasChanged();
         }
 
         private async Task<bool> TryGetAsync()
@@ -142,16 +192,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 }
             }
 
+            _Supervisors.Remove(user);
             StateHasChanged();
         }
 
-        // Create Pat
+        private void DeleteSupervisorList(User selection)
+        {
+            _sosReview.Supervisors?.Remove(selection);
+            _Supervisors.Add(selection);
+            StateHasChanged();
+        }
+
+        // Create Sos
         async void CreateSOSReviewAsync()
         {
-            if (user.UserType == 1)
-            {
-                _sosReview.Supervisorid = supervisorId;
-            }
+           
 
             _sosReview.Status = 1;
             _sosReview.IsActive = true;

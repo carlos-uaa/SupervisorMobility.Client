@@ -9,5 +9,6 @@
         public int AreaId { get; set; }
         public List<Operation> Operations { get; set; } = new List<Operation>();
         public List<Product> Products { get; set; } = new List<Product>();
+        public bool ShowDetails { get; set; }
     }
 }
