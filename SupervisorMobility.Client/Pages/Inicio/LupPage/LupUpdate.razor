@@ -13,7 +13,7 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["update"] Lup</PageTitle>
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
+<MudBreadcrumbs Items="_links">
     <ItemTemplate Context="item">
         <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
     </ItemTemplate>
@@ -29,7 +29,7 @@
             </MudText>
         </MudItem>
         <MudItem Class="ml-2">
-            <MudSimpleTable Bordered Class="mt-3">
+            <MudSimpleTable Bordered>
                 <tbody>
                     <tr>
                         <td style="width:50%">
@@ -175,17 +175,62 @@
                 </tbody>
             </MudSimpleTable>
             <MudSimpleTable Bordered Class="mt-3 mb-10">
-                <thead>
-                    <tr>
-                        <td>
-                            <MudText Typo="Typo.h6">
-                                    @Localizer["evidence"]
-                            </MudText>
-                        </td>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
+                    <MudExpansionPanels Elevation="1" MultiExpansion="true">
+                        <MudExpansionPanel  IsInitiallyExpanded=true Style="min-width: 100%;">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["Take photo"]
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <td>
+                                    @if (capturedImages.Count == 0)
+                                    {
+                                        <MudItem>
+                                            <MudButton @onclick=OpenCameraDialog Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                                                Open Camera
+                                            </MudButton>
+                                        </MudItem>
+                                    }
+
+
+
+                                    <br />
+                                    @if (capturedImages.Count > 0)
+                                    {
+                                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                        {
+                                            <MudBadge Icon="@Icons.Material.Filled.Clear" Color="Color.Error" Class="mr-5 mb-5" @onclick="() => RemoveImage(index)">
+                                                <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                            </MudBadge>
+                                        }
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <MudItem>
+                                                <MudButton Variant="Variant.Filled" @onclick=OpenCameraDialog StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                @{
+                                                    string uploadMessage = "Upload Photo";
+                                                    if(capturedImages.Count > 1)
+                                                    {
+                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";     
+                                                    }
+                                                }
+
+                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick=UploadEvidence StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                            </MudItem>
+                                        </div>
+                                    }
+                                </td>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Class="mb-4" IsInitiallyExpanded=true Style="min-width: 100%;">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["evidence"]
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
                         <td class="d-flex" style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
                         @if(_lup.Evidences.Count > 0 ){
                             @foreach (var evidence in _lup.Evidences)
@@ -274,6 +319,9 @@
                                     <span> @Localizer["noFilesUploadedYet"]</span>
                         }
                          </td>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
                     </tr>
                     <tr>
                         <td>
@@ -397,4 +445,33 @@
         <MudButton Color="Color.Info" @onclick="(() => CancelLup())"> @Localizer["save"]</MudButton>
         <MudButton Color="Color.Info" OnClick="Close"> @Localizer["close"]</MudButton>
     </DialogActions>
+</MudDialog>
+
+@*Camera Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+    <TitleContent>
+        <MudItem>
+            <MudText Typo="Typo.h6" Style="text-align:center">LUP Evidence</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <CameraStreamer @ref=CameraStreamerReference
+                                Width=1280
+                                Height=720
+                                OnRendered=OnRenderedHandler
+                                OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                                CameraID=@cameraId
+                                        Autostart />
+                <MudItem style="text-align: center">
+                    <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                        Take photo
+                    </MudButton>
+                </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
 </MudDialog>

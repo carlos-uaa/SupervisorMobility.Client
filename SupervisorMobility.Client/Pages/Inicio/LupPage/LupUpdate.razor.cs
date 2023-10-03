@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+﻿using BlazorCameraStreamer;
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -243,6 +244,167 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         {
             await FilesServices.DownloadFileEvidence(fileId, filename);
         }
+
+        //Camera
+        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
+        private List<string> capturedImages = new List<string>();
+
+        private bool visibleCamera = false;
+        private void OpenCameraDialog()
+        {
+            visibleCamera = true;
+
+        }
+        void Close2() => visibleCamera = false;
+
+        private CameraStreamer CameraStreamerReference;
+
+        private string? cameraId = null;
+
+        private int frameCount;
+
+        private string imageData;
+
+        private async void OnRenderedHandler()
+        {
+            frameCount = 0;
+
+            // Check camera-access or ask user, if it's not allowed currently
+            if (await CameraStreamerReference.GetCameraAccessAsync())
+            {
+                // Reloading re-initializes the stream and starts the
+                // stream automatically if the Autostart parameter is set
+                await CameraStreamerReference.ReloadAsync();
+
+                // If Autostart is not set, you have to manually start the stream again
+                /* await CameraStreamerReference.StartAsync(); */
+            }
+        }
+
+        private async void Start()
+        {
+            await CameraStreamerReference.StartAsync();
+        }
+
+        private async void Stop()
+        {
+            await CameraStreamerReference.StopAsync();
+        }
+
+        private void OnFrameHandler(string _)
+        {
+            ++frameCount;
+        }
+
+        private async void GetCurrentFrame()
+        {
+            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                capturedImages.Add(imageData);
+            }
+            visibleCamera = false;
+            StateHasChanged();
+            Stop();
+        }
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task UploadEvidence()
+        {
+            if (capturedImages.Count > 0)
+            {
+                foreach (var imageData in capturedImages)
+                {
+                    if (!string.IsNullOrEmpty(imageData))
+                    {
+                        // Elimina la cabecera si está presente
+                        var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                        if (IsValidBase64String(base64Data))
+                        {
+                            // Convierte base64Data en bytes
+                            var imageBytes = Convert.FromBase64String(base64Data);
+
+                            using var content = new MultipartFormDataContent();
+                            var imageStream = new MemoryStream(imageBytes);
+                            var fileContent = new StreamContent(imageStream);
+                            fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                            content.Add(
+                                content: fileContent,
+                                name: "\"file\"",
+                                fileName: "evidence.png");
+
+                            // Llama a tu servicio de carga de archivos aquí
+                            var result = await FilesServices.UploadEvidences(content, LupId);
+
+                            if (result is not null)
+                            {
+                                Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add("Image Added to Lup", Severity.Info);
+                                _lup = await LupServices.GetLupByIdWhitFile(LupId);
+                                StateHasChanged();
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add("Failed to upload Image to Lup", Severity.Error);
+                            }
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add("Invalid image data", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                    }
+                }
+
+                // Limpia la lista de imágenes capturadas después de cargarlas
+                capturedImages.Clear();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("No images to upload", Severity.Warning);
+            }
+        }
+
+        private void RemoveImage(int index)
+        {
+            if (index >= 0 && index < capturedImages.Count)
+            {
+                capturedImages.RemoveAt(index);
+            }
+        }
+
 
     }
 }
