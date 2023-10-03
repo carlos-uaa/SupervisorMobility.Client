@@ -15,5 +15,8 @@
         Task<SOSRegisterJobObservation> CreateSOSRegister(int SOSid, int month, int year, JobObservation JobEntity);
         Task<List<SOSRegisterJobObservation>> GetSOSRegisters(int sosid);
 
+        Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId);
+        Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid);
+
     }
 }

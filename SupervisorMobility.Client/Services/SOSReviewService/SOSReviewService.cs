@@ -140,6 +140,51 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
+            public async Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"SOSReview/Registers/UserOp/{sosid}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var SOS_registerList = JsonSerializer.Deserialize<List<SOSRegUserOperation>>(content, _options);
+
+                    response.Dispose();
+
+                    return SOS_registerList;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener la lista de registros Supervisro Revisor: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public async Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId)
+        {
+
+            //int SOSid, int month, int year,
+            var response = await _http.PostAsync($"Registers/UserOp/{SOSid}/{SupervisorId}/{OperationId}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var Final_SOS_Review = await response.Content.ReadFromJsonAsync<SOSRegUserOperation>();
+                return Final_SOS_Review;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Create Supervisro Revisor: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+        }
+
        
     }
 }
