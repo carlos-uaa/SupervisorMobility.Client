@@ -144,7 +144,7 @@
                                 <th rowspan="2">
                                     Nombre. HOE
                                 </th>
-                                <th rowspan="2" Style="min-width: 200px">
+                                <th rowspan="2" Style="min-width: 350px">
                                     Quien Revisa
                                 </th>
                                 <th rowspan="2">
@@ -204,21 +204,17 @@
                                         <MudTr>
                                             <MudTd rowspan="2">@op.Code</MudTd>
                                             <MudTd rowspan="2">@op.Description</MudTd>
-                                            <MudTd rowspan="2" Style="min-width: 200px">
+                                            <MudTd rowspan="2" Style="min-width: 350px">
 
-                                                @if (SOS_Registers_UserOperation.TryGetValue(op.OperationId, out var context))
+                                                @if (SOS_Registers_UserOperationRelationship.TryGetValue(op.OperationId, out var context))
                                                 {
-                                                    <MudTextField ReadOnly="true" Label="Supervisor" Value="context.Register.Supervisor?.Name" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@(context.StateUpdate ? @Icons.Material.Filled.Save : @Icons.Material.Filled.Edit)" OnAdornmentClick="@( () =>  BtnSupervisorsEdit(op.OperationId))" AdornmentAriaLabel="Upate" />
-                                                    @*ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))" *@
-                                                }
-                                                else
-                                                {
-
-
-                                                    <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]"
+                                                   if(context.Exist){
+                                                        if(context.StateUpdate){
+                                                        <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" @bind-Value="context.Register.Supervisor"
                                                                      SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} - {e.Group?.Description}")"
-                                                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
-                                                                     ShowProgressIndicator="true" MaxItems="null">
+                                                                     Variant="Variant.Outlined" AdornmentIcon="@(context.StateUpdate ? @Icons.Material.Filled.Save : @Icons.Material.Filled.Person)"
+                                                                     ShowProgressIndicator="true" MaxItems="null"
+                                                                     OnAdornmentClick="@( () =>  BtnSupervisorsEdit(op.OperationId))">
                                                         <ItemTemplate Context="e">
                                                             <MudItem Style="text-align: center">
                                                                 @switch (e.UserType)
@@ -238,6 +234,37 @@
 
                                                         </ItemTemplate>
                                                     </MudAutocomplete>
+
+                                                    }else{
+                                                    <MudTextField ReadOnly="true" Label="Supervisor" Value="context.Register.Supervisor?.Name" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@(context.StateUpdate ? @Icons.Material.Filled.Save : @Icons.Material.Filled.Edit)" OnAdornmentClick="@( () =>  BtnSupervisorsEdit(op.OperationId))" AdornmentAriaLabel="Upate" />
+                                                    }
+                                                   }else{
+                                                       <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" @bind-Value="context.Register.Supervisor"
+                                                                     SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} - {e.Group?.Description}")"
+                                                                     Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.SaveAs"
+                                                                     ShowProgressIndicator="true" MaxItems="null"
+                                                                     OnAdornmentClick="@( () =>  BtnSupervisorsEdit(op.OperationId))">
+                                                        <ItemTemplate Context="e">
+                                                            <MudItem Style="text-align: center">
+                                                                @switch (e.UserType)
+                                                                {
+                                                                    case 3:
+                                                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                                                        break;
+                                                                }
+                                                            </MudItem>
+                                                            <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                                                            <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                                                            <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                                                            <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                                            <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                                                        </ItemTemplate>
+                                                    </MudAutocomplete>
+                                                   }
+                                                   
                                                 }
 
 
@@ -1003,6 +1030,8 @@
     [Parameter]
     public int sosId { get; set; }
 
+    [Inject] private IDialogService DialogService { get; set; }
+
     private List<BreadcrumbItem> _links;
     private List<Distribution> _distributions = new();
     public List<Operation> _All_Operations { get; set; } = new();
@@ -1016,25 +1045,27 @@
     private List<Operation> _Operations = new();
 
     private Dictionary<(int, int), List<SOSRegisterJobObservation>?> SOS_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<SOSRegisterJobObservation>?>();
-    private Dictionary<int, UserOperationUI?> SOS_Registers_UserOperation { get; set; } = new Dictionary<int, UserOperationUI?>();
+    private Dictionary<int, SOSRegUserOperationRelationship?> SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
     private Dictionary<(int, int), List<JobObservationNulls>?> Suggested_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<JobObservationNulls>?>();
 
     private List<SOSRegisterJobObservation> _SosRegisters = new();
     public List<SOSRegUserOperation> _SosRegistersrUserOperation { get; set; } = new();
 
-    public List<JobObservation> _SOSJobobservation { get; set; } = new();
-    public List<JobObservation> _All_SOSJobobservation { get; set; } = new();
+    public List<JobObservationNulls> _SOSJobobservation { get; set; } = new();
+    public List<JobObservationNulls> _All_SOSJobobservation { get; set; } = new();
     public List<JobObservationNulls> _All_Suggested_SOSJobobservation { get; set; } = new();
 
-    private class UserOperationUI
+    private class SOSRegUserOperationRelationship
     {
         public bool StateUpdate { get; set; }
+        public bool Exist { get; set; }
         public SOSRegUserOperation Register { get; set; }
     }
 
     //User
     private string json = string.Empty;
     public User user = new();
+    public User? selectedUser = new();
     public bool logged = false;
     public bool ShowTable = false;
 
@@ -1333,10 +1364,9 @@
         SOS_Registers_Matrix?.Clear();
         _SosRegisters?.Clear();
 
-
-
+        //Actualizacion local y evitar peticiones
         _SosRegisters = await SOSServices.GetSOSRegisters(SOS_Review.SOSid);
-        _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(SOS_Review.SOSid);
+
 
         foreach (var OpItem in _All_Operations)
         {
@@ -1347,9 +1377,7 @@
                    .Where(r => r.OperationId == OpItem.OperationId && r.Year <= SOS_Review.AplicationYear && r.Month == currentindex)
                    .ToList();
 
-
                 SOS_Registers_Matrix.Add((OpItem.OperationId, currentindex), matchingRegisters);
-
             }
         }
 
@@ -1358,13 +1386,33 @@
             _All_SOSJobobservation?.Add(item.JobObservation);
         }
 
-        foreach (var item in _SosRegistersrUserOperation)
+        if (SOS_Registers_UserOperationRelationship?.Count == 0)
         {
-            UserOperationUI regAux = new();
-            regAux.Register = item;
-            regAux.StateUpdate = false;
-            SOS_Registers_UserOperation.Add((int)item.OperationId, regAux);
+            Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
+            _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(SOS_Review.SOSid);
+
+            foreach (var item in _SosRegistersrUserOperation)
+            {
+                SOSRegUserOperationRelationship regAux = new();
+                regAux.Register = item;
+                regAux.StateUpdate = false;
+                regAux.Exist = true;
+                SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
+            }
+
+            foreach(var op in _All_Operations)
+            {
+                if(!SOS_Registers_UserOperationRelationship.TryGetValue(op.OperationId, out var context)){
+                    //si no existre se crea de manera artificial
+                    SOSRegUserOperationRelationship regAux = new();
+                    regAux.Register = new();
+                    regAux.Exist = false;
+                    regAux.StateUpdate = false;
+                    SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+                }
+            }
         }
+
         //_Subordinates = await UsersServices.GetSubordinates(SOS_Review.Supervisor.UserId);
 
         ShowTable = true;
@@ -1401,11 +1449,12 @@
         StateHasChanged();
 
 
-        bool existeClave = SOS_Registers_UserOperation.ContainsKey(OperationId);
+        bool existeClave = SOS_Registers_UserOperationRelationship.ContainsKey(OperationId);
 
-        if (SOS_Registers_UserOperation.TryGetValue(OperationId, out var context))
+        if (SOS_Registers_UserOperationRelationship.TryGetValue(OperationId, out var context))
         {
-            Console.WriteLine($"La clave '{OperationId}' existe en el diccionario.");
+            if(context.Exist){
+Console.WriteLine($"La clave '{OperationId}' existe en el diccionario.");
 
             _NewJobObservation.PlantId = (int)SOS_Review.PlantId;
             _NewJobObservation.AreaId = (int)SOS_Review.AreaId;
@@ -1438,7 +1487,12 @@
             var result = await SOSServices.CreateSOSRegister(SOS_Review.SOSid, month, (int)SOS_Review.AplicationYear, _NewJobObservation);
             if (result != null)
             {
+                disableBtnCreateSos = false;
+
                 ShowTable = false;
+                StateHasChanged();
+
+
                 await PrepareDataTable();
 
                 Snackbar.Clear();
@@ -1446,9 +1500,26 @@
                 Snackbar.Add($"SOS Review Job Observation Created", Severity.Info);
                 StateHasChanged();
             }
+            }else
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                    "Atencion",
+                    (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
+                    yesText: "Entendio!");
+
+                    Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+
+                    //msg de crear Supervisor
+                }
+            
         }
         else
         {
+            bool? result = await DialogService.ShowMessageBox(
+            "Atencion",
+            (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
+            yesText: "Entendio!");
+
             Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
             //msg de crear Supervisor
@@ -1457,6 +1528,7 @@
 
 
         disableBtnCreateSos = false;
+        StateHasChanged();
     }
 
 
@@ -2337,10 +2409,57 @@
         tmpPerson.ShowDetails = !tmpPerson.ShowDetails;
     }
 
-    private void BtnSupervisorsEdit(int op)
+    private async Task BtnSupervisorsEdit(int op)
     {
+        if (SOS_Registers_UserOperationRelationship.TryGetValue(op, out var context))
+        {
+            context.StateUpdate = !context.StateUpdate;
+
+            if (!context.Exist)
+            {
+                try
+                {
+                    var result = await SOSServices.CreateSOSRegUserOperation(SOS_Review.SOSid, context.Register.Supervisor.UserId, op);
+                    if (result != null)
+                    {
+                        //ShowTable = false;
+                        StateHasChanged();
+                        context.Register = result;
+                        context.Register.Supervisor = SOS_Review.Supervisors.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                        context.Exist = true;
+                        context.StateUpdate = false;
+                        //await PrepareDataTable();
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"SOS Supervisor Assigned", Severity.Info);
+ 
+                       
+                        StateHasChanged();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error In Create SOSRegUserOperationRelationship Function: {ex.Message} ");
+               
+                }
+            }else{
+                if (!context.StateUpdate)
+                            {
+                                //actualizamos registro
+                            }
+            }
+
+            
+        }
         //Distribution tmpPerson = _distributions.First(f => f.DistributionId == nr);
         //tmpPerson.ShowDetails = !tmpPerson.ShowDetails;
+    }
+
+    private async Task CreateUserOperationRegister(int OperationId, User Supervisor)
+    {
+        
     }
 
     private async Task<IEnumerable<User>> SearchSV(string value)
@@ -2354,5 +2473,6 @@
 
         return SOS_Review.Supervisors.Where(x => x.Name.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
     }
+    
 }
 

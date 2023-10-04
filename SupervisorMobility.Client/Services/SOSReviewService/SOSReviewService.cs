@@ -170,7 +170,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
         {
 
             //int SOSid, int month, int year,
-            var response = await _http.PostAsync($"Registers/UserOp/{SOSid}/{SupervisorId}/{OperationId}", null);
+            var response = await _http.PostAsync($"SOSReview/Registers/UserOp/{SOSid}?SupervisorId={SupervisorId}&OperationId={OperationId}", null);
 
             if (response.IsSuccessStatusCode)
             {

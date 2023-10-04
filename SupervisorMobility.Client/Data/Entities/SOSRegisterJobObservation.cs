@@ -9,7 +9,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public SOSReviewProgram? SOSReviewProgram { get; set; }
 
         public int? JobObservationId { get; set; }
-        public JobObservation? JobObservation { get; set; }
+        public JobObservationNulls? JobObservation { get; set; }
 
         public int? OperationId { get; set; }
         public Operation? Operation { get; set; }
