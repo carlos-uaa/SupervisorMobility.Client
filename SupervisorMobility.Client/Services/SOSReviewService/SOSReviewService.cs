@@ -27,7 +27,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
 
             if (response.IsSuccessStatusCode)
             {
-                var Final_SOS_Review  = await response.Content.ReadFromJsonAsync<SOSReviewProgram>();
+                var Final_SOS_Review = await response.Content.ReadFromJsonAsync<SOSReviewProgram>();
                 return Final_SOS_Review;
             }
             else
@@ -36,9 +36,9 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             }
 
             return null;
-        } 
-        
-      
+        }
+
+
 
         public async Task DeleteSOSReview(int id)
         {
@@ -140,7 +140,8 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-            public async Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid)
+
+        public async Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid)
         {
             try
             {
@@ -185,6 +186,16 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-       
+        public async Task<bool> UpdateCreateSOSRegUserOperation(SOSRegUserOperation UpdateReg)
+        {
+            var response = await _http.PutAsJsonAsync($"SOSReview/Registers/UserOp/Register/{UpdateReg.SOSRegUserOperationId}", UpdateReg);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }
