@@ -17,7 +17,7 @@
 
         Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId);
         Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid);
-        Task<bool> UpdateCreateSOSRegUserOperation(SOSRegUserOperation UpdateReg);
+        Task<SOSRegUserOperation> UpdateSOSRegUserOperation(SOSRegUserOperation UpdateReg);
 
     }
 }
