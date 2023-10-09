@@ -1474,6 +1474,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Job Observación Program.
+        /// </summary>
+        public static string jobObservationProgram {
+            get {
+                return ResourceManager.GetString("jobObservationProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Job Observations.
         /// </summary>
         public static string jobObservations {
