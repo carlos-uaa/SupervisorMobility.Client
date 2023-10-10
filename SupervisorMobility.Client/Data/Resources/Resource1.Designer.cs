@@ -2671,6 +2671,58 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a By Distribution:
+        ///Description: reassigns supervisors for all records within the same distribution.
+        ///Usage: Useful when you want to group and reassign supervisors specifically within a category or grouping type defined in the table.
+        ///All Records:
+        ///Description: reassigns supervisors for all records in the table.
+        ///Usage: Ideal when you need a global reassignment of supervisors across all records without distribution restrictions.
+        ///By Operation:
+        ///Description: Reassigns supervisors for all the records of a specific ope [resto de la cadena truncado]&quot;;.
+        /// </summary>
+        public static string SOS_Body_AssignSV {
+            get {
+                return ResourceManager.GetString("SOS_Body_AssignSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a All Registers.
+        /// </summary>
+        public static string SOS_No_AssignSV {
+            get {
+                return ResourceManager.GetString("SOS_No_AssignSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Operation.
+        /// </summary>
+        public static string SOS_Null_AssignSV {
+            get {
+                return ResourceManager.GetString("SOS_Null_AssignSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Supervisor Reassignment (SV).
+        /// </summary>
+        public static string SOS_Title_AssignSV {
+            get {
+                return ResourceManager.GetString("SOS_Title_AssignSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a By Distribution.
+        /// </summary>
+        public static string SOS_Yes_AssignSV {
+            get {
+                return ResourceManager.GetString("SOS_Yes_AssignSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a To Do (LUP).
         /// </summary>
         public static string toDoLup {

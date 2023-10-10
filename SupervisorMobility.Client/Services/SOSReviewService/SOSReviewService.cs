@@ -186,9 +186,11 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<SOSRegUserOperation> UpdateSOSRegUserOperation(SOSRegUserOperation UpdateReg)
+        public async Task<SOSRegUserOperation> UpdateSOSRegUserOperation(SOSRegUserOperation UpdateReg, int option)
         {
-            var response = await _http.PutAsJsonAsync($"SOSReview/Registers/UserOp/Register/{UpdateReg.SOSRegUserOperationId}", UpdateReg);
+            var response = await _http.PutAsJsonAsync($"SOSReview/{UpdateReg.SOSReviewProgramid}/Registers/UserOp/{UpdateReg.SOSRegUserOperationId}/ByOption/{option}", UpdateReg);
+                                                                
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var Final_SOS_Review = await response.Content.ReadFromJsonAsync<SOSRegUserOperation>();
