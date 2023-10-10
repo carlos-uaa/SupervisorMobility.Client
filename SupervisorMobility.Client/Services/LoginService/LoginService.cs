@@ -15,7 +15,6 @@ namespace SupervisorMobility.Client.Services.LoginService
     {
         private readonly HttpClient _http;
         private readonly HttpClient _httpBridge;
-        private readonly HttpClient _httpAD;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
@@ -24,7 +23,6 @@ namespace SupervisorMobility.Client.Services.LoginService
         {
             _http = customHttpClientService.GetApiHttpClient();
             _httpBridge = customHttpClientService.GetBridgeHttpClient();
-            _httpAD = customHttpClientService.GetADHttpClient();
             _js = jSRuntime;
             _options = new JsonSerializerOptions
             {
