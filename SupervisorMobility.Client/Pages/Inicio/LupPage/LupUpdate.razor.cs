@@ -28,7 +28,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         }
         void Close() => visible = false;
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-
+        Dictionary<int, string> imageUrls = new Dictionary<int, string>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -41,6 +41,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
             jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
+
+
+
+            foreach (var evidence in _lup.Evidences)
+            {
+                if (evidence.ContentType == "image/png")
+                {
+                    var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                    imageUrls[evidence.FileUploadId] = imageUrl;
+                }
+            }
+
         }
         private async Task EditLup()
         {
@@ -362,6 +374,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                                 Snackbar.Add("Image Added to Lup", Severity.Info);
                                 _lup = await LupServices.GetLupByIdWhitFile(LupId);
+
+
+                                foreach (var evidence in _lup.Evidences)
+                                {
+                                    if (evidence.ContentType == "image/png")
+                                    {
+                                        var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                                        imageUrls[evidence.FileUploadId] = imageUrl;
+                                    }
+                                }
+
                                 StateHasChanged();
                             }
                             else
@@ -405,6 +428,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
         }
 
+
+        //Show Photo
+        private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true};
+
+        private bool visiblePhoto = false;
+
+        private int photoIndex = 0;
+
+        private void OpenPhotoaDialog(int index)
+        {
+            photoIndex = index;
+            visiblePhoto = true;
+
+        }
 
     }
 }

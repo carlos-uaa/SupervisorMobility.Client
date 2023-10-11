@@ -16,6 +16,7 @@
 
         Task DownloadFileGuide(int idfile, string filename);
         Task DownloadFileEvidence(int idfile, string filename);
+        Task<string> ShowImageEvidence(int idfile);
 
         Task DownloadAllUsersFormat();
         Task DownloadSSVFormat();

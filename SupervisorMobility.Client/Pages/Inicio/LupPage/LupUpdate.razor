@@ -239,10 +239,42 @@
                                 </MudText>
                             </TitleContent>
                             <ChildContent>
-                        <td class="d-flex" style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                            @if(_lup.Evidences.Where(e => e?.ContentType == "image/png").ToList().Count > 0){
+                                <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="(() => OpenPhotoaDialog(0))"></MudIcon>
+                                </MudTooltip>
+                            }
+                        <td >
                         @if(_lup.Evidences.Count > 0 ){
+                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: center;">
+
+                                @foreach (var (evidence, index) in _lup.Evidences.Where(e => e?.ContentType == "image/png").Select((evidence, index) => (evidence, index)))
+                                {
+                                    <MudItem Class=" mr-8 mb-4">
+                                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="(() => RemoveEvidence(evidence.FileUploadId))"></MudIcon>
+                                            </MudTooltip>
+                                        </MudItem>
+                                        <MudItem Style="display:flex; flex-direction: column; align-items: center;">
+                                            <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoaDialog(index))"/>
+                                            </MudTooltip>
+                                            <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                                    <MudItem>
+                                                        <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                                    </MudItem>
+                                                </MudButton>
+                                            </MudTooltip>
+                                        </MudItem>
+                                    </MudItem>
+                                }
+                            </MudItem>
+                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
                             @foreach (var evidence in _lup.Evidences)
                             {
+                                if(evidence?.ContentType != "image/png"){
                                 <MudPaper Class="mr-5 mt-5">
                                     <MudItem Style="text-align:end !important">
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => RemoveEvidence(evidence.FileUploadId))"></MudIconButton>
@@ -252,7 +284,7 @@
                                         @switch (evidence?.ContentType)
                                         {
                                             case "application/pdf":
-                                                    <img src="Images/pdf.png" Height="70" Width="70" />
+                                                    <img src="Images/pdf.png" Height="70" Width="70"/>
                                                     break;
 
                                                 case "application/msword":
@@ -295,11 +327,6 @@
                                                     // Para imágenes JPEG con extensión .jpg o .jpeg
                                                     break;
 
-                                                case "image/png":
-                                                    // Para imágenes PNG con extensión .png
-                                                    <img src="Images/png.png" Height="70" Width="70" />
-
-                                                    break;
 
                                                 case "image/gif":
                                                     // Para imágenes GIF con extensión .gif
@@ -307,10 +334,11 @@
                                                     break;
 
                                                 default:
-                                                    <img src="Images/error.png" Height="70" Width="70" />
-                                                    break;
+                                                        <img src="Images/error.png" Height="70" Width="70" />
+                                                        break;
+
                                         }
-                                                <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                        <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
                                             <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
                                                 <MudItem>
                                                     <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
@@ -320,11 +348,14 @@
    
                                     </MudItem>
                                 </MudPaper>
+                                }
                             }
+                            </MudItem>
+
                         }
                         else 
                         {
-                                    <span> @Localizer["noFilesUploadedYet"]</span>
+                            <span> @Localizer["noFilesUploadedYet"]</span>
                         }
                          </td>
                             </ChildContent>
@@ -488,6 +519,39 @@
                     </MudButton>
                     }
                 </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+
+
+@*Photo Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visiblePhoto" Options="dialogPhotoOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <MudCarousel Class="mud-width-full" Style="height: 81vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                        <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Default" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                            </MudAvatar>
+                        </PreviousButtonTemplate>
+                        <NextButtonTemplate>
+                        <MudAvatar Color="Color.Default" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                        </NextButtonTemplate>
+                        <ChildContent>
+                        @foreach (var evidence in  _lup.Evidences.Where(e => e?.ContentType == "image/png"))
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                    <MudText Typo="Typo.h6" Style="text-align:center">@evidence.FileName</MudText>
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 70vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
             </MudPaper>
         </MudContainer>
     </DialogContent>
