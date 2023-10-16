@@ -200,14 +200,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
                 _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
+
+
+
                 if (_jobObservation.HOEStandardTimes != null && _jobObservation.HOEStandardTimes != "||||")
                 {
-                    var HOEtime = _jobObservation.HOEStandardTimes.Split('|');
+                    var HOEtime = _jobObservation.HOEStandardTimes.Replace(',', '.').Split('|');
                     for (int i = 0; i < 5; i++)
                     {
-                        HoeTimes[i] = double.Parse(HOEtime[i]);
+                        HoeTimes[i] = double.Parse(HOEtime[i], CultureInfo.InvariantCulture);
                     }
                 }
+
                 else
                 {
                     for (int i = 0; i < 5; i++)
@@ -234,7 +238,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if(_jobObservation.Cycles != null)
                 {
-                    cycles = _jobObservation.Cycles.Split('|');
+                    cycles = _jobObservation.Cycles.Replace(',','.').Split('|');
+
                 }
                 else
                 {

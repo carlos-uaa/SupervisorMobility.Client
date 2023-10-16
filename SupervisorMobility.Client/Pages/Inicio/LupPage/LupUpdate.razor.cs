@@ -236,6 +236,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             fileNames.Clear();
             fileNames2.Clear();
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
+            foreach (var evidence in _lup.Evidences)
+            {
+                if (evidence.ContentType == "image/png")
+                {
+                    var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                    imageUrls[evidence.FileUploadId] = imageUrl;
+                }
+            }
             StateHasChanged();
 
             upload = true;
@@ -436,7 +444,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         private int photoIndex = 0;
 
-        private void OpenPhotoaDialog(int index)
+        private void OpenPhotoDialog(int index)
         {
             photoIndex = index;
             visiblePhoto = true;

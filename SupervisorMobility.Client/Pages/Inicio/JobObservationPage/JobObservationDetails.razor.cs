@@ -93,24 +93,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
-            if (CultureInfo.CurrentCulture.Name == "en-US")
-            {
-                if (_jobObservation.HOEStandardTimes != null)
-                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-                if (_jobObservation.Cycles != null)
-                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
-            }
-            else
-            {
-                if (_jobObservation.HOEStandardTimes != null)
-                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(".", ",");
-                if (_jobObservation.Cycles != null)
-                    _jobObservation.Cycles = _jobObservation.Cycles.Replace(".", ",");
-            }
 
             if (_jobObservation.HOEStandardTimes != null)
             {
-                HoeTimes = _jobObservation.HOEStandardTimes.Split('|');
+                HoeTimes = _jobObservation.HOEStandardTimes.Replace(',', '.').Split('|');
             }
             else
             {
@@ -141,7 +127,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (_jobObservation.Cycles != null)
             {
-                cycles = _jobObservation.Cycles.Split('|');
+                cycles = _jobObservation.Cycles.Replace(',', '.').Split('|');
             }
             else
             {
