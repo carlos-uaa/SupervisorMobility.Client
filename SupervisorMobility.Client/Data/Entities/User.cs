@@ -43,5 +43,8 @@ namespace SupervisorMobility.Client.Data.Entities
       
         public int? DistributionId { get; set; }
         public Distribution? Distribution { get; set; }
+
+        public int Sequence { get; set; } = 1; 
+        public string Container { get; set; } = "CategoryContainer";
     }
 }

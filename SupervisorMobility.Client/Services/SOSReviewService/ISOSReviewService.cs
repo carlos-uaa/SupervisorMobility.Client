@@ -15,7 +15,9 @@
         Task<SOSRegisterJobObservation> CreateSOSRegister(int SOSid, int month, int year, JobObservation JobEntity);
         Task<List<SOSRegisterJobObservation>> GetSOSRegisters(int sosid);
 
-        Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId);
+        Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs);
+
+       Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId);
         Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid);
         Task<SOSRegUserOperation> UpdateSOSRegUserOperation(SOSRegUserOperation UpdateReg, int option);
 
