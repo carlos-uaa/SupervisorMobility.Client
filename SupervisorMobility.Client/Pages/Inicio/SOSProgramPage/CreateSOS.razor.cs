@@ -173,6 +173,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             supervisorId = 0;
             _sosReview.AreaId = 0;
 
+            _Supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_sosReview.PlantId,_sosReview.AreaId,3, true, false);
+
+            _sosReview.Supervisors?.ToList().AddRange(_Supervisors);
+
             _areas = await AreaServices.GetAreas(_sosReview.PlantId);
 
             StateHasChanged();

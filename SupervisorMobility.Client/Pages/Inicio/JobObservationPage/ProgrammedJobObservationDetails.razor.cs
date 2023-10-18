@@ -229,13 +229,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Select the Operation first", Severity.Warning);
                 return;
             }
-            if (_jobObservation.OperatorId == 0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Select the Operator first", Severity.Warning);
-                return;
-            }
+            
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
