@@ -1,0 +1,389 @@
+﻿@page "/lup/details/{lupId:int}"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject IJobObservationService JobObservationService
+@inject ILupService LupServices
+@inject IFileUploadAndDownloadService FilesServices
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+@inject NavigationManager NavigationManager
+
+@*Title*@
+<PageTitle>Supervisor Mobility | LUP</PageTitle>
+@if (showLoading)
+{
+        <MudGrid Justify="Justify.Center">
+        <MudItem lg="10" md="12" sm="12" xs="12">
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+
+    <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+        </MudItem>
+    </MudGrid>
+}
+else{ 
+<MudGrid Justify="Justify.Center">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+            <MudText Typo="Typo.h6">
+                Lup @_lup.LupId
+            </MudText>
+        </MudItem>
+        <MudItem Class="ml-2">
+            <MudSimpleTable Style="overflow-x: auto;" Bordered=true Class="mt-3 mb-3">
+                <thead>
+                    <tr>
+                        <th>
+                            <MudText Style="font-weight:bold;">
+                                @Localizer["pillar"]
+                            </MudText>
+                        </th>
+                        <th>
+                            <MudText Style="text-align:center; font-weight:bold;">
+                                @Localizer["opportunityAreaDetected"]
+                            </MudText>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if(_lup.Pillar == 1)
+                        {
+                        <td style="width: 20%">
+                            S
+                        </td>
+                        <td>
+                             <MudText >@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 2)
+                        {
+                            <td style="width: 20%">
+                            Q
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 3)
+                        {
+                            <td style="width: 20%">
+                            D
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 4)
+                        {
+                            <td style="width: 20%">
+                            C
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }
+                    </tr>
+                    <tr>
+                        @if (_lup.Pillar == 5)
+                        {
+                            <td style="width: 20%">
+                             @Localizer["other"]
+                        </td>
+                        <td>
+                                <MudText>@_lup.Oportunity</MudText>
+                        </td>
+                        }                        
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+            <MudSimpleTable Style="overflow-x: auto;" Bordered>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:bold">Begin / end</td>
+                        <td>
+                            <MudItem Style="display:inline-flex;  align-items: flex-end;">
+                                <MudDatePicker @bind-Date="_lup.CreatedDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" ReadOnly/>
+                                @if (_lup.EndDate == null)
+                                {
+                                    <MudText> @Localizer["endDate"]:  @Localizer["notYetCompleted"]</MudText>
+                                }
+                                else
+                                {
+                                    <MudDatePicker @bind-Date="_lup.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" ReadOnly />
+                                }
+
+                            </MudItem>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold; width: 20%">@Localizer["jobObservation"]</td>
+                        <td>
+                            <MudButton EndIcon="@Icons.Material.Filled.ContentPasteGo" Variant="Variant.Filled" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))">@Localizer["jobObservation"]</MudButton>
+                            <MudChip Variant="Variant.Text" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @jobObservation.Distribution?.Description</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Info" @onclick="(() => GoToJobObservation(_lup.JobObservationId))"> @jobObservation.Operation?.Description</MudChip>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold"> @Localizer["department"]</td>
+                        <td>@_lup.Department?.Description</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold"> @Localizer["observer"]</td>
+                        <td>@_lup.Observer</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Q3</td>
+                        <td>@_lup.Q3</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">Q4</td>
+                        <td>@_lup.Q4</td>
+                    </tr>
+                    <tr>
+                        @if (!(_lup.Justification == null || _lup.Justification.Length == 0) && _lup.Status == 4)
+                        {
+                            <td style="font-weight:bold"> @Localizer["justification"]</td>
+                            <td>@_lup.Justification</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold">@Localizer["status"]</td>
+                        <td>
+                            @switch (_lup.Status)
+                            {
+                                case 1:
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                    break;
+                                case 2:
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                    break;
+                                case 3:
+                                    <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                    break;
+                                case 4:
+                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                    break;
+                            }
+                            
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+                <MudSimpleTable Bordered Class="mt-3 mb-10">
+                <tbody>
+                    <tr>
+                        <MudExpansionPanels Elevation="1" MultiExpansion="true">
+                        <MudExpansionPanel  IsInitiallyExpanded=true Style="min-width: 100%;">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["evidence"]
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                            @if(_lup.Evidences.Where(e => e?.ContentType == "image/png").ToList().Count > 0){
+                                <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                            <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="(() => OpenPhotoDialog(0))"></MudIcon>
+                                </MudTooltip>
+                            }
+                                                   @if(_lup.Evidences.Count > 0 ){
+                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: center;">
+
+                                @foreach (var (evidence, index) in _lup.Evidences.Where(e => e?.ContentType == "image/png").Select((evidence, index) => (evidence, index)))
+                                {
+                                                <MudItem Class=" mr-8 mb-4">
+                                        <MudItem Style="display:flex; flex-direction: column; align-items: center;">
+                                            <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog(index))" />
+                                            </MudTooltip>
+                                            <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                                    <MudItem>
+                                                        <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                                    </MudItem>
+                                                </MudButton>
+                                            </MudTooltip>
+                                        </MudItem>
+                                    </MudItem>
+                                }
+                            </MudItem>
+                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                            @foreach (var evidence in _lup.Evidences)
+                            {
+                                if(evidence?.ContentType != "image/png"){
+                                <MudPaper Class="mr-5 mt-5">
+                                    <MusdItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+
+                                        @switch (evidence?.ContentType)
+                                        {
+                                            case "application/pdf":
+                                                    <img src="Images/pdf.png" Height="70" Width="70"/>
+                                                    break;
+
+                                                case "application/msword":
+                                                    // Para documentos Word con extensión .doc
+                                                    <img src="Images/doc.png" Height="70" Width="70" />
+
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                                    <img src="Images/docx.png" Height="70" Width="70" />
+
+                                                    // Para documentos Word con extensión .docx
+                                                    break;
+
+                                                case "application/vnd.ms-powerpoint":
+                                                    <img src="Images/ppt.png" Height="70" Width="70" />
+                                                    // Para presentaciones PowerPoint con extensión .ppt
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                                    <img src="Images/pptx.png" Height="70" Width="70" />
+
+                                                    // Para presentaciones PowerPoint con extensión .pptx
+                                                    break;
+
+                                                case "application/vnd.ms-excel":
+                                                    // Para hojas de cálculo Excel con extensión .xls
+                                                    <img src="Images/xls.png" Height="70" Width="70" />
+                                                    break;
+
+                                                case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                                    // Para hojas de cálculo Excel con extensión .xlsx
+                                                    <img src="Images/xlsx.png" Height="70" Width="70" />
+
+                                                    break;
+
+                                                case "image/jpeg":
+                                                    <img src="Images/jpg.png" Height="70" Width="70" />
+
+                                                    // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                    break;
+
+
+                                                case "image/gif":
+                                                    // Para imágenes GIF con extensión .gif
+                                                    <img src="Images/gif.png" Height="70" Width="70" />
+                                                    break;
+
+                                                default:
+                                                        <img src="Images/error.png" Height="70" Width="70" />
+                                                        break;
+
+                                        }
+                                        <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                            <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                                <MudItem>
+                                                    <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                                </MudItem>
+                                            </MudButton>
+                                        </MudTooltip>
+   
+                                    </MusdItem>
+                                </MudPaper>
+                                }
+                            }
+                            </MudItem>
+
+                        }
+                        else 
+                        {
+                            <span> @Localizer["noFilesUploadedYet"]</span>
+                        }
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
+    </MudItem>
+</MudGrid>
+}
+@* Lup *@
+
+
+@*Photo Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visiblePhoto" Options="dialogPhotoOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <MudCarousel Class="mud-width-full" Style="height: 81vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                    <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                        </MudAvatar>
+                    </PreviousButtonTemplate>
+                    <NextButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                    </NextButtonTemplate>
+                    <ChildContent>
+                        @foreach (var evidence in _lup.Evidences.Where(e => e?.ContentType == "image/png"))
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudText Typo="Typo.h6" Style="text-align:center">@evidence.FileName</MudText>
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 70vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>

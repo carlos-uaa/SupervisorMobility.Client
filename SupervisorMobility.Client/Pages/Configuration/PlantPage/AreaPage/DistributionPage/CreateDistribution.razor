@@ -1,0 +1,56 @@
+﻿@page "/plants/{plantId:int}/areas/{areaId:int}/distributions/createdistribution"
+@inject IDistributionService DistributionService
+@inject IAreaService AreaService
+@inject IPlantService PlantService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["create"] @Localizer["distribution"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == Localizer["plantDetails"])
+        {
+            <MudButton @onclick="(() => GoToPlant())" Variant="Variant.Text" Color="Color.Info">@_plant.Description</MudButton>
+        }
+        else if (item.Text == Localizer["areaDetails"])
+        {
+            <MudButton @onclick="(() => GoToArea())" Variant="Variant.Text" Color="Color.Info">@_area.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Form*@
+<EditForm Model="_distribution" OnValidSubmit="CreateDistributionAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@Localizer["distributionDetails"]</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["newDistribution"]</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label=@Localizer["description"]
+                                  @bind-Value="_distribution.Description" For="@(() => _distribution.Description)" />
+                    <MudTextField Label=@Localizer["code"] Class="mt-3"
+                                  @bind-Value="_distribution.Code" For="@(() => _distribution.Code)" />
+                    @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_distribution.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["save"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["cancel"]</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>

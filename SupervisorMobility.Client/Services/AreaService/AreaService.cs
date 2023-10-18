@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.AreaService
 {
     public class AreaService : IAreaService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public AreaService(HttpClient http)
+        public AreaService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -46,7 +49,7 @@ namespace SupervisorMobility.Client.Services.AreaService
         }
 
         // Get area including operations
-        public async Task<Area> GetAreaIncludingOperations(int plantId, int areaId)
+        public async Task<Area> GetOneAreaIncludingCollections(int plantId, int areaId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}?includeOperations=true");
             var content = await response.Content.ReadAsStringAsync();
@@ -76,11 +79,32 @@ namespace SupervisorMobility.Client.Services.AreaService
 
             return areas;
         }
+        
+        public async Task<List<Area>> GetAreasIncludeCollections(int plantId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas?includeCollections=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var areas = JsonSerializer.Deserialize<List<Area>>(content, _options);
+
+            return areas;
+        }
 
         // Update area
-        public async Task UpdateArea(int plantId, Area area)
+        public async Task<bool> UpdateArea(int plantId, Area area)
         {
             var response = await _http.PutAsJsonAsync($"plants/{plantId}/areas/{area.AreaId}", area);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

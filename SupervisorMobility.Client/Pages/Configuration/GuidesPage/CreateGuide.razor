@@ -1,0 +1,247 @@
+﻿@page "/GuidesManagement/CreateGuide"
+@using System.Text.RegularExpressions;
+@using System.Net.Http.Headers;
+@inject IGuideService GuideServices
+@inject IFileUploadAndDownloadService FilesServices
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject IStringLocalizer<Resource1> Localizer
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["GuidesCreateTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+<MudText Typo="Typo.h6">@ErrorMessageToDisplay</MudText>
+<MudGrid Class="d-flex " Style="flex-direction: column; align-content: center;">
+    <MudItem Style="min-width:55vw">
+        <MudCard >
+        <EditForm Model="_newGuide" OnValidSubmit="CreateNewGuide">
+            <DataAnnotationsValidator />
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudCardHeader >
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h5" Style="text-align:center" Class=" pl-16 ml-9">@Localizer["GuidesCreateTitle"]</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudChip Variant="Variant.Text" Color="Color.Success" Class="ml-auto mr-13 mb-10">@Localizer["GuidesNew"]</MudChip>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudContainer Class="d-flex flex-row">
+                            <MudTextField Label="@Localizer["GuidesName"]" @bind-Value="@_newGuide.Name" For="@(() => _newGuide.Name)" Class="mr-5"/>
+                            <MudTextField Label="@Localizer["GuidesCode"]" @bind-Value="@_newGuide.Code" For="@(() => _newGuide.Code)" />
+                        </MudContainer>
+                        <MudTextField Label="@Localizer["GuidesDescription"]" @bind-Value="@_newGuide.Description" For="@(() => _newGuide.Description)" Class="mr-5 ml-5" />
+
+                        @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_newGuide.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+
+                    </MudCardContent>
+
+                </MudItem>
+            </MudGrid>
+
+
+            <MudContainer Class="d-flex justify-center flex-column align-content-center align-center">
+                <MudText Typo="Typo.h6">@FileErrorMesage</MudText>
+
+            <MudStack Style="width: 100%">
+                <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                               @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+                    <ButtonTemplate Context="DragAndDrop">
+                        <MudPaper Height="250px" Outlined="true" Class="@DragClass">
+                                <MudText Typo="Typo.h6">@Localizer["GuidesDrag"]</MudText>
+                            @foreach (var file in fileNames)
+                            {
+                                <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                    <MudText Typo="Typo.h6">@file.message</MudText>
+
+                                    @switch (file.ftype)
+                                    {
+                                        case "pdf":
+                                            <img src="Images/pdf.png" Height="70" Width="70" />
+                                            break;
+                                        default:
+                                            <img src="Images/error.png" Height="70" Width="70" />
+                                            break;
+                                    }
+
+                                    <MudChip Color="Color.Dark" Text="@file.name" />
+                                </MudItem>
+                            }
+                        </MudPaper>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudStack>
+        </MudContainer>
+        <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["GuidesCreateTitle"]</MudButton>
+                <MudButton Href="/GuidesManagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+        </MudCardActions>
+        </EditForm>
+
+    </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    Guide _newGuide = new Guide();
+
+    private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    private string DragClass = DefaultDragClass;
+    private List<FileToDisplay> fileNames = new List<FileToDisplay>();
+
+    private class FileToDisplay
+    {
+        public string name { get; set; }
+        public string ftype { get; set; }
+        public string message { get; set; }
+    }
+
+    private string FileName;
+
+    private string ErrorMessageToDisplay;
+    private string FileErrorMesage;
+    private IBrowserFile? FileSource;
+    private bool ToCreate = false;
+
+
+    private List<BreadcrumbItem> _links;
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["configuration"], href: "/configuration", disabled: false),
+            new BreadcrumbItem(text: @Localizer["GuidesTitle"], href: "/GuidesManagement", disabled: false),
+            new BreadcrumbItem(text: @Localizer["GuidesCreateTitle"], href: "", disabled: true)
+        };
+    }
+    private async void CreateNewGuide()
+    {
+        _newGuide.IsActive = true;
+        if (ToCreate)
+        {
+            try
+            {
+
+                if (FileSource is not null)
+                {
+
+                    using var content = new MultipartFormDataContent();
+
+                    var fileContent = new StreamContent(FileSource.OpenReadStream(509600000));
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(FileSource.ContentType);
+
+                    content.Add(
+                    content: fileContent,
+                    name: "\"file\"",
+                    fileName: FileSource.Name);
+
+                    Console.WriteLine("Create Guide");
+
+                    var resultUploadFile = await FilesServices.UploadGuide(content);
+                    Console.WriteLine("result upload Guide");
+
+                    if (resultUploadFile is not null)
+                    {
+                        Console.WriteLine("upload file not null");
+
+                        _newGuide.FileUploadId = resultUploadFile.FileUploadId;
+                        _newGuide.FileUpload = resultUploadFile;
+
+                        var result = await GuideServices.CreateGuide(_newGuide);
+
+                        if (result != null)
+                            NavigationManager.NavigateTo("/GuidesManagement");
+                        else
+                            Console.WriteLine("result null");
+                    }
+                    else
+                    {
+                        Console.WriteLine("upload file null");
+                    }
+
+                   
+
+
+                }
+                else
+                {
+                    Console.WriteLine("FileSource Null");
+
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageToDisplay = $"Exeption: {ex.Message}";
+                Console.WriteLine(ErrorMessageToDisplay);
+            }
+        }
+        else
+            FileErrorMesage = "Please Load a File";
+
+    }
+    ///Drag and drop
+    /// </summary> <summary>
+
+    private async void OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        await Clear();
+
+        FileName = e.File.Name;
+
+        Regex fileExtention = new Regex(@".+\.pdf", RegexOptions.Compiled);
+
+        if (!fileExtention.IsMatch(FileName))
+        {
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "otro", message = "This not a PDF file " });
+            FileErrorMesage = "This not a PDF File";
+            FileName = string.Empty;
+            FileSource = null;
+            ToCreate = false;
+        }
+        else
+        {
+            FileErrorMesage = string.Empty;
+            FileSource = e.File;
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "pdf" });
+            ToCreate = true;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task Clear()
+    {
+        fileNames.Clear();
+        ClearDragClass();
+        await Task.Delay(100);
+    }
+
+    private void SetDragClass()
+    {
+        DragClass = $"{DefaultDragClass} mud-border-primary";
+    }
+
+    private void ClearDragClass()
+    {
+        DragClass = DefaultDragClass;
+    }
+
+
+}

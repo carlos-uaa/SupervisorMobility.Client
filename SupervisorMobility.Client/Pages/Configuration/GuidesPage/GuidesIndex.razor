@@ -1,0 +1,145 @@
+﻿@page "/Help/guides"
+@inject IGuideService GuidesServices
+@inject IFileUploadAndDownloadService FileServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["GuideTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@if (_Guides == null)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else if (_Guides.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["GuidesNotFound"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudText Typo="Typo.h5" Color="Color.Info">@Localizer["GuidesNo"]</MudText>
+
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+}
+else
+{
+
+    <MudTable Items="_Guides" Height="60vh" T="Guide" ReadOnly="true" FixedHeader=true Class="styled-table table-striped mt-10"
+              SortLabel="Sort By" Filter="new Func<Guide,bool>(FilterFunc)"
+              HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["GuidesTitle"]</MudText>
+                </MudItem><MudSpacer />
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Code)"> @Localizer["UsersCode"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Name)">@Localizer["GuidesName"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["GuidesDescription"]</MudTableSortLabel></MudTh>
+            <MudTh>@Localizer["GuidesFile"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+
+            <MudTd DataLabel="@Localizer["Code"]">
+                <MudText Align="Align.Center">@context.Code</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["GuidesName"]">
+                <MudText Align="Align.Center">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["GuidesDescription"]">
+                <MudText Align="Align.Center">@context.Description</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudTooltip Text=@Localizer["Download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                            <MudButton @onclick="@(() => DownloadFile(context.FileUploadId, context.FileUpload?.FileName) )">
+                                @switch (@context.FileUpload?.ContentType)
+                                {
+                                    case "application/pdf":
+                                        <img src="Images/pdf.png" Height="20" Width="20" />
+                                        break;
+                                    default:
+                                        <img src="Images/error.png" Height="20" Width="20" />
+                                        break;
+                                }
+                                <MudItem>
+                                    <MudChip Size="Size.Small" Class="ml-4" Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@context.FileUpload?.FileName" Color="Color.Info" />
+                                </MudItem>
+                            </MudButton>
+                        </MudItem>
+                    </MudTooltip>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+}

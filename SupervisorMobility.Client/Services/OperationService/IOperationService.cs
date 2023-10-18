@@ -12,7 +12,7 @@
         Task<Operation> CreateOperation(int plantId, int areaId, int distributionId, Operation operation);
 
         // Update operation
-        Task UpdateOperation(int plantId, int areaId, int distributionId, int operationId, Operation operation);
+        Task<bool> UpdateOperation(int plantId, int areaId, int distributionId, int operationId, Operation operation);
 
         // Delete operation 
         Task DeleteOperation(int plantId, int areaId, int distributionId, int operationId);

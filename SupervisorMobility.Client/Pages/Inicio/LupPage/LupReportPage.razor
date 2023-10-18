@@ -1,0 +1,193 @@
+﻿@page "/lupReport"
+
+@inject ILupService LupServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IJobObservationService JobObservationServices
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+
+@if (logged == true)
+{
+
+    @*Title*@
+    <PageTitle>Supervisor Mobility | LUP</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Items="_links">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+    @*Dashboard grid*@
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12">
+            <MudItem Class="d-flex justify-content-between" Style="align-items: center;">
+                <MudItem Class="d-flex">
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mr-4">Total</MudText>
+                    <MudChip Variant="Variant.Text" Color="Color.Warning" >@Localizer["new"] @totalNew</MudChip>
+                    <MudChip Variant="Variant.Text" Color="Color.Info">@Localizer["inProgress"] @totalInProgress</MudChip>
+                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["finished"] @totalCanceled</MudChip>
+                    <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["canceled"] @totalFinished</MudChip>
+                </MudItem>
+                <MudItem Style="justify-content: end" Class="ml-auto">
+                    <MudItem Class="d-flex">
+                        <MudTextField @bind-Value="year" Label=@Localizer["year"] Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 10vw" Class="mr-2" TextChanged="Filters" Clearable></MudTextField>
+                        <MudTextField @bind-Value="operationId" Label="Operation Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 10vw" TextChanged="Filters" Clearable></MudTextField>
+                    </MudItem>
+                </MudItem>
+            </MudItem>
+            @if (_lup.Count > 0)
+            {
+                <MudTable Items="_lup" Hover="true" T="Lup" Filter="new Func<Lup,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                          HorizontalScrollbar="true">
+                    <ToolBarContent>
+                        <MudGrid class="d-flex flex-column justify-center align-self-center">
+                            <MudItem Class="d-flex">
+                                <MudText Typo="Typo.h6" Align="Align.Center" Style="pt-4">@Localizer["lupReport"]</MudText>
+                                <MudSpacer />
+                                <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                <MudSpacer />
+                            </MudItem>
+                        </MudGrid>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.LupId)">Lup Id</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x.Pillar)">@Localizer["pillar"]</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<Lup, object>(x=>x?.Oportunity)">@Localizer["opportunity"]</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudText Align="Align.Center">@Localizer["actions"]</MudText>
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="LupId" @ondblclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => HandleTouchStart(context.LupId))">
+                            <MudText Align="Align.Center">@context.LupId</MudText>
+                        </MudTd>
+                        <MudTd DataLabel=@Localizer["status"] @ondblclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => HandleTouchStart(context.LupId))">
+                            <MudText Align="Align.Center">
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                        break;
+                                }
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel=@Localizer["pillar"] @ondblclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => HandleTouchStart(context.LupId))">
+                            <MudText Align="Align.Center">
+                                @switch (context.Pillar)
+                                {
+                                    case 1:
+                                        <MudText>S</MudText>
+                                        break;
+                                    case 2:
+                                        <MudText>Q</MudText>
+                                        break;
+                                    case 3:
+                                        <MudText>D</MudText>
+                                        break;
+                                    case 4:
+                                        <MudText>C</MudText>
+                                        break;
+                                    case 5:
+                                        <MudText>@Localizer["other"]</MudText>
+                                        break;
+                                }
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel=@Localizer["opportunity"] @ondblclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => HandleTouchStart(context.LupId))">
+                            @if (context.Oportunity.Length > 100)
+                            {
+
+                                <MudText Align="Align.Center">@context.Oportunity.Substring(0,100) ...</MudText>
+                            }
+                            else
+                            {
+                                <MudText Align="Align.Center">@context.Oportunity </MudText>
+                            }
+                        </MudTd>
+                        <MudTd @ondblclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => HandleTouchStart(context.LupId))">
+                            <MudText Align="Align.Center">
+
+                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => OpenDialog2(context.LupId))" @ontouchstart="(() => OpenDialog2(context.LupId))">@Localizer["lupDetails"]</MudMenuItem>
+                                        @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                        {
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => EditLup(context.LupId))" @ontouchstart="(() => EditLup(context.LupId))">@Localizer["editLup"] </MudMenuItem>
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.LupId))" @ontouchstart="(() => OpenDeleteDialog(context.LupId))">@Localizer["deleteLup"]</MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                                @*                                        <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => OpenDeleteDialog(context.LupId))"></MudIconButton>*@
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            }
+            else
+            {
+                <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreStillNoAreasOfOpportunityDetectedForThisPillar"]</MudText>
+            }
+        </MudItem>
+    </MudGrid>
+
+    @*Delete lup modal*@
+    <MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+        <DialogContent>
+            <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+            <MudText Class="mt-4 mb-4">
+                <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+                @Localizer["areYouSureYouWantToDeleteThisLup"]
+            </MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+            <MudButton @onclick="(() => DeleteLup(deleteLupId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+
+    <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                <SupervisorMobility.Client.Pages.Inicio.LupPage.LupDetails LupId="lupId"></SupervisorMobility.Client.Pages.Inicio.LupPage.LupDetails>
+            </MudContainer>
+        </DialogContent>
+        <DialogActions>
+            @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+            {
+                <MudIconButton @onclick="(() => EditLup(lupId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+            }
+            <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+}

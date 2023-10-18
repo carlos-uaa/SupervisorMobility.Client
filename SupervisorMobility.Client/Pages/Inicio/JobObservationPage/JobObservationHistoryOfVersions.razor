@@ -1,0 +1,176 @@
+﻿@page "/jobobservation/history/{jobobservationId:int}"
+@inject IJobObservationService JobObservationServices
+@inject IStringLocalizer<Resource> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["jobObservationHistory"]</PageTitle>
+
+<MudBreadcrumbs Class="mb-5" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@if (_jobChangesList.Count > 0)
+{
+    <MudTable Items="_jobChangesList" T="JobObservationVersion" Filter="new Func<JobObservationVersion,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="400px"
+          HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">@Localizer["jobObservationHistory"]</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudSpacer />
+
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x.JobObservationVersionId)">Id</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.MadeBy)">@Localizer["changeBy"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.resumeVersion)">@Localizer["theFollowingPropertiesWerechanged"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.Distribution?.Description)">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<JobObservationVersion, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+            <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+        </HeaderContent>
+        <GroupHeaderTemplate>
+
+        </GroupHeaderTemplate>
+        <RowTemplate>
+            <MudTd DataLabel="Id">
+                <MudText Align="Align.Center">@context.JobObservationVersionId</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["changeBy"]>
+                <MudText Align="Align.Center">@context.MadeBy</MudText>
+            </MudTd> <MudTd DataLabel=@Localizer["theFollowingPropertiesWerechanged"]>
+                <MudText Align="Align.Center">@context.resumeVersion</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["distribution"]>
+                <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["operation"]>
+                <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["operator"]>
+                <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel=@Localizer["status"]>
+                <MudText Align="Align.Center">
+                    @switch (context.Status)
+                    {
+                        case 1:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                            break;
+                        case 2:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                            break;
+                        case 3:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                            break;
+                        case 4:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                            break;
+                        case 5:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                            break;
+                        case 6:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                            break;
+                        case 7:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                            break;
+                    }
+                </MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                 <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationVersionId))"></MudIconButton>
+                
+                 @*
+                 <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => DeleteJobObservation(context.JobObservationId))"></MudIconButton>
+                *@
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}
+else
+{
+    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreNoHistoryVersionsForTheJobObservations"]</MudText>
+}
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationHistoryDetails JobObservationId="jobId" JobObservationVersionId="jobVersionId"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationHistoryDetails>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [Parameter]
+    public int jobobservationId { get; set; }
+
+    private List<BreadcrumbItem> _links;
+
+    private List<JobObservationVersion> _jobChangesList = new();
+    private bool showui = false;
+    private bool visible = false;
+    private string searchString = "";
+
+    private int jobId;
+    private int jobVersionId;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
+            new BreadcrumbItem(text: Localizer["jobObservationHistory"], href: "", disabled: true),
+    };
+    }
+
+
+    private void OpenDialog2(int id)
+    {
+        jobId = jobobservationId;
+        jobVersionId = id;
+        visible = true;
+    }
+    void Close() => visible = false;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _jobChangesList = await JobObservationServices.GetAllHistoryJobObservations(jobobservationId);
+        showui = true;
+    }
+
+    private bool FilterFunc(JobObservationVersion element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.JobObservationVersionId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.DateModification.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+
+        if ($"{element.JobObservationId} ".Contains(searchString))
+            return true;
+        return false;
+    }
+
+
+}

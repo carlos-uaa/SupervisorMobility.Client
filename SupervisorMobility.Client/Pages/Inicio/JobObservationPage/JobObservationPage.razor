@@ -1,0 +1,1220 @@
+﻿@page "/jobobservation"
+
+@using System.Net.Http.Json
+@using MudBlazor
+
+@inject NavigationManager NavigationManager
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IJSRuntime JSRuntime
+@inject IChecklistService ChecklistService
+@inject IAssyChartService AssyChartServices
+@inject ISnackbar Snackbar
+@inject IJobObservationService JobObservationService
+@inject IDistributionService DistributionService
+@inject IOperationService OperationService
+@inject IUserService UsersService
+@inject IStringLocalizer<Resource> Localizer
+
+@if (logged == true)
+{
+    @*Title*@
+    <PageTitle>Supervisor Mobility | @Localizer["jobObservations"]</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Items="_links">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+
+    <MudItem Class="d-flex justify-content-between" Style="align-items: center;">
+        <MudText Typo="Typo.h6">@Localizer["jobObservations"]</MudText>
+        <MudItem Style="justify-content: end" Class="ml-auto">
+            <MudItem Class="d-flex">
+                @if (user.UserType == 1 || user.UserType == 6)
+                {
+
+                    @*Mud select of Plants for Admin*@
+                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas">
+                        <MudSelectItem Value="0">@Localizer["allPlants"]</MudSelectItem>
+                        @foreach (var type in _plants)
+                        {
+                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    @if (plantId != 0)
+                    {
+                        @*Mud select of Areas for Admin*@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowJobObs">
+                            <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @*Mud select for SSV *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                        </MudSelect>
+                    }
+                }
+                else if (user.UserType == 2)
+                {
+                    @*Mud select of Areas for Admin*@
+                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowJobObs">
+                        <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
+                        @foreach (var type in _areas)
+                        {
+                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                else if (user.UserType == 5)
+                {
+                    @*Mud select of Areas for Admin*@
+                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" SelectedValuesChanged="ShowJobObs">
+                        <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
+                        @foreach (var type in _areas)
+                        {
+                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                <MudButton Href="/jobobservationschedule" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Class="mr-8">@Localizer["calendar"]</MudButton>
+                @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                {
+                    <MudButton @onclick="(() => PlanJobObservation())" StartIcon="@Icons.Material.Filled.EditCalendar" Class="mr-8">@Localizer["plan"]</MudButton>
+                    <MudButton @onclick="(() => CreateJobObservation())" StartIcon="@Icons.Material.Filled.Add">@Localizer["create"]</MudButton>
+                }
+            </MudItem>
+        </MudItem>
+    </MudItem>
+    <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text=@Localizer["allJobObservations"]>
+            <MudTable Items="_jobObservations" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="50vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                HorizontalScrollbar="true" >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @*Mud select of Status *@
+                            <MudSelect T="int" Label=@Localizer["status"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@statusId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Value="0" Disabled>@Localizer["notSelected"]</MudSelectItem>
+                            <MudSelectItem Value="1">@Localizer["planned"]</MudSelectItem>
+                            <MudSelectItem Value="2">@Localizer["inProgress"]</MudSelectItem>
+                            <MudSelectItem Value="3">@Localizer["late"]</MudSelectItem>
+                            <MudSelectItem Value="4">@Localizer["underReview"]</MudSelectItem>
+                            <MudSelectItem Value="5">@Localizer["rejected"]</MudSelectItem>
+                            <MudSelectItem Value="6">@Localizer["finished"]</MudSelectItem>
+                        </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["status"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            @switch (context.Status)
+                            {
+                                case 1:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                                    break;
+                                case 2:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                    break;
+                                case 3:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                    break;
+                                case 4:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                    break;
+                                case 5:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                    break;
+                                case 6:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                    break;
+                            }
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+
+                            @*
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>
+                        *@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalProgrammed" @onclick="(() => ClearStatus())">
+            <MudTable Items="_SOSJobobservation" T="JobObservation" Hover Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true">
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" OpenTo="OpenTo.Month" FixDay="1" Style="max-width: 12vw" PickerVariant="PickerVariant.Dialog" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate >
+
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))"  @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))"  @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))"  @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))"  @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))"  @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*               <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalPlanned" @onclick="(() => ClearStatus())">
+            <MudTable Items="_plannedJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true">
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*               <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.StopCircle" Text="@totalInProgress" @onclick="(() => ClearStatus())">
+            <MudTable Items="_inProgressJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true" >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">In Progress</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*<MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.RemoveCircle" Text="@totalLate" @onclick="(() => ClearStatus())">
+            <MudTable Items="_lateJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true" 
+            >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))" >
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*                          <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.IncompleteCircle" Text="@totalUnderReview" @onclick="(() => ClearStatus())">
+            <MudTable Items="_underReviewJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true" >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.Cancel" Text="@totalRejected" @onclick="(() => ClearStatus())">
+            <MudTable Items="_rejectedJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true" >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+        <MudTabPanel Icon="@Icons.Material.Filled.Circle" Text="@totalFinished" @onclick="(() => ClearStatus())">
+            <MudTable Items="_finishedJobObservation" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+                      HorizontalScrollbar="true" >
+                <ToolBarContent>
+                    @if (plantId == new int())
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
+                    }
+                    else if (_jobObservations.Count == 0 && !filters)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@color" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                        @if (filters == false)
+                        {
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        }
+                        <MudSpacer />
+                        @if (filters == true)
+                        {
+                            <MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 5vw" Class="pt-2" TextChanged="Filters"></MudTextField>
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId" SelectedValuesChanged="FilterDistributions">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            @if (!operationFlag)
+                            {
+                                <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" Disabled>
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                </MudSelect>
+                            </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operationId" SelectedValuesChanged="Filters">
+                                    <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
+                                    @foreach (var type in _operations)
+                                    {
+                                        <MudSelectItem Value="type.OperationId">@($"{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] @bind-Date="@filterDate" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" PickerClosed="Filters" />
+                            @*Mud select for Operator *@
+                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in operatorUsers)
+                                {
+                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width: 60px;" />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
+                </HeaderContent>
+                <GroupHeaderTemplate>
+                </GroupHeaderTemplate>
+                <RowTemplate>
+                    <MudTd DataLabel="Id" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.JobObservationId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["distribution"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operation"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operation?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["startDate"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["operator"] @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status" @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                        </MudText>
+                    </MudTd>
+                    <MudTd @ondblclick="(() => OpenDialog2(context.JobObservationId))" @ontouchstart="(() => HandleTouchStart(context.JobObservationId))">
+                        <MudText Align="Align.Center">
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation(context.JobObservationId))" @ontouchstart="(()=>EditJobObservation(context.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() =>OpenDeleteDialog(context.JobObservationId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationId))">@Localizer["deleteJobObservation"]</MudMenuItem>
+                                    }
+                                </ChildContent>
+                            </MudMenu>
+                            @*                            <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() => OpenDialog2(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="(() => EditJobObservation(context.JobObservationId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+    </MudTabs>
+    @*Delete observation modal*@
+    <MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+        <DialogContent>
+            <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+            <MudText Class="mt-4 mb-4">
+                <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+                @Localizer["areYouSureYouWantToDeleteThisJobObservation"]
+            </MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+            <MudButton @onclick="(() => DeleteJobObservation(deleteJobObservationId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+
+    <MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails>
+            </MudContainer>
+        </DialogContent>
+        <DialogActions>
+            @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+            {
+                <MudIconButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+            }
+            <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+        </DialogActions>
+    </MudDialog>
+}

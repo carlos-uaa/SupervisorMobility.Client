@@ -1,0 +1,336 @@
+﻿@page "/attendance"
+
+@inject IJSRuntime JS
+@inject IAttendanceService AttendanceServices
+@inject IUserService UserServices
+@inject IStringLocalizer<Resource2> Localizer2
+@inject IStringLocalizer<Resource> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer2["attendance"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*
+<MudItem style="text-align:center">
+    <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">Site Under Construction</MudText>
+    <img src="Images/underConstruction.jpg"  />
+</MudItem>*@
+
+
+@if (peopleList == null)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td> <MudSkeleton SkeletonType="SkeletonType.Circle" /> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td> <MudSkeleton SkeletonType="SkeletonType.Circle" /> </td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Circle" /> </td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else
+{
+
+    @if (onSaveUpdate)
+    {
+        <MudItem class="d-flex justify-center align-self-center">
+            <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+        </MudItem>
+    }
+    else
+    {
+        <MudItem Class="d-flex flex-row justify-center align-content-center ma-10 pa-10">
+            @if (user.UserType < 2)
+            {
+                <MudCard Style="max-width:300px; min-width: 150px">
+                    <MudCardContent Style="justify-content:center">
+                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon> SSV </MudText>
+                        <MudSelect T="User" Label="SSV" Variant="Variant.Outlined" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SSV_Selected" For="@(() => SSV_Selected)" SelectedValuesChanged="UpdateSupervisors">
+                            <MudSelectItem Disabled="true" Value="SSV_Selected">@Localizer2["select a ssv"]</MudSelectItem>
+                            @foreach (var type in _ssv)
+                            {
+                                <MudSelectItem Value="type">@($"{type.Name} - {Localizer2["has"]} {type.Subordinates?.Count} {Localizer2["subordinates"]}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudCardContent>
+                </MudCard>
+                <MudText Typo="Typo.h4" Class="d-flex justify-center align-self-center ">
+                    <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                </MudText>
+
+            }
+
+
+            @if (user.UserType != 3)
+            {
+                <MudCard Style="max-width:300px; min-width: 150px">
+                    <MudCardContent Style="justify-content:center">
+                        <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.SupervisorAccount"></MudIcon> SV </MudText>
+                        <MudSelect T="User" Label="SV" Variant="Variant.Outlined" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SV_Selected" For="@(() => SV_Selected)" SelectedValuesChanged="ShowAttendance">
+                            <MudSelectItem Disabled="true" Value="SV_Selected">@Localizer2["select a ssv"]</MudSelectItem>
+                            @foreach (var type in _sv)
+                            {
+                                <MudSelectItem Value="type">@($"{type.Name}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudCardContent>
+                </MudCard>
+
+            }
+        </MudItem>
+
+        @if (peopleList.Count == 0)
+        {
+              @if (showTable)
+            {
+                <MudContainer>
+                    <MudGrid class="d-flex flex-column justify-center align-self-center">
+                        <MudItem class="d-flex justify-center align-self-center ">
+                            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer2["no personal found"]</MudText>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            <MudSpacer />
+                            <MudSpacer />
+
+                            <MudSpacer />
+                        </MudItem>
+                    </MudGrid>
+
+                </MudContainer>
+            }
+            else
+            {
+                <MudContainer>
+                    <MudGrid class="d-flex flex-column justify-center align-self-center">
+                        <MudItem class="d-flex justify-center align-self-center ">
+                            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer2["please select filters"]</MudText>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            <MudSpacer />
+                            <MudSpacer />
+
+                            <MudSpacer />
+                        </MudItem>
+                    </MudGrid>
+
+                </MudContainer>
+            }
+
+}
+        else
+        {
+
+            @if (showTable)
+            {
+
+
+
+                <MudTable Items="peopleList" T="Attendance" Height="55vh" FixedHeader=true Class="styled-table table-striped"
+                          SortLabel="Sort By" Filter="new Func<Attendance,bool>(FilterFunc)"
+                          HorizontalScrollbar="true">
+                    <ToolBarContent>
+                        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                            <MudItem class="d-flex justify-center align-self-center ">
+                                <MudText Typo="Typo.h6" Class="align-item-center center">Personal</MudText>
+                            </MudItem><MudSpacer />
+                            <MudItem Class="d-flex">
+                                <MudSpacer />
+                                <MudTextField @bind-Value="searchString" Placeholder="@Localizer2["search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                <MudSpacer />
+                                <MudButton OnClick="UpdateList">
+                                    <MudText>@Localizer2["save attendance"]</MudText>
+                                    <MudIcon Icon="@Icons.Material.Filled.SaveAs" aria-label="Save" Color="Color.Primary"></MudIcon>
+                                </MudButton>
+                                <MudSpacer />
+                            </MudItem>
+                        </MudGrid>
+                    </ToolBarContent>
+
+
+
+                    <HeaderContent>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Payroll)">@Localizer2["payroll"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Area?.Description)">@Localizer2["area"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Distribution?.Description)">@Localizer2["distribution"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Group?.Description)">@Localizer2["group"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.User?.Name)">@Localizer2["name"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Compas)">@Localizer2["compas"]</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortBy="new Func<Attendance, object>(x=>x?.Station)">@Localizer2["station"]</MudTableSortLabel></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Payroll">
+                            <MudText Align="Align.Center">@context.User?.Payroll</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Area">
+                            <MudText Align="Align.Center">@context.User?.Area?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Distribution">
+                            <MudText Align="Align.Center">@context.User?.Distribution?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Group">
+                            <MudText Align="Align.Center">@context.User?.Group?.Description</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Name">
+                            <MudText Align="Align.Center">@context.User?.Name</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Compas">
+                            <MudSwitch @bind-Checked="@context.Compas" Disabled=true Color="Color.Tertiary">@(context.Compas ? "Present" : "Absent")</MudSwitch>
+                            </MudTd>
+                            <MudTd DataLabel="Station">
+                                <MudSwitch @bind-Checked="@context.Station" Color="Color.Tertiary">@(context.Station ? "Assigned" : "Unallocated")</MudSwitch>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager />
+                        </PagerContent>
+                    </MudTable>
+
+            }
+        }
+
+
+    }
+
+
+
+
+}
+
+
+@code {
+    private List<BreadcrumbItem> _links;
+
+    List<Attendance>? peopleList = null;
+    string searchString = "";
+    bool onSaveUpdate = false;
+    bool showTable = false;
+
+    private string json = string.Empty;
+    public User user = new();
+    public User SSV_Selected = new();
+    public User SV_Selected = new();
+    public List<User> _ssv = new();
+    public List<User> _sv = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text:Localizer["home"], href: "#"),
+            new BreadcrumbItem(text:Localizer2["attendance"], href: "", disabled: true)
+        };
+        try
+        {
+            json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            peopleList = new List<Attendance>();
+
+            switch (user.UserType)
+            {
+                case 1:
+                    _ssv = await UserServices.GetUsersByType(2, false, true);
+                    break;
+                case 2:
+                    _sv = await UserServices.GetSubordinates(user.UserId);
+                    break;
+                case 3:
+                    peopleList = await AttendanceServices.GetAttendanceList(user.UserId);
+                    showTable = true;
+                    break;
+            }
+
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+
+    }
+
+    private async void UpdateList()
+    {
+        onSaveUpdate = true;
+        var result = await AttendanceServices.UpdateList(peopleList);
+        if (result != null)
+            peopleList = result;
+        else
+            await JS.InvokeVoidAsync("alert", "Error on update, please call your admin!"); // Alert
+        onSaveUpdate = false;
+
+        await Task.Delay(500);
+
+        StateHasChanged();
+    }
+
+    private async void UpdateSupervisors()
+    {
+        _sv = SSV_Selected.Subordinates.ToList();
+        StateHasChanged();
+    }
+
+    private async void ShowAttendance()
+    {
+        peopleList = await AttendanceServices.GetAttendanceList(SV_Selected.UserId);
+        showTable = true;
+        StateHasChanged();
+
+    }
+
+    private bool FilterFunc(Attendance element)
+    {
+        if (element.User.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.User.Payroll.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.User.Group!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.User.Area!.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.User.Name} {element.User.Payroll} {element.User.Area.Description} {element.User.Group.Description}".Contains(searchString))
+            return true;
+        return false;
+    }
+
+}

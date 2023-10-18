@@ -1,0 +1,626 @@
+﻿@page "/usersmanagement"
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+@inject IUserService UsersServices
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["UsersTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@if (_users == null)
+{
+
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["UsersNoFound"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                @if (loggedUser.UserType == 1)
+                {
+                    <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
+                        @Localizer["UsersUnregister"]
+                    </MudButton>
+                    <MudSpacer />
+                }
+                <MudButton Href="/usersmanagement/UploadUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Primary">
+                    @Localizer["UsersUpload"]
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/usersmanagement/BulkUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Warning">
+                    @Localizer["UsersBulk"]
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/usersmanagement/CreateUser" EndIcon="@Icons.Material.Filled.PersonAddAlt1" IconColor="Color.Warning">
+                    @Localizer["UsersNew"]
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+
+    <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else if (_users.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+              <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+            <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">Loading Data</MudText>
+            </MudItem>
+            <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+                <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+            </MudPaper>
+        </MudItem>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                @if (loggedUser.UserType == 1)
+                {
+                    <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
+                        @Localizer["UsersUnregister"]
+                    </MudButton>
+                    <MudSpacer />
+                }
+                <MudButton Href="/usersmanagement/UploadUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Primary">
+                    @Localizer["UsersUpload"]
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/usersmanagement/BulkUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Warning">
+                    @Localizer["UsersBulk"]
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/usersmanagement/CreateUser" EndIcon="@Icons.Material.Filled.PersonAddAlt1" IconColor="Color.Warning">
+                    @Localizer["UsersNew"]
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+
+}
+else
+{
+    <MudTable Items="_users" T="User" ReadOnly="true" Height="55vh" FixedHeader=true Class="styled-table table-striped"
+              SortLabel="Sort By" Filter="new Func<User,bool>(FilterFunc)"
+              HorizontalScrollbar="true" Virtualize="true"  RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["Users"]</MudText>
+                </MudItem><MudSpacer />
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    @if (loggedUser.UserType == 1)
+                    {
+                        <MudButton Href="/userNotFound" EndIcon="@Icons.Material.Filled.PersonSearch" IconColor="Color.Primary">
+                            @Localizer["UsersUnregister"]
+                        </MudButton>
+                        <MudSpacer />
+                    }
+                    <MudButton Href="/usersmanagement/UploadUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Primary">
+                        @Localizer["UsersUpload"]
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/usersmanagement/BulkUsers" EndIcon="@Icons.Material.Filled.CloudDownload" IconColor="Color.Warning">
+                        @Localizer["UsersBulk"]
+                    </MudButton>
+                    <MudSpacer />
+                    <MudButton Href="/usersmanagement/CreateUser" EndIcon="@Icons.Material.Filled.PersonAddAlt1" IconColor="Color.Warning">
+                        @Localizer["UsersNew"]
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.UserId)">@Localizer["UsersId"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Name)">@Localizer["UsersName"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.UserType)">@Localizer["UsersType"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Plant?.Description)">@Localizer["UsersPlant"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Area?.Description)">@Localizer["UsersArea"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<User, object>(x=>x?.Group?.Description)">@Localizer["UsersGroup"]</MudTableSortLabel></MudTh>
+            <MudTh>@Localizer["Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@Localizer["UsersId"]">
+                <MudText Align="Align.Center">@context.UserId</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["UsersName"]">
+                <MudText Align="Align.Center">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["UsersType"]" Style="text-align:center;">
+                <MudItem Class="d-flex justify-center">
+                    @switch (context.UserType)
+                    {
+                        case 1:
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"></MudIcon>
+                            <MudText Class="pl-2">@Localizer["UsersAdmin"]</MudText>
+                            break;
+                        case 2:
+                            <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"></MudIcon>
+                            <MudText Class="pl-2">SSV</MudText>
+                            break;
+                        case 3:
+                            <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"></MudIcon>
+                            <MudText Class="pl-2">Supervisor</MudText>
+                            break;
+                        case 4:
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Dark"></MudIcon>
+                            <MudText Class="pl-2">@Localizer["UsersOperator"]</MudText>
+                            break;
+                        case 5:
+                            <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning"></MudIcon>
+                            <MudText Class="pl-2">@Localizer["UsersManager"]</MudText>
+                            break;
+                        case 6:
+                            <MudIcon Icon="@Icons.Material.Filled.Engineering" Color="Color.Info"></MudIcon>
+                            <MudText Class="pl-2">@Localizer["lineSupport"]</MudText>
+                            break;           
+                    }
+                </MudItem>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["UsersPlant"]">
+                <MudText Align="Align.Center">@context.Plant?.Description</MudText>
+            </MudTd>
+            @if (context.UserType == 2 || context.UserType == 5)
+            {
+                <MudTd DataLabel="@Localizer["UsersArea"]">
+                    <MudItem Style="text-align: center;">
+                        @if (context.Areas?.Count > 0)
+                        {
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small">@Localizer["UsersShowAreas"]</MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    @foreach (var area in context.Areas)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudMenuItem>
+                                    }
+
+                                </ChildContent>
+                            </MudMenu>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                @Localizer["UsersNoAreas"]
+                            </MudAlert>
+                        }
+                    </MudItem>
+                </MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="@Localizer["UsersArea"]">
+                    <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                </MudTd>
+            }
+            <MudTd DataLabel="@Localizer["UsersGroup"]">
+                <MudText Align="Align.Center">@context.Group?.Description</MudText>
+            </MudTd>
+
+            <MudTd DataLabel="@Localizer["Actions"]">
+                <MudText Align="Align.Center">
+
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  UserDetails(context.UserId))" @ontouchstart="(() =>  UserDetails(context.UserId))">@Localizer["UsersDetails"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="()=>EditUser(context.UserId)" @ontouchstart="()=>EditUser(context.UserId)">@Localizer["UsersEdit"] </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="@(() =>OpenDeleteDialog(context.UserId))" @ontouchstart="@(() =>OpenDeleteDialog(context.UserId))">@Localizer["UsersDelete"] </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                    @*
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" @onclick="(() =>  UserDetails(context.UserId))"> </MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Info" @onclick="()=>EditUser(context.UserId)">@*Edit</MudIconButton>
+                <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="@(() =>OpenDeleteDialog(context.UserId))"></MudIconButton>
+
+                *@
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+}
+
+@*Delete user modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["Confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["UsersDeleteQuestion"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["Cancel"]</MudButton>
+        <MudButton @onclick="(() => DeleteUser(deleteUserId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["Delete"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@code {
+
+    List<User> _users = new List<User>();
+    List<User> allUsers = new List<User>();
+    string searchString = "";
+
+    //User
+    private string json = string.Empty;
+    public User loggedUser = new();
+
+
+    private List<BreadcrumbItem> _links;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: @Localizer["UsersTitle"],href: "", disabled: true)
+        };
+
+
+
+
+        await GetUserAsync();
+
+        if (loggedUser != null)
+        {
+            if (loggedUser.UserType == 1)
+            {
+               _users.AddRange(await UsersServices.GetUsersByType(1, false, false));
+                _users.AddRange(await UsersServices.GetUsersByType(5, true, false));
+                _users.AddRange(await UsersServices.GetUsersByType(2, true, true));
+                _users.AddRange(await UsersServices.GetUsersByType(3, true, false));
+                _users.AddRange(await UsersServices.GetUsersByType(4, true, false));
+                _users.AddRange(await UsersServices.GetUsersByType(6, true, true));
+            }
+            else
+            {
+                switch (loggedUser.UserType)
+                {
+                    case 5:
+                        //Add loged
+                        _users.Add(loggedUser);
+
+
+                        foreach (User item in loggedUser.Subordinates)
+                        {
+                            //SSVs 
+                            _users.Add(item);
+                            var SVs = await UsersServices.GetSubordinates(item.UserId);
+                            foreach (User Sub in SVs)
+                            {
+                                //add SV
+                                _users.Add(Sub);
+                                //Operators
+                                _users.AddRange(Sub.Subordinates);
+                            }
+                        }
+                        break;
+                    case 2:
+                        //SSV
+                        _users.Add(loggedUser);
+                       
+                        foreach (User item in loggedUser.Subordinates)
+                        {
+                            //add SV
+                            _users.Add(item);
+                                //Operators
+                            _users.AddRange(await UsersServices.GetSubordinates(item.UserId));
+                        }
+                        break;
+                    case 3:
+                        _users.Add(loggedUser);
+                        _users.AddRange(loggedUser.Subordinates);
+
+                        break;
+                }
+
+
+            }
+        }
+
+
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            loggedUser = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            loggedUser = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
+    // Plant details
+    void PlantDetails(int plantId)
+    {
+        NavigationManager.NavigateTo($"plants/{plantId}");
+    }
+
+
+    void EditUser(int userId)
+    {
+        NavigationManager.NavigateTo($"/usersmanagement/EditUser/{userId}");
+    }
+
+    async void DeleteUser(int iduser)
+    {
+        _users.RemoveAll(user => user.UserId == iduser);
+        await UsersServices.DeleteUser(iduser);
+        //await PlantService.DeletePlant(plantId);
+        _users.Clear();
+
+
+        allUsers = await UsersServices.GetUsers(true,false);
+
+
+        await GetUserAsync();
+
+        if (loggedUser != null)
+        {
+            if (loggedUser.UserType == 1)
+            {
+                _users = allUsers;
+            }
+            else
+            {
+
+                foreach (User usr in allUsers)
+                {
+                    if (usr.UserId == loggedUser.UserId || usr.SuperiorId == loggedUser.UserId)
+                    {
+                        _users.Add(usr);
+                    }
+
+                }
+
+            }
+        }
+
+
+        visibleDelete = false;
+        StateHasChanged();
+    }
+
+    void UserDetails(int userId)
+    {
+        NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{userId}");
+    }
+
+    private bool FilterFunc(User element)
+    {
+
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.ObjectId != null)
+        {
+            if ((bool)element.ObjectId?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Email != null)
+        {
+            if ((bool)element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Payroll != null)
+        {
+            if ((bool)element.Payroll?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Plant != null)
+        {
+            if ((bool)element.Plant?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Area != null)
+        {
+            if ((bool)element.Area?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if (element.Group != null)
+        {
+            if ((bool)element.Group?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        if (element.Name.Split(" ").Length > 3)
+        {
+ 
+            var splitedname = element.Name.Split(", ");
+     
+
+        if (splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
+        {
+            var nombres = splitedname[1].Split(' ');
+            var apellidos = splitedname[0].Split(' ');
+
+
+            if ($"{nombres[0]} {nombres[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;  
+                
+           if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]}".Contains(searchString))
+                return true;  
+
+          if ($"{apellidos[0]} {apellidos[1]} {nombres[0]}".Contains(searchString))
+                    return true;
+
+            if ($"{nombres[0]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;
+
+            if ($"{nombres[0]} {apellidos[0]}".Contains(searchString))
+                return true;
+        }
+        else if (splitedname[0].Contains(' ') && !splitedname[1].Contains(' '))
+        {
+                var apellidos = splitedname[0].Split(' ');
+
+                if ($"{splitedname[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                return true;
+
+                if ($"{apellidos[0]} {apellidos[1]} {splitedname[1]}".Contains(searchString))
+                return true;
+                
+                if ($"{apellidos[0]} {splitedname[1]}".Contains(searchString))
+                return true;
+        }
+            else if (!splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
+            {
+                var nombres = splitedname[1].Split(' ');
+
+                if ($"{splitedname[0]} {nombres[0]} {nombres[1]}".Contains(searchString))
+                    return true;
+
+                if ($"{nombres[0]} {nombres[1]} {splitedname[0]}".Contains(searchString))
+                    return true;
+
+                if ($"{nombres[0]} {splitedname[0]}".Contains(searchString))
+                    return true;
+            }
+        else
+        {
+            var nombres = splitedname[1].Split(' ');
+            var apellidos = splitedname[0].Split(' ');
+
+            if (nombres.Length == 2)
+                if ($"{nombres[0]} {nombres[1]} {nombres[2]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                    return true;
+
+            if (nombres.Length > 2)
+                if ($"{nombres[0]} {nombres[1]} {nombres[2]}  {apellidos[0]} {apellidos[1]}".Contains(searchString))
+                    return true;
+
+            if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]} {nombres[2]}".Contains(searchString))
+                return true;
+        }
+
+        }
+
+
+
+
+
+        return false;
+    }
+
+    //Delete User
+    private bool visibleDelete = false;
+    public int deleteUserId = 0;
+    private void OpenDeleteDialog(int deleteId)
+    {
+        deleteUserId = deleteId;
+        visibleDelete = true;
+    }
+    void CloseDeleteModal() => visibleDelete = false;
+    private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+    private int selectedRowNumber = -1;
+    private MudTable<User> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<User> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(User element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{element.UserId}");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+}

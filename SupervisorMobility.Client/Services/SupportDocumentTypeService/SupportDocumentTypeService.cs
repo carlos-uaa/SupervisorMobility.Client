@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.SupportDocumentTypeService
 {
     public class SupportDocumentTypeService : ISupportDocumentTypeService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public SupportDocumentTypeService(HttpClient http)
+        public SupportDocumentTypeService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -62,9 +65,15 @@ namespace SupervisorMobility.Client.Services.SupportDocumentTypeService
         }
 
         // Update support document type
-        public async Task UpdateSupportDocumentType(SupportDocumentType supportDocumentType)
+        public async Task<bool> UpdateSupportDocumentType(SupportDocumentType supportDocumentType)
         {
             var response = await _http.PutAsJsonAsync($"supportdocumenttypes/{supportDocumentType.SupportDocumentTypeId}", supportDocumentType);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

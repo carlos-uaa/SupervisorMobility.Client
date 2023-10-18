@@ -1,0 +1,95 @@
+﻿@page "/jobobservationtypes"
+@inject IJobObservationTypeService JobObservationTypeService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["JOTTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Job Observation Types table*@
+<MudTable Items="_jobObservationTypes" Hover="true" T="JobObservationType" SortLabel="Sort By" Filter="new Func<JobObservationType,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["JOTTitle"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="@Localizer["SearchJOB"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudSpacer />
+
+                <MudButton @onclick="(() => CreateJobObservationType())" @ontouchstart="(() => CreateJobObservationType())">
+                    <MudText>@Localizer["JOTCreate"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                </MudButton>
+
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobObservationType, object>(x=>x?.JobObservationTypeId)"> @Localizer["JOTId"]</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobObservationType, object>(x=>x?.Code)">@Localizer["JOTCode"]</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobObservationType, object>(x=>x?.Description)">@Localizer["JOTDescription"] </MudTableSortLabel>
+        </MudTh>
+        
+        <MudTh>
+            <MudText Align="Align.Center">@Localizer["Actions"]</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@Localizer["JOTId"]">
+            <MudText Align="Align.Center">@context.JobObservationTypeId</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["JOTCode"]">
+            <MudText Align="Align.Center">@context.Code</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["JOTDescription"]">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+     
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @*<MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenDialog2(context.JobObservationId))" @ontouchstart="(() =>  OpenDialog2(context.JobObservationId))"> Details</MudMenuItem>*@
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateJobObservationType(context.JobObservationTypeId))" @ontouchstart="(() => UpdateJobObservationType(context.JobObservationTypeId))" >@Localizer["JOTEdit"] </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.JobObservationTypeId))" @ontouchstart="(() => OpenDeleteDialog(context.JobObservationTypeId))">@Localizer["JOTDelete"]</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudText>
+
+
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@*Delete Job Observation type modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["Confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["JOTmsgQuestionDelete"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["Cancel"]</MudButton>
+        <MudButton @onclick="(() => DeleteJobObservationType(deleteJobObservationTypetId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["Delete"]</MudButton>
+    </DialogActions>
+</MudDialog>

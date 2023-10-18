@@ -1,16 +1,19 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.GroupService
 {
     public class GroupService : IGroupService
     {
         private readonly HttpClient _http;
+        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public GroupService(HttpClient http)
+        public GroupService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = http;
+            _http = customHttpClientService.GetApiHttpClient();
+            _httpBridge = customHttpClientService.GetBridgeHttpClient();
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -62,9 +65,15 @@ namespace SupervisorMobility.Client.Services.GroupService
         }
 
         // Update group
-        public async Task UpdateGroup(Group group)
+        public async Task<bool> UpdateGroup(Group group)
         {
             var response = await _http.PutAsJsonAsync($"groups/{group.GroupId}", group);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

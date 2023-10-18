@@ -1,0 +1,81 @@
+﻿@page "/glosary"
+@inject IGlosaryService GlosaryService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["GlosaryTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-1" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Groups table*@
+<MudTable Height="65vh" FixedHeader=true Items="_glosary" Hover="true" T="Glosary" SortLabel="Sort By" Filter="new Func<Glosary,bool>(FilterFunc)" Class="styled-table table-striped mb-10" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
+
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudText Typo="Typo.h6" >@Localizer["GlosaryTitle"]</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudSpacer />
+                <MudButton @onclick="(() => CreateGlosaryWord())">
+                    <MudText>@Localizer["GlosaryNew"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Glosary, object>(x=>x?.GlosaryWordId)">@Localizer["GlosaryId"]</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Glosary, object>(x=>x?.Name)">@Localizer["GlosaryName"]</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Glosary, object>(x=>x?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["GlosaryDescription"]</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">@Localizer["Actions"]</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@Localizer["GlosaryId"]">
+            <MudText Align="Align.Center">@context.GlosaryWordId</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["GlosaryName"]">
+            <MudText Align="Align.Center">@context.Name</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["GlosaryDescription"]">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateGlosaryWord(context.GlosaryWordId))" @ontouchstart="(() => UpdateGlosaryWord(context.GlosaryWordId))">@Localizer["GlosaryEdit"] </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteGlosaryWord(context.GlosaryWordId))" @ontouchstart="(() => DeleteGlosaryWord(context.GlosaryWordId))">@Localizer["GlosaryDelete"] </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+
+           </MudText>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

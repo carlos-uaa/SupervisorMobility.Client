@@ -1,0 +1,215 @@
+﻿@page "/userNotFound"
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+@inject IUserService UsersServices
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource1> Localizer
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["UsersNoFoundTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10"  Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@if (_usersNotFound == null)
+{
+    <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>/
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else if (_usersNotFound.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mt-5">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["UsersNoFound0Count"]</MudText>
+            </MudItem>
+        </MudGrid>
+        
+    </MudContainer>
+}
+else
+{
+    <MudTable Items="_usersNotFound" T="UserNotFound" ReadOnly="true" Height="55vh" FixedHeader=true Class="styled-table table-striped"
+              SortLabel="Sort By" Filter="new Func<UserNotFound,bool>(FilterFunc)"
+          HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["UsersNoFoundTry"]</MudText>
+                </MudItem><MudSpacer />
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/usersmanagement/CreateUser" EndIcon="@Icons.Material.Filled.PersonAddAlt1" IconColor="Color.Warning">
+                        @Localizer["UsersNew"]
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserNotFound, object>(x=>x?.UserNotFoundId)">@Localizer["UsersId"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserNotFound, object>(x=>x?.ObjectId)">@Localizer["UsersObject"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<UserNotFound, object>(x=>x?.Name)">@Localizer["UsersName"]</MudTableSortLabel></MudTh>
+            <MudTh>@Localizer["Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@Localizer["UsersId"]">
+                <MudText Align="Align.Center">@context.UserNotFoundId</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["UsersObject"]">
+                <MudText Align="Align.Center">@context.ObjectId</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["UsersName"]">
+                <MudText Align="Align.Center">@context.Name</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudIconButton Variant="Variant.Filled" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="@(() =>OpenDeleteDialog(context))"></MudIconButton>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+}
+
+@*Delete user modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["UsersNoFoundDeleteMsg"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["Cancel"]</MudButton>
+        <MudButton @onclick="(() => DeleteUser(unregisteredUser))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["Delete"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@code {
+
+    List<UserNotFound> _usersNotFound = new();
+    string searchString = "";
+
+
+    private List<BreadcrumbItem> _links;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["UsersTitle"], href: "usersmanagement"),
+            new BreadcrumbItem(text: Localizer["UsersNoFoundTitle"], href: "", disabled: true)
+        };
+        _usersNotFound = await UsersServices.GetUsersNotFound();
+    }
+
+
+    private bool FilterFunc(UserNotFound element)
+    {
+
+
+
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.ObjectId != null){
+            if ((bool)element.ObjectId?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        if ($" {element.ObjectId}".Contains(searchString))
+            return true;
+        return false;
+    }
+
+    async void DeleteUser(UserNotFound unregisteredUser)
+    {
+        unregisteredUser.IsActive = false;
+
+        var response = await UsersServices.UpdateUnregisteredUser(unregisteredUser.UserNotFoundId, unregisteredUser);
+
+        if (response)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"{Localizer["UsersNoFoundErrorDelete"]}", Severity.Info);
+        }
+        else{
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"{@Localizer["UsersNoFoundOkDelete"]}", Severity.Warning);
+        }
+
+        _usersNotFound = await UsersServices.GetUsersNotFound();
+        
+        
+        visibleDelete = false;
+        StateHasChanged();
+    }
+
+
+    //Delete User
+    private bool visibleDelete = false;
+    public UserNotFound unregisteredUser = new();
+    private void OpenDeleteDialog(UserNotFound unregisUser)
+    {
+        unregisteredUser = unregisUser;
+        visibleDelete = true;
+    }
+    void CloseDeleteModal() => visibleDelete = false;
+    private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
+
+}

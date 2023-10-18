@@ -1,0 +1,153 @@
+﻿@page "/plants/{PlantId:int}/areas/{AreaId:int}/distributions/{DistributionId:int}/CreateProductInDistribution"
+@inject IProductService ProductServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["createDistributionToProduct"]</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+@if (showui)
+{
+
+    <MudGrid>
+
+        <MudItem xs="3" lg="3" md="3" sm="3">
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_plant.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_plant.Description</MudText>
+                    @if (_plant.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+            <MudText Typo="Typo.h4" Style="text-align:center">
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowDown"></MudIcon>
+            </MudText>
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_area.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_area.Description</MudText>
+                    @if (_area.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+            <MudText Typo="Typo.h4" Style="text-align:center">
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowDown"></MudIcon>
+            </MudText>
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_distribution.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                    @if (_distribution.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="9" lg="9" md="9" sm="9">
+            <EditForm Model="_product" OnValidSubmit="CreateProductInDistributionAsync">
+    <DataAnnotationsValidator />
+
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h4" Style="text-align:center" Class="mt-5 pl-16 ml-9">@Localizer["newProduct"]</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Info" Class="mr-15 mt-5">@Localizer["newProduct"]</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+
+                <MudCardContent>
+                    <MudItem>
+                        <MudItem>
+                                <MudText Typo="Typo.h6">@Localizer["code"]</MudText>
+                        </MudItem>
+                        <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudTextField Label="@Localizer["code"]" @bind-Value="@_product.Code" />
+                        </MudItem>
+                    </MudItem>
+
+
+                    <MudItem>
+                        <MudItem>
+                                <MudText Typo="Typo.h6">@Localizer["description"]</MudText>
+                        </MudItem>
+                        <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudTextField Label="@Localizer["description"]" @bind-Value="@_product.Description" />
+                        </MudItem>
+                    </MudItem>
+
+                </MudCardContent>
+                <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["save"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["cancel"]</MudButton>
+                </MudCardActions>
+            </MudCard>
+            </EditForm>
+        </MudItem>
+
+
+    </MudGrid>
+
+
+
+
+}
+else
+{
+
+
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+        <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["loadingData"]</MudText>
+        </MudItem>
+        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        </MudPaper>
+    </MudItem>
+}

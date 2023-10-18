@@ -1,0 +1,111 @@
+﻿@page "/documenttypes"
+@inject ISupportDocumentTypeService SupportDocumentTypeService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["SDTTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Plants table*@
+<MudTable Items="_supportDocumentTypes" Hover="true" T="SupportDocumentType" SortLabel="Sort By" Filter="new Func<SupportDocumentType,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["SDTTitle"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudSpacer />
+                <MudButton @onclick="(() => CreateSupportDocType())" @ontouchstart="(() => CreateSupportDocType())">
+                    <MudText>@Localizer["SDTCreate"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<SupportDocumentType, object>(x=>x?.SupportDocumentTypeId)">@Localizer["SDTId"]</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<SupportDocumentType, object>(x=>x?.Code)">@Localizer["SDTCode"]</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<SupportDocumentType, object>(x=>x?.Description)">@Localizer["SDTDescription"]</MudTableSortLabel>
+        </MudTh>
+     @*   <MudTh>
+            <MudTableSortLabel SortBy="new Func<SupportDocumentType, object>(x=>x?.IsActive)">Status</MudTableSortLabel>
+        </MudTh>*@
+        <MudTh>
+            <MudText Align="Align.Center">@Localizer["Actions"]</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@Localizer["SDTId"]">
+            <MudText Align="Align.Center">@context.SupportDocumentTypeId</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["SDTCode"]">
+            <MudText Align="Align.Center">@context.Code</MudText>
+        </MudTd>
+        <MudTd DataLabel="@Localizer["SDTDescription"]">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+       @* <MudTd DataLabel="Status">
+            @if (context.IsActive == true)
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                </MudText>
+            }
+            else
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                </MudText>
+            }
+        </MudTd>*@
+        <MudTd>
+            <MudText Align="Align.Center">
+              
+
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @*<MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" >SuportDocument Details</MudMenuItem>*@
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSupportDocType(context.SupportDocumentTypeId))" @ontouchstart="(() => UpdateSupportDocType(context.SupportDocumentTypeId))">@Localizer["SDTEdit"] </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.SupportDocumentTypeId))" @ontouchstart="(() => OpenDeleteDialog(context.SupportDocumentTypeId))">@Localizer["SDTDelete"]</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+
+
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@*Delete Document Type modal*@
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">           
+            @Localizer["SDTmsgDelete"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["Cancel"]</MudButton>
+        <MudButton @onclick="(() => DeleteSupportDocumentType(deleteDocumentTypeId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["Delete"]</MudButton>
+    </DialogActions>
+</MudDialog>

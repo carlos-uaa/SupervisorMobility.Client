@@ -1,51 +1,180 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
 
-@*Title*@
-<PageTitle>Supervisor Mobility | Home</PageTitle>
+@inject IJSRuntime js
+@inject ILoginService UserLoginService
+@inject IUserService UsersService
+@inject ISnackbar Snackbar
+@inject GlobalDataService GlobalData;
+@inject IStringLocalizer<Resource> Localizer
+@inject NavigationManager NavigationManager
 
+@if(logged)
+{
+    @*Title*@
+    <PageTitle>Supervisor Mobility | @Localizer["home"]</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Class="mb-10" Items="_links">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+
+
+
+    @*Dashboard grid*@
+    <MudGrid>
+
+
+        @if(user.UserType != 5)
+        {
+            @*Sos program*@
+            <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+                <MudPaper Style="width: 100%">
+                    <MudButton Href="sosProgram" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                        <MudItem style="text-align:center">
+                            <img src="Images/documento.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["sosProgram"]</MudText>
+                        </MudItem>
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        }
+        @*Observation schedule*@
+        <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+            <MudPaper Style="width: 100%">
+                <MudButton Href="jobobservationschedule" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                    <MudItem style="text-align:center">
+                        <img src="Images/interfaz.png" Height="100" Width="100" />
+                        <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["jobObservationSchedule"]</MudText>
+                    </MudItem>
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        @*Job observations*@
+        <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+            <MudPaper Style="width: 100%">
+                <MudButton Href="jobobservation" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                    <MudItem style="text-align:center">
+                        <img src="Images/servicio.png" Height="100" Width="100" />
+                        <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["jobObservations"]</MudText>
+                    </MudItem>
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        @*LUP*@
+        <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+            <MudPaper Style="width: 100%">
+                <MudButton Href="lup" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                    <MudItem style="text-align:center">
+                        <img src="Images/mecanografia.png" Height="100" Width="100" />
+                        <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["toDoLup"]</MudText>
+                    </MudItem>
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+        @if(user.UserType != 5)
+        {
+            <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+                <MudPaper Style="width: 100%">
+                    <MudButton Href="PAT" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                        <MudItem style="text-align:center">
+                            <img src="Images/prueba.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">PAT</MudText>
+                        </MudItem>
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        }
+        @if(user.UserType == 1 || user.UserType == 3)
+        {
+            @*Configuration*@
+            <MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+                <MudPaper Style="width: 100%">
+                    <MudButton Href="configuration" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                        <MudItem style="text-align:center">
+                            <img src="Images/admin.png" Height="100" Width="100" />
+                            <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["configuration"]</MudText>
+                        </MudItem>
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        }
+        @*<MudItem xs="12" sm="6" md="3" Class="d-flex justify-center">
+            <MudPaper Style="width: 100%">
+                <MudButton Href="camera" id="ProductsBtn" FullWidth="true" Class="d-flex justify-center" Style="height:100%">
+                    <MudItem style="text-align:center">
+                        <img src="Images/admin.png" Height="100" Width="100" />
+                        <MudText FullWidth="true" Variant="Variant.Text" Color="Color.Info">@Localizer["Camera"]</MudText>
+                    </MudItem>
+                </MudButton>
+            </MudPaper>
+        </MudItem>*@
+    </MudGrid>
+}
+else{
+    @*Title*@
+    <PageTitle>Supervisor Mobility | @Localizer["login"]</PageTitle>
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-    </ItemTemplate>
-</MudBreadcrumbs>
+    <MudBreadcrumbs Class="mb-5" Items="_login">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+@* Login Form*@
+    <EditForm Model="_userLogin" OnValidSubmit="Login">
+        <DataAnnotationsValidator />
+        <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+            <MudSimpleTable Style="overflow-x: auto;" Bordered=true Outlined=false Elevation="0">
+                <tbody>
+                    <tr>
+                        <td style="text-align:center">
 
-@*Dashboard grid*@
-<MudGrid>
-    @*Observation schedule*@
-    <MudItem xs="12" sm="6" md="3">
-        <div style="text-align:center">
-            <img src="Images/interfaz.png" Height="100" Width="100" />
-        </div>
-        <a href="">
-            <MudButton FullWidth="true" Variant="Variant.Text" Color="Color.Info">Job Observations Schedule</MudButton>
-        </a>
-    </MudItem>
-    @*Job observations*@
-    <MudItem xs="12" sm="6" md="3">
-        <div style="text-align:center">
-            <img src="Images/servicio.png" Height="100" Width="100" />
-        </div>
-        <a href="">
-            <MudButton FullWidth="true" Variant="Variant.Text" Color="Color.Info">Job Observations</MudButton>
-        </a>
-    </MudItem>
-    @*LUP*@
-    <MudItem xs="12" sm="6" md="3">
-        <div style="text-align:center">
-            <img src="Images/mecanografia.png" Height="100" Width="100" />
-        </div>
-        <a href="">
-            <MudButton FullWidth="true" Variant="Variant.Text" Color="Color.Info">To Do (LUP)</MudButton>
-        </a>
-    </MudItem>
-    @*Configuration*@
-    <MudItem xs="12" sm="6" md="3">
-        <div style="text-align:center">
-            <img src="Images/admin.png" Height="100" Width="100" />
-        </div>
-        <a href="/configuration">
-            <MudButton FullWidth="true" Variant="Variant.Text" Color="Color.Info">Configuration</MudButton>
-        </a>
-    </MudItem>
-</MudGrid>
+
+                            <MudItem Style="text-align:center">
+                                <MudImage Src="Images/logo.png" Alt="Logo image" Style="max-height: 110px" Fluid=true Class="align-center justify-center"> </MudImage>
+                            </MudItem>
+                            <MudPaper Elevation="3">
+                                <MudText Typo="Typo.h6" Class="pt-5 mt-5">
+                                    @Localizer["login"]
+                                </MudText>
+                                <MudTextField @bind-Value="_userLogin.Username" Class="mt-5 pl-10 pr-10" Label=@Localizer["username"] Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Person" OnAdornmentClick="OpenDeleteDialog"></MudTextField>
+                                <ValidationMessage For="@(() => _userLogin.Username)" style="color: red; font-size: 12px"/>
+                                <MudTextField @bind-Value="_userLogin.Password" Class="mt-5 pl-10 pr-10" Label=@Localizer["password"] Variant="Variant.Outlined" Margin="Margin.Dense" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password"></MudTextField>
+                                <ValidationMessage For="@(() => _userLogin.Password)" style="color: red; font-size: 12px"/>
+                                <MudButton Disabled="@_processing" Class="mt-10 mb-10" Variant="Variant.Filled" Color="Color.Info" ButtonType="ButtonType.Submit">
+                                    @if (_processing)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">@Localizer["authenticating"]</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>@Localizer["signIn"]</MudText>
+                                    }
+                                </MudButton>
+                            </MudPaper>
+                        </td>  
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudGrid>
+    </EditForm>
+}
+
+
+@*Delete observation modal*@
+<MudDialog @bind-IsVisible="visibleText" Options="dialogTextOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["help"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["enterTheActiveDirectoryUserName"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseModal" Variant="Variant.Filled">@Localizer["accept"]</MudButton>
+    </DialogActions>
+</MudDialog>

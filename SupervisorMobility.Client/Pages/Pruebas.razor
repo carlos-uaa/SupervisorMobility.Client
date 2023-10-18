@@ -1,0 +1,487 @@
+﻿@page "/newHome"
+
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization;
+
+@inject IJSRuntime js
+@inject ILoginService UserLoginService
+@inject IUserService UsersService
+@inject ISnackbar Snackbar
+@inject GlobalDataService GlobalData;
+@inject IStringLocalizer<Resource> Localizer
+@inject NavigationManager NavigationManager
+
+<MudToggleIconButton @bind-Toggled="@option"
+                     Icon="@Icons.Material.Filled.Settings" Color="@Color.Dark" Title="Off"
+                     ToggledIcon="@Icons.Material.Filled.Home" ToggledColor="@Color.Info" ToggledTitle="On" />
+@if (logged && option)
+{
+    @*Title*@
+    <PageTitle>Supervisor Mobility | @Localizer["home"]</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Class="mb-10" Items="_links">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+
+
+
+    @*Dashboard grid*@
+    <MudGrid>
+
+
+        @if (user.UserType != 5)
+        {
+            @*SOS Review Program*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">SRP</MudChip>
+                        <MudText>@Localizer["sosProgram"]</MudText>
+                        <MudImage Src="Images/documento.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for 
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="sosProgram" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="sosProgram/createSosReview" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+        }
+        @*Job Observation Schedule*@
+        <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+            <MudPaper Style="width: 100%;">
+                <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                    <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">JOS</MudChip>
+                <MudText>@Localizer["jobObservationProgram"]</MudText>
+                    <MudImage Src="Images/interfaz.png" Height="25" Width="25" />
+                </MudItem>
+                <MudItem>
+                    <MudText Class="pa-4">
+                        Create, Update and mange job observations forms for
+                        zones and staff working within a manufacturing plant.
+                    </MudText>
+                </MudItem>
+                <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                    <MudButton Href="jobobservationschedule" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                </MudItem>
+            </MudPaper>
+        </MudItem>
+
+        @*Job Observation*@
+        <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+            <MudPaper Style="width: 100%;">
+                <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                    <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">JO</MudChip>
+                <MudText>@Localizer["jobObservations"]</MudText>
+                    <MudImage Src="Images/servicio.png" Height="25" Width="25" />
+                </MudItem>
+                <MudItem>
+                    <MudText Class="pa-4">
+                        Create, Update and mange job observations forms for
+                        zones and staff working within a manufacturing plant.
+                    </MudText>
+                </MudItem>
+                <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                    <MudButton Href="jobobservation" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                    <MudButton @onclick="(() => CreateJobObservation())" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    <MudButton @onclick="(() => PlanJobObservation())" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Plan</MudButton>
+                </MudItem>
+            </MudPaper>
+        </MudItem>
+
+        @*Lup*@
+        <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+            <MudPaper Style="width: 100%;">
+                <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                    <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">LUP</MudChip>
+                    <MudText>@Localizer["toDoLup"]</MudText>
+                    <MudImage Src="Images/mecanografia.png" Height="25" Width="25" />
+                </MudItem>
+                <MudItem>
+                    <MudText Class="pa-4">
+                        Create, Update and mange job observations forms for
+                        zones and staff working within a manufacturing plant.
+                    </MudText>
+                </MudItem>
+                <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                    <MudButton Href="lup" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                </MudItem>
+            </MudPaper>
+        </MudItem>
+
+        @if (user.UserType != 5)
+        {
+            @*PAT*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">PAT</MudChip>
+                        <MudText>PAT</MudText>
+                        <MudImage Src="Images/prueba.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="PAT" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+        }
+        @if (user.UserType == 1 || user.UserType == 3)
+        {
+
+            @*Configuration*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">CONFIG</MudChip>
+                        <MudText >@Localizer["configuration"]</MudText>
+                        <MudImage Src="Images/admin.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="configuration" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+        }
+
+    </MudGrid>
+}
+@if(logged && !option){
+    @*Title*@
+    <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
+    @*Breadcrumb links*@
+    <MudBreadcrumbs Class="mb-10" Items="_links2">
+        <ItemTemplate Context="item">
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        </ItemTemplate>
+    </MudBreadcrumbs>
+    <MudGrid Class="pb-10">
+        @if (user.UserType == 1)
+        {
+           @*Plants*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">PLANTS</MudChip>
+                        <MudText>@Localizer["plants"]</MudText>
+                        <MudImage Src="Images/fabrica.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="plants" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="plants/createplant" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+
+            @*Products*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">PRODS</MudChip>
+                        <MudText>@Localizer["products"]</MudText>
+                        <MudImage Src="Images/clave.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="products" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="products/createproduct" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+
+            @*Groups*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">GROUPS</MudChip>
+                        <MudText>@Localizer["groups"]</MudText>
+                        <MudImage Src="Images/comunidad.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="groups" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="groups/creategroup" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+            @*Assy Chart*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">AC</MudChip>
+                        <MudText>@Localizer["assyChart"]</MudText>
+                        <MudImage Src="Images/assy.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="assychart" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="assychart/createassychart" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+            @*Paths*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">PATH</MudChip>
+                        <MudText>@Localizer["Paths"]</MudText>
+                        <MudImage Src="Images/paths.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="PathsRoute" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="PathsRoute/PathCreate" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+            @*HeadCount*@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">HC</MudChip>
+                        <MudText>@Localizer["HeadCount"]</MudText>
+                        <MudImage Src="Images/contar.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="headCount" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+
+        }
+        @if (user.UserType == 1 || user.UserType == 3)
+        {
+            @*User *@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">USER</MudChip>
+                        <MudText>@Localizer["usersManagment"]</MudText>
+                        <MudImage Src="Images/users.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="usersmanagement" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="usersmanagement/CreateUser" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+
+        }
+        @if (user.UserType == 1)
+        {
+            @*Guides *@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">GUIDES</MudChip>
+                        <MudText>@Localizer["guides"]</MudText>
+                        <MudImage Src="Images/guide.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="GuidesManagement" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                        <MudButton Href="GuidesManagement/CreateGuide" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">Create</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+
+
+            @*Glosary *@
+            <MudItem xs="12" sm="6" md="6" lg="4" Class="d-flex">
+                <MudPaper Style="width: 100%;">
+                    <MudItem Style="display: flex; align-items: center; justify-content: space-between; background-color: #f2f9fe;" Class="pa-2">
+                        <MudChip Label Color="Color.Dark" Style="background-color: #6c757d" Variant="Variant.Filled" Size="Size.Small">GL</MudChip>
+                        <MudText>@Localizer["glosary"]</MudText>
+                        <MudImage Src="Images/guide.png" Height="25" Width="25" />
+                    </MudItem>
+                    <MudItem>
+                        <MudText Class="pa-4">
+                            Create, Update and mange job observations forms for
+                            zones and staff working within a manufacturing plant.
+                        </MudText>
+                    </MudItem>
+                    <MudItem Style="background-color: #f2f9fe;" Class="pa-3">
+                        <MudButton Href="glosary" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Class="ma-1">View all</MudButton>
+                    </MudItem>
+                </MudPaper>
+            </MudItem>
+        }
+
+    </MudGrid>
+}
+
+@code {
+
+    private List<BreadcrumbItem> _links;
+    private List<BreadcrumbItem> _links2;
+
+    public bool logged = false;
+    public bool option = true;
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+
+    public UserLogin _userLogin = new();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#", disabled: true)
+        };
+
+        _links2 = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "", disabled: true)
+        };
+
+        logged = await HasPropertyAsync();
+        if (logged)
+        {
+
+            await GetUserAsync();
+            GlobalData.LoggedUser = user.Name;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+        {
+            user = new();
+        }
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await js.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+        }
+        return hasProperty;
+    }
+
+
+    void CreateJobObservation()
+    {
+        if (CultureInfo.CurrentCulture.Name == "en-US")
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+
+            var formatedDate = date;
+
+            var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+            var dateString = EnglishDate.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{dateString}");
+        }
+        else
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+            var dateString = date.ToShortDateString().Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{dateString}");
+        }
+    }
+
+    void PlanJobObservation()
+    {
+        if (CultureInfo.CurrentCulture.Name == "en-US")
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+            var formatedDate = date;
+
+            var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+            var dateString = EnglishDate.Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+        else
+        {
+            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+            var dateString = date.ToShortDateString().Replace("/", "-");
+            NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+        }
+    }
+
+
+}

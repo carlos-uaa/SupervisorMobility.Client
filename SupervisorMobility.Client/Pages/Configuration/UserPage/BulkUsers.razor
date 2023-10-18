@@ -1,0 +1,53 @@
+﻿@page "/usersmanagement/BulkUsers"
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@inject IFileUploadAndDownloadService FileUpDoServices
+@inject IStringLocalizer<Resource1> Localizer
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["UsersBulk"]</PageTitle>
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+
+<MudSpacer></MudSpacer>
+<MudGrid id="Bulk">
+    <MudItem xl="10" xs="10">
+        <MudItem class="align-center justify-center mud-width-full">
+            <MudText Typo="Typo.h6">@Localizer["UsersBulk"]</MudText>
+        </MudItem>
+       
+        <MudItem class="my-2">
+            <MudButton OnClick="DoBulkUsers" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">@Localizer["UsersDownloadAll"]</MudButton>
+        </MudItem>
+    </MudItem>
+    <MudItem xl="2" xs="2" Class="align-center justify-center">
+        <MudImage Src="Images/bulk.png" Alt="Bulk image" Height="120" Width="120" Class="align-center justify-center"> </MudImage>
+    </MudItem>
+</MudGrid>
+
+
+
+
+@code {
+    private List<BreadcrumbItem> _links;
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: Localizer["UsersTitle"], href: "usersmanagement"),
+            new BreadcrumbItem(text: Localizer["UsersBulk"], href: "", disabled: true)
+        };
+    }
+
+    private async Task DoBulkUsers()
+    {
+        await FileUpDoServices.DownloadFileUsers();
+    }
+}

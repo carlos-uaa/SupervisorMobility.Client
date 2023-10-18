@@ -1,0 +1,567 @@
+﻿@page "/PathsRoute"
+@using System.Runtime.CompilerServices;
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IChecklistService ChecklistService
+@inject IAssyChartService AssyChartServices
+@inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionSe
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+@if (ShowLoading)
+{
+    <MudItem>
+        <MudBreadcrumbs Items="_links">
+            <ItemTemplate Context="item">
+                <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+    <MudTabs Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true">
+    <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Routes">
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+
+        <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+            <thead>
+                <tr>
+                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                </tr>
+                <tr>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                </tr>
+                <tr>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                </tr>
+                <tr>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                </tr>
+                <tr>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                </tr>
+
+            </tbody>
+        </MudSimpleTable>
+    </MudTabPanel>
+    
+    <MudTabPanel Text="Create Code Routes" BadgeData='"✚"' BadgeColor="Color.Primary" OnClick="@(() => @NavigationManager.NavigateTo("/PathsRoute/PathCreate"))" />
+
+    </MudTabs>
+}
+else
+{
+    <MudItem>
+        <MudBreadcrumbs Items="_links">
+            <ItemTemplate Context="item">
+                <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+    <MudTabs Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Class="mb-10">
+        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text="All Routes">
+            
+            <MudTable Height="62vh" Items="_CodePaths" T="SOSCodePath" ReadOnly="true" 
+                      SortLabel="Sort By" Filter="new Func<SOSCodePath,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true
+                      HorizontalScrollbar="true" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
+                <ToolBarContent>
+@*                    <MudTooltip Text=@Localizer["showHideFilters"] Arrow="true" Style="flex-direction: column;" Placement="Placement.Right" Color="Color.Info">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Primary" @onclick="(() => ActiveFilters())" Class="mr-0"></MudIconButton>
+                    </MudTooltip>
+*@
+                    @if (!Showfilters)
+                    {
+
+                        <MudSpacer />
+                        <MudTextField @bind-Value="searchString" Placeholder=@Localizer1["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudSpacer />
+
+                    }
+@*                    else
+                    {
+                        <MudSpacer />*@
+                        @*<MudTextField @bind-Value="idFilter" Label="Id" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" TextChanged="Filters"></MudTextField>
+
+                        <MudSpacer />
+                        <MudSelect T="int" Label=@Localizer["plant"] Style="z-index:40;" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="UpdateAreas_FilterByPlant">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                            @foreach (var type in _plants)
+                            {
+                                <MudSelectItem Value="type.PlantId">@($"{type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSpacer />
+
+
+
+                        <MudAutocomplete MaxItems="null" Clearable="true" OnClearButtonClick="(() => ClearFilters())" T="Area" Label="@Localizer["area"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" ResetValueOnEmptyText="@(areaId == 0 ? true : false)" CoerceText="@(areaId == 0 ? true : false)" CoerceValue="@(areaId == 0 ? true : false)" ToStringFunc="@(e => areaId == 0 ? $"{Localizer["notSelected"]}" : $"{e.Code} {e.Description}")" SearchFunc="@SearchArea" ShowProgressIndicator="true" ValueChanged="@((item) => SetArea(item))">
+                            <ItemTemplate Context="e">
+                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Code - @e.Description </MudChip>
+                            </ItemTemplate>
+                        </MudAutocomplete>
+
+                        <MudSpacer />
+
+                     
+                        <MudAutocomplete MaxItems="null" Clearable="true" OnClearButtonClick="(() => ClearFilters())" T="Distribution" Label="@Localizer["distribution"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" ToStringFunc="@(e => distributionId == 0 ? $"{Localizer["notSelected"]}" : $"{e.Code} {e.Description}")" SearchFunc="@SearchDistribution" ShowProgressIndicator="true" ValueChanged="@((item) => SetDistribution(item))">
+                            <ItemTemplate Context="e">
+                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Code - @e.Description </MudChip>
+                            </ItemTemplate>
+                        </MudAutocomplete>
+                        <MudSpacer />
+
+                        @if (!if_pick_Distribution)
+                        {
+                            <MudTooltip Text=@Localizer["selectADistributionFirst"] Arrow="true" Placement="Placement.Right" Color="Color.Error">
+                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" Disabled>
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
+                            </MudSelect>
+                        </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Disabled="true" Value="0" OnClick='@(() => ShowError(@Localizer["notSelected"]))'>@Localizer["notSelected"]</MudSelectItem>
+                                @foreach (var type in _distributions.Find(d => d.DistributionId == distributionId).Products)
+                                {
+                                    <MudSelectItem Value="type.ProductId">@($"{type.Description}")</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }*@
+
+@*                        <MudSpacer />
+                        <MudTooltip Text=@Localizer1["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                            <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                        </MudTooltip>
+                    }*@
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.SOSCodePathId)">Id</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.Code)">@Localizer["Code"]</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.Product?.Description)">@Localizer["product"]</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.HOE)">@Localizer["HOE"]</MudTableSortLabel>
+                    </MudTh>                    
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.GOS)">@Localizer["GOS"]</MudTableSortLabel>
+                    </MudTh>                    
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.CCP)">@Localizer["CCP"]</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<SOSCodePath, object>(x=>x?.CommonDirectionHOE)">@Localizer["CD"]</MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudText Align="Align.Center">@Localizer["actions"]</MudText>
+                    </MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Id">
+                        <MudText Align="Align.Center">@context.SOSCodePathId</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Code">
+                        <MudText Align="Align.Center">@context.Code</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Product">
+                        <MudText Align="Align.Center">@context.Product?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Distribution">
+                        <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="HOE">
+                        @if (!string.IsNullOrEmpty(context.HOE))
+                        {
+                            <MudItem Style="text-align: center;">
+                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Folder" IconColor="Color.Warning" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>HOE:</b> @context.HOE</MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
+                            </MudItem>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="GOS">
+                        @if (!string.IsNullOrEmpty(context.GOS))
+                        {
+                            <MudItem Style="text-align: center;">
+                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Folder" IconColor="Color.Warning" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>GOS:</b> @context.GOS</MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
+                            </MudItem>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="CCP">
+                        @if (!string.IsNullOrEmpty(context.CCP))
+                        {
+                            <MudItem Style="text-align: center;">
+                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Folder" IconColor="Color.Warning" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>CCP:</b> @context.CCP</MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
+                            </MudItem>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="CD">
+                        @if (!string.IsNullOrEmpty(context.CommonDirectionHOE) || !string.IsNullOrEmpty(context.CommonDirectionGOS) || !string.IsNullOrEmpty(context.CommonDirectionCCP))
+                        {
+                            <MudItem Style="text-align: center;">
+                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Folder" IconColor="Color.Warning" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @if (!string.IsNullOrEmpty(context.CommonDirectionHOE))
+                                        {
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>HOE CD:</b> @context.CommonDirectionHOE</MudMenuItem>
+                                        }
+                                        @if (!string.IsNullOrEmpty(context.CommonDirectionGOS))
+                                        {
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>GOS CD:</b> @context.CommonDirectionGOS</MudMenuItem>
+                                        }
+                                        @if (!string.IsNullOrEmpty(context.CommonDirectionCCP))
+                                        {
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Folder" IconColor="Color.Warning"><b>CCP CD:</b> @context.CommonDirectionCCP</MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            </MudItem>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        <MudText Align="Align.Center">
+
+                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                <ActivatorContent>
+                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary"  @onclick="@(() => @NavigationManager.NavigateTo($"/PathsRoute/PathDetails/{context.SOSCodePathId}"))">@Localizer["pathDetails"]</MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
+                            @*                                        <MudIconButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Icon="@Icons.Material.Filled.Info" aria-label="info" @onclick="(() => OpenDialog2(context.LupId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Edit" aria-label="edit" @onclick="(() => EditLup(context.LupId))"></MudIconButton>
+                        <MudIconButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" aria-label="delete" @onclick="(() => OpenDeleteDialog(context.LupId))"></MudIconButton>*@
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+                  
+
+                  </MudTable>
+            
+        </MudTabPanel>
+
+        <MudTabPanel Text="Create Code Routes" BadgeData='"✚"' BadgeColor="Color.Primary" OnClick="@(() => @NavigationManager.NavigateTo("/PathsRoute/PathCreate"))" />
+
+    </MudTabs>
+}
+
+
+@code {
+
+
+    List<BreadcrumbItem> _links;
+
+    //Loading
+    bool ShowLoading = true;
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+    //table items and searchstirng
+    private List<SOSCodePath>? _CodePaths { get; set; } = null;
+    private List<SOSCodePath>? _CodePathsBackup { get; set; } = null;
+    private string searchString = "";
+
+    //Filters
+    bool Showfilters = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+        _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["PathsRoute"], href: "/PathsRoute", disabled: true),
+            };
+
+        try
+        {
+            _CodePaths = await AssyChartServices.GetAllCodePaths();
+            _CodePathsBackup = ObjectCloner.ObjectCloner.DeepClone(_CodePaths);
+        }
+        catch (Exception ex)
+        {
+
+        }
+        finally
+        {
+            ShowLoading = false;
+        }
+
+    }//on init
+
+
+
+
+    private bool FilterFunc(SOSCodePath element)
+    {
+        if (element.Product != null)
+        {
+            if (element.Product.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (element.Product.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+        } 
+
+        if (element.Distribution != null)
+        {
+            if (element.Distribution.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (element.Distribution.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        if (element.AssyChart != null)
+        {
+            if (element.AssyChart.AssyChardId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+                
+            if (element.AssyChart.PlantId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true; 
+                
+            if (element.AssyChart.AreaId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (element.AssyChart.DistributionId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if(element.AssyChart.Plant != null)
+            {
+                if (element.AssyChart.Plant.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+                
+                if (element.AssyChart.Plant.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+                return true;
+            }
+
+        }
+
+
+
+        return false;
+    }//Filter Func
+
+    private int selectedRowNumber = -1;
+    private MudTable<SOSCodePath> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<SOSCodePath> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(SOSCodePath element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+               
+
+                NavigationManager.NavigateTo($"/PathsRoute/PathDetails/{element.SOSCodePathId}");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }//selectet row event
+
+    public void ActiveFilters()
+    {
+        Showfilters = !Showfilters;
+
+        //foreach (var item in _assychartItems)
+        //{
+        //    if (!_areas.Any(a => a.AreaId == item.AreaId))
+        //    {
+        //        _areas.Add(item.Area);
+        //    }
+
+        //    if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+        //    {
+        //        _distributions.Add(item.Distribution);
+        //    }
+        //}
+    }//active filters
+
+    public async void ClearFilters()
+    {
+        //idFilter = 0;
+        //plantId = 0;
+        //areaId = 0;
+        //distributionId = 0;
+        //if_pick_Distribution = false;
+        //productId = 0;
+        StateHasChanged();
+
+        await Filters();
+        StateHasChanged();
+
+        //foreach (var item in _assychartItems)
+        //{
+        //    if (!_areas.Any(a => a.AreaId == item.AreaId))
+        //    {
+        //        _areas.Add(item.Area);
+        //    }
+
+        //    if (!_distributions.Any(d => d.DistributionId == item.DistributionId))
+        //    {
+        //        _distributions.Add(item.Distribution);
+        //    }
+        //}
+
+
+        await Filters();
+    }//clear filters
+
+    private async Task<AsyncVoidMethodBuilder> Filters()
+    {
+        Console.WriteLine("Entro en filtros");
+        //if (plantId != 0)
+        //{
+        //    Console.WriteLine("plant != 0");
+
+        //    _assychart = _assychartItems.Where(a => a.PlantId == plantId).ToList();
+        //}
+
+        //if (areaId != 0 && plantId != 0)
+        //{
+        //    Console.WriteLine("P0 A0");
+
+        //    _assychart = _assychart.Where(a => a.AreaId == areaId).ToList();
+        //}
+        //else if (areaId != 0)
+        //{
+        //    Console.WriteLine("p0 Ax");
+
+        //    _assychart = _assychartItems.Where(a => a.AreaId == areaId).ToList();
+        //}
+
+        //if (areaId != 0 && distributionId != 0)
+        //{
+        //    Console.WriteLine("Ax Do");
+
+        //    _assychart = _assychart.Where(a => a.DistributionId == distributionId).ToList();
+        //}
+        //else if (distributionId != 0)
+        //{
+        //    Console.WriteLine("A0 Dx");
+
+        //    _assychart = _assychartItems.Where(a => a.DistributionId == distributionId).ToList();
+        //}
+
+        //if (productId != 0)
+        //{
+        //    Console.WriteLine("Prod X");
+
+        //    _assychart = _assychart.Where(a => a.RoutesProductsAssyChart?.Any(r => r.ProductId == productId) == true).ToList();
+        //}
+
+        //if (plantId == 0 && areaId == 0 && distributionId == 0 && productId == 0)
+        //{
+        //    Console.WriteLine("A0");
+
+        //    _assychart = ObjectCloner.ObjectCloner.DeepClone(_assychartItems);
+        //}
+
+        //if (idFilter != 0)
+        //{
+        //    _assychart = _assychart.Where(a => a.AssyChardId.ToString().Contains(idFilter.ToString().ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+        //}
+
+        return new AsyncVoidMethodBuilder();
+    }
+
+
+}

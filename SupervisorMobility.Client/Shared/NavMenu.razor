@@ -1,5 +1,126 @@
-﻿<MudNavMenu Color="Color.Info">
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    @*<MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
-    <MudNavLink Href="fetchdata" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Fetch data</MudNavLink>*@
+﻿@inject NavigationManager NavigationManager
+@inject GlobalDataService GlobalData;
+
+@inject IDialogService DialogService
+@inject IJobObservationService JobObservationService
+@inject IGlosaryService GlosaryService
+@inject ILupService LupService
+@inject ISnackbar Snackbar
+@inject IUserService UsersService
+@inject IJSRuntime js
+@inject IStringLocalizer<Resource> Localizer
+
+<MudNavMenu Color="Color.Info">
+    @if(user.UserType == 1 || user.UserType == 3){
+        <MudNavLink Href="/configuration" Icon="@Icons.Material.Filled.Settings" Style="float: inline-end">@Localizer["configuration"]</MudNavLink>
+    }
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Localizer["home"]</MudNavLink>
+    @if(user.UserType != 0)
+    {
+
+    <MudNavLink Href="/sosProgram" Icon="@Icons.Material.Filled.EventNote">@Localizer["sosProgram"]</MudNavLink>
+    <MudNavLink Href="/jobobservationschedule" Icon="@Icons.Material.Filled.CalendarMonth">@Localizer["jobObservationSchedule"]</MudNavLink>
+    <MudNavLink Href="/jobobservation" Icon="@Icons.Material.Filled.CalendarToday">@Localizer["jobObservations"]</MudNavLink>
+    <MudNavLink Href="/lup" Icon="@Icons.Material.Filled.ChecklistRtl">@Localizer["toDoLup"]</MudNavLink>
+    <MudNavLink Href="/PAT" Icon="@Icons.Material.Filled.PlaylistPlay">@Localizer["PAT"]</MudNavLink>
+
+    <MudNavLink Href="/attendance" Icon="@Icons.Material.Filled.PeopleOutline">@Localizer["attendance"]</MudNavLink>
+
+    }
+    @if(user.UserType == 3)
+    {
+        <MudTreeView T="string" Style="margin-top: 5vh">
+            <MudTreeViewItem Value="@Localizer["toDo"].ToString()" @onclick="(() => Refresh())" ExpandedChanged="Refresh">
+                <MudTreeViewItem Value="@Localizer["late"].ToString()" Expanded=true>
+                    @foreach(var jobobs in lateObservations)
+                    {
+                        var date = "ID: " + jobobs.JobObservationId + " Date: " + jobobs.StartDate?.ToShortDateString() + " - " + jobobs.EndDate?.ToShortDateString();
+                        //Late job observations
+                        if (jobobs.Status == 3)
+                        {
+       @*                     <MudTooltip Text="@date" Color="Color.Error" Placement="Placement.Top" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
+                                    <span style="font-weight: bold; color: black">@jobobs.JobObservationId</span>
+                                    <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@jobobs.StartDate?.ToShortTimeString() - @jobobs.EndDate?.ToShortTimeString()</MudChip>
+                                    <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
+                                </MudButton>
+                            </MudTooltip>*@
+
+                            <MudTooltip Text="@date" Color="Color.Error" Placement="Placement.Right" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Variant="Variant.Outlined" Class="mt-1" Size="Size.Small">
+                                    <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px">@jobobs.Distribution?.Description</MudChip>
+                                </MudButton>
+                            </MudTooltip>
+                        }
+                    }
+
+                </MudTreeViewItem>
+                <MudTreeViewItem Value="@Localizer["today"].ToString()" Expanded=true>
+                    @foreach (var jobobs in todayObservations)
+                    {
+                        var date = "ID: " + jobobs.JobObservationId + " Date: " + jobobs.StartDate?.ToShortDateString() + " - " + jobobs.EndDate?.ToShortDateString();
+                        //Programmed
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@date" Color="Color.Warning" Placement="Placement.Right" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Variant="Variant.Outlined" Class="mt-1">
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@jobobs.Distribution?.Description</MudChip>
+                                </MudButton>
+                            </MudTooltip>
+                        }
+                        //In Progress
+                        else if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@date" Color="Color.Info" Placement="Placement.Right" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Variant="Variant.Outlined" Class="mt-1">
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@jobobs.Distribution?.Description</MudChip>
+                                </MudButton>
+                            </MudTooltip>
+                        }
+                    }
+                </MudTreeViewItem>
+                <MudTreeViewItem Value="@Localizer["thisWeek"].ToString()" Expanded=true>
+                    @foreach (var jobobs in thisWeekObservations)
+                    {
+                        var date = "ID: " + jobobs.JobObservationId + " Date: " + jobobs.StartDate?.ToShortDateString() + " - " + jobobs.EndDate?.ToShortDateString();
+                        //Programmed
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@date" Color="Color.Warning" Placement="Placement.Right" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Variant="Variant.Outlined" Class="mt-1">
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@jobobs.Distribution?.Description</MudChip>
+                                </MudButton>
+                            </MudTooltip>
+                        }
+                        //In Progress
+                        else if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@date" Color="Color.Info" Placement="Placement.Right" Arrow="true" ShowOnFocus="true" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
+                                <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Variant="Variant.Outlined" Class="mt-1">
+                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px">@jobobs.Distribution?.Description</MudChip>
+                                </MudButton>
+                            </MudTooltip>
+                        }
+
+                    }
+                </MudTreeViewItem>
+            </MudTreeViewItem>
+        </MudTreeView>
+        
+    }
+
 </MudNavMenu>
+
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visible" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails JobObservationId="jobId"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+        <MudButton Color="Color.Info" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>

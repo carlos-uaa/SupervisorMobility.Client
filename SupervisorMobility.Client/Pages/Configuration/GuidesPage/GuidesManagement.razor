@@ -1,0 +1,254 @@
+﻿@page "/GuidesManagement"
+@inject IGuideService GuidesServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["GMTitle"]</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-1" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@if (_Guides == null)
+{
+    <MudSimpleTable Class="styled-table table-striped">
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else if (_Guides.Count == 0)
+{
+    <MudContainer>
+        <MudGrid class="d-flex flex-column justify-center align-self-center">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["GMNoFound"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudButton Href="/GuidesManagement/CreateGuide">
+                    <MudText>@Localizer["GMNew"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.PostAdd" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+}
+else
+{
+    
+    <MudTable Height="60vh" Items="_Guides" T="Guide" ReadOnly="true" FixedHeader=true 
+          SortLabel="Sort By" Filter="new Func<Guide,bool>(FilterFunc)" Class="styled-table table-striped mt-10"
+          HorizontalScrollbar="true"  RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent">
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["GuidesTitle"]</MudText>
+                </MudItem><MudSpacer />
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/GuidesManagement/CreateGuide">
+                        <MudText>@Localizer["GMNew"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.PostAdd" aria-label="Cancel" Color="Color.Warning"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.GuideId)">@Localizer["GMId"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Code)"> @Localizer["GuidesCode"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Name)">@Localizer["GuidesName"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Guide, object>(x=>x?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["GuidesDescription"]</MudTableSortLabel></MudTh>
+            <MudTh>@Localizer["Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@Localizer["GMId"]">
+                <MudText Align="Align.Center">@context.GuideId</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["GuidesCode"]">
+                <MudText Align="Align.Center">@context.Code</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer["GuidesName"]">
+                <MudText Align="Align.Center">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="@Localizer[""]">
+                <MudText Align="Align.Center">@context.Description</MudText>
+            </MudTd>
+         @*   <MudTd DataLabel="Status">
+                @if (context.IsActive == true)
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudTd>*@
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  DetailsGuide(context.GuideId))" @ontouchstart="(() =>  DetailsGuide(context.GuideId))">@Localizer["GuidesDetails"]</MudMenuItem>
+                            @*<MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="()=>EditGuide(context.GuideId)" @ontouchstart="()=>EditGuide(context.GuideId)">@Localizer["GuidesEdit"] </MudMenuItem>*@
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="@(() =>DeleteGuide(context.GuideId))" @ontouchstart="@(() =>DeleteGuide(context.GuideId))">@Localizer["GuidesDelete"] </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+
+
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+}
+
+
+
+
+@code {
+
+    List<Guide> _Guides = new List<Guide>();
+    string searchString = "";
+
+    private List<BreadcrumbItem> _links;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["configuration"], href: "/configuration"),
+            new BreadcrumbItem(text: @Localizer["GMTitle"], href: "", disabled: true)
+        };
+        _Guides = await GuidesServices.GetAllGuides();
+    }
+
+
+
+    void EditGuide(int guideId)
+    {
+        NavigationManager.NavigateTo($"/GuidesManagement/{guideId}/EditGuide");
+    }
+
+    async void DeleteGuide(int guideId)
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"{@Localizer["GuidesDeleteMsg"]}?");
+
+        if (confirm)
+        {
+            _Guides.RemoveAll(guide => guide.GuideId == guideId);
+            //await PlantService.DeletePlant(plantId);
+        }
+    }
+
+    void DetailsGuide(int guideId)
+    {
+        NavigationManager.NavigateTo($"/GuidesManagement/{guideId}/DetailGuide");
+    }
+
+    private bool FilterFunc(Guide element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.GuideId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Description.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.GuideId} {element.Code} {element.Description}".Contains(searchString))
+            return true;
+        return false;
+    }
+
+
+    private int selectedRowNumber = -1;
+    private MudTable<Guide> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<Guide> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(Guide element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                
+                NavigationManager.NavigateTo($"/GuidesManagement/{element.GuideId}/DetailGuide");
+
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+}

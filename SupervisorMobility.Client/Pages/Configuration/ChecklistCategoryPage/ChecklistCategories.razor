@@ -1,0 +1,111 @@
+﻿@page "/checklistcategories"
+@inject IChecklistService ChecklistService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Checklist Categories</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Checklist categories table*@
+<MudTable Items="_checklistCategories" Hover="true" T="ChecklistCategory" SortLabel="Sort By" Filter="new Func<ChecklistCategory,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">Checklist categories</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    
+                <MudSpacer />
+                <MudButton Href="/checklistcategory/createcategory">
+                    <MudText>Create Checklist Category</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/checklistcategories/sequence">
+                    <MudText>Re order</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Reorder" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ChecklistCategory, object>(x=>x?.Code)">Category Id</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ChecklistCategory, object>(x=>x?.Code)">Code</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ChecklistCategory, object>(x=>x?.Description)">Description</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ChecklistCategory, object>(x=>x?.Sequence)">Sequence</MudTableSortLabel>
+
+        </MudTh>
+       @* <MudTh>
+
+            <MudTableSortLabel SortBy="new Func<ChecklistCategory, object>(x=>x?.IsActive)">Status</MudTableSortLabel>
+
+        </MudTh>*@
+        <MudTh>
+            <MudText Align="Align.Center">Actions</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="CategoryId">
+            <MudText Align="Align.Center">@context.ChecklistCategoryId</MudText>
+        </MudTd>
+        <MudTd DataLabel="Code">
+            <MudText Align="Align.Center">@context.Code</MudText>
+        </MudTd>
+        <MudTd DataLabel="Description">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.Sequence</MudText>
+        </MudTd>
+      @*  <MudTd DataLabel="Status">
+            @if (context.IsActive == true)
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                </MudText>
+            }
+            else
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                </MudText>
+            }
+        </MudTd>*@
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => CategoryDetails(context.ChecklistCategoryId))" @ontouchstart="(() => CategoryDetails(context.ChecklistCategoryId))">Details</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateCategory(context.ChecklistCategoryId))" @ontouchstart="(() => UpdateCategory(context.ChecklistCategoryId))">Edit </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteCategory(context.ChecklistCategoryId))" @ontouchstart="(() => DeleteCategory(context.ChecklistCategoryId))">Delete </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+
+
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
