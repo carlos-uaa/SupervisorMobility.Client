@@ -12,8 +12,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public Lup _lup { get; set; } = new();
         public JobObservation jobObservation { get; set; } = new();
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
+
+
+        bool showLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading = new List<string>();
+            for (int i = 1; i <= 11; i++)
+            {
+                _sourceMsgLoading.Add($"{Localizer1["Loading" + i]}");
+            }
+
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
             jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
 
@@ -25,7 +38,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     imageUrls[evidence.FileUploadId] = imageUrl;
                 }
             }
-
+            showLoading = false;
         }
 
         void GoToJobObservation(int jobObservationId)

@@ -476,5 +476,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         }
 
+        private void CloseChip() { }
+
     }
 }
