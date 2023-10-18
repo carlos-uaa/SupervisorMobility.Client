@@ -159,23 +159,22 @@ public class CustomHttpClientService
     private readonly HttpClient _apiExtendsHttpClient;
     private readonly HttpClient _bridgeHttpClient;
 
-    public CustomHttpClientService(IWebHostEnvironment environment)
+    public CustomHttpClientService()
     {
-        if (environment.IsDevelopment())
-        {
-            // Development Environment
-            _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-            _apiExtendsHttpClient.BaseAddress = new Uri("https://localhost:10201/api/");
-            _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
-        }
-        else
-        {
-            // Production Environment
-            _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
-            _apiExtendsHttpClient.BaseAddress = new Uri("https://10.91.117.12:10203/api/");
-            _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
-        }
+        //Dev
+        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
+        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
+        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
+
+        //Prod
+        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
+        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
+
+        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
+
     }
+
     public HttpClient GetApiHttpClient()
     {
         return _apiHttpClient;
