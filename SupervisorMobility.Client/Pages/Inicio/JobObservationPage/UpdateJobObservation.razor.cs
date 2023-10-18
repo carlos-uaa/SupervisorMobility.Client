@@ -150,7 +150,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
-  
+        
                 _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
@@ -292,6 +292,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
+                StateHasChanged();
                 _operators = await UsersService.GetUsersByType(4, true, false);
                 //operator User
                 foreach (var operatorUser in _operators)
@@ -302,7 +303,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                StateHasChanged();
                 await GetUserAsync();
 
                 if (user != null)

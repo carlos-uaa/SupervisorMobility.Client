@@ -961,6 +961,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Department.
+        /// </summary>
+        public static string department {
+            get {
+                return ResourceManager.GetString("department", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Description.
         /// </summary>
         public static string description {
@@ -2397,6 +2406,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string search {
             get {
                 return ResourceManager.GetString("search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select a department.
+        /// </summary>
+        public static string selectADepartment {
+            get {
+                return ResourceManager.GetString("selectADepartment", resourceCulture);
             }
         }
         

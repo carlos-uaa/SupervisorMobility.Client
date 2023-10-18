@@ -29,6 +29,9 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         public DateTime? EndDate { get; set; }
 
+        public int? DepartmentId { get; set; }
+        public Department? Department { get; set; }
+
 
     }
 }

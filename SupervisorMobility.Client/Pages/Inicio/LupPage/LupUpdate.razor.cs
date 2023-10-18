@@ -3,9 +3,11 @@ using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using Department = SupervisorMobility.Client.Data.Entities.Department;
 
 namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 {
@@ -20,6 +22,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public Lup _lup { get; set; } = new();
         public JobObservation jobObservation { get; set; } = new();
 
+        List<Department> _departments = new();
+        private int departmentID = 0;
+
+
         //Justification Modal
         private bool visible = false;
         private void OpenCancelDialog()
@@ -30,9 +36,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
 
+        bool showLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+
+
         protected async override Task OnInitializedAsync()
         {
-             _links = new List<BreadcrumbItem>
+            _sourceMsgLoading = new List<string>();
+            for (int i = 1; i <= 11; i++)
+            {
+                _sourceMsgLoading.Add($"{Localizer1["Loading" + i]}");
+            }
+
+
+            _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "#"),
                 new BreadcrumbItem("LUP", href: "/lup"),
@@ -42,7 +61,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
             jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
 
+            departmentID = _lup.DepartmentId != null ? (int)_lup.DepartmentId : departmentID;
 
+            _departments = await DepartmentServices.GetDepartments();
 
             foreach (var evidence in _lup.Evidences)
             {
@@ -52,10 +73,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     imageUrls[evidence.FileUploadId] = imageUrl;
                 }
             }
-
+            showLoading = false;
         }
         private async Task EditLup()
         {
+            _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
 
             _lup.Status = 2;
 
@@ -75,7 +97,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public async void CancelLup()
         {
 
-            if(_lup.Justification == null || _lup.Justification.Length == 0)
+            if (_lup.Justification == null || _lup.Justification.Length == 0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -83,6 +105,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 return;
             }
 
+            _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
 
             _lup.EndDate = DateTime.Now;
             _lup.Status = 4;
@@ -109,6 +132,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         {
 
             _lup.EndDate = DateTime.Now;
+            _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
+
             _lup.Status = 3;
 
             var result = await LupServices.UpdateLup(_lup);
