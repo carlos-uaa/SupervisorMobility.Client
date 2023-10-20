@@ -162,14 +162,14 @@ public class CustomHttpClientService
     public CustomHttpClientService()
     {
         //Dev
-        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
+        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
+        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
+        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
 
         //Prod
-        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
-        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
+        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
+        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/") };
+        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
 
         _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
 
