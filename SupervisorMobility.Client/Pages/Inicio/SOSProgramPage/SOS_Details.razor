@@ -2354,6 +2354,28 @@
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="SVSinCharge" Options="dialogOptions">
     <DialogContent>
+        <MudItem Style="display: flex; justify-content: space-evenly;">
+                                <MudSpacer />
+                                <MudTextField @bind-Value="Startday" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="Comenzar el día:" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
+                                </MudTextField>
+                                    <MudSpacer />
+                                <MudTextField @bind-Value="JobsPorDia" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="Jobs x día:" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
+
+                                </MudTextField>
+
+                                <MudSpacer />
+                                <MudTextField @bind-Value="diasSeparate" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="Dias Separacion" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
+
+                                </MudTextField>
+
+                                <MudSpacer />
+                                <MudSelect T="int" Label="Randomize" Style="z-index:40;" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" AnchorOrigin="Origin.BottomCenter" @bind-Value="OptionRandom">
+                                    <MudSelectItem Value="0">Secuencial</MudSelectItem>
+                                    <MudSelectItem Value="1">Operaciones Aleatorias</MudSelectItem>
+                                    <MudSelectItem Value="2">Distribucion aleatorio</MudSelectItem>
+                                </MudSelect>
+                                <MudSpacer />
+                            </MudItem>
 
         @if (_UsersSV_Copy?.Count > 0)
         {
@@ -3996,6 +4018,7 @@
         SVSinCharge = false;
         isButtonDisabled = true;
         ShowLoading = true;
+
         StateHasChanged();
 
         //logica del año anterior
@@ -4011,57 +4034,57 @@
             {
                 foreach (var op in _All_Operations)
                 {
+                    //check if exist 
+                    if(! _All_SOSJobobservation.Any(j => j.OperationId == op.OperationId)){
 
-                    JobObservationNulls _newSuggestion = new();
+                        JobObservationNulls _newSuggestion = new();
 
+                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                    int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                        // Obtener el SupervisorId de SV_Manager usando el índice calculado
+                        int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                    // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                    int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-                    // Asignar el SupervisorId a _newSuggestion
-                    _newSuggestion.SupervisorId = supervisorId;
-
-
-
-
-                    SOSRegUserOperationRelationship regAux = new();
-                    regAux.Register = new();
-                    regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
-                    regAux.Register.OperationId = op.OperationId;
-                    regAux.Register.SupervisorId = supervisorId;
-                    regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+                        // Asignar el SupervisorId a _newSuggestion
+                        _newSuggestion.SupervisorId = supervisorId;
 
 
-                    regAux.Exist = false;
-                    regAux.StateUpdate = true;
-                    Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+                        SOSRegUserOperationRelationship regAux = new();
+                        regAux.Register = new();
+                        regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
+                        regAux.Register.OperationId = op.OperationId;
+                        regAux.Register.SupervisorId = supervisorId;
+                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
-                    ////
 
-                    _newSuggestion.PlantId = (int)SOS_Review.PlantId;
-                    _newSuggestion.Plant = SOS_Review.Plant;
-                    _newSuggestion.AreaId = (int)SOS_Review.AreaId;
-                    _newSuggestion.Area = SOS_Review.Area;
+                        regAux.Exist = false;
+                        regAux.StateUpdate = true;
+                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
 
-                    _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                    _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+                        ////
 
-                    _newSuggestion.Operation = op;
-                    _newSuggestion.OperationId = op.OperationId;
-                    _newSuggestion.Option = 2;
-                    _newSuggestion.Type = 3;
-                    _newSuggestion.Status = 7;
-                    _newSuggestion.IsActive = true;
+                        _newSuggestion.PlantId = (int)SOS_Review.PlantId;
+                        _newSuggestion.Plant = SOS_Review.Plant;
+                        _newSuggestion.AreaId = (int)SOS_Review.AreaId;
+                        _newSuggestion.Area = SOS_Review.Area;
 
-                    DateTime parsedDate = new DateTime((int)SOS_Review.AplicationYear, StartMonth, Startday);
-                    parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
 
-                    _newSuggestion.StartDate = parsedDate;
-                    _newSuggestion.PlannedStartDate = parsedDate;
+                        _newSuggestion.Operation = op;
+                        _newSuggestion.OperationId = op.OperationId;
+                        _newSuggestion.Option = 2;
+                        _newSuggestion.Type = 3;
+                        _newSuggestion.Status = 7;
+                        _newSuggestion.IsActive = true;
 
-                    _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                        DateTime parsedDate = new DateTime((int)SOS_Review.AplicationYear, StartMonth, Startday);
+                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+                        _newSuggestion.StartDate = parsedDate;
+                        _newSuggestion.PlannedStartDate = parsedDate;
+
+                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                    }
 
                 }
             }
@@ -4131,58 +4154,60 @@
             {
                 foreach (var op in _All_Operations)
                 {
+                    if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
+                    {
 
-                    JobObservationNulls _newSuggestion = new();
+                        JobObservationNulls _newSuggestion = new();
 
-                    int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                    // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                    int supervisorId = SV_Manager[supervisorIndex].UserId;
+                        // Obtener el SupervisorId de SV_Manager usando el índice calculado
+                        int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                    // Asignar el SupervisorId a _newSuggestion
-                    _newSuggestion.SupervisorId = supervisorId;
-
-
-                    SOSRegUserOperationRelationship regAux = new();
-                    regAux.Register = new();
-                    regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
-                    regAux.Register.OperationId = op.OperationId;
-                    regAux.Register.SupervisorId = supervisorId;
-                    regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+                        // Asignar el SupervisorId a _newSuggestion
+                        _newSuggestion.SupervisorId = supervisorId;
 
 
-                    regAux.Exist = false;
-                    regAux.StateUpdate = true;
-                    Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+                        SOSRegUserOperationRelationship regAux = new();
+                        regAux.Register = new();
+                        regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
+                        regAux.Register.OperationId = op.OperationId;
+                        regAux.Register.SupervisorId = supervisorId;
+                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+                        regAux.Exist = false;
+                        regAux.StateUpdate = true;
+                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
 
 
 
-                    _newSuggestion.PlantId = (int)SOS_Review.PlantId;
-                    _newSuggestion.Plant = SOS_Review.Plant;
-                    _newSuggestion.AreaId = (int)SOS_Review.AreaId;
-                    _newSuggestion.Area = SOS_Review.Area;
+                        _newSuggestion.PlantId = (int)SOS_Review.PlantId;
+                        _newSuggestion.Plant = SOS_Review.Plant;
+                        _newSuggestion.AreaId = (int)SOS_Review.AreaId;
+                        _newSuggestion.Area = SOS_Review.Area;
 
-                    _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                    _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
 
-                    _newSuggestion.Operation = op;
-                    _newSuggestion.OperationId = op.OperationId;
-
-
-                    _newSuggestion.Option = 2;
-                    _newSuggestion.Type = 3;
-                    _newSuggestion.Status = 7;
-                    _newSuggestion.IsActive = true;
-
-                    DateTime parsedDate = new DateTime((int)SOS_Review.AplicationYear, StartMonth, Startday);
-                    parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                    _newSuggestion.StartDate = parsedDate;
-                    _newSuggestion.PlannedStartDate = parsedDate;
+                        _newSuggestion.Operation = op;
+                        _newSuggestion.OperationId = op.OperationId;
 
 
-                    _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                        _newSuggestion.Option = 2;
+                        _newSuggestion.Type = 3;
+                        _newSuggestion.Status = 7;
+                        _newSuggestion.IsActive = true;
 
+                        DateTime parsedDate = new DateTime((int)SOS_Review.AplicationYear, StartMonth, Startday);
+                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+                        _newSuggestion.StartDate = parsedDate;
+                        _newSuggestion.PlannedStartDate = parsedDate;
+
+
+                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                    }
                 }
             }
 
