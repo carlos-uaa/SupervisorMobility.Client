@@ -6,15 +6,13 @@ namespace SupervisorMobility.Client.Services.NotificationService
     public class NotificationService: INotificationService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public NotificationService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public NotificationService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }

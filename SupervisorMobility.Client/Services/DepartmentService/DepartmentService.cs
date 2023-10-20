@@ -6,14 +6,12 @@ namespace SupervisorMobility.Client.Services.DepartmentService
     public class DepartmentService : IDepartmentService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public DepartmentService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public DepartmentService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 

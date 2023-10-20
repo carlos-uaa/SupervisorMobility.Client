@@ -79,7 +79,16 @@ builder.Services.AddScoped<ISOSReviewService, SOSReviewService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 
 // Connection to API
-builder.Services.AddScoped<CustomHttpClientService>();
+var env = builder.HostEnvironment;
+if (env.IsDevelopment())
+{
+    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/"), Timeout = TimeSpan.FromMinutes(15) }); ;
+}
+else
+{
+    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/"), Timeout = TimeSpan.FromMinutes(10) });
+}
+
 
 
 //Active Directory
@@ -90,6 +99,7 @@ builder.Services.AddMsalAuthentication(options =>
     options.ProviderOptions.LoginMode = "login";
     options.ProviderOptions.Cache.CacheLocation = "sessionStorage";
 });
+
 
 
 
@@ -153,39 +163,3 @@ public class DateTimeTypeConverter : ITypeConverter<DateTime?, DateTime>
 }
 
 
-public class CustomHttpClientService
-{
-    private readonly HttpClient _apiHttpClient;
-    private readonly HttpClient _apiExtendsHttpClient;
-    private readonly HttpClient _bridgeHttpClient;
-
-    public CustomHttpClientService()
-    {
-        //Dev
-        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
-
-        //Prod
-        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
-        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
-
-        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
-
-    }
-
-    public HttpClient GetApiHttpClient()
-    {
-        return _apiHttpClient;
-    } 
-    
-    public HttpClient GetApiExtendsHttpClient()
-    {
-        return _apiExtendsHttpClient;
-    }
-    public HttpClient GetBridgeHttpClient()
-    {
-        return _bridgeHttpClient;
-    }
-}

@@ -6,14 +6,12 @@ namespace SupervisorMobility.Client.Services.SupportDocumentTypeService
     public class SupportDocumentTypeService : ISupportDocumentTypeService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public SupportDocumentTypeService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public SupportDocumentTypeService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 

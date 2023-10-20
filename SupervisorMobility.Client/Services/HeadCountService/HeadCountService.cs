@@ -7,17 +7,13 @@ namespace SupervisorMobility.Client.Services.HeadCountService
     public class HeadCountService : IHeadCountService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
-        private readonly HttpClient _httpExtends;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public HeadCountService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public HeadCountService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
-            _httpExtends = customHttpClientService.GetApiExtendsHttpClient();
+            _http = customHttpClientService;
             _js = jSRuntime;
             _options = new JsonSerializerOptions
             {
@@ -32,7 +28,7 @@ namespace SupervisorMobility.Client.Services.HeadCountService
         {
             Console.WriteLine("upload HeadCountFile");
 
-            var response = await _httpExtends.PostAsync($"HeadCount/Upload?UserIdUpload={userid}", contentfile);
+            var response = await _http.PostAsync($"HeadCount/Upload?UserIdUpload={userid}", contentfile);
 
             if (response.IsSuccessStatusCode)
             {
@@ -60,7 +56,7 @@ namespace SupervisorMobility.Client.Services.HeadCountService
         {
             Console.WriteLine("Get All HeadCountFile");
 
-            var response = await _httpExtends.GetAsync($"HeadCount");
+            var response = await _http.GetAsync($"HeadCount");
 
             if (response.IsSuccessStatusCode)
             {
