@@ -29,7 +29,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
            
             try
             {
-                var response = await _http.GetAsync("SMCcp/GetDirectoryPathsCcp");
+                var response = await _http.GetAsync("BridgeCDMS/SMCcp/GetDirectoryPathsCcp");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -67,7 +67,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.PostAsync("SMCcp/PostArchivesDirectoryCcp", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMCcp/PostArchivesDirectoryCcp", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -93,7 +93,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             {
                 Console.WriteLine($"Error of Json GOS: {ex.Message}");
 
-                var response = await _http.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
                 var contentString = await response.Content.ReadAsStringAsync();
 
                 // Deserializar el contenido en un objeto JObject
@@ -136,7 +136,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.PostAsync("SMCcp/PostDownloadfileCcp", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMCcp/PostDownloadfileCcp", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -160,6 +160,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
+
         public async Task<CDMS_General> DeleteFileTempCCP(string FileName)
         {
             var parameters = new Dictionary<string, string>
@@ -173,7 +174,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             try
             {
                
-                var uri = new Uri(_http.BaseAddress, "SMCcp/DeleteFileTempCcp");
+                var uri = new Uri(_http.BaseAddress, "BridgeCDMS/SMCcp/DeleteFileTempCcp");
 
                 var request = new HttpRequestMessage(HttpMethod.Delete, uri)
                 {
@@ -209,7 +210,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         {
             try
             {
-                var response = await _http.GetAsync("SMHoe/GetDirectoryPaths");
+                var response = await _http.GetAsync("BridgeCDMS/SMHoe/GetDirectoryPaths");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -247,7 +248,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMHoe/PostArchivesDirectoryHOE", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -272,7 +273,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             {
                 Console.WriteLine($"Error of Json HOE: {ex.Message}");
 
-                var response = await _http.PostAsync("SMHoe/PostArchivesDirectoryHOE", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMHoe/PostArchivesDirectoryHOE", content);
                 var contentString = await response.Content.ReadAsStringAsync();
 
                 // Deserializar el contenido en un objeto JObject
@@ -341,7 +342,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.GetAsync("SMGos/GetDirectoryPathsGos");
+                var response = await _http.GetAsync("BridgeCDMS/SMGos/GetDirectoryPathsGos");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -378,7 +379,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -403,7 +404,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             {
                 Console.WriteLine($"Error of Json GOS: {ex.Message}");
 
-                var response = await _http.PostAsync("SMGos/PostArchivesDirectoryGos", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
                 var contentString = await response.Content.ReadAsStringAsync();
 
                 // Deserializar el contenido en un objeto JObject
@@ -444,7 +445,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var response = await _http.PostAsync("SMGos/PostDownloadfileGos", content);
+                var response = await _http.PostAsync("BridgeCDMS/SMGos/PostDownloadfileGos", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -480,7 +481,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-                var uri = new Uri(_http.BaseAddress, "SMGos/DeleteFileTempGos");
+                var uri = new Uri(_http.BaseAddress, "BridgeCDMS/SMGos/DeleteFileTempGos");
 
                 var request = new HttpRequestMessage(HttpMethod.Delete, uri)
                 {
