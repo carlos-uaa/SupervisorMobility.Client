@@ -8,21 +8,20 @@ using System.Threading.Tasks;
 using System.Net.Http.Json;
 using System.Net;
 using SupervisorMobility.Client.Data.Entities;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Services.LoginService
 {
     public class LoginService : ILoginService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public LoginService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public LoginService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _js = jSRuntime;
             _options = new JsonSerializerOptions
             {
@@ -36,20 +35,20 @@ namespace SupervisorMobility.Client.Services.LoginService
         public async Task<AD_User> LoginAD(string username, string password)
         {
 
-
-            var data = new
+            var parameters = new Dictionary<string, string>
             {
-                username = username,
-                password = password
+                { "user", username },
+                { "pass", password }
             };
 
-            var json = JsonConvert.SerializeObject(data); 
+            //var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters); 
 
             var content = new StringContent(json, Encoding.UTF8, "application/json"); 
 
             try
             {
-                var response = await _http.PostAsync($"login?username={username}&password={password}", content);
+                var response = await _http.PostAsync($"login", content);
 
                 if(response.StatusCode != HttpStatusCode.OK)
                 {

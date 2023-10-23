@@ -1,5 +1,6 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Packaging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
@@ -129,6 +130,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         bool FilterOperation = false;
 
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+        public string question1 { get; set; } 
+        public string question2 { get; set; }
+        public string question3 { get; set; } 
+        public string question4 { get; set; } 
+        public string question5 { get; set; } 
 
         protected async override Task OnInitializedAsync()
         {
@@ -302,7 +309,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         operatorUsers.Add(operatorUser);
                     }
                 }
-
                 await GetUserAsync();
 
                 if (user != null)
@@ -396,7 +402,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
-
+            StateHasChanged();
         }
 
         private async Task GetUserAsync()
@@ -2354,6 +2360,38 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
+        //Questions and answers
+        private void AddLupOpportunity(int question)
+        {
+            Snackbar.Configuration.MaxDisplayedSnackbars = 4;
+            switch (question)
+            {
+                case 1:
+                    areaQ = "No Respeta pasos principales y puntos críticos";
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 2:
+                    areaQ = "El Empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 3:
+                    areaS = "Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposición de residuos";
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 4:
+                    areaQ = "Operador es capaz de nombrar paso principales, puntos críticos y razón";
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+
+
+
+            }
+            StateHasChanged();
+        }
 
     }
 }

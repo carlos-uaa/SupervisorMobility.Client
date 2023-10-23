@@ -6,14 +6,12 @@ namespace SupervisorMobility.Client.Services.JobObservationTypeService
     public class JobObservationTypeService : IJobObservationTypeService
     {
         private readonly HttpClient _http;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public JobObservationTypeService(CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public JobObservationTypeService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 

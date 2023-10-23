@@ -154,34 +154,34 @@
         </MudContainer>
         @*<footer class="footerContainer" id="footer" style="min-width:5vw">
 
-            <div class="lock">
-                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-unlock" />
-                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-lock" />
-            </div>
+        <div class="lock">
+        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-unlock" />
+        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-lock" />
+        </div>
 
-            <div class="footersep">
+        <div class="footersep">
 
-                @if (user.UserType != 0)
-                {
-                    <MudText>Hello! @user.Name, @(DateTime.Today.Year)</MudText>
-                }
-                else
-                {
-                    <MudText>Welcome to Supervisor Mobility, @(DateTime.Today.Year)</MudText>
-                }
-                <MudList Clickable="true" @onmouseover="@OnMouseOver">
-                    <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text=@Localizer["needHelpNavigating"] Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
-                        <NestedList>
+        @if (user.UserType != 0)
+        {
+        <MudText>Hello! @user.Name, @(DateTime.Today.Year)</MudText>
+        }
+        else
+        {
+        <MudText>Welcome to Supervisor Mobility, @(DateTime.Today.Year)</MudText>
+        }
+        <MudList Clickable="true" @onmouseover="@OnMouseOver">
+        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text=@Localizer["needHelpNavigating"] Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+        <NestedList>
 
-                            <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
-                                @Localizer["guides"]
-                            </MudListItem>
-                        </NestedList>
+        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
+        @Localizer["guides"]
+        </MudListItem>
+        </NestedList>
 
-                        </MudListItem>
-                    </MudList>
-                </div>
-            </footer>*@
+        </MudListItem>
+        </MudList>
+        </div>
+        </footer>*@
     </MudMainContent>
 </MudLayout>
 
@@ -537,7 +537,7 @@
                     <div class="hourglass"></div>
                     <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
                 </MudItem>
-                
+
 
                 <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
                     <strong>Recomendaciones para ti:</strong><br>
@@ -681,41 +681,43 @@
 
         }
 
-      
-
-
 
         Dispose();
+        if (user.UserId != 0)
+        {
+            Notificationtimer = new Timer(async state =>
+               {
+                   try
+                   {
+                       Console.WriteLine($"try GetNotifications");
+                       //GetNotifications(state);
+                       await updatenotifications();
+                       DisplayDialogErrorAPI = false;
+                       StateHasChanged();
+                       Notificationtimer.Change(StartInterval, StartInterval);
+                       connection_attempt = 0;
+                       waitInterval = TimeSpan.FromSeconds(0);
+                   }
+                   catch (Exception ex)
+                   {
+                       DisplayDialogErrorAPI = false;
+                       StateHasChanged();
+                       connection_attempt++;
+                       waitInterval += TimeSpan.FromSeconds(10);
 
-        Notificationtimer = new Timer(async state =>
-          {
-              try
-              {
-                  Console.WriteLine($"try GetNotifications");
-                  //GetNotifications(state);
-                  await updatenotifications();
-                  DisplayDialogErrorAPI = false;
-                  StateHasChanged();
-                  Notificationtimer.Change(StartInterval, StartInterval);
-                    connection_attempt = 0;
-                    waitInterval = TimeSpan.FromSeconds(0);
-              }
-              catch (Exception ex)
-              {
-                  DisplayDialogErrorAPI = false;
-                  StateHasChanged();
-                  connection_attempt++;
-                  waitInterval += TimeSpan.FromSeconds(10);
+                       Console.WriteLine($"[{waitInterval}]Exception Notify Connected: {ex.Message} ");
+                       Notificationtimer.Change(waitInterval, waitInterval);
+                       timeLeft = (int)(waitInterval.TotalMinutes * 60) + 3;
+                       Console.WriteLine($"[Despues wait]  Notificationtimer change");
+                       DisplayDialogErrorAPI = true;
+                       StateHasChanged();
 
-                  Console.WriteLine($"[{waitInterval}]Exception Notify Connected: {ex.Message} ");
-                  Notificationtimer.Change(waitInterval, waitInterval);
-                  timeLeft = (int)(waitInterval.TotalMinutes * 60) + 3;
-                  Console.WriteLine($"[Despues wait]  Notificationtimer change");
-                  DisplayDialogErrorAPI = true;
-                  StateHasChanged();
+                   }
+               }, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
 
-              }
-          }, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        }
+
+
 
         //attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
 

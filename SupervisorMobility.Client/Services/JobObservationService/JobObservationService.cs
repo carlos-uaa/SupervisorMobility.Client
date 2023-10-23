@@ -10,15 +10,13 @@ namespace SupervisorMobility.Client.Services.JobObservationService
     {
         private readonly HttpClient _http;
         private readonly IMapper _mapper;
-        private readonly HttpClient _httpBridge;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public JobObservationService(IMapper mapper, CustomHttpClientService customHttpClientService, IJSRuntime jSRuntime)
+        public JobObservationService(IMapper mapper, HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
             _mapper = mapper;
-            _http = customHttpClientService.GetApiHttpClient();
-            _httpBridge = customHttpClientService.GetBridgeHttpClient();
+            _http = customHttpClientService;
             _options = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
