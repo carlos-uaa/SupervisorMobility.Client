@@ -131,11 +131,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
-        public string question1 { get; set; } 
-        public string question2 { get; set; }
-        public string question3 { get; set; } 
-        public string question4 { get; set; } 
-        public string question5 { get; set; } 
+        public string[] questions = new string[5];
+
+        public double taktTime { get; set; }
+        public int kpiID = 0;
 
         protected async override Task OnInitializedAsync()
         {
@@ -207,7 +206,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
                 _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
+                if(_jobObservation.KpiId != null)
+                {
+                    kpiID = (int)_jobObservation.KpiId;
+                }
 
+                if(_jobObservation.TaktTime == null)
+                {
+                    taktTime = 0.0;
+                }
+                else
+                {
+                    taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
+                }
+
+                if (_jobObservation.Questions != null)
+                {
+                    var quets = _jobObservation.Questions.Split('|');
+                    for (int i = 0; i < 5; i++)
+                    {
+                        questions[i] = quets[i];
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        questions[i] = null;
+                    }
+                }
 
 
                 if (_jobObservation.HOEStandardTimes != null && _jobObservation.HOEStandardTimes != "||||")
@@ -610,7 +637,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             startHour = DateTime.Now.TimeOfDay;
-
+            _jobObservation.KpiId = kpiID;
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.TaktTime = taktTime.ToString();
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -651,9 +683,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -712,9 +741,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -772,6 +798,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            _jobObservation.KpiId = kpiID;
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.TaktTime = taktTime.ToString();
+
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
                 var formatedStartDate = _jobObservation.StartDate;
@@ -817,10 +850,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Operator Signature", Severity.Error);
                     return;
                 }
-
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -883,9 +912,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     return;
                 }
 
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -944,6 +970,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            _jobObservation.KpiId = kpiID;
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.TaktTime = taktTime.ToString();
+
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
                 var formatedStartDate = _jobObservation.StartDate;
@@ -981,9 +1014,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -1038,9 +1068,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -1098,8 +1125,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-
+            _jobObservation.KpiId = kpiID;
             endHour = DateTime.Now.TimeOfDay;
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.TaktTime = taktTime.ToString();
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1139,9 +1171,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -1195,9 +1224,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Error in Date End", Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 if (_jobObservation.HOEStandardTimes != null)
                     _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
@@ -1307,6 +1333,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         void StartTimer(int option)
         {
+
             startTime = DateTime.Now;
             timer = new System.Timers.Timer(1);
             timer.Elapsed += OnTimedEvent;
@@ -1359,6 +1386,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         void OnTimerChanged(int option)
         {
+            if (taktTime == 0.0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First enter the Takt Time", Severity.Warning);
+                return;
+            }
+
+
             if (option == 1 && HoeTimes[0] == 0.0)
             {
                 Snackbar.Clear();
@@ -1491,6 +1527,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 }
                                 areaD = areaD + $", Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
                             }
+                        }
+
+                        if(cycleValue2 > taktTime)
+                        {
+                            switch (i)
+                            {
+                                case 0: cycle1Color = "red"; break;
+                                case 1: cycle2Color = "red"; break;
+                                case 2: cycle3Color = "red"; break;
+                                case 3: cycle4Color = "red"; break;
+                                case 4: cycle5Color = "red"; break;
+                            }
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Time is NG, LUP added to Delivery Pillar", Severity.Warning);
+                            areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than Takt time ({taktTime})";
                         }
                     }
                 }
