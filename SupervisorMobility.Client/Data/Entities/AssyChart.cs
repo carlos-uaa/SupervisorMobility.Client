@@ -35,7 +35,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? OperationId { get; set; }
         public Operation? Operation { get; set; }
         //Data Operation to create
-    
+        public int? ErgonomicsLevel { get; set; }
+
 
     }
 }

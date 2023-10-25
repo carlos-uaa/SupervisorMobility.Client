@@ -80,7 +80,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         bool if_add_CD_GOS = false;
         bool if_add_CD_HOE = false;
 
-       
+
+        public int auxErgonomicsLevel = 0;
+
         //Inizialize
         protected async override Task OnInitializedAsync()
         {
@@ -108,6 +110,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
                 new BreadcrumbItem(text: Localizer1["ACUpdate"], href: "", disabled: true),
               };
                 _assychart = await AssyChartServices.GetAssyChart(assychartId);
+
+                if(_assychart.ErgonomicsLevel != null)
+                {
+                    auxErgonomicsLevel = (int)_assychart.ErgonomicsLevel;
+                }
 
                 _products = await ProductsServices.GetProducts();
 
@@ -529,6 +536,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _assychart.OperationId = auxoperation;
 
             _assychart.ModificationDate = DateTime.Now;
+
+            if (auxErgonomicsLevel != 0)
+            {
+                _assychart.ErgonomicsLevel = auxErgonomicsLevel;
+            }
 
             var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(auxplant, auxarea, auxdistribution);
 
