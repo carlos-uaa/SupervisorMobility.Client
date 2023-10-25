@@ -62,5 +62,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public string OperatorSignature { get; set; }
 
         public string? ReleasedFeedback { get; set; }
+        public int? KpiId { get; set; }
+        public string? TaktTime { get; set; }
+        public string? Questions { get; set; }
     }
 }

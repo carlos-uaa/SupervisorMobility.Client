@@ -77,6 +77,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
         bool if_add_CD_HOE = false;
 
 
+        public int auxErgonomicsLevel = 0;
+
         //Inizialize
         protected override async void OnInitialized()
         {
@@ -365,6 +367,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             _newassychart.CreationDate = DateTime.Now;
 
+            if (auxErgonomicsLevel != 0)
+            {
+                _assychart.ErgonomicsLevel = auxErgonomicsLevel;
+            }
 
             var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(auxplant, auxarea, auxdistribution);
 

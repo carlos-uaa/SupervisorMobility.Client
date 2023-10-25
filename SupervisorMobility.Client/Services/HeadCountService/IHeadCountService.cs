@@ -7,5 +7,11 @@
         Task<List<HeadCount>> GetAllHeadCout();
 
         Task<bool> UpdateHeadCount(HeadCount ToUpdate, int HeadId);
+
+        //HeadCount Process
+        Task<HeadCountProcess> CreateHeadCountPorcess(HeadCountProcess ToCreate);
+        Task<List<HeadCountProcess>> GetAllHeadCountProcesses();
+        Task<bool> UpdateHeadCountProcesses(HeadCountProcess ToUpdate, int HeadId);
+        Task<bool> DeleteHeadCountProcess(int HeadId);
     }
 }
