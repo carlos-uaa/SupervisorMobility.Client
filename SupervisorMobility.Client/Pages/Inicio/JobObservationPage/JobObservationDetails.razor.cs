@@ -80,6 +80,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         string cycle4Color = "";
         string cycle5Color = "";
 
+        public string[] questions = new string[5];
+
+        public double taktTime { get; set; }
+        public int kpiID = 0;
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -92,6 +97,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
+
+
+            if (_jobObservation.KpiId != null)
+            {
+                kpiID = (int)_jobObservation.KpiId;
+            }
+
+            if (_jobObservation.TaktTime == null)
+            {
+                taktTime = 0.0;
+            }
+            else
+            {
+                taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
+            }
+
+            if (_jobObservation.Questions != null)
+            {
+                var quets = _jobObservation.Questions.Split('|');
+                for (int i = 0; i < 5; i++)
+                {
+                    questions[i] = quets[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    questions[i] = null;
+                }
+            }
 
 
             if (_jobObservation.HOEStandardTimes != null)
