@@ -270,7 +270,7 @@
             @if (_IdUpdate != -1)
             {
                 <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
-                    <EditForm Model="_headCountUpdate"  OnValidSubmit="UpdateHeadCountFunc" @bind-IsValid="@success" >
+                    <EditForm Model="_headCountUpdate" OnValidSubmit="UpdateHeadCountFunc" @bind-IsValid="@success">
                         <MudTextField T="int" Label="@Localizer1["HCId"]" Required="true" RequiredError="@Localizer1["HCIdError"]" Validation="@(new Func<int, string>(IntGreaterThanZero))"
                         @bind-Value="_headCountUpdate.Codigo" For="@(() => _headCountUpdate.Codigo)" />
                         <MudTextField T="string" Label="@Localizer1["HCCO"]" Required="true" RequiredError="@Localizer1["HCCOError"]" Validation="@(new Func<string, string>(StringNoNull))"
@@ -340,17 +340,215 @@
             }
         </ChildContent>
     </MudTabPanel>
-    <MudTabPanel @ref="panel04_Procces" Icon="@Icons.Material.Filled.Task" Text="@Localizer1["TitleProcess"]" BadgeData='"☰"'>
+    <MudTabPanel @ref="panel04_Procces" Icon="@Icons.Material.Filled.Task" Text="@Localizer1["TitleProcess"]" BadgeData='"☰"' OnClick="@( () => StartProcess() )">
         <ChildContent>
-            <MudTabs Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true">
-                <MudTabPanel Text="@Localizer1["SeeProcess"]">
+            <MudTabs @ref="tabsProcess" Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true">
+                <MudTabPanel @ref="panel01_SeeAllProcess" Text="@Localizer1["SeeAllProcess"]" OnClick="@( () => StartProcess() )">
+                    @if (showLoading)
+                    {
 
+                        <MudCarousel Class="mud-width-full styled-table table-striped" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+
+                        <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+                            <thead>
+                                <tr>
+                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                                </tr>
+                                <tr>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                                </tr>
+                                <tr>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                                </tr>
+                                <tr>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                                </tr>
+                                <tr>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+                                </tr>
+
+                            </tbody>
+                        </MudSimpleTable>
+
+                    }
+                    else
+                    {
+                        @if (_allProcess?.Count == 0)
+                        {
+                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                    <img src="Images/navegador.png" Height="140" Width="140" />
+                                </MudItem>
+
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
+
+                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
+                                    </MudItem>
+                                </MudItem>
+                            </MudItem>
+                        }
+                        else
+                        {
+                            <MudDataGrid T="HeadCountProcess" Items="@_allProcess" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilterProcess" FixedHeader="true"
+                                         Hideable="true" RowClick="@RowClickedProcess" Virtualize="true" @ref="ReferenceGridProcess" RowClassFunc="SelectedRowProcessClassFunc"
+                                         Height="60vh" HorizontalScrollbar="true" Class="mud-width-full styled-table table-striped">
+                                <ToolBarContent>
+                                    <MudText Typo="Typo.h6">Headcount Process</MudText>
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                </ToolBarContent>
+                                <Columns>
+                                    <TemplateColumn>
+                                        <CellTemplate>
+                                            <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartedEditingProcess(context.Item))" />
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="x => x.HeadCountProcessId" Title="@Localizer1["HCProcessId"]" Sortable="false" Filterable="false" />
+                                    <PropertyColumn Property="x => x.Process" Title="@Localizer1["HCProcess"]" />
+                                </Columns>
+                                <PagerContent>
+                                    <MudDataGridPager T="HeadCount" />
+                                </PagerContent>
+                            </MudDataGrid>
+
+                        }
+
+
+
+
+
+                    }
                 </MudTabPanel>
-                <MudTabPanel Text="@Localizer1["EditProcess"]">
+                <MudTabPanel @ref="panel02_ViewEditProcess" Text="@(ProcessUpdate ? @Localizer1["EditProcess"] : @Localizer1["DetailsProcess"])">
+                    @if (_IdUpdateProcess != -1)
+                    {
+                        @if (ProcessUpdate)
+                        {
+                            <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
+                                <EditForm Model="ProcessSelected" OnValidSubmit="UpdateProcess" @bind-IsValid="@success">
+                                    <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
+                                    @bind-Value="ProcessSelected.Process" For="@(() => ProcessSelected.Process)" />
 
+                                    <div class="d-flex align-center justify-space-between">
+                                        <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
+                                    </div>
+                                </EditForm>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">@Localizer1["HCProcessDetails"]</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudChip @onclick="()=>ProcessUpdate = true" @ontouchstart="()=> ProcessUpdate = true" Variant="Variant.Filled" Class="ml-auto" Icon="@Icons.Material.Filled.Edit" Color="Color.Info">@Localizer1["HCProcessEdit"]</MudChip>
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+
+                                <MudCardContent>
+                                    <MudItem Style="max-height: 70vh; min-width: 70vw; display: flex; flex-wrap: wrap; justify-content: center;" Class="gap-4">
+                                        <MudText Align="Align.Center">@ProcessSelected.Process</MudText>
+                                    </MudItem>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => ProcessUpdate = true)">@Localizer["HCProcessEdit"]</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        }
+
+                    }
+                    else
+                    {
+                        @if (_allProcess?.Count == 0)
+                        {
+                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                    <img src="Images/navegador.png" Height="140" Width="140" />
+                                </MudItem>
+
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
+
+                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
+                                    </MudItem>
+                                </MudItem>
+                            </MudItem>
+                        }
+                        else
+                        {
+                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                    <img src="Images/navegador.png" Height="140" Width="140" />
+                                </MudItem>
+
+                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+
+                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectTitle"]</MudText>
+
+                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectMsg"]</MudText>
+                                    </MudItem>
+                                </MudItem>
+                            </MudItem>
+                        }
+                    }
                 </MudTabPanel>
-                <MudTabPanel Text="@Localizer1["CreateProcess"]">
+                <MudTabPanel @ref="panel03_Create" Text="@Localizer1["CreateProcess"]" OnClick="@( () => ProcessUpdate = false)">
+                    <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
+                        <EditForm Model="ProcessToCreate" OnValidSubmit="CreateProcess" @bind-IsValid="@success">
+                            <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
+                            @bind-Value="ProcessToCreate.Process" For="@(() => ProcessToCreate.Process)" />
 
+                            <div class="d-flex align-center justify-space-between">
+                                <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
+                            </div>
+                        </EditForm>
+                    </MudPaper>
                 </MudTabPanel>
             </MudTabs>
         </ChildContent>
@@ -390,6 +588,7 @@
     //Edicion
     private bool _AfterUpdate = false;
     private int _IdUpdate = -1;
+    private int _IdUpdateProcess = -1;
     private HeadCount _headCountUpdate = new();
     private bool success = false;
     EditForm formEdit;
@@ -400,9 +599,20 @@
     MudTabPanel panel02_View;
     MudTabPanel panel03_Edit;
     MudTabPanel panel04_Procces;
+
+    MudTabs tabsProcess;
+    MudTabPanel panel01_SeeAllProcess;
+    MudTabPanel panel02_ViewEditProcess;
+    MudTabPanel panel03_Create;
     //User
     private string json = string.Empty;
     public User loggedUser = new();
+
+    //Headcount
+    private bool ProcessUpdate = false;
+    private List<HeadCountProcess> _allProcess = new();
+    private HeadCountProcess? ProcessSelected = null;
+    private HeadCountProcess ProcessToCreate = new();
 
     private class FileToDisplay
     {
@@ -618,8 +828,24 @@
     };
     //filtro rapido
 
+
+    private Func<HeadCountProcess, bool> _quickFilterProcess => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.HeadCountProcessId.ToString().Contains(_searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Process.ToLower().Contains(_searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
     private int selectedRowNumber = -1;
     private MudDataGrid<HeadCount> ReferenceGrid;
+    private MudDataGrid<HeadCountProcess> ReferenceGridProcess;
 
     private void RowClicked(DataGridRowClickEventArgs<HeadCount> args)
     {
@@ -650,7 +876,47 @@
 
     }
 
+    private void RowClickedProcess(DataGridRowClickEventArgs<HeadCountProcess> args)
+    {
+
+        if (selectedRowNumber == args.RowIndex)
+        {
+
+            selectedRowNumber = -1;
+
+            if (ReferenceGridProcess.SelectedItem != null && ReferenceGridProcess.SelectedItem.Equals(args.Item))
+            {
+                ProcessSelected = ObjectCloner.ObjectCloner.DeepClone(args.Item);
+                tabsProcess.ActivatePanel(panel02_ViewEditProcess);
+            }
+
+        }
+        else if (ReferenceGridProcess.SelectedItem != null && ReferenceGridProcess.SelectedItem.Equals(args.Item))
+        {
+            _IdUpdateProcess = args.Item.HeadCountProcessId;
+            ProcessSelected = ObjectCloner.ObjectCloner.DeepClone(args.Item);
+            selectedRowNumber = args.RowIndex;
+        }
+        else
+        {
+            _IdUpdateProcess = -1;
+            selectedRowNumber = -1;
+        }
+
+    }
+
     private string SelectedRowClassFunc(HeadCount element, int rowNumber)
+    {
+
+        if (selectedRowNumber == rowNumber)
+        {
+            return "selected";
+        }
+
+        return string.Empty;
+    }//doble click table
+
+    private string SelectedRowProcessClassFunc(HeadCountProcess element, int rowNumber)
     {
 
         if (selectedRowNumber == rowNumber)
@@ -714,6 +980,28 @@
         }
 
     }
+    private void StartedEditingProcess(HeadCountProcess item)
+    {
+        Console.WriteLine($"Ediciones vrgs");
+
+        try
+        {
+            showLoading = true;
+            _IdUpdateProcess = item.HeadCountProcessId;
+            ProcessSelected = ObjectCloner.ObjectCloner.DeepClone(item);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro StartedEditing : {ex.Message}");
+        }
+        finally
+        {
+            ProcessUpdate = true;
+            showLoading = false;
+            tabsProcess.ActivatePanel(panel02_ViewEditProcess);
+        }
+
+    }
 
     private string StringNoNull(string arg)
     {
@@ -726,7 +1014,7 @@
     private string IntGreaterThanZero(int arg)
     {
         if (arg < 0)
-         return $"{@Localizer1["HCValidationInt"]}";
+            return $"{@Localizer1["HCValidationInt"]}";
 
 
         return null;
@@ -746,7 +1034,7 @@
         if (updateResponse)
         {
             _searchString = _headCountUpdate.Codigo.ToString();
-            _AfterUpdate=true;
+            _AfterUpdate = true;
             await InstanceData();
             tabs.ActivatePanel(panel02_View);
             StateHasChanged();
@@ -759,5 +1047,72 @@
 
     }
 
+    private async Task<AsyncVoidMethodBuilder> StartProcess()
+    {
+        try
+        {
+
+            showLoading = true;
+            ProcessUpdate = false;
+            if (_allProcess?.Count == 0)
+            {
+                _allProcess = await HeadCountServices.GetAllHeadCountProcesses();
+            }
+
+
+        }
+        finally
+        {
+            showLoading = false;
+            base.StateHasChanged();
+        }
+
+        return new AsyncVoidMethodBuilder();
+    }
+
+    private async void CreateProcess()
+    {
+        var createResponse = await HeadCountServices.CreateHeadCountPorcess(ProcessToCreate);
+
+
+        if (createResponse != null)
+        {
+            _allProcess.Add(createResponse);
+            ProcessToCreate = new();
+            base.StateHasChanged();
+            tabsProcess.ActivatePanel(panel01_SeeAllProcess);
+        }
+        else
+        {
+            //Mensaje de error
+        }
+    }
+
+
+
+    private async void UpdateProcess()
+    {
+
+        var updateResponse = await HeadCountServices.UpdateHeadCountProcesses(ProcessSelected, ProcessSelected.HeadCountProcessId);
+
+        if (updateResponse)
+        {
+
+            var indexHead = _allProcess.FindIndex(h => h.HeadCountProcessId == ProcessSelected.HeadCountProcessId);
+            _allProcess[indexHead] = ProcessSelected;
+
+            _IdUpdateProcess = -1;
+
+            ProcessUpdate = false;
+            base.StateHasChanged();
+            tabsProcess.ActivatePanel(panel01_SeeAllProcess);
+            //mensaje de sucess
+        }
+        else
+        {
+            //mensaje de error
+        }
+
+    }
 
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using Microsoft.JSInterop;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
@@ -71,6 +72,68 @@ namespace SupervisorMobility.Client.Services.HeadCountService
             }
 
             return null;
+        }
+
+        public async Task<HeadCountProcess> CreateHeadCountPorcess(HeadCountProcess ToCreate)
+        {
+            Console.WriteLine("Create HeadCount Process");
+
+            var response = await _http.PostAsJsonAsync($"HeadCount/Process", ToCreate);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var HeadCount = JsonSerializer.Deserialize<HeadCountProcess>(content, _options);
+
+                response.Dispose();
+
+                return HeadCount;
+
+            }
+
+            return null;
+        }
+
+        public async Task<List<HeadCountProcess>> GetAllHeadCountProcesses()
+        {
+            var response = await _http.GetAsync($"HeadCount/Process");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var HeadCount = JsonSerializer.Deserialize<List<HeadCountProcess>>(content, _options);
+
+                response.Dispose();
+
+                return HeadCount;
+
+            }
+
+            return null;
+        }
+
+        public async Task<bool> UpdateHeadCountProcesses(HeadCountProcess ToUpdate, int HeadId)
+        {
+            var response = await _http.PutAsJsonAsync($"HeadCount/Process/{HeadId}", ToUpdate);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<bool> DeleteHeadCountProcess(int HeadId)
+        {
+            var response = await _http.DeleteAsync($"HeadCount/Process/{HeadId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
