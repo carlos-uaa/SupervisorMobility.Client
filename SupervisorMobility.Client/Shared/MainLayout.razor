@@ -653,6 +653,7 @@
 
         CultureInfo currentCulture = Thread.CurrentThread.CurrentCulture;
         currentCulture.NumberFormat.NumberDecimalSeparator = ".";
+        Dispose();
 
         while (!isApiConnected)
         {
@@ -676,46 +677,41 @@
                 StateHasChanged();
                 waitInterval += TimeSpan.FromSeconds(10);
             }
+            if (user.UserId != 0)
+            {
+                Notificationtimer = new Timer(async state =>
+                   {
+                       try
+                       {
+                           Console.WriteLine($"try GetNotifications");
+                           //GetNotifications(state);
+                           await updatenotifications();
+                           DisplayDialogErrorAPI = false;
+                           StateHasChanged();
+                           Notificationtimer.Change(StartInterval, StartInterval);
+                           connection_attempt = 0;
+                           waitInterval = TimeSpan.FromSeconds(0);
+                       }
+                       catch (Exception ex)
+                       {
+                           DisplayDialogErrorAPI = false;
+                           StateHasChanged();
+                           connection_attempt++;
+                           waitInterval += TimeSpan.FromSeconds(10);
+                           Notificationtimer.Change(waitInterval, waitInterval);
+                           timeLeft = (int)(waitInterval.TotalMinutes * 60) + 3;
+                           DisplayDialogErrorAPI = true;
+                           StateHasChanged();
+                       }
+                   }, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
 
+            }
             await Task.Delay(waitInterval);
 
         }
 
 
-        Dispose();
-        if (user.UserId != 0)
-        {
-            Notificationtimer = new Timer(async state =>
-               {
-                   try
-                   {
-                       Console.WriteLine($"try GetNotifications");
-                       //GetNotifications(state);
-                       await updatenotifications();
-                       DisplayDialogErrorAPI = false;
-                       StateHasChanged();
-                       Notificationtimer.Change(StartInterval, StartInterval);
-                       connection_attempt = 0;
-                       waitInterval = TimeSpan.FromSeconds(0);
-                   }
-                   catch (Exception ex)
-                   {
-                       DisplayDialogErrorAPI = false;
-                       StateHasChanged();
-                       connection_attempt++;
-                       waitInterval += TimeSpan.FromSeconds(10);
-
-                       Console.WriteLine($"[{waitInterval}]Exception Notify Connected: {ex.Message} ");
-                       Notificationtimer.Change(waitInterval, waitInterval);
-                       timeLeft = (int)(waitInterval.TotalMinutes * 60) + 3;
-                       Console.WriteLine($"[Despues wait]  Notificationtimer change");
-                       DisplayDialogErrorAPI = true;
-                       StateHasChanged();
-
-                   }
-               }, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
-
-        }
+        
 
 
 
