@@ -96,7 +96,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<User> _operators = new();
         public List<User> operatorUsers = new();
 
-
+        public int kpiID = 0;
 
 
         protected async override Task OnInitializedAsync()
@@ -112,29 +112,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             await GetUserAsync();
 
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
+            date = date.Replace("-", "/");
 
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
+            _jobObservation.IsActive = true;
+            _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
+            _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
+            _jobObservation.Option = 1;
 
+            StateHasChanged();
             if (user != null)
             {
+
 
                 _plants = await PlantServices.GetPlants();
                 _plants = _plants.OrderBy(p => p.Description).ToList();
@@ -192,22 +180,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 }
 
+                glosary = await GlosaryService.GetGlosary();
+                _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+
                 StateHasChanged();
+
+                try
+                {
+                    CCPFolders = await CDMSServices.GetFoldersCCP();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Get CCP Folder From CCP");
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.Message);
+                }
+
+                if (CCPFolders != null)
+                {
+                    folderCCPError = false;
+                    rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+                }
+                else
+                {
+                    folderCCPError = true;
+                }
+
             }
 
 
 
-            glosary = await GlosaryService.GetGlosary();
-            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
-
-            date = date.Replace("-", "/");
-
-
-
-            _jobObservation.IsActive = true;
-            _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
-            _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
-            _jobObservation.Option = 1;
 
             //_products = await ProductService.GetProducts();
 
@@ -364,22 +367,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+
+            if (user.UserType == 1)
+            {
+                if (_jobObservation.SupervisorId == 0)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Select a Supervisor first", Severity.Error);
+                    return;
+                }
+                _jobObservation.Supervisor = await UsersService.GetUser(_jobObservation.SupervisorId);
+            }
+
+            _jobObservation.KpiId = kpiID;
+            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
+            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+            _jobObservation.Status = 1;
+
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
 
-
-
-                if(user.UserType == 1)
-                {
-                    if(_jobObservation.SupervisorId == 0)
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Select a Supervisor first", Severity.Error);
-                        return;
-                    }
-                    _jobObservation.Supervisor = await UsersService.GetUser(_jobObservation.SupervisorId);
-                }
 
                 var formatedStartDate = _jobObservation.StartDate;
                 var formatedEndDate = _jobObservation.EndDate;
@@ -411,9 +420,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else
                     Console.WriteLine("Unable to parse '{0}'", hour2);
 
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
+
 
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
@@ -421,39 +428,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.PlannedStartDate = newDate1;
                 _jobObservation.PlannedEndDate = newDate2;
 
-                _jobObservation.Status = 1;
 
-                var result = await JobObservationService.CreateJobObservation(_jobObservation);
-                if (result != null)
-                {
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Job Observation Created", Severity.Info);
-
-                    if (_tempLup.Count > 0)
-                    {
-                        _jobObservations = await JobObservationService.GetAllJobObservations();
-                        foreach (var temp in _tempLup)
-                        {
-                            temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                            var result2 = await LupService.CreateLup(temp);
-                            if (result2 != null)
-                            {
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                            }
-                            else
-                            {
-                                Snackbar.Clear();
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Error in Lup", Severity.Error);
-                            }
-                        }
-                    }
-
-                    NavigationManager.NavigateTo("/jobobservation");
-                }
-                else
-                    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
             }
             else
             {
@@ -481,9 +456,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else
                     Console.WriteLine("Unable to parse '{0}'", hour2);
 
-                _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-                _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-                _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
 
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
@@ -491,40 +463,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.PlannedStartDate = newDate1;
                 _jobObservation.PlannedEndDate = newDate2;
 
-                _jobObservation.Status = 1;
+            }
 
-                var result = await JobObservationService.CreateJobObservation(_jobObservation);
-                if (result != null)
+            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+            if (result != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation Planned", Severity.Info);
+
+                if (_tempLup.Count > 0)
                 {
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Job Observation Created", Severity.Info);
-
-                    if (_tempLup.Count > 0)
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var temp in _tempLup)
                     {
-                        _jobObservations = await JobObservationService.GetAllJobObservations();
-                        foreach (var temp in _tempLup)
+                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await LupService.CreateLup(temp);
+                        if (result2 != null)
                         {
-                            temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                            var result2 = await LupService.CreateLup(temp);
-                            if (result2 != null)
-                            {
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                            }
-                            else
-                            {
-                                Snackbar.Clear();
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Error in Lup", Severity.Error);
-                            }
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Lup", Severity.Error);
                         }
                     }
-
-                    NavigationManager.NavigateTo("/jobobservation");
                 }
-                else
-                    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
+                NavigationManager.NavigateTo("/jobobservation");
             }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+            
 
 
 

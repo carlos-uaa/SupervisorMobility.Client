@@ -376,8 +376,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                                 if (_assychart == null)
                                 {
-
-                                    messageErrorFolders = "The folders with the information provided were not located.";
+                                    messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                                 }
                                 else
                                 {
@@ -2266,11 +2265,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int photosPillar = 0;
 
         private bool visibleCamera = false;
+        public bool accessCamera = false;
         private void OpenCameraDialog(int lupId, string lupOportunity, int pillar)
         {
             photosPillar = pillar;
             oportunity = lupOportunity;
             lupPhotosId = lupId;
+
             visibleCamera = true;
 
         }
@@ -2284,19 +2285,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private string imageData;
 
+
         private async void OnRenderedHandler()
         {
-            frameCount = 0;
 
-            // Check camera-access or ask user, if it's not allowed currently
+            frameCount = 0;
             if (await CameraStreamerReference.GetCameraAccessAsync())
             {
-                // Reloading re-initializes the stream and starts the
-                // stream automatically if the Autostart parameter is set
                 await CameraStreamerReference.ReloadAsync();
 
-                // If Autostart is not set, you have to manually start the stream again
-                /* await CameraStreamerReference.StartAsync(); */
             }
         }
 
@@ -2429,22 +2426,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             switch (question)
             {
                 case 1:
-                    areaQ = "No Respeta pasos principales y puntos críticos";
+                    areaQ = "No respeta pasos principales y puntos críticos";
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
-                    areaQ = "El Empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
+                    areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
-                    areaS = "Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposición de residuos";
+                    areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
-                    areaQ = "Operador es capaz de nombrar paso principales, puntos críticos y razón";
+                    areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
@@ -2454,6 +2451,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             StateHasChanged();
         }
+
+
+        //Guide Modal
+        MudTabs guideTabs;
+        
+        private bool visibleGuide = false;
+        private int selectedPillar = 0;
+        private void OpenGuideDialog(int pillarID)
+        {
+            selectedPillar = pillarID;
+            visibleGuide = true;
+
+        }
+        void CloseGuideModal() => visibleGuide = false;
+        private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
+
 
     }
 }
