@@ -129,7 +129,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Supervisor = new();
 
 
-            await GetUserAsync();
 
             date = date.Replace("-", "/");
 
@@ -138,10 +137,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", null);
             _jobObservation.Option = 1;
 
+            _plants = await PlantServices.GetPlants();
+            _plants = _plants.OrderBy(p => p.Description).ToList();
+
+            await GetUserAsync();
             StateHasChanged();
 
             if (user != null)
             {
+
 
                 var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
                 var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
@@ -154,8 +158,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 var PatOperatorId = queryString["OperatorId"];
                 var PatSupervisorId = queryString["SupervisorId"];
 
-                _plants = await PlantServices.GetPlants();
-                _plants = _plants.OrderBy(p => p.Description).ToList();
 
                 if (user.UserType == 1)
                 {
@@ -208,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         //    }
                         //}
 
-                        _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId);
+                        _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                         _operators = _operators.OrderBy(o => o.Name).ToList();
 
                         _jobObservation.OperatorId = int.Parse(PatOperatorId);
@@ -221,8 +223,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _allSupervisors = await UsersService.GetUsersByType(3, true, false);
                         _allSupervisors = _allSupervisors.OrderBy(s => s.Name).ToList();
 
-                        _operators = await UsersService.GetUsersByType(4, true, false);
-                        _operators = _operators.OrderBy(o => o.Name).ToList();
 
                     }
 
@@ -268,7 +268,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
                         //operator User
-                        _operators = await UsersService.GetUsersByType(4, true, false);
+                        _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                         _operators = _operators.OrderBy(o => o.Name).ToList();
                         //operator User
                         foreach (var operatorUser in _operators)
@@ -299,9 +299,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
                         //operator User
-                        _operators = await UsersService.GetUsersByType(4, true, false);
-                        _operators = _operators.OrderBy(o => o.Name).ToList();
+                        //_operators = await UsersService.GetUsersByType(4, true, false);
 
+
+                        _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
+                        _operators = _operators.OrderBy(o => o.Name).ToList();
                         foreach (var operatorUser in _operators)
                         {
                             if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.SuperiorId == user.UserId)
@@ -417,10 +419,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
-        private void ShowOperators()
+        private async void ShowOperators()
         {
             if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
                 ShowPastJobObservations();
+
+            if(user.UserType == 1)
+            {
+                _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
+                _operators = _operators.OrderBy(o => o.Name).ToList();
+            }
             operatorUsers = new();
             _jobObservation.OperatorId = 0;
             //operator User
@@ -446,7 +454,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _operations = _operations.OrderBy(o => o.Description).ToList();
 
             _assychart = await AssychartsServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
-            if (_assychart.ErgonomicsLevel != null)
+            if (_assychart != null && _assychart.ErgonomicsLevel != null)
             {
                 auxErgonomicsLevel = (int)_assychart.ErgonomicsLevel;
             }

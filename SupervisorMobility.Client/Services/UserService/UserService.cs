@@ -272,12 +272,12 @@ namespace SupervisorMobility.Client.Services.UserService
             return null;
         }
 
-        public async Task<List<User>> GetSubordinates(int SupervisorId)
+        public async Task<List<User>> GetSubordinates(int SupervisorId, bool includeCollections = true)
         {
 
             try
             {
-                var response = await _http.GetAsync($"Users/{SupervisorId}/Subordinates?collections=true");
+                var response = await _http.GetAsync($"Users/{SupervisorId}/Subordinates?collections={includeCollections}");
 
                 var content = await response.Content.ReadAsStringAsync();
 

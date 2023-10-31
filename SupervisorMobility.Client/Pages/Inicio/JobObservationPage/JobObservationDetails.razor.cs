@@ -279,11 +279,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
 
-                            if (_assychart == null)
-                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
-                            else
-                                searchAssychart = true;
-
                         }
                         else
                         {
@@ -310,6 +305,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
+
         }
 
         void Closed(MudChip chip)
