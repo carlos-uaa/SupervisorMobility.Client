@@ -91,6 +91,15 @@
                     <MudItem Class="d-flex justify-space-between">
                         <MudItem Style="text-align: start">
                             <MudItem Style="text-align: start">
+                                @if (!searchAssychart)
+                                {
+                                    <MudItem Class="d-flex justify-center align-center">
+                                        <MudChip Color="Color.Info" Variant="Variant.Outlined">
+                                            <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" Class="mr-3" />
+                                            Loading Assy Chart
+                                        </MudChip>
+                                    </MudItem>
+                                }
                                 @if (searchAssychart)
                                 {
                                     <MudItem Class="d-flex flex-row align-start justify-center">
@@ -398,19 +407,11 @@
                                         }
                                     </MudItem>
                                 }
-                                else
+                                else if (messageErrorFolders != "")
                                 {
-                                    if (messageErrorFolders != "")
-                                    {
-                                        <MudItem class="d-flex flex-column justify-center align-self-start">
-                                            <MudText Typo="Typo.h6" Class="align-item-center center">@messageErrorFolders</MudText>
-                                        </MudItem>
-                                    }
-                                    else
-                                    {
-                                        <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
-                                    }
-
+                                    <MudItem class="d-flex flex-column justify-center align-self-start">
+                                        <MudText Typo="Typo.h6" Class="align-item-center center">@messageErrorFolders</MudText>
+                                    </MudItem>
                                 }
                             </MudItem>
                         </MudItem>
@@ -580,7 +581,7 @@
                                         <MudTextField T="double" @bind-Value="HoeTimes[1]" Label=@Localizer["time2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                                     </td>
                                     <td>
-                                        <MudTextField T="double" @bind-Value="HoeTimes[2]" Label=@Localizer["time2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                        <MudTextField T="double" @bind-Value="HoeTimes[2]" Label=@Localizer["time3"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
                                     </td>
                                     <td>
                                         <MudTextField T="double" @bind-Value="HoeTimes[3]" Label=@Localizer["time4"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
@@ -730,26 +731,25 @@
                                             word = _glosaryInfo["S & E"];
                                             <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                                    <MudText>@word.Name</MudText>
+                                                    <MudButton OnClick="(() => OpenGuideDialog(0))">@word.Name</MudButton>
                                                 </MudBadge>
                                             </MudTooltip>
                                         }
                                         else
                                         {
-                                            <span>S & E</span>
+                                            <MudText @onclick="(() => OpenGuideDialog(0))">S & E</MudText>
                                         }
                                         <br />
                                         @if(auxErgonomicsLevel != 0){
                                             <MudTooltip Text=@Localizer["Ergonomics Level"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                <MudText Style="display: flex; justify-content: flex-end;" >
-                                                    <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety"></MudIcon>
+                                                <MudChip Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Info" Variant="Variant.Outlined" Style="margin-left: -4px">
                                                     @switch(auxErgonomicsLevel)
                                                     {
                                                         case 1: <span>A</span> break;
                                                         case 2: <span>B</span> break;
                                                         case 3: <span>C</span> break;
                                                     }
-                                                </MudText>
+                                                </MudChip>
                                             </MudTooltip>
 
                                         }
@@ -771,13 +771,13 @@
                                             word = _glosaryInfo["Q"];
                                             <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                                    <MudText>@word.Name</MudText>
+                                                    <MudButton @onclick="(() => OpenGuideDialog(1))">@word.Name</MudButton>
                                                 </MudBadge>
                                             </MudTooltip>
                                         }
                                         else
                                         {
-                                            <span>Q</span>
+                                            <MudText @onclick="(() => OpenGuideDialog(1))">Q</MudText>
                                         }
                                     </td>
                                     <td style="align-content: end">
@@ -797,13 +797,13 @@
                                             word = _glosaryInfo["D"];
                                             <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                                    <MudText>@word.Name</MudText>
+                                                    <MudButton @onclick="(() => OpenGuideDialog(2))">@word.Name</MudButton>
                                                 </MudBadge>
                                             </MudTooltip>
                                         }
                                         else
                                         {
-                                            <span>D</span>
+                                            <MudText @onclick="(() => OpenGuideDialog(2))">D</MudText>
                                         }
                                     </td>
                                     <td style="align-content: end">
@@ -823,13 +823,13 @@
                                             word = _glosaryInfo["C"];
                                             <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                                    <MudText>@word.Name</MudText>
+                                                    <MudButton @onclick="(() => OpenGuideDialog(3))">@word.Name</MudButton>
                                                 </MudBadge>
                                             </MudTooltip>
                                         }
                                         else
                                         {
-                                            <span>C</span>
+                                            <MudText @onclick="(() => OpenGuideDialog(3))">C</MudText>
                                         }
                                     </td>
                                     <td style="align-content: end">
@@ -849,13 +849,13 @@
                                             word = _glosaryInfo["Other"];
                                             <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                                    <MudText>@Localizer["other"]</MudText>
+                                                    <MudButton @onclick="(() => OpenGuideDialog(4))">@Localizer["other"]</MudButton>
                                                 </MudBadge>
                                             </MudTooltip>
                                         }
                                         else
                                         {
-                                            <span>@Localizer["other"]</span>
+                                            <MudText @onclick="(() => OpenGuideDialog(4))">@Localizer["other"]</MudText>
                                         }
                                     </td>
                                     <td style="align-content: end">
@@ -1746,6 +1746,44 @@
             </MudItem>
         </MudGrid>
     </EditForm>
+
+    @*Camera Modal*@
+    <MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+        <TitleContent>
+            <MudItem>
+                <MudText Typo="Typo.h6" Style="text-align:center">LUP Evidence</MudText>
+            </MudItem>
+        </TitleContent>
+        <DialogContent>
+            <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+                <MudPaper Elevation="0">
+                    <CameraStreamer @ref=CameraStreamerReference
+                                    Width=1280
+                                    Height=720
+                                    OnRendered=OnRenderedHandler
+                                    OnFrame=OnFrameHandler
+                                    Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                    Class="mud-elevation-4 rounded white"
+                                    CameraID=@cameraId
+                                            Autostart />
+                    <MudItem style="text-align: center">
+                        @if (frameCount > 0)
+                        {
+                            <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                                Take photo
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
+                            Take photo
+                        </MudButton>
+                        }
+                    </MudItem>
+                </MudPaper>
+            </MudContainer>
+        </DialogContent>
+    </MudDialog>
 
     @*Delete lup modal*@
     <MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
@@ -3205,51 +3243,66 @@
 
             </MudTabs>
 
-
-
-
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="CloseModalFiles" Variant="Variant.Filled">@Localizer["Close"]</MudButton>
         </DialogActions>
     </MudDialog>
 
-    @*Camera Modal*@
-    <MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+
+
+
+    <MudDialog @bind-IsVisible="visibleGuide" Options="dialogGuideOptions" Style="max-height: 95vh; min-height: 80vh;">
         <TitleContent>
-            <MudItem>
-                <MudText Typo="Typo.h6" Style="text-align:center">LUP Evidence</MudText>
-            </MudItem>
+            <MudText Typo="Typo.h6" Style="text-align: center;">Job Observation | LUP Guide</MudText>
         </TitleContent>
         <DialogContent>
-            <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
-                <MudPaper Elevation="0">
-                    <CameraStreamer @ref=CameraStreamerReference
-                                    Width=1280
-                                    Height=720
-                                    OnRendered=OnRenderedHandler
-                                    OnFrame=OnFrameHandler
-                                    Style="max-height: 70vh; width: 100%; border-radius: 10px"
-                                    Class="mud-elevation-4 rounded white"
-                                    CameraID=@cameraId
-                                            Autostart />
-                    <MudItem style="text-align: center">
-                        @if (frameCount > 0)
-                        {
-                            <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
-                                Take photo
-                            </MudButton>
-                        }
-                        else
-                        {
-                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
-                            Take photo
-                        </MudButton>
-                        }
-                    </MudItem>
-                </MudPaper>
-            </MudContainer>
+            <MudTabs @bind-ActivePanelIndex="selectedPillar" Outlined="true" Rounded="true" Border="true" TabPanelHeaderPosition="TabHeaderPosition.Before"
+                     ApplyEffectsToContainer="true" PanelClass="px-6" Style="max-height: 78vh; min-height: 70vh; width: 100%;">
+                <MudTabPanel >
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">S & E</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudText>Safety & Environment Guide</MudText>
+                    </ChildContent>
+                </MudTabPanel>
+                <MudTabPanel >
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Q</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudText>Quality Guide</MudText>
+                    </ChildContent>
+                </MudTabPanel>
+                <MudTabPanel >
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">D</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudText>Delivery Guide</MudText>
+                    </ChildContent>
+                </MudTabPanel>
+                <MudTabPanel >
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">C</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudText>Cost Guide</MudText>
+                    </ChildContent>
+                </MudTabPanel>
+                <MudTabPanel >
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Other</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudText>Other Guide</MudText>
+                    </ChildContent>
+                </MudTabPanel>
+            </MudTabs>
         </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CloseGuideModal" Variant="Variant.Filled">@Localizer["Close"]</MudButton>
+        </DialogActions>
     </MudDialog>
-
 }

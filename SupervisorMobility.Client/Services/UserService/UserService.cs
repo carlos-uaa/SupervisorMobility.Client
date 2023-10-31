@@ -302,21 +302,12 @@ namespace SupervisorMobility.Client.Services.UserService
         //delete User
         public async Task DeleteUser(int UserId)
         {
-            var response = await _http.DeleteAsync($"Users/{UserId}");
+            await _http.DeleteAsync($"Users/{UserId}");
         }
 
         //update User
         public async Task<bool> UpdateUser(int UserId, User UserToUpdate)
         {
-
-            if (UserToUpdate.Areas?.Count > 0)
-            {
-                foreach (var area in UserToUpdate.Areas)
-                {
-                    Console.WriteLine(area.AreaId);
-                }
-
-            }
 
             var response = await _http.PutAsJsonAsync($"Users/{UserId}", UserToUpdate);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -326,127 +317,25 @@ namespace SupervisorMobility.Client.Services.UserService
 
             return false;
         }
-        public async Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId)
+        public async Task<bool> ReassignNewSuperior(List<User> UsersReassign)
         {
-            Console.WriteLine("PromoveUsers Function");
+            Console.WriteLine("ReassignNewSuperior");
 
-            if (_newUser.UserType == _userCopy.UserType)
+            var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior", UsersReassign);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                Console.WriteLine("Userttype igual");
-
-                foreach (User Sub in _newUser.Subordinates)
-                {
-                    Console.WriteLine("Foreache");
-
-                    //Verifico que no sean listados de reasignacion
-                    if (_newUser.Subordinates?.Any(x => x.AreaId == -2) == true)
-                    {
-                        Console.WriteLine("Existe alguno con area -2");
-
-                        //Incluye usuarios con reasignacion
-                        if (Sub.AreaId != -2)
-                        {
-                            //identifico a los usuarios que se quedan
-                            Sub.SuperiorId = -2;
-                        }
-                        //si tiene un area == -2 significa que debe ser reasignado
-
-                    }
-                    else if (_userCopy.Subordinates?.Any(x => x.UserId == Sub.UserId) == true)
-                    {
-                        Console.WriteLine("No exis existe -2");
-
-                        //esta es una reasignacion, el usuario permanece en el mismo nivel 
-                        //los usuarios que no pertenecen al area son reasignados a otro
-                        switch (_newUser.UserType)
-                        {
-                            //saber si los subordinados seran operadores o SV
-                            case 2:
-                                //tratamos con sV
-                                var matchedSubordinate = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
-                                if (matchedSubordinate != null && matchedSubordinate.AreaId != 0)
-                                {
-                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinate);
-
-                                    if (result.AreEqual)
-                                    {
-                                        // Los objetos son iguales
-                                        if (_newUser.Areas?.Any(x => x.AreaId == Sub.AreaId) == true)
-                                        {
-                                            Sub.SuperiorId = -2;
-                                        }
-                                    }
-                                }
-                                break;
-                            case 3:
-                                //tratamos con OPeradores/
-                                var matchedSubordinateSV = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
-                                if (matchedSubordinateSV != null && matchedSubordinateSV.AreaId != 0)
-                                {
-                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinateSV);
-                                    if (result.AreEqual)
-                                    {
-                                        // el usuario pertenece a la jerarquia
-                                        if (_newUser.AreaId == Sub.AreaId)
-                                        {
-                                            Sub.SuperiorId = -2;
-                                        }
-                                    }
-                                }
-                                break;
-                            case 5:
-                                var matchedSubordinateM = _newUser.Subordinates.FirstOrDefault(u => u.UserId == Sub.UserId);
-                                if (matchedSubordinateM != null && matchedSubordinateM.PlantId != 0)
-                                {
-                                    ComparisonResult result = new CompareLogic().Compare(Sub, matchedSubordinateM);
-
-                                    if (result.AreEqual)
-                                    {
-                                        // el usuario pertenece a la jerarquia
-                                        if (_newUser.PlantId == Sub.PlantId)
-                                        {
-                                            Sub.SuperiorId = -2;
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // es una promocion 
-                //este for es para los nuevos subordinados
-
-                if (_newUser.Subordinates?.Count > 0)
-                {
-                    foreach (User Sub in _newUser.Subordinates)
-                    {
-                        Sub.SuperiorId = -2;
-                    }
-                }
-                else
-                {
-                    _newUser.Subordinates = new List<User>();
-                }
-
-                if (_userCopy.Subordinates?.Count > 0)
-                {
-                    foreach (User Sub in _userCopy.Subordinates)
-                    {
-                        Sub.AreaId = -2;
-                        _newUser.Subordinates?.Add(Sub);
-                    }
-                }
-
-
-
+                return true;
             }
 
+            return false;
+        }
 
+        public async Task<bool> CleanUsers(List<User> CleanUsers)
+        {
+            Console.WriteLine("Cleanuser");
 
-            var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior/{UserId}?NewSuperiorId={NewSuperiorId}", _newUser);
+            var response = await _http.PutAsJsonAsync($"Users/Cleanuser", CleanUsers);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {

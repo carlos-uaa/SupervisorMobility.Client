@@ -2518,7 +2518,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Select a Product.
+        ///   Busca una cadena traducida similar a Select prod..
         /// </summary>
         public static string selectAProduct {
             get {
