@@ -306,16 +306,18 @@ namespace SupervisorMobility.Client.Services.UserService
         }
 
         //update User
-        public async Task<bool> UpdateUser(int UserId, User UserToUpdate)
+        public async Task<bool> UpdateUser(int UserId, User UserToUpdate, int areaTypeUpdate)
         {
 
-            var response = await _http.PutAsJsonAsync($"Users/{UserId}", UserToUpdate);
+            var response = await _http.PutAsJsonAsync($"Users/{UserId}?areaTypeUpdate={areaTypeUpdate}", UserToUpdate);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;
             }
 
             return false;
+
+
         }
         public async Task<bool> ReassignNewSuperior(List<User> UsersReassign)
         {

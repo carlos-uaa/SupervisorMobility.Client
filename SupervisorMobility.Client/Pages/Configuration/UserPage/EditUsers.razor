@@ -120,7 +120,7 @@
                                         }
                                     </MudItem>
 
-                                    <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
+                                    <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2" Sytle="flex-wrap: wrap;">
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersAdmin"]" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersManager"]" @bind-Checked="@IsManager" @onclick="@(() => setActiveUser(5))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSeniorSupervisor"]" @bind-Checked="@IsSeniorSupervisor" @onclick="@(() => setActiveUser(2))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
@@ -1655,7 +1655,7 @@ else
                         {
                             @if (item.AreaId == -2 || !(_user.Areas.Any(a => a.AreaId == item.AreaId)))
                             {
-
+                                
                                 <MudCard Elevation="1" Class="mr-5" Style="width: 300px; flex: 0 0 calc(28%-1rem);">
                                     <MudCardHeader>
                                         <CardHeaderActions>
@@ -1821,10 +1821,14 @@ else
     </DialogContent>
     <DialogActions>
         @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(1))">Reasignar a otro Supervisor</MudButton>
-        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(2))">Mantener Subordinados (Seleccionar area)</MudButton>
-        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(3))">No Asignar a nadie (Quitarlos del listado)</MudButton>
+      
+         <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(1))">Reasignar a otro Supervisor (Heredar Propiedades de Nuevo Supervisor)</MudButton>
+        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(2))">Reasignar a otro Supervisor (Mantener Propiedades de Usuarios)</MudButton>
+        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(3))">Mantener Subordinados (Asignar Area)</MudButton>
+        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(4))">Mantener Subordinados (Sin Asignar Area)</MudButton>
+        <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(5))">No Asignar a nadie (Los deja al aire)</MudButton>
         <MudButton Color="Color.Info" OnClick="@(() => SetReasignAreaOption(-1))">Cancel</MudButton>
+
     </DialogActions>
 </MudDialog>
 
@@ -2283,7 +2287,8 @@ else
     private List<User> Operators = new List<User>();
 
 
-    private List<User> _AuxUsersActions = new List<User>();
+    private List<User> _ReassignedUsers = new List<User>();
+    private List<User> _ReassignedUsersAreas = new List<User>();
 
     List<Plant> _plants { get; set; } = new();
     List<Area> _areas = new();
@@ -3640,7 +3645,7 @@ else
                     }
 
 
-                    _AuxUsersActions?.Add(user);
+                    _ReassignedUsers?.Add(user);
                 }
                 break;
             case 2:
@@ -3648,7 +3653,7 @@ else
                 foreach (User user in _usercopy.Subordinates)
                 {
                     user.SuperiorId = _AssignAuxSuperior.UserId;
-                    _AuxUsersActions?.Add(user);
+                    _ReassignedUsers?.Add(user);
                 }
 
                 break;
@@ -3749,6 +3754,39 @@ else
 
             if (!todosPertenecen)
             {
+                if (_user.UserType == 2)
+                {
+                    foreach (var sub in _user.Subordinates)
+                    {
+                        if (sub.AreaId != null)
+                        {
+                            int AreaSearch = (int)sub.AreaId;
+
+                            if (!(_user.Areas.Select(area => area.AreaId).ToList().Contains(AreaSearch)))
+                            {
+                                _ReassignedUsersAreas?.Add(sub);
+
+                            }
+                    }
+                }
+            }
+            else if (_user.UserType != 2 && _user.Subordinates?.Count > 0)
+            {
+                if (_user.Subordinates.Any(u => u.AreaId != _user.AreaId))
+                {
+                     foreach (var sub in _user.Subordinates)
+                    {
+                        if (sub.AreaId != _user.AreaId)
+                        {
+                            
+                                _ReassignedUsersAreas?.Add(sub);
+
+                        }       
+                    }
+                }
+            }
+
+
                 // Preguntar que hacer
                 ReasignUsersAreaOptionsView = true;
 
@@ -3760,10 +3798,16 @@ else
         }
 
         @*Areas*@
+
+        @*1 Reasignar a otro Supervisor (Heredar Propiedades de Nuevo Supervisor)*@
+        @*2 Reasignar a otro Supervisor (Mantener Propiedades de Usuarios)*@
+        @*3 Mantener Subordinados (Asignar Nueva Area)*@
+        @*4 Mantener Subordinados (Sin Asignar Area, Mantener Area anterior)*@
+        @*5 No Asignar a nadie (Los deja al aire)*@
         switch (optionAreasReasign)
         {
             case 1:
-                @*1 Reasignar a otro Supervisor*@
+                @*1 Reasignar a otro Supervisor (Heredar Propiedades de Nuevo Supervisor)*@
                 ReasignUsersTypeView = 2;
                 ReasignUsersView = true;
 
@@ -3779,46 +3823,66 @@ else
                     await EsperarCambioVariableAsync();
                     TaskComplete = new TaskCompletionSource<bool>();
                 }
+                //Incorrecto La logica no cumple los criterios
+                //Es necesario un lsitado individual para este caso 
 
-                foreach (var user in _usercopy.Subordinates)
+                foreach (var user in _ReassignedUsersAreas)
                 {
-                    if (user.AreaId == -2 || user.AreaId != _user.AreaId || !(_user.Areas.Any(a => a.AreaId == user.AreaId)))
-                    {
-                        var aux = user;
-                        aux.SuperiorId = _AssignAuxSuperior.UserId;
-                        aux.PlantId = _AssignAuxSuperior.PlantId;
-                        aux.GroupId = _AssignAuxSuperior.GroupId;
-
-                        if (_user.UserType == 3)
-                        {
-                            aux.AreaId = _AssignAuxSuperior.AreaId;
-                        }
-
-
-                        _AuxUsersActions?.Add(aux);
-                    }
+                    user.SuperiorId = _AssignAuxSuperior.UserId;
+                    var usr  = _user.Subordinates?.ToList().Find(u => u.UserId == user.UserId);
+                    _user.Subordinates.Remove(usr);
                 }
 
 
-
                 break;
-            case 2:
-                @*2 Mantener Subordinados (Seleccionar area)*@
-                ReasignUsersTypeView = 2;
-                //Completar areas Seleccion de area
-                if (_usercopy.UserType == 2)
+                case 2:
+        @*2 Reasignar a otro Supervisor (Mantener Propiedades de Usuarios)*@
+        
+               foreach (var user in _ReassignedUsersAreas)
                 {
-                    //aqui se pregunta si manual o automatico
+                    user.SuperiorId = _AssignAuxSuperior.UserId;
+                    var usr  = _user.Subordinates?.ToList().Find(u => u.UserId == user.UserId);
+                    
+                    _user.Subordinates.Remove(usr);
+                }
 
+        break;
+            case 3:
+                @*3 Mantener Subordinados (Asignar Nueva Area)*@
+
+                ReasignUsersTypeView = 3;
+                //Completar areas Seleccion de area
+
+                if (_user.UserType == 2)
+                {
+                    //Upgrade a SSV
+                    //sub anteriores son compatibles con las areas actuales?
 
                     CompleteAreasView = true;
                     await EsperarCambioVariableAsync();
                     TaskComplete = new TaskCompletionSource<bool>();
-                }
+                
+
+        }else{
+            foreach(var usr in _user.Subordinates)
+            {
+                usr.AreaId = _user.AreaId;
+            }
+        }
+
+
 
 
                 break;
-            case 3:
+
+                case 4:
+        @*4 Mantener Subordinados (Sin Asignar Area, Mantener Area anterior)*@
+        //continua con la edicion, hay que considerar el update
+        //no hacemos nada
+        break;
+
+
+            case 5:
                 @*3 No Asignar a nadie (Quitarlos del listado)*@
 
                 //eliminar subordinados
@@ -3826,10 +3890,10 @@ else
         }
 
 
-        if (_AuxUsersActions?.Count > 0)
+        if (_ReassignedUsers?.Count > 0)
         {
             //reasginacion de subordinados
-            var ResponseReassignUser = await UsersServices.ReassignNewSuperior(_AuxUsersActions);
+            var ResponseReassignUser = await UsersServices.ReassignNewSuperior(_ReassignedUsers);
 
             if (ResponseReassignUser)
             {
@@ -3847,7 +3911,7 @@ else
         }
 
         //Actualizacion de usautio
-        var ResponseUpdateUser = await UsersServices.UpdateUser(userId, _user);
+        var ResponseUpdateUser = await UsersServices.UpdateUser(userId, _user, optionAreasReasign);
 
         if (ResponseUpdateUser)
         {
