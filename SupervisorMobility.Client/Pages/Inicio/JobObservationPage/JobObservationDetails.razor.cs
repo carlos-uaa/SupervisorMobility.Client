@@ -84,7 +84,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public double taktTime { get; set; }
         public int kpiID = 0;
-
+        public int auxErgonomicsLevel = 0;
         protected async override Task OnInitializedAsync()
         {
 
@@ -255,24 +255,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         if (_jobObservation.DistributionId != 0)
                         {
-
+                            
                             try
                             {
                                 _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
                                 if (_assychart == null)
+                                {
+
                                     messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
+                                }
                                 else
+                                {
+                                    if (_assychart.ErgonomicsLevel != null)
+                                    {
+                                        auxErgonomicsLevel = (int)_assychart.ErgonomicsLevel;
+                                    }
+
                                     searchAssychart = true;
+                                }
                             }
                             catch (Exception ex)
                             {
                                 messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
-
-                            if (_assychart == null)
-                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
-                            else
-                                searchAssychart = true;
 
                         }
                         else
@@ -300,6 +305,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
+
         }
 
         void Closed(MudChip chip)

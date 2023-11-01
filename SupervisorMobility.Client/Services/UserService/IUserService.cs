@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Services.UserService
         //READ
         //get  Users
   
-        Task<List<User>> GetSubordinates(int SupervisorId);
+        Task<List<User>> GetSubordinates(int SupervisorId, bool includeCollections = true);
         Task<User> GetUser(int UserId);
         Task<User> GetUserWhitObjectId(string ObjectId);
         Task<User> GetUserByObjectIdWithCollections(string ObjectId);
@@ -27,8 +27,9 @@ namespace SupervisorMobility.Client.Services.UserService
         Task<List<User>> GetUsersByUserTypeInPlant(int PlantId, int userType, bool includeCollections, bool includeSubordinates);
 
         //UPDATE
-        Task<bool> UpdateUser(int UserId, User _newUser);
-        Task<bool> PromoveUserAndAssignNewSuperior(int UserId, User _newUser, User _userCopy, int NewSuperiorId);
+        Task<bool> UpdateUser(int UserId, User _newUser, int areaTypeUpdate);
+        Task<bool> ReassignNewSuperior(List<User> UsersReassign);
+        Task<bool> CleanUsers(List<User> CleanUsers);
       
         //DELETE
         Task DeleteUser(int UserId);

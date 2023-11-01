@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.JSInterop;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities.CDMS;
 using System;
 using System.IO;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace SupervisorMobility.Client.Services.BridgeCDMSService
 {
@@ -62,8 +64,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 { "route", route }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
@@ -131,9 +134,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 { "route", URL }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
-
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
             try
             {
                 var response = await _http.PostAsync("BridgeCDMS/SMCcp/PostDownloadfileCcp", content);
@@ -168,8 +171,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 { "routeDelete", FileName }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
@@ -243,8 +247,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             { "route", route }
         };
 
-            var content = new FormUrlEncodedContent(parameters);
+          
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
@@ -375,8 +381,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 { "route", route }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
             try
             {
                 var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
@@ -440,8 +447,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 { "route", URL }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {

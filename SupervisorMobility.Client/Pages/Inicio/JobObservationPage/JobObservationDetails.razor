@@ -72,11 +72,25 @@ else
             <MudItem Class="d-flex justify-space-between pa-1 ma-1 mt-6">
               
                   <MudItem Style="text-align: start">
-                    @if (searchAssychart)
+                    @if(!searchAssychart && messageErrorFolders == null){
+                        <MudItem Class="d-flex justify-center align-center">
+                            <MudChip Color="Color.Info" Variant="Variant.Outlined">
+                            <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" Class="mr-3"/>
+                                Loading Assy Chart
+                            </MudChip>
+                        </MudItem>
+                    }
+                    @if (!searchAssychart && messageErrorFolders != null)
+                    {
+                        <MudItem class="d-flex flex-column justify-center align-self-start">
+                            <MudAlert Severity="Severity.Info">@messageErrorFolders</MudAlert>
+                        </MudItem>
+                    }
+                    @if (searchAssychart && messageErrorFolders == null)
                     {
                     <MudItem Class="d-flex flex-row align-start justify-center">
 
-                            @if (_assychart.RoutesProductsAssyChart?.Count > 0)
+                        @if (_assychart.RoutesProductsAssyChart?.Count > 0)
                         {
                                             <MudMenu Dense=true AnchorOrigin="Origin.BottomRight" Style="display: flex" TransformOrigin="Origin.CenterLeft">
                                     <ActivatorContent>
@@ -378,20 +392,6 @@ else
                         }
                     </MudItem>
                     }
-                    else
-                    {
-                        if (messageErrorFolders != "")
-                        {
-                            <MudItem class="d-flex flex-column justify-center align-self-start">
-                                <MudText Typo="Typo.h6" Class="align-item-center center">@messageErrorFolders</MudText>
-                            </MudItem>
-                        }
-                        else
-                        {
-                            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
-                        }
-
-                    }
                 </MudItem>
                 <MudItem Style="text-align: end">
                     <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" OnClick="@history" Icon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudChip>
@@ -490,10 +490,10 @@ else
                         </tr>
                         <tr>
                             <td colspan="2" style="text-align: center;">
-                                <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" ReadOnly>
-                                    <MudRadio Option="1" Color="Color.Info" Size="Size.Small" >@Localizer["verifyTraining"]</MudRadio>
-                                    <MudRadio Option="2" Color="Color.Info" Size="Size.Small" >@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
-                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small" >
+                                <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" >
+                                    <MudRadio Option="1" Color="Color.Info" Size="Size.Small" Disabled>@Localizer["verifyTraining"]</MudRadio>
+                                    <MudRadio Option="2" Color="Color.Info" Size="Size.Small" Disabled>@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
+                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small" Disabled>
                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Management of the anomaly"))
                                         {
                                             Glosary word;
@@ -587,7 +587,7 @@ else
                                 <MudTextField T="string" @bind-Value="HoeTimes[1]" Label=@Localizer["time2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
                             </td>
                             <td>
-                                <MudTextField T="string" @bind-Value="HoeTimes[2]" Label=@Localizer["time2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
+                                <MudTextField T="string" @bind-Value="HoeTimes[2]" Label=@Localizer["time3"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
                             </td>
                             <td>
                                 <MudTextField T="string" @bind-Value="HoeTimes[3]" Label=@Localizer["time4"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
@@ -624,7 +624,7 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label=@Localizer["product2"] Variant="Variant.Text" Class="mt-3" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@models[1]" ReadOnly>
-                                    @if(models[0] == 0){
+                                    @if(models[1] == 0){
                                         <MudSelectItem Disabled=true Value="0">@Localizer["notSelected"]</MudSelectItem>
                                     }
                                     else{
@@ -641,7 +641,7 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label=@Localizer["product3"] Variant="Variant.Text" Class="mt-3" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@models[2]" ReadOnly>
-                                    @if(models[0] == 0){
+                                    @if(models[2] == 0){
                                         <MudSelectItem Disabled=true Value="0">@Localizer["notSelected"]</MudSelectItem>
                                     }
                                     else{
@@ -658,7 +658,7 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label=@Localizer["product4"] Variant="Variant.Text" Class="mt-3" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@models[3]" ReadOnly>
-                                    @if(models[0] == 0){
+                                    @if(models[3] == 0){
                                         <MudSelectItem Disabled=true Value="0">@Localizer["notSelected"]</MudSelectItem>
                                     }
                                     else{
@@ -675,7 +675,7 @@ else
                             </td>
                             <td>
                                 <MudSelect T="int" Label=@Localizer["product5"] Variant="Variant.Text" Class="mt-3" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@models[4]" ReadOnly>
-                                        @if(models[0] == 0){
+                                        @if(models[4] == 0){
                                         <MudSelectItem Disabled=true Value="0">@Localizer["notSelected"]</MudSelectItem>
                                     }
                                     else{
@@ -752,9 +752,9 @@ else
                             </td>
                             <td>
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="questions[0]" ReadOnly>
-                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" >No</MudRadio>
+                                    <MudRadioGroup @bind-SelectedOption="questions[0]" >
+                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" Disabled>No</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
                             </td>
@@ -765,9 +765,9 @@ else
                             </td>
                             <td>
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="questions[1]" ReadOnly>
-                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" >No</MudRadio>
+                                    <MudRadioGroup @bind-SelectedOption="questions[1]" >
+                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" Disabled>No</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
                             </td>
@@ -778,9 +778,9 @@ else
                             </td>
                             <td>
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="questions[2]" ReadOnly>
-                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" >No</MudRadio>
+                                    <MudRadioGroup @bind-SelectedOption="questions[2]" >
+                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" Disabled>No</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
                             </td>
@@ -791,9 +791,9 @@ else
                             </td>
                             <td>
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="questions[3]" ReadOnly>
-                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" >No</MudRadio>
+                                    <MudRadioGroup @bind-SelectedOption="questions[3]" >
+                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" Disabled>No</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
                             </td>
@@ -804,9 +804,9 @@ else
                             </td>
                             <td>
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="questions[4]" ReadOnly>
-                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true">No</MudRadio>
+                                    <MudRadioGroup @bind-SelectedOption="questions[4]" >
+                                        <MudRadio Option="@("true")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                        <MudRadio Option="@("false")" Color="Color.Info" Dense="true" Disabled>No</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
                             </td>
@@ -850,6 +850,27 @@ else
                                                 else
                                                 {
                                                     <span>S & E</span>
+                                                }
+                                                <br />
+                                                @if (auxErgonomicsLevel != 0)
+                                                {
+                                                    <MudTooltip Text=@Localizer["Ergonomics Level"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                        <MudChip Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Info" Variant="Variant.Outlined" Style="margin-left: -4px">
+                                                            @switch (auxErgonomicsLevel)
+                                                            {
+                                                                case 1:
+                                                                    <span>A</span>
+                                                                    break;
+                                                                case 2:
+                                                                    <span>B</span>
+                                                                    break;
+                                                                case 3:
+                                                                    <span>C</span>
+                                                                    break;
+                                                            }
+                                                        </MudChip>
+                                                    </MudTooltip>
+
                                                 }
                                             </td>
                                             <td>
