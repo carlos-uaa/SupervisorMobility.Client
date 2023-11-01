@@ -325,9 +325,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
                 StateHasChanged();
-                _operators = await UsersService.GetUsersByType(4, true, false);
+                _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
+                _operators = _operators.OrderBy(o => o.Name).ToList();
                 //operator User
                 foreach (var operatorUser in _operators)
                 {
@@ -336,6 +336,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         operatorUsers.Add(operatorUser);
                     }
                 }
+                StateHasChanged();
                 await GetUserAsync();
 
                 if (user != null)
@@ -412,6 +413,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine("missing plant");
                 }
             }
+
             try
             {
                 CCPFolders = await CDMSServices.GetFoldersCCP();
