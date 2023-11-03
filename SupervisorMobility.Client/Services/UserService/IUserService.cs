@@ -28,7 +28,7 @@ namespace SupervisorMobility.Client.Services.UserService
 
         //UPDATE
         Task<bool> UpdateUser(int UserId, User _newUser, int areaTypeUpdate);
-        Task<bool> ReassignNewSuperior(List<User> UsersReassign);
+        Task<bool> ReassignNewSuperior(List<User> UsersReassign, int reasignType);
         Task<bool> CleanUsers(List<User> CleanUsers);
       
         //DELETE

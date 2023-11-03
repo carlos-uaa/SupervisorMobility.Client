@@ -319,11 +319,11 @@ namespace SupervisorMobility.Client.Services.UserService
 
 
         }
-        public async Task<bool> ReassignNewSuperior(List<User> UsersReassign)
+        public async Task<bool> ReassignNewSuperior(List<User> UsersReassign, int reasignType)
         {
             Console.WriteLine("ReassignNewSuperior");
 
-            var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior", UsersReassign);
+            var response = await _http.PutAsJsonAsync($"Users/ReassingToNewSuperior?reasignType={reasignType}", UsersReassign);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
