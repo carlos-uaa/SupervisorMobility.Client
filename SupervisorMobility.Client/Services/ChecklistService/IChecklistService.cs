@@ -37,5 +37,7 @@
 
         // Delete checklist question
         Task DeleteQuestion(int categoryId, int questionId);
+        // Update checklist question sequence
+        Task UpdateChecklistQuestionSequence(int categoryId, int checklisQuestionId, ChecklistQuestion checklistQuestion);
     }
 }

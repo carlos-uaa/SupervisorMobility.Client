@@ -34,7 +34,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/createquestion");
         }
-
+        void QuestionSequence(int categoryId)
+        {
+            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}/sequence");
+        }
         // Delete question
         async Task DeleteQuestion(int categoryId, int questionId)
         {
@@ -65,9 +68,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
                 return true;
             if (element.NotGood.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Sequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.CategorySequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.ChecklistCategoryId} {element.Prompt} {element.NotGood} {element.Sequence}".Contains(searchString))
+            if ($"{element.ChecklistCategoryId} {element.Prompt} {element.NotGood} {element.CategorySequence}".Contains(searchString))
                 return true;
             return false;
         }
