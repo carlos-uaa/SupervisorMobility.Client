@@ -22,12 +22,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         ChecklistCategory _checklistCategory = new();
         ChecklistQuestion _question = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
+        public List<Pillar> _pillars { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()
         {
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
             _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
+            _pillars = await PillarsService.GetPillars();
         }
 
         // Create question

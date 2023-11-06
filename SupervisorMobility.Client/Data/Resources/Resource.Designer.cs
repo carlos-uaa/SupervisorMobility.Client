@@ -2509,6 +2509,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Select a Pillar.
+        /// </summary>
+        public static string selectAPillar {
+            get {
+                return ResourceManager.GetString("selectAPillar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Select a Plant.
         /// </summary>
         public static string selectAPlant {
