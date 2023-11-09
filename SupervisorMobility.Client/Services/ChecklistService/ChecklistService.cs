@@ -151,5 +151,21 @@ namespace SupervisorMobility.Client.Services.ChecklistService
 
             return questions;
         }
+
+        // Update checklist question sequence
+        public async Task UpdateChecklistQuestionSequence(int categoryId, int checklistQuestionId, ChecklistQuestion checklistQuestion)
+        {
+            var response = await _http.PutAsJsonAsync($"checklistcategories/{categoryId}/checklistQuestions/sequence/{checklistQuestionId}", checklistQuestion);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Failed");
+            }
+            else
+            {
+                Console.WriteLine("Ok");
+            }
+        }
+
     }
 }

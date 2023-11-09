@@ -1,0 +1,36 @@
+﻿@page "/checklistcategories/category/{categoryId:int}/sequence"
+@inject IChecklistService ChecklistService
+@inject NavigationManager NavigationManager
+
+@*Title*@
+<PageTitle>Supervisor Mobility | Checklist Categories Sequence</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == "CategoryDetail")
+        {
+            <MudButton @onclick="(() => GoToCategories())" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@_checklistCategoryAndQuestions.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Sequence container*@
+<MudDropContainer T="ChecklistQuestion" Items="_checklistCategoryAndQuestions.ChecklistQuestions" ItemsSelector="@((item,dropzone) => item.Container == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+    <ChildContent>
+        <MudDropZone T="ChecklistQuestion" Identifier="QuestionContainer" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1" AllowReorder="true">
+            <MudText Typo="Typo.h6" Class="mb-4">
+                Reorder categories
+            </MudText>
+        </MudDropZone>
+    </ChildContent>
+    <ItemRenderer>
+            <MudPaper Elevation="25" Class="pa-4 my-4">
+                @($"{context.Prompt}")
+            </MudPaper>
+    </ItemRenderer>
+</MudDropContainer>

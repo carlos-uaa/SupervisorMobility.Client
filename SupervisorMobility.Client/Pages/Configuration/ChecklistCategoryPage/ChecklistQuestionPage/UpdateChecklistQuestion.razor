@@ -2,6 +2,8 @@
 @inject IChecklistService ChecklistService
 @inject IQuestionTypeService QuestionTypeService
 @inject NavigationManager NavigationManager
+@inject IPillarService PillarsService
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Question</PageTitle>
@@ -41,11 +43,17 @@
                 <MudCardContent>
                     <MudTextField Label="Question Prompt"
                     @bind-Value="_question.Prompt" For="@(() => _question.Prompt)" />
-                    <MudTextField Label="Question Not Good"
-                                  @bind-Value="_question.Prompt" For="@(() => _question.Prompt)" />
-                    <MudTextField Label="Code" Class="mt-3"
+                    @*Mud select for Pillar for Admin*@
+                    <MudSelect T="int" Label=@Localizer["pillar"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_question.PillarId" For="@(() => _question.PillarId)">
+                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPillar"]</MudSelectItem>
+                        @foreach (var type in _pillars)
+                        {
+                            <MudSelectItem Value="type.PillarId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField Label="Question Not Good" Class="mt-3"
                     @bind-Value="_question.NotGood" For="@(() => _question.NotGood)" />
-                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_question.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_question.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
