@@ -2,6 +2,7 @@
 @inject IChecklistService ChecklistService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @_checklistCategory.Description</PageTitle>
@@ -50,23 +51,37 @@
             <MudTabPanel Icon="@Icons.Material.Filled.Checklist" Text="Questions">
                 @if (_checklistQuestions.Count() > 0)
                 {
-                    <MudTable Items="_checklistQuestions" Hover="true" T="ChecklistQuestion" Class="styled-table table-striped" FixedHeader=true>
+                    <MudTable Items="_checklistQuestions" Hover="true" T="ChecklistQuestion" Class="styled-table table-striped" FixedHeader=true Filter="new Func<ChecklistQuestion,bool>(FilterFunc)">
                         <ToolBarContent>
                             <MudSpacer />
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="(() => CreateQuestion(CategoryId))"></MudIconButton>
+                            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable></MudTextField>
+    
+                            <MudSpacer />
+                            <MudButton @onclick="(() => CreateQuestion(CategoryId))">
+                                <MudText>Create Checklist Questions</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                            </MudButton>
+                            <MudSpacer />
+                            <MudButton @onclick="(() => QuestionSequence(CategoryId))">
+                                <MudText>Re order</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Reorder" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                            </MudButton>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh>
-                                <MudText Align="Align.Center">Question Id</MudText>
+                                <MudTableSortLabel SortBy="new Func<ChecklistQuestion, object>(x=>x?.QuestionID)">Question Id</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudText Align="Align.Center">Code</MudText>
+                                <MudTableSortLabel SortBy="new Func<ChecklistQuestion, object>(x=>x?.PillarId)">Pillar</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudText Align="Align.Center">Description</MudText>
+                                <MudTableSortLabel SortBy="new Func<ChecklistQuestion, object>(x=>x?.Prompt)">Prompt</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudText Align="Align.Center">Sequence</MudText>
+                                <MudTableSortLabel SortBy="new Func<ChecklistQuestion, object>(x=>x?.NotGood)">Not Good</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<ChecklistQuestion, object>(x=>x?.CategorySequence)">Sequence</MudTableSortLabel>
                             </MudTh>
                            @* <MudTh>
                                 <MudText Align="Align.Center">Status</MudText>
@@ -79,11 +94,31 @@
                             <MudTd DataLabel="QuestionId">
                                 <MudText Align="Align.Center">@context.QuestionID</MudText>
                             </MudTd>
-                            <MudTd DataLabel="Code">
-                                <MudText Align="Align.Center">@context.Code</MudText>
+                            <MudTd DataLabel="QuestionId">
+                                @switch (context.PillarId)
+                                {
+                                    case 1:
+                                        <MudText Align="Align.Center">S & E</MudText>
+                                        break;
+                                    case 2:
+                                        <MudText Align="Align.Center">Q</MudText>
+                                        break;
+                                    case 3:
+                                        <MudText Align="Align.Center">D</MudText>
+                                        break;
+                                    case 4:
+                                        <MudText Align="Align.Center">C</MudText>
+                                        break;
+                                    case 5:
+                                        <MudText Align="Align.Center">@Localizer["other"]</MudText>
+                                        break;
+                                }
                             </MudTd>
-                            <MudTd DataLabel="Description">
-                                <MudText Align="Align.Center">@context.Description</MudText>
+                            <MudTd DataLabel="Prompt">
+                                <MudText Align="Align.Center">@context.Prompt</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Not Good">
+                                <MudText Align="Align.Center">@context.NotGood</MudText>
                             </MudTd>
                             <MudTd DataLabel="Sequence">
                                 <MudText Align="Align.Center">@context.CategorySequence</MudText>

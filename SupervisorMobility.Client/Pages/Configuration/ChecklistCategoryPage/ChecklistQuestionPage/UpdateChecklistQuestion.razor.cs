@@ -11,6 +11,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         [Parameter]
         public int questionId { get; set; }
 
+        public List<Pillar> _pillars { get; set; } = new();
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
@@ -30,6 +32,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         protected async override Task OnInitializedAsync()
         {
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
+
         }
 
         protected override async Task OnParametersSetAsync()
@@ -37,6 +40,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
             ChecklistQuestion dbQuestion = await ChecklistService.GetQuestionById(categoryId, questionId);
             _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
             _question = dbQuestion;
+            _pillars = await PillarsService.GetPillars();
         }
 
         // Update question
