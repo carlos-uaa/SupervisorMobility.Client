@@ -117,6 +117,11 @@
                                                     <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
                                                 </MudPaper>
                                                 break;
+                                            case 7:
+                                                <MudPaper Elevation="0">
+                                                    <MudChip Icon="@Icons.Material.Filled.PermContactCalendar" Color="Color.Info">@Localizer["headCount"]</MudChip>
+                                                </MudPaper>
+                                                break;
                                         }
                                     </MudItem>
 
@@ -127,6 +132,7 @@
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersSupervisor"]" @bind-Checked="@IsSupervisor" @onclick="@(() => setActiveUser(3))" Color="Color.Secondary" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["UsersOperator"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                         <MudSwitch Class="ma-1" Label="@Localizer["lineSupport"]" @bind-Checked="@IsLineSupport" @onclick="@(() => setActiveUser(6))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                        <MudSwitch Class="ma-1" Label="@Localizer["headCount"]" @bind-Checked="@IsHeadCount" @onclick="@(() => setActiveUser(7))" Color="Color.Info" UnCheckedColor="Color.Dark" />
 
                                     </MudItem>
                                 </MudItem>
@@ -148,7 +154,7 @@
                                     @bind-Value="@_user.Email" For="@(() => _user.Email)" Variant="@Variant.Text" Clearable />
                                 }
 
-                                @if (_user.UserType > 1 && _user.UserType != 6)
+                                @if (_user.UserType > 1 && _user.UserType != 6 && _user.UserType != 7)
                                 {
                                     <MudItem Class="mt-5">
                                         <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
@@ -156,7 +162,7 @@
 
                                 }
 
-                                @if (_user.UserType != 1 && _user.UserType != 6)
+                                @if (_user.UserType != 1 && _user.UserType != 6 && _user.UserType != 7)
                                 {
                                     @if (_user.UserType == 2)
                                     {
@@ -409,7 +415,7 @@
 
 
 
-                                @if (_user.UserType != 0 && _user.UserType != 6 && _user.UserType != 1)
+                                @if (_user.UserType != 0 && _user.UserType != 6 && _user.UserType != 1 && _user.UserType != 7)
                                 {
                                     <MudItem>
                                         <MudItem Class="mt-5">
@@ -2456,6 +2462,7 @@ else
     private bool IsOperator = false;
     private bool IsManager = false;
     private bool IsLineSupport = false;
+    private bool IsHeadCount = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -2522,6 +2529,7 @@ else
         IsOperator = (_user.UserType == 4);
         IsManager = (_user.UserType == 5);
         IsLineSupport = (_user.UserType == 6);
+        IsHeadCount = (_user.UserType == 7);
 
         selectedSeniorSupervisorOfList = new User();
         selectedSupervisorOfList = new User();
@@ -2692,6 +2700,7 @@ else
                 }
                 break;
             case 6:
+            case 7:
                 auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
 
                 if (auxPlant != 0)
@@ -2833,8 +2842,9 @@ else
         IsOperator = userType == 4 && !IsOperator;
         IsManager = userType == 5 && !IsManager;
         IsLineSupport = userType == 6 && !IsLineSupport;
+        IsHeadCount = userType == 7 && !IsHeadCount;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -2899,6 +2909,7 @@ else
                 break;
             case 5: RemoveSuperiorUser(); break;
             case 6: RemoveSuperiorUser(); break;
+            case 7: RemoveSuperiorUser(); break;
 
         }
 
