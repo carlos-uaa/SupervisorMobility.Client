@@ -6,7 +6,7 @@
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IHeadCountService HeadCountServices
 @inject IJSRuntime JS
-
+@inject NavigationManager NavigationManager
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer1["HeadcountTitle"]</PageTitle>
@@ -640,7 +640,24 @@
     </MudTabPanel> *@
 </MudTabs>
 
-
+<MudDialog DisableSidePadding="false" @bind-IsVisible="DialgUploadDocumentOk" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Documento Cargado Con Exito
+                </MudText>
+                <MudText>
+                    Se esta procesando, se te notificara mediante una notificacion y mediante un correo.
+                </MudText>
+                </MudItem>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
+        <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("newhome") )" >Entendido, Go Home</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 @code {
@@ -677,6 +694,10 @@
     private HeadCount _headCountUpdate = new();
     private bool success = false;
     EditForm formEdit;
+
+    //dialog Aviso Carga documet
+    private bool DialgUploadDocumentOk = false;
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true, };
 
     //mudtabs
     MudTabs tabs;
@@ -827,10 +848,18 @@
 
                 showLoading = false;
                 showUpload = false;
+                DialgUploadDocumentOk = true;
 
                 base.StateHasChanged();
-                InstanceData();
-                tabs.ActivatePanel(panel02_View);
+
+                //aqui va el dialogo para mostrar al usuario
+
+                //Se esta procesando el documento
+                //se notificara mediante notificacion de supervisor y se enviara un correo (Mostrar correo)
+
+
+                // InstanceData();
+                // tabs.ActivatePanel(panel02_View);
             }
             else
             {
