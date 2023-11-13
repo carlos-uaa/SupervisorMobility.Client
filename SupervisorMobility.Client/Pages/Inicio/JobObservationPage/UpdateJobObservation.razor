@@ -869,7 +869,61 @@
                             </tbody>
                         </MudSimpleTable>
                     </MudExpansionPanel>
-                    <MudExpansionPanel Text="Section 4" Style="min-width: 100%" IsInitiallyExpanded=true>
+                    @foreach (var category in _checklistCategoriesAndQuestions)
+                    {
+                        if (category.ChecklistQuestions.Count > 0)
+                        {
+                            <MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
+                                <TitleContent>
+                                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                                        @category.Description
+                                    </MudText>
+                                </TitleContent>
+                                <ChildContent>
+                                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <MudText Style="font-weight:bold;">
+                                                        @Localizer["Questions"]
+                                                    </MudText>
+                                                </th>
+                                                <th>
+                                                    <MudText Style="text-align:center; font-weight:bold;">
+                                                        @Localizer["Answers"]
+                                                    </MudText>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var question in category.ChecklistQuestions)
+                                            {
+
+                                                <tr>
+                                                    <td width="70%">
+                                                        <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                    </td>
+                                                    <td>
+                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                            <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
+                                                                <MudRadio Option="@("YES")" Color="@questionYesColor[question.QuestionID]" Dense="true" @onchange="(() => changeQuestionColor(question.QuestionID, Color.Success))">Yes</MudRadio>
+                                                                <MudRadio Option="@("NG")" Color="@questionNgColor[question.QuestionID]" Dense="true" @onchange="(() => AddLupOpportunity(question.QuestionID, Color.Error, question.PillarId, question.NotGood))">NG</MudRadio>
+                                                                <MudRadio Option="@("N/A")" Color="@questionNaColor[question.QuestionID]" Dense="true" @onchange="(() => changeQuestionColor(question.QuestionID, Color.Info))">N/A</MudRadio>
+                                                            </MudRadioGroup>
+                                                        </MudItem>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </MudSimpleTable>
+                                </ChildContent>
+                            </MudExpansionPanel>
+                        }
+                    }
+                    <MudItem Style="text-align: end">
+                        <MudButton @onclick="(() => PruebaChecklist())" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">Botón de Prueba</MudButton>
+                    </MudItem>
+@*                    <MudExpansionPanel Text="Section 4" Style="min-width: 100%" IsInitiallyExpanded=true>
                         <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
                             <thead>
                                 <tr>
@@ -953,7 +1007,7 @@
                                 </tr>
                             </tbody>
                         </MudSimpleTable>
-                    </MudExpansionPanel>
+                    </MudExpansionPanel>*@
                     <MudExpansionPanel Text="Section 5" Style="min-width: 100%" IsInitiallyExpanded=true>
                         <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-6" Elevation="0">
                             <tbody>

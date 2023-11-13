@@ -112,10 +112,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<User> _operators = new();
         public List<User> operatorUsers = new();
 
-        public string[] questions = new string[5] ;
+        public string[] questions = new string[5];
         public double taktTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
+
+
+        //Checklist Categories and questions
+        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+        private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -139,7 +145,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
-
+            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            foreach (var category in _checklistCategoriesAndQuestions)
+            {
+                foreach (var question in category.ChecklistQuestions)
+                {
+                    questionResponses[question.QuestionID] = null;
+                }
+            }
             await GetUserAsync();
             StateHasChanged();
 
@@ -197,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         //    }
                         //}
 
-                        _supervisors =  await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
+                        _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
                         _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
                         //_operators = await UsersService.GetUsersByType(4);
@@ -424,7 +437,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
                 ShowPastJobObservations();
 
-            if(user.UserType == 1)
+            if (user.UserType == 1)
             {
                 _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                 _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -470,7 +483,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-           
+
             operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
             pastjobObservations = new();
             pastLup = new();
@@ -974,7 +987,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            if(_jobObservation.SupervisorId == 0)
+            if (_jobObservation.SupervisorId == 0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -982,12 +995,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            foreach(User supervisor in _supervisors)
+            foreach (User supervisor in _supervisors)
             {
                 if (_jobObservation.SupervisorId == supervisor.UserId)
                 {
                     lup.Observer = supervisor.Name;
-                    
+
                 }
             }
             lup.JobObservationId = 0;
@@ -998,7 +1011,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _tempLup.Add(lup);
             lup = new();
-            
+
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"Lup item added", Severity.Info);
@@ -1014,7 +1027,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 2: areaQ = ""; break;
                 case 3: areaD = ""; break;
                 case 4: areaC = ""; break;
-                case 5: areaOther = ""; break; 
+                case 5: areaOther = ""; break;
             }
             _tempLup.Remove(lup);
         }
@@ -1427,7 +1440,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         async void Reject()
         {
 
-            if(_jobObservation.DistributionId == new int())
+            if (_jobObservation.DistributionId == new int())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -2290,34 +2303,119 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
         //Questions and answers
-        private void AddLupOpportunity(int question)
+
+        private void AddLupOpportunity(int pillarId, string notGood)
         {
-            Snackbar.Configuration.MaxDisplayedSnackbars = 4;
-            switch (question)
+            Snackbar.Configuration.MaxDisplayedSnackbars = 5;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            switch (pillarId)
             {
                 case 1:
-                    areaQ = "No respeta pasos principales y puntos críticos";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    areaS = notGood;
+                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
-                    areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    areaQ = notGood;
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
-                    areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
+                    areaD = notGood;
+                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
-                    areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    areaC = notGood;
+                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    areaOther = notGood;
+                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                     break;
 
             }
+
+
+            foreach (var kvp in questionResponses)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value;
+                Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
+
+            }
+
             StateHasChanged();
         }
-    }
+
+        private void PruebaChecklist()
+        {
+
+            foreach (var kvp in questionResponses)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value;
+                var notGood = "";
+                Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
+
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        if(question.QuestionID == questionId)
+                        {
+                            notGood = question.Prompt;
+                        }
+                    }
+                }
+
+                ChecklistAnswer Answer = new ChecklistAnswer
+                {
+                    QuestionID = questionId,
+                    Answer = answer,
+                    Prompt = notGood,
+
+                };
+
+                questionAnswers[questionId] = Answer;
+            }
+
+            foreach (var kvp in questionAnswers)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value.Answer;
+                string prompt = kvp.Value.Prompt;
+
+                Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}, Prompt: {prompt}");
+            }
+        }
+
+
+            //private void AddLupOpportunity(int question)
+            //{
+            //    Snackbar.Configuration.MaxDisplayedSnackbars = 4;
+            //    switch (question)
+            //    {
+            //        case 1:
+            //            areaQ = "No respeta pasos principales y puntos críticos";
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+            //            break;
+            //        case 2:
+            //            areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+            //            break;
+            //        case 3:
+            //            areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
+            //            break;
+            //        case 4:
+            //            areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+            //            break;
+
+            //    }
+            //    StateHasChanged();
+            //}
+        }
 }
