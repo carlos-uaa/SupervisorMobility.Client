@@ -33,7 +33,7 @@ namespace SupervisorMobility.Client.Services.HeadCountService
 
             if (response.IsSuccessStatusCode)
             {
-                await _js.InvokeVoidAsync("alert", $"Upload Data Succesful");
+                //await _js.InvokeVoidAsync("alert", $"Upload Data Succesful");
                 return new FileUpload();
             }
 

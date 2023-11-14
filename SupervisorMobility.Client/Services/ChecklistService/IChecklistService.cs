@@ -3,7 +3,7 @@
     public interface IChecklistService
     {
         // Get all checklist categories
-        Task<List<ChecklistCategory>> GetChecklistCategories();
+        Task<List<ChecklistCategory>> GetChecklistCategories(bool includeChecklistQuestions = false);
 
         // Get checklist category by Id
         Task<ChecklistCategory> GetCategoryById(int id);

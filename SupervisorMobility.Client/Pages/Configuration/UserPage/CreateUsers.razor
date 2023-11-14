@@ -43,7 +43,7 @@
                             <MudItem>
                                 <MudText Typo="Typo.h6">@Localizer["UsersPermissions"]</MudText>
                             </MudItem>
-                            <MudItem Class="d-flex flex-row align-center justify-center pa-2 ma-2">
+                            <MudItem Class="d-flex flex-row flex-wrap align-center justify-center pa-2 ma-2">
                                 @if (LogedUser.UserType <= 1)
                                 {
                                     <MudSwitch Class="ma-1" Label="@Localizer["UsersAdmin"]" @bind-Checked="@IsAdmin" @onclick="@(() => setActiveUser(1))" Color="Color.Primary" UnCheckedColor="Color.Dark" />
@@ -56,6 +56,7 @@
                                 }
                                 <MudSwitch Class="ma-1" Label="@Localizer["UsersOperator"]" @bind-Checked="@IsOperator" @onclick="@(() => setActiveUser(4))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                 <MudSwitch Class="ma-1" Label="@Localizer["lineSupport"]" @bind-Checked="@IsLineSupport" @onclick="@(() => setActiveUser(6))" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                <MudSwitch Class="ma-1" Label="@Localizer["headCount"]" @bind-Checked="@IsHeadCount" @onclick="@(() => setActiveUser(7))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                             </MudItem>
                             <MudItem class="d-flex d-flex-column justify-center">
                                 @switch (_user.UserType)
@@ -90,6 +91,11 @@
                                             <MudChip Icon="@Icons.Material.Filled.Engineering" Color="Color.Info">@Localizer["lineSupport"]</MudChip>
                                         </MudPaper>
                                         break;
+                                    case 7:
+                                        <MudPaper Elevation="0">
+                                            <MudChip Icon="@Icons.Material.Filled.PermContactCalendar" Color="Color.Info">@Localizer["headCount"]</MudChip>
+                                        </MudPaper>
+                                        break;
                                 }
                             </MudItem>
 
@@ -118,7 +124,7 @@
                                           @bind-Value="@_user.Email" For="@(() => _user.Email)" Variant="@Variant.Text" Clearable />
                         }
 
-                        @if (_user.UserType > 1 && _user.UserType != 6)
+                        @if (_user.UserType > 1 && _user.UserType != 6 && _user.UserType != 7)
                         {
                             <MudItem Class="mt-5">
                                 <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
@@ -344,7 +350,7 @@
                         }
 
 
-                        @if (_user.UserType != 0 && _user.UserType != 6 && _user.UserType != 1)
+                        @if (_user.UserType != 0 && _user.UserType != 6 && _user.UserType != 1 && _user.UserType != 7)
                         {
                             <MudItem>
                                 <MudItem Class="mt-5">
@@ -882,6 +888,7 @@
     private bool IsOperator = false;
     private bool IsManager = false;
     private bool IsLineSupport = false;
+    private bool IsHeadCount = false;
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -1070,8 +1077,9 @@
         IsOperator = userType == 4 && !IsOperator;
         IsManager = userType == 5 && !IsManager;
         IsLineSupport = userType == 6 && !IsLineSupport;
+        IsHeadCount = userType == 7 && !IsHeadCount;
 
-        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport ? 0 : userType;
+        _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount ? 0 : userType;
 
 
         ShowAreasInvokeByPlantSelector();
@@ -1135,6 +1143,7 @@
                 break;
             case 5: RemoveSuperiorUser(); break;
             case 6: RemoveSuperiorUser(); break;
+            case 7: RemoveSuperiorUser(); break;
                 
         }
 
@@ -1203,6 +1212,7 @@
             case 2:
             case 5:
             case 6:
+            case 7:
                 areaInfo = "";
                 plantInfo = "";
                 grupInfo = "";

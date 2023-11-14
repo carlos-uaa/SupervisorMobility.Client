@@ -63,9 +63,9 @@ namespace SupervisorMobility.Client.Services.ChecklistService
         }
 
         // Get all checklist categories
-        public async Task<List<ChecklistCategory>> GetChecklistCategories()
+        public async Task<List<ChecklistCategory>> GetChecklistCategories(bool includeChecklistQuestions = false)
         {
-            var response = await _http.GetAsync("checklistcategories");
+            var response = await _http.GetAsync($"checklistcategories?includeChecklistQuestions={includeChecklistQuestions}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
