@@ -18,6 +18,56 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        //Plantstructure Upload
+
+        public async Task<FileUpload> UploadPlantStructure(MultipartFormDataContent contentfile, int plantnameid, int userId)
+        {
+            var response = await _http.PostAsync($"File/MassiveUploadTreeData?plantnameid={plantnameid}&userId={userId}", contentfile);
+
+            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
+
+            return result;
+        }
+        public async Task PlantStructureFormat()
+        {
+            var response = await _http.GetAsync($"File/MassiveUploadTreeDataExample");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "TreeDataExample.xlsx", streamRef);
+            }
+        }
+        //Paths Upload
+        public async Task<FileUpload> UploadPathStructure(MultipartFormDataContent contentfile, int userId)
+        {
+            var response = await _http.PostAsync($"File/MassivePaths?userId=?{userId}", contentfile);
+
+            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
+
+            return result;
+        }
+        public async Task PathStructureFormat()
+        {
+            var response = await _http.GetAsync($"File/MassivePathsExample");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "MassivePathsExample.xlsx", streamRef);
+            }
+        }
+
         //Assy CHART Upload
         public async Task<FileUpload> UploadFile(MultipartFormDataContent contentfile)
         {

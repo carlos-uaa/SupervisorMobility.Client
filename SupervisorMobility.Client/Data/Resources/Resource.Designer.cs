@@ -2230,6 +2230,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Structure Upload.
+        /// </summary>
+        public static string PlantUpload {
+            get {
+                return ResourceManager.GetString("PlantUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Product.
         /// </summary>
         public static string product {
