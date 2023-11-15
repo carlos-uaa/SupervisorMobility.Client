@@ -116,12 +116,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public double taktTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
+       
 
 
         //Checklist Categories and questions
-        //public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
-        //private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
-        //private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+        private Dictionary<int, Color> questionYesColor = new Dictionary<int, Color>();
+        private Dictionary<int, Color> questionNgColor = new Dictionary<int, Color>();
+        private Dictionary<int, Color> questionNaColor = new Dictionary<int, Color>();
+        private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+
+        public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
         protected async override Task OnInitializedAsync()
         {
@@ -135,7 +141,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Supervisor = new();
 
 
-
             date = date.Replace("-", "/");
 
             _jobObservation.IsActive = true;
@@ -145,14 +150,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
-            //_checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
-            //foreach (var category in _checklistCategoriesAndQuestions)
-            //{
-            //    foreach (var question in category.ChecklistQuestions)
-            //    {
-            //        questionResponses[question.QuestionID] = null;
-            //    }
-            //}
+            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            foreach (var category in _checklistCategoriesAndQuestions)
+            {
+                foreach (var question in category.ChecklistQuestions)
+                {
+                    questionResponses[question.QuestionID] = null;
+                    questionYesColor[question.QuestionID] = Color.Info;
+                    questionNgColor[question.QuestionID] = Color.Info;
+                    questionNaColor[question.QuestionID] = Color.Info;
+                }
+            }
             await GetUserAsync();
             StateHasChanged();
 
@@ -532,6 +540,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            GenerateChecklistAnswers();
+
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
@@ -634,6 +644,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
+                if (questionAnswers.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -646,7 +676,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             NavigationManager.NavigateTo("/jobobservation");
         }
-
 
 
         //timer
@@ -1111,6 +1140,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            GenerateChecklistAnswers();
             startHour = DateTime.Now.TimeOfDay;
 
 
@@ -1240,7 +1270,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
+                if (questionAnswers.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1306,6 +1355,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            GenerateChecklistAnswers();
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1428,6 +1478,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
+                if (questionAnswers.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1499,6 +1569,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Write down the anomaly first", Severity.Error);
                 return;
             }
+
+            GenerateChecklistAnswers();
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1619,7 +1691,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
+                if (questionAnswers.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1693,6 +1784,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            GenerateChecklistAnswers();
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1822,7 +1914,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
+                if (questionAnswers.Count > 0)
+                {
+                    _jobObservations = await JobObservationService.GetAllJobObservations();
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -2304,118 +2415,141 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        //private void AddLupOpportunity(int pillarId, string notGood)
-        //{
-        //    Snackbar.Configuration.MaxDisplayedSnackbars = 5;
-        //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //    switch (pillarId)
-        //    {
-        //        case 1:
-        //            areaS = notGood;
-        //            Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 2:
-        //            areaQ = notGood;
-        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 3:
-        //            areaD = notGood;
-        //            Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 4:
-        //            areaC = notGood;
-        //            Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 5:
-        //            areaOther = notGood;
-        //            Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
-        //            break;
-
-        //    }
-
-
-        //    foreach (var kvp in questionResponses)
-        //    {
-        //        int questionId = kvp.Key;
-        //        string answer = kvp.Value;
-        //        Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
-
-        //    }
-
-        //    StateHasChanged();
-        //}
-
-        //private void PruebaChecklist()
-        //{
-
-        //    foreach (var kvp in questionResponses)
-        //    {
-        //        int questionId = kvp.Key;
-        //        string answer = kvp.Value;
-        //        var notGood = "";
-        //        Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
-
-        //        foreach (var category in _checklistCategoriesAndQuestions)
-        //        {
-        //            foreach (var question in category.ChecklistQuestions)
-        //            {
-        //                if(question.QuestionID == questionId)
-        //                {
-        //                    notGood = question.Prompt;
-        //                }
-        //            }
-        //        }
-
-        //        ChecklistAnswer Answer = new ChecklistAnswer
-        //        {
-        //            QuestionID = questionId,
-        //            Answer = answer,
-        //            Prompt = notGood,
-
-        //        };
-
-        //        questionAnswers[questionId] = Answer;
-        //    }
-
-        //    foreach (var kvp in questionAnswers)
-        //    {
-        //        int questionId = kvp.Key;
-        //        string answer = kvp.Value.Answer;
-        //        string prompt = kvp.Value.Prompt;
-
-        //        Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}, Prompt: {prompt}");
-        //    }
-        //}
-
-
-        private void AddLupOpportunity(int question)
+        private void changeQuestionColor(int questionID, Color color)
         {
-            Snackbar.Configuration.MaxDisplayedSnackbars = 4;
-            switch (question)
+            var colorDefault = Color.Info;
+            if (questionResponses[questionID] == "YES")
+            {
+                questionYesColor[questionID] = color;
+                questionNgColor[questionID] = colorDefault;
+                questionNaColor[questionID] = colorDefault;
+            }
+            else if (questionResponses[questionID] == "NG")
+            {
+                questionYesColor[questionID] = colorDefault;
+                questionNgColor[questionID] = color;
+                questionNaColor[questionID] = colorDefault;
+            }
+            else
+            {
+                questionYesColor[questionID] = colorDefault;
+                questionNgColor[questionID] = colorDefault;
+                questionNaColor[questionID] = colorDefault;
+            }
+        }
+
+        private void AddLupOpportunity(int questionID, Color color, int pillarId, string notGood)
+        {
+            changeQuestionColor(questionID, color);
+
+            Snackbar.Configuration.MaxDisplayedSnackbars = 5;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            switch (pillarId)
             {
                 case 1:
-                    areaQ = "No respeta pasos principales y puntos críticos";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    areaS = notGood;
+                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
-                    areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    areaQ = notGood;
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
-                    areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
+                    areaD = notGood;
+                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
-                    areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    areaC = notGood;
+                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    areaOther = notGood;
+                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                     break;
 
             }
+
+
+            foreach (var kvp in questionResponses)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value;
+                Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
+
+            }
+
             StateHasChanged();
         }
+
+        private void GenerateChecklistAnswers()
+        {
+
+            foreach (var kvp in questionResponses)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value;
+                var notGood = "";
+
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        if (question.QuestionID == questionId)
+                        {
+                            notGood = question.Prompt;
+                        }
+                    }
+                }
+
+                ChecklistAnswer Answer = new ChecklistAnswer
+                {
+                    QuestionID = questionId,
+                    Answer = answer,
+                    Prompt = notGood,
+
+                };
+
+                questionAnswers[questionId] = Answer;
+            }
+
+            foreach (var kvp in questionAnswers)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value.Answer;
+                string prompt = kvp.Value.Prompt;
+
+            }
+        }
+
+
+        //private void AddLupOpportunity(int question)
+        //{
+        //    Snackbar.Configuration.MaxDisplayedSnackbars = 4;
+        //    switch (question)
+        //    {
+        //        case 1:
+        //            areaQ = "No respeta pasos principales y puntos críticos";
+        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+        //            break;
+        //        case 2:
+        //            areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
+        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+        //            break;
+        //        case 3:
+        //            areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
+        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        //            Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
+        //            break;
+        //        case 4:
+        //            areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
+        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+        //            break;
+
+        //    }
+        //    StateHasChanged();
+        //}
     }
 }

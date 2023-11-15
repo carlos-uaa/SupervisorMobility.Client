@@ -65,5 +65,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? TaktTime { get; set; }
         public string? Questions { get; set; }
 
+        public ICollection<ChecklistAnswer>? ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
     }
 }

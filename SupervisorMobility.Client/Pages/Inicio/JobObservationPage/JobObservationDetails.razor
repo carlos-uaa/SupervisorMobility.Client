@@ -25,6 +25,7 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject ITreeService TreeServices
 @inject IStringLocalizer<Resource1> Localizer1
+@inject IChecklistAnswerService ChecklistAnswerServices
 
 @inject NavigationManager NavigationManager
 
@@ -730,7 +731,58 @@ else
                 </MudSimpleTable>
             </MudItem>
             <MudItem Class="ml-2">
-                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
+                @foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    if (category.ChecklistQuestions.Count > 0)
+                    {
+                        <MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @category.Description
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <MudText Style="font-weight:bold;">
+                                                    @Localizer["Questions"]
+                                                </MudText>
+                                            </th>
+                                            <th>
+                                                <MudText Style="text-align:center; font-weight:bold;">
+                                                    @Localizer["Answers"]
+                                                </MudText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var question in category.ChecklistQuestions)
+                                        {
+
+                                            <tr>
+                                                <td width="70%">
+                                                    <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                </td>
+                                                <td>
+                                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                        <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
+                                                            <MudRadio Option="@("YES")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                                            <MudRadio Option="@("NG")" Color="Color.Info" Dense="true" Disabled>NG</MudRadio>
+                                                            <MudRadio Option="@("N/A")" Color="Color.Info" Dense="true" Disabled>N/A</MudRadio>
+                                                        </MudRadioGroup>
+                                                    </MudItem>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </MudSimpleTable>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
+                }
+   @*             <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
                     <thead>
                         <tr>
                             <th>
@@ -812,7 +864,7 @@ else
                             </td>
                         </tr>
                     </tbody>
-                </MudSimpleTable>
+                </MudSimpleTable>*@
             </MudItem>
             <MudItem Class="ml-2">
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">

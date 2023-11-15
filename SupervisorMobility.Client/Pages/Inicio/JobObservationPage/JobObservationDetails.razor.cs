@@ -85,6 +85,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public double taktTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
+
+        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
+        private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -98,6 +103,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
+            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
+            if(_checklistAnswers.Count > 0)
+            {
+                foreach (var question in _checklistAnswers)
+                {
+                    questionResponses[question.QuestionID] = question.Answer;
+                }
+            }
+            else
+            {
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        questionResponses[question.QuestionID] = null;
+                    }
+                }
+            }
 
             if (_jobObservation.KpiId != null)
             {
