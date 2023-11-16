@@ -507,7 +507,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         pastjobObservations.Add(job);
 
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        pastJob = await JobObservationService.GetJobObservationById(job.JobObservationId, true, true, true, false, false);
                         foreach (var lups in pastJob.Lup)
                         {
                             pastLup.Add(lups);

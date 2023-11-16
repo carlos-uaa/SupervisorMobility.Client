@@ -107,7 +107,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if(user != null)
                 {
-                    _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+                    _jobObservationsAux = await JobObservationService.GetAllJobObservations(true,true);
 
                     if (user.UserType == 1 || user.UserType == 6)
                     {

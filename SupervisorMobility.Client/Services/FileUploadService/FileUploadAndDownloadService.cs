@@ -24,10 +24,15 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         {
             var response = await _http.PostAsync($"File/MassiveUploadTreeData?plantnameid={plantnameid}&userId={userId}", contentfile);
 
-            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
+            if (response.IsSuccessStatusCode)
+            {
+                //await _js.InvokeVoidAsync("alert", $"Upload Data Succesful");
+                return new FileUpload();
+            }
 
-            return result;
-        }
+            return null;
+
+                 }
         public async Task PlantStructureFormat()
         {
             var response = await _http.GetAsync($"File/MassiveUploadTreeDataExample");
@@ -46,11 +51,15 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
         //Paths Upload
         public async Task<FileUpload> UploadPathStructure(MultipartFormDataContent contentfile, int userId)
         {
-            var response = await _http.PostAsync($"File/MassivePaths?userId=?{userId}", contentfile);
+            var response = await _http.PostAsync($"File/MassivePaths?userId={userId}", contentfile);
 
-            var result = await response.Content.ReadFromJsonAsync<FileUpload>();
+            if (response.IsSuccessStatusCode)
+            {
+                //await _js.InvokeVoidAsync("alert", $"Upload Data Succesful");
+                return new FileUpload();
+            }
 
-            return result;
+            return null;
         }
         public async Task PathStructureFormat()
         {

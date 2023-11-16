@@ -38,9 +38,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             var response = await _http.DeleteAsync($"jobobservations/{jobObservationId}");
         }
 
-        public async Task<List<JobObservation>> GetAllJobObservations()
+        public async Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false)
         {
-            var response = await _http.GetAsync($"jobobservations");
+            var response = await _http.GetAsync($"jobobservations?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -52,7 +52,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             return _mapper.Map<List<JobObservation>>(jobObservation);
         }
-        public async Task<List<JobObservationVersion>> GetAllHistoryJobObservations(int jobObservationId)
+        public async Task<List<JobObservationHistoryVersion>> GetAllHistoryJobObservations(int jobObservationId)
         {
             var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history");
             var content = await response.Content.ReadAsStringAsync();
@@ -62,13 +62,13 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var historyJobObservation = JsonSerializer.Deserialize<List<JobObservationVersion>>(content, _options);
+            var historyJobObservation = JsonSerializer.Deserialize<List<JobObservationHistoryVersion>>(content, _options);
 
             return historyJobObservation;
         }
 
 
-        public async Task<JobObservationVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId)
+        public async Task<JobObservationHistoryVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId)
         {
             var response = await _http.GetAsync($"jobobservations/{jobObservationId}/history/{HistoryId}/detail");
             var content = await response.Content.ReadAsStringAsync();
@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
                 throw new ApplicationException(content);
             }
 
-            var jobObservation = JsonSerializer.Deserialize<JobObservationVersion>(content, _options);
+            var jobObservation = JsonSerializer.Deserialize<JobObservationHistoryVersion>(content, _options);
 
             return jobObservation;
         }
@@ -114,9 +114,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
         }
 
 
-        public async Task<JobObservation> GetJobObservationById(int jobObservationId)
+        public async Task<JobObservation> GetJobObservationById(int jobObservationId, bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false)
         {
-            var response = await _http.GetAsync($"jobobservations/{jobObservationId}");
+            var response = await _http.GetAsync($"jobobservations/{jobObservationId}?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

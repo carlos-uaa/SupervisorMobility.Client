@@ -181,9 +181,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 glosary = await GlosaryService.GetGlosary();
                 _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-                _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
-
-                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+                _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true,false,true);
+                //Por ahora te lo clono
+                _lupJobObservations = ObjectCloner.ObjectCloner.DeepClone(_jobObservation);
 
                 //Change date
 
@@ -370,7 +370,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                             pastjobObservations.Add(job);
 
-                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                            pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
                             foreach (var lups in pastJob.Lup)
                             {
                                 pastLup.Add(lups);
@@ -1673,7 +1673,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             var result = await LupService.CreateLup(lup);
             if (result != null)
             {
-                _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+                _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
 
                 await GetUserAsync();
 
@@ -1691,7 +1691,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                             pastjobObservations.Add(job);
 
-                            pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                            pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
                             foreach (var lups in pastJob.Lup)
                             {
                                 pastLup.Add(lups);
@@ -1742,7 +1742,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             await LupService.DeleteLup(lupId);
 
-            _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+            _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
 
             await GetUserAsync();
 
@@ -1760,7 +1760,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         pastjobObservations.Add(job);
 
-                        pastJob = await JobObservationService.GetJobObservationWithLup(job.JobObservationId);
+                        pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
                         foreach (var lups in pastJob.Lup)
                         {
                             pastLup.Add(lups);

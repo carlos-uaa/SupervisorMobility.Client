@@ -6,16 +6,22 @@ namespace SupervisorMobility.Client.Data.Entities
     {
 
         public int JobObservationId { get; set; }
-
+        //info
         public Plant Plant { get; set; }
         public Area Area { get; set; }
         public Distribution Distribution { get; set; }
         public Operation Operation { get; set; }
-        public ICollection<Lup> Lup { get; set; } = new List<Lup>();
-
+        //people
         public User Supervisor { get; set; }
-
         public User Operator { get; set; }
+        //lup
+        public ICollection<Lup> Lup { get; set; } = new List<Lup>();
+        //history
+        public ICollection<JobObservationHistoryVersion> History { get; set; } = new List<JobObservationHistoryVersion>();
+        //answers question
+        public ICollection<ChecklistAnswer>? ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
+
+
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Plant")]
@@ -65,6 +71,5 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? TaktTime { get; set; }
         public string? Questions { get; set; }
 
-        public ICollection<ChecklistAnswer>? ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
     }
 }

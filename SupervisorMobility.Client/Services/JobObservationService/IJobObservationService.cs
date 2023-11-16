@@ -3,15 +3,13 @@
     public interface IJobObservationService
     {
         // Get all job observations     
-        Task<List<JobObservationVersion>> GetAllHistoryJobObservations(int jobObservationId);
-        Task<JobObservationVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId);
+        Task<List<JobObservationHistoryVersion>> GetAllHistoryJobObservations(int jobObservationId);
+        Task<JobObservationHistoryVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId);
 
-        Task<List<JobObservation>> GetAllJobObservations();
-        Task<List<JobObservation>> GetAllJobObservationsWithLup();
+        Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false);
 
         // Get job observation by Id
-        Task<JobObservation> GetJobObservationById(int jobObservationId);
-        Task<JobObservation> GetJobObservationWithLup(int jobObservationId);
+        Task<JobObservation> GetJobObservationById(int jobObservationId, bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false);
 
         // Create job observation
         Task<JobObservation> CreateJobObservation(JobObservation jobObservation);

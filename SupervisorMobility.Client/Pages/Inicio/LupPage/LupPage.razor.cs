@@ -60,9 +60,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
                 await GetUserAsync();
 
-                jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
+                jobObservationList = await JobObservationServices.GetAllJobObservations(true, true, true, false, false);
 
-                if(user != null)
+                if (user != null)
                 {
                     GetLupByUser();
 
