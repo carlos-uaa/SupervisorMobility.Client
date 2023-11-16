@@ -107,10 +107,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
             if(_checklistAnswers.Count > 0)
             {
-                foreach (var question in _checklistAnswers)
+                foreach (var category in _checklistCategoriesAndQuestions)
                 {
-                    questionResponses[question.QuestionID] = question.Answer;
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        if (_checklistAnswers.Any(answer => answer.QuestionID == question.QuestionID))
+                        {
+                            var answer = _checklistAnswers.First(a => a.QuestionID == question.QuestionID);
+                            questionResponses[question.QuestionID] = answer.Answer;
+                        }
+                        else
+                        {
+                            questionResponses[question.QuestionID] = null;
+                        }
+                    }
                 }
+
+
             }
             else
             {
