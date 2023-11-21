@@ -140,11 +140,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Checklist Categories and questions
         public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
-        private Dictionary<int, Color> questionYesColor = new Dictionary<int, Color>();
-        private Dictionary<int, Color> questionNgColor = new Dictionary<int, Color>();
-        private Dictionary<int, Color> questionNaColor = new Dictionary<int, Color>();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+
         protected async override Task OnInitializedAsync()
         {
             _links = new List<BreadcrumbItem>
@@ -171,9 +169,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     foreach (var question in category.ChecklistQuestions)
                     {
                         questionResponses[question.QuestionID] = null;
-                        questionYesColor[question.QuestionID] = Color.Info;
-                        questionNgColor[question.QuestionID] = Color.Info;
-                        questionNaColor[question.QuestionID] = Color.Info;
                     }
                 }
                 _jobObservation.Supervisor = new();
@@ -2472,32 +2467,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             StateHasChanged();
         }
-        private void changeQuestionColor(int questionID, Color color)
-        {
-            var colorDefault = Color.Info;
-            if (questionResponses[questionID] == "YES")
-            {
-                questionYesColor[questionID] = color;
-                questionNgColor[questionID] = colorDefault;
-                questionNaColor[questionID] = colorDefault;
-            }
-            else if (questionResponses[questionID] == "NG")
-            {
-                questionYesColor[questionID] = colorDefault;
-                questionNgColor[questionID] = color;
-                questionNaColor[questionID] = colorDefault;
-            }
-            else
-            {
-                questionYesColor[questionID] = colorDefault;
-                questionNgColor[questionID] = colorDefault;
-                questionNaColor[questionID] = colorDefault;
-            }
-        }
+     
 
-        private void AddLupOpportunity(int questionID, Color color, int pillarId, string notGood)
+        private void AddLupOpportunity(int pillarId, string notGood)
         {
-            changeQuestionColor(questionID, color);
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
