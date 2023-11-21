@@ -2383,7 +2383,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Safety.
+        ///   Busca una cadena traducida similar a Safety &amp; Environment.
         /// </summary>
         public static string safety {
             get {
