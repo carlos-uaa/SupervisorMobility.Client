@@ -8,6 +8,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -15,6 +16,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Timers;
+
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
@@ -568,6 +570,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Status = 1;
                 }
 
+                if (questionAnswers.Count > 0)
+                {
+
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
+
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -634,6 +657,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Status = 1;
                 }
 
+                if (questionAnswers.Count > 0)
+                {
+
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -722,7 +765,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _jobObservation.Justification = null;
                 }
+                if (questionAnswers.Count > 0)
+                {
 
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -780,6 +842,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Justification = null;
                 }
 
+                if (questionAnswers.Count > 0)
+                {
+
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -885,7 +967,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation.Status = 4;
 
+                if (questionAnswers.Count > 0)
+                {
 
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
 
@@ -947,8 +1048,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation.Status = 4;
 
+                if (questionAnswers.Count > 0)
+                {
 
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
+
+                    var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
 
                 if (result)
@@ -1050,7 +1171,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 5;
 
                 _jobObservation.FinishedDate = DateTime.Now;
+                if (questionAnswers.Count > 0)
+                {
 
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -1104,7 +1244,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 5;
 
                 _jobObservation.FinishedDate = DateTime.Now;
+                if (questionAnswers.Count > 0)
+                {
 
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -1207,6 +1366,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 6;
                 _jobObservation.FinishedDate = DateTime.Now;
 
+                if (questionAnswers.Count > 0)
+                {
+
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -1258,6 +1437,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
+                if (questionAnswers.Count > 0)
+                {
+
+                    foreach (var question in questionAnswers)
+                    {
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
@@ -1285,7 +1484,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 visibleSign = false;
                 return;
             }
+            if (questionAnswers.Count > 0)
+            {
 
+                foreach (var question in questionAnswers)
+                {
+                    question.Value.JobObservationId = _jobObservation.JobObservationId;
+                    var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                    if (result2 != null)
+                    {
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error in Question", Severity.Error);
+                    }
+                }
+            }
             var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
             if (result)

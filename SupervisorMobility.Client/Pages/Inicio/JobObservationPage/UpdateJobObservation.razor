@@ -33,7 +33,8 @@
 @inject IAssyChartService AssychartServices
 @inject IFileUploadAndDownloadService FilesServices
 @inject ILupService LupServices
-
+@inject IChecklistService ChecklistService
+@inject IChecklistAnswerService ChecklistAnswerServices
 @inject NavigationManager NavigationManager
 
 <style>
@@ -91,10 +92,11 @@
                     <MudItem Class="d-flex justify-space-between">
                         <MudItem Style="text-align: start">
                             <MudItem Style="text-align: start">
-                                @if(!searchAssychart && messageErrorFolders == null){
+                                @if (!searchAssychart && messageErrorFolders == null)
+                                {
                                     <MudItem Class="d-flex justify-center align-center">
                                         <MudChip Color="Color.Info" Variant="Variant.Outlined">
-                                        <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" Class="mr-3"/>
+                                            <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" Class="mr-3" />
                                             Loading Assy Chart
                                         </MudChip>
                                     </MudItem>
@@ -462,38 +464,38 @@
                                         </td>
                                         <td class="d-flex mt-3">
                                             <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4" ReadOnly PickerClosed="ShowDateMessage" />
-                                            <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" ReadOnly PickerClosed="ShowDateMessage" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            @*Mud select of Distribution *@
-                                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADistribution"]</MudSelectItem>
-                                                @foreach (var type in _distributions)
+                                             <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" ReadOnly PickerClosed="ShowDateMessage" />
+                                         </td>
+                                     </tr>
+                                     <tr>
+                                         <td>
+                                             @*Mud select of Distribution *@
+                                             <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                                 <MudSelectItem Disabled="true" Value="0">@Localizer["selectADistribution"]</MudSelectItem>
+                                                 @foreach (var type in _distributions)
                                                 {
                                                     <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </td>
-                                        <td  class="d-flex mt-3">
+                                        <td class="d-flex mt-3">
                                             <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" ReadOnly />
-                                                <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
-                                                    <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                                    <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
+                                             <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
+                                                 <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                                 <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
                                                     <MudSelectItem Value="2">@($"Q")</MudSelectItem>
                                                     <MudSelectItem Value="3">@($"D")</MudSelectItem>
                                                     <MudSelectItem Value="4">@($"C")</MudSelectItem>
                                                     <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                                            </MudSelect>
-                                        </td>
-                                    </tr>
-                                    <tr class="mt-3">
-                                        <td>
-                                            @*Mud select of Operations *@
-                                            <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
-                                                @foreach (var type in _operations)
+                                                </MudSelect>
+                                            </td>
+                                        </tr>
+                                        <tr class="mt-3">
+                                            <td>
+                                                @*Mud select of Operations *@
+                                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
+                                                    @foreach (var type in _operations)
                                                 {
                                                     <MudSelectItem Value="type.OperationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                                 }
@@ -548,15 +550,15 @@
                     </MudExpansionPanel>
                     <MudExpansionPanel Text="Section 2" Style="min-width: 100%" IsInitiallyExpanded=true>
                         <MudSimpleTable Dense=true Style="overflow-x: auto;" Bordered Class="mb-3" Elevation="0">
-                            <tbody>
-                                <tr>
-                                    <td colspan="1">
-                                        <MudTextField T="double" @bind-Value="taktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" style="text-align:center">
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
+                             <tbody>
+                                 <tr>
+                                     <td colspan="1">
+                                         <MudTextField T="double" @bind-Value="taktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" />
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td colspan="5" style="text-align:center">
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["HOE Time"];
@@ -668,63 +670,63 @@
                                             <MudToggleIconButton Toggled="@isRunning" Color="Color.Info" @onclick="(() => OnTimerChanged(1))" Variant="Variant.Outlined" Class="mr-1" Disabled="@(isRunning2 || isRunning3 || isRunning4 || isRunning5)"
                                                                  Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
                                             <MudTextField T="string" @bind-Value="cycles[0]" Class="@cycle1Color" Label=@Localizer["cycle1"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
-                                        </MudItem>
-                                    </td>
-                                    <td>
-                                        <MudItem Class="d-flex align-center">
-                                            <MudToggleIconButton Toggled="@isRunning2" @onclick="(() => OnTimerChanged(2))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[0]) || (isRunning || isRunning3 || isRunning4 || isRunning5))"
-                                                                 Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
-                                            <MudTextField T="string" @bind-Value="cycles[1]" Class="@cycle2Color" Label=@Localizer["cycle2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
-                                        </MudItem>
-                                    </td>
-                                    <td>
-                                        <MudItem Class="d-flex align-center">
-                                            <MudToggleIconButton Toggled="@isRunning3" @onclick="(() => OnTimerChanged(3))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[1]) || (isRunning || isRunning2 || isRunning4 || isRunning5))"
-                                                                 Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
-                                            <MudTextField T="string" @bind-Value="cycles[2]" Class="@cycle3Color" Label=@Localizer["cycle3"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
-                                        </MudItem>
-                                    </td>
-                                    <td>
-                                        <MudItem Class="d-flex align-center">
-                                            <MudToggleIconButton Toggled="@isRunning4" @onclick="(() => OnTimerChanged(4))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[2]) || (isRunning || isRunning2 || isRunning3 || isRunning5))"
-                                                                 Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
-                                            <MudTextField T="string" @bind-Value="cycles[3]" Class="@cycle4Color" Label=@Localizer["cycle4"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
-                                        </MudItem>
-                                    </td>
-                                    <td>
-                                        <MudItem Class="d-flex align-center">
-                                            <MudToggleIconButton Toggled="@isRunning5" @onclick="(() => OnTimerChanged(5))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[3]) || (isRunning || isRunning2 || isRunning3 || isRunning4))"
-                                                                 Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
-                                            <MudTextField T="string" @bind-Value="cycles[4]" Class="@cycle5Color" Label=@Localizer["cycle5"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudExpansionPanel>
-                    <MudExpansionPanel Text="Section 3" Style="min-width: 100%" IsInitiallyExpanded=true>
-                        <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <MudText Style="font-weight:bold;">
-                                            @Localizer["pillar"]
-                                        </MudText>
-                                    </th>
-                                    <th>
-                                        <MudText Style="text-align:center; font-weight:bold;">
-                                            @Localizer["areaOfOportunityDetected"]
-                                        </MudText>
-                                    </th>
-                                    <th style="width: 5%">
-                                        @Localizer["add"]
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td width="10%">
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
+                                         </MudItem>
+                                     </td>
+                                     <td>
+                                         <MudItem Class="d-flex align-center">
+                                             <MudToggleIconButton Toggled="@isRunning2" @onclick="(() => OnTimerChanged(2))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[0]) || (isRunning || isRunning3 || isRunning4 || isRunning5))"
+                                                                  Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+                                             <MudTextField T="string" @bind-Value="cycles[1]" Class="@cycle2Color" Label=@Localizer["cycle2"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                                         </MudItem>
+                                     </td>
+                                     <td>
+                                         <MudItem Class="d-flex align-center">
+                                             <MudToggleIconButton Toggled="@isRunning3" @onclick="(() => OnTimerChanged(3))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[1]) || (isRunning || isRunning2 || isRunning4 || isRunning5))"
+                                                                  Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+                                             <MudTextField T="string" @bind-Value="cycles[2]" Class="@cycle3Color" Label=@Localizer["cycle3"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                                         </MudItem>
+                                     </td>
+                                     <td>
+                                         <MudItem Class="d-flex align-center">
+                                             <MudToggleIconButton Toggled="@isRunning4" @onclick="(() => OnTimerChanged(4))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[2]) || (isRunning || isRunning2 || isRunning3 || isRunning5))"
+                                                                  Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+                                             <MudTextField T="string" @bind-Value="cycles[3]" Class="@cycle4Color" Label=@Localizer["cycle4"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                                         </MudItem>
+                                     </td>
+                                     <td>
+                                         <MudItem Class="d-flex align-center">
+                                             <MudToggleIconButton Toggled="@isRunning5" @onclick="(() => OnTimerChanged(5))" Color="Color.Info" Variant="Variant.Outlined" Class="mr-1" Disabled="@(string.IsNullOrEmpty(cycles[3]) || (isRunning || isRunning2 || isRunning3 || isRunning4))"
+                                                                  Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+                                             <MudTextField T="string" @bind-Value="cycles[4]" Class="@cycle5Color" Label=@Localizer["cycle5"] Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                                         </MudItem>
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </MudSimpleTable>
+                     </MudExpansionPanel>
+                     <MudExpansionPanel Text="Section 3" Style="min-width: 100%" IsInitiallyExpanded=true>
+                         <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                             <thead>
+                                 <tr>
+                                     <th>
+                                         <MudText Style="font-weight:bold;">
+                                             @Localizer["pillar"]
+                                         </MudText>
+                                     </th>
+                                     <th>
+                                         <MudText Style="text-align:center; font-weight:bold;">
+                                             @Localizer["areaOfOportunityDetected"]
+                                         </MudText>
+                                     </th>
+                                     <th style="width: 5%">
+                                         @Localizer["add"]
+                                     </th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr>
+                                     <td width="10%">
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["S & E"];
@@ -739,14 +741,21 @@
                                             <MudText @onclick="(() => OpenGuideDialog(0))">S & E</MudText>
                                         }
                                         <br />
-                                        @if(auxErgonomicsLevel != 0){
+                                        @if (auxErgonomicsLevel != 0)
+                                        {
                                             <MudTooltip Text=@Localizer["Ergonomics Level"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                                 <MudChip Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Info" Variant="Variant.Outlined" Style="margin-left: -4px">
-                                                    @switch(auxErgonomicsLevel)
+                                                    @switch (auxErgonomicsLevel)
                                                     {
-                                                        case 1: <span>A</span> break;
-                                                        case 2: <span>B</span> break;
-                                                        case 3: <span>C</span> break;
+                                                        case 1:
+                                                            <span>A</span>
+                                                            break;
+                                                        case 2:
+                                                            <span>B</span>
+                                                            break;
+                                                        case 3:
+                                                            <span>C</span>
+                                                            break;
                                                     }
                                                 </MudChip>
                                             </MudTooltip>
@@ -755,16 +764,16 @@
                                     </td>
                                     <td style="align-content: end">
                                         <MudTextField T="string" @bind-Value="areaS" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                    </td>
-                                    <td>
-                                        <MudTooltip Text=@Localizer["addToPillarSInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                            <MudIconButton @onclick="(() => AddLup(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                        </MudTooltip>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                                     </td>
+                                     <td>
+                                         <MudTooltip Text=@Localizer["addToPillarSInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                             <MudIconButton @onclick="(() => AddLup(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                         </MudTooltip>
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td>
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["Q"];
@@ -781,16 +790,16 @@
                                     </td>
                                     <td style="align-content: end">
                                         <MudTextField T="string" @bind-Value="areaQ" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                    </td>
-                                    <td>
-                                        <MudTooltip Text=@Localizer["addToPillarQInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                            <MudIconButton @onclick="(() => AddLup(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                        </MudTooltip>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
+                                     </td>
+                                     <td>
+                                         <MudTooltip Text=@Localizer["addToPillarQInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                             <MudIconButton @onclick="(() => AddLup(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                         </MudTooltip>
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td>
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["D"];
@@ -807,16 +816,16 @@
                                     </td>
                                     <td style="align-content: end">
                                         <MudTextField T="string" @bind-Value="areaD" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                    </td>
-                                    <td>
-                                        <MudTooltip Text=@Localizer["addToPillarDInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                            <MudIconButton @onclick="(() => AddLup(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                        </MudTooltip>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
+                                     </td>
+                                     <td>
+                                         <MudTooltip Text=@Localizer["addToPillarDInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                             <MudIconButton @onclick="(() => AddLup(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                         </MudTooltip>
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td>
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["C"];
@@ -833,16 +842,16 @@
                                     </td>
                                     <td style="align-content: end">
                                         <MudTextField T="string" @bind-Value="areaC" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                    </td>
-                                    <td>
-                                        <MudTooltip Text=@Localizer["addToPillarCInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                            <MudIconButton @onclick="(() => AddLup(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                        </MudTooltip>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
+                                     </td>
+                                     <td>
+                                         <MudTooltip Text=@Localizer["addToPillarCInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                             <MudIconButton @onclick="(() => AddLup(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                         </MudTooltip>
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td>
+                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
                                         {
                                             Glosary word;
                                             word = _glosaryInfo["Other"];
@@ -859,17 +868,17 @@
                                     </td>
                                     <td style="align-content: end">
                                         <MudTextField T="string" @bind-Value="areaOther" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                    </td>
-                                    <td>
-                                        <MudTooltip Text=@Localizer["addToPillarOtherInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                            <MudIconButton @onclick="(() => AddLup(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                        </MudTooltip>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudExpansionPanel>
-                    @foreach (var category in _checklistCategoriesAndQuestions)
+                                     </td>
+                                     <td>
+                                         <MudTooltip Text=@Localizer["addToPillarOtherInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                             <MudIconButton @onclick="(() => AddLup(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                         </MudTooltip>
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </MudSimpleTable>
+                     </MudExpansionPanel>
+                     @foreach (var category in _checklistCategoriesAndQuestions)
                     {
                         if (category.ChecklistQuestions.Count > 0)
                         {
@@ -897,47 +906,55 @@
                                         </thead>
                                         <tbody>
                                             @foreach (var question in category.ChecklistQuestions)
-                                        {
-                                           @*  @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID)) 
                                             {
-                                                @code{
-                                                    ChecklistAnswer ChAnswer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID));
+                                                @if (_jobObservation.Status != 6)
+                                                {
+                                                    @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                                                    {
+
+                                                        ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                                        <tr>
+                                                            <td width="70%">
+                                                                <MudText Align="Align.Justify">Respuesta: <b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            </td>
+                                                            <td>
+                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                    <MudRadioGroup @bind-SelectedOption="answer.Answer">
+                                                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true">Yes</MudRadio>
+                                                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity( question.PillarId, question.NotGood))">NG</MudRadio>
+                                                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true">N/A</MudRadio>
+                                                                    </MudRadioGroup>
+                                                                </MudItem>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <tr>
+                                                            <td width="70%">
+                                                                <MudText Align="Align.Justify">Nueva:<b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            </td>
+                                                            <td>
+                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                    <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
+                                                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true">Yes</MudRadio>
+                                                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity( question.PillarId, question.NotGood))">NG</MudRadio>
+                                                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true">N/A</MudRadio>
+                                                                    </MudRadioGroup>
+                                                                </MudItem>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+
                                                 }
 
-                                              <tr>
-                                                    <td width="70%">
-                                                        <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
-                                                    </td>
-                                                    <td>
-                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                <MudRadioGroup @bind-SelectedOption="ChAnswer.Answer">
-                                                                <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" >Yes</MudRadio>
-                                                                <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity( question.PillarId, question.NotGood))">NG</MudRadio>
-                                                                <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true">N/A</MudRadio>
-                                                            </MudRadioGroup>
-                                                        </MudItem>
-                                                    </td>
-                                                    </tr>
-                                                }else{
-
-                                                    <tr>
-                                                        <td width="70%">
-                                                            <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
-                                                        </td>
-                                                        <td>
-                                                            <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
-                                                                    <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true">Yes</MudRadio>
-                                                                    <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity( question.PillarId, question.NotGood))">NG</MudRadio>
-                                                                    <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true">N/A</MudRadio>
-                                                                </MudRadioGroup>
-                                                            </MudItem>
-                                                        </td>
-                                                    </tr>
-                                                } *@
 
 
-                                              
+
                                             }
                                         </tbody>
                                     </MudSimpleTable>
@@ -945,94 +962,94 @@
                             </MudExpansionPanel>
                         }
                     }
-@*                    <MudItem Style="text-align: end">
-                        <MudButton @onclick="(() => PruebaChecklist())" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">Botón de Prueba</MudButton>
-                    </MudItem>*@
-@*                    <MudExpansionPanel Text="Section 4" Style="min-width: 100%" IsInitiallyExpanded=true>
-                        <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <MudText Style="font-weight:bold;">
-                                            @Localizer["Questions"]
-                                        </MudText>
-                                    </th>
-                                    <th>
-                                        <MudText Style="text-align:center; font-weight:bold;">
-                                            @Localizer["Answers"]
-                                        </MudText>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td width="80%">
-                                        <MudText Align="Align.Justify"><b>1.</b> Respeta pasos principales y puntos criticos</MudText>
-                                    </td>
-                                  <td>
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup @bind-SelectedOption="questions[0]" >
-                                               <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(1))">No</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td width="80%">
-                                        <MudText Align="Align.Justify"><b>2.</b> Empaque, herramientas, manipuladores estan en buenas condiciones y no hay riesgos de calidad</MudText>
-                                    </td>
-                                    <td>
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup @bind-SelectedOption="questions[1]">
-                                               <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(2))">No</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td width="80%">
-                                        <MudText Align="Align.Justify"><b>3.</b> Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposicion de residuos.</MudText>
-                                    </td>
-                                          <td>
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup @bind-SelectedOption="questions[2]" >
-                                               <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(3))">No</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td width="80%">
-                                        <MudText Align="Align.Justify"><b>4.</b> Operador es capaz de nombrar paso principales, puntos criticos y razon</MudText>
-                                    </td>
-                                  <td>
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup @bind-SelectedOption="questions[3]">
-                                               <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(4))">No</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td width="80%">
-                                        <MudText Align="Align.Justify"><b>5.</b> Si el supervisor identifica un mejora que la describa y agregar los comentarios del operador</MudText>
-                                    </td>
-                                    <td>
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup @bind-SelectedOption="questions[4]">
-                                               <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                                <MudRadio Option="@("false")" Color="Color.Info" Dense="true">No</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudExpansionPanel>*@
+                    @*                    <MudItem Style="text-align: end">
+                <MudButton @onclick="(() => PruebaChecklist())" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">Botón de Prueba</MudButton>
+                </MudItem>*@
+                    @*                    <MudExpansionPanel Text="Section 4" Style="min-width: 100%" IsInitiallyExpanded=true>
+                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                <thead>
+                <tr>
+                <th>
+                <MudText Style="font-weight:bold;">
+                @Localizer["Questions"]
+                </MudText>
+                </th>
+                <th>
+                <MudText Style="text-align:center; font-weight:bold;">
+                @Localizer["Answers"]
+                </MudText>
+                </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>1.</b> Respeta pasos principales y puntos criticos</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[0]" >
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(1))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>2.</b> Empaque, herramientas, manipuladores estan en buenas condiciones y no hay riesgos de calidad</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[1]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(2))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>3.</b> Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposicion de residuos.</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[2]" >
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(3))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>4.</b> Operador es capaz de nombrar paso principales, puntos criticos y razon</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[3]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(4))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>5.</b> Si el supervisor identifica un mejora que la describa y agregar los comentarios del operador</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[4]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                </tbody>
+                </MudSimpleTable>
+                </MudExpansionPanel>*@
                     <MudExpansionPanel Text="Section 5" Style="min-width: 100%" IsInitiallyExpanded=true>
                         <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-6" Elevation="0">
                             <tbody>
@@ -1124,13 +1141,13 @@
                                                             @if (capturedImages.Count > 0 && photosPillar == 1)
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
-                                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                    <TitleContent>
-                                                                        <MudText Style="text-align: center; padding:0 !important">
-                                                                            @Localizer["Add Evidence Photos "]
-                                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
-                                                                                ID @lupPhotosId
-                                                                                @if (oportunity.Length < 50)
+                                                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                                     <TitleContent>
+                                                                         <MudText Style="text-align: center; padding:0 !important">
+                                                                             @Localizer["Add Evidence Photos "]
+                                                                             <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                                 ID @lupPhotosId
+                                                                                 @if (oportunity.Length < 50)
                                                                                     {
                                                                                         <span>&nbsp; @oportunity</span>
                                                                                     }
@@ -1248,13 +1265,13 @@
                                                             @if (capturedImages.Count > 0 && photosPillar == 2)
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
-                                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                    <TitleContent>
-                                                                        <MudText Style="text-align: center; padding:0 !important">
-                                                                            @Localizer["Add Evidence Photos "]
-                                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
-                                                                                ID @lupPhotosId
-                                                                                @if (oportunity.Length < 50)
+                                                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                                     <TitleContent>
+                                                                         <MudText Style="text-align: center; padding:0 !important">
+                                                                             @Localizer["Add Evidence Photos "]
+                                                                             <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                                 ID @lupPhotosId
+                                                                                 @if (oportunity.Length < 50)
                                                                                     {
                                                                                         <span>&nbsp; @oportunity</span>
                                                                                     }
@@ -1371,13 +1388,13 @@
                                                             @if (capturedImages.Count > 0 && photosPillar == 3)
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
-                                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                    <TitleContent>
-                                                                        <MudText Style="text-align: center; padding:0 !important">
-                                                                            @Localizer["Add Evidence Photos "]
-                                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
-                                                                                ID @lupPhotosId
-                                                                                @if (oportunity.Length < 50)
+                                                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                                     <TitleContent>
+                                                                         <MudText Style="text-align: center; padding:0 !important">
+                                                                             @Localizer["Add Evidence Photos "]
+                                                                             <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                                 ID @lupPhotosId
+                                                                                 @if (oportunity.Length < 50)
                                                                                     {
                                                                                         <span>&nbsp; @oportunity</span>
                                                                                     }
@@ -1494,13 +1511,13 @@
                                                             @if (capturedImages.Count > 0 && photosPillar == 4)
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
-                                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                    <TitleContent>
-                                                                        <MudText Style="text-align: center; padding:0 !important">
-                                                                            @Localizer["Add Evidence Photos "]
-                                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
-                                                                                ID @lupPhotosId
-                                                                                @if (oportunity.Length < 50)
+                                                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                                     <TitleContent>
+                                                                         <MudText Style="text-align: center; padding:0 !important">
+                                                                             @Localizer["Add Evidence Photos "]
+                                                                             <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                                 ID @lupPhotosId
+                                                                                 @if (oportunity.Length < 50)
                                                                                     {
                                                                                         <span>&nbsp; @oportunity</span>
                                                                                     }
@@ -1617,13 +1634,13 @@
                                                             @if (capturedImages.Count > 0 && photosPillar == 5)
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
-                                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                    <TitleContent>
-                                                                        <MudText Style="text-align: center; padding:0 !important">
-                                                                            @Localizer["Add Evidence Photos "]
-                                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
-                                                                                ID @lupPhotosId
-                                                                                @if (oportunity.Length < 50)
+                                                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                                     <TitleContent>
+                                                                         <MudText Style="text-align: center; padding:0 !important">
+                                                                             @Localizer["Add Evidence Photos "]
+                                                                             <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                                 ID @lupPhotosId
+                                                                                 @if (oportunity.Length < 50)
                                                                                     {
                                                                                         <span>&nbsp;@oportunity</span>
                                                                                     }
@@ -1844,8 +1861,8 @@
                                     Class="mud-elevation-4 rounded white"
                                     CameraID=@cameraId
                                             Autostart />
-                    <MudItem style="text-align: center">
-                        @if (frameCount > 0)
+                     <MudItem style="text-align: center">
+                         @if (frameCount > 0)
                         {
                             <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
                                 Take photo
@@ -1854,8 +1871,8 @@
                         else
                         {
                             <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
-                            Take photo
-                        </MudButton>
+                             Take photo
+                         </MudButton>
                         }
                     </MudItem>
                 </MudPaper>
@@ -1962,26 +1979,26 @@
                 @if (pastjobObservations.Count > 0)
                 {
                     <MudTable Items="pastjobObservations" T="JobObservation" Bordered Class="mt-3 past-jobObservations-table mb-10">
-                        <HeaderContent>
-                            <MudTh style="text-align: center">
-                                <MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.JobObservationId)">Id</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                            <MudTh style="text-align: center; width: 65%">@Localizer["totalLup"]</MudTh>
-                            <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>
-                                <MudTooltip Text=@Localizer["goToJobObservation"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
-                                    <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(context.JobObservationId))"> @context.JobObservationId</MudChip>
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <MudText>@context.StartDate?.ToShortDateString()</MudText>
-                            </MudTd>
-                            <MudTd>
-                                <MudText>
-                                    @if (pastLup.Count > 0)
+                         <HeaderContent>
+                             <MudTh style="text-align: center">
+                                 <MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.JobObservationId)">Id</MudTableSortLabel>
+                             </MudTh>
+                             <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                             <MudTh style="text-align: center; width: 65%">@Localizer["totalLup"]</MudTh>
+                             <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                         </HeaderContent>
+                         <RowTemplate>
+                             <MudTd>
+                                 <MudTooltip Text=@Localizer["goToJobObservation"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                                     <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(context.JobObservationId))"> @context.JobObservationId</MudChip>
+                                 </MudTooltip>
+                             </MudTd>
+                             <MudTd>
+                                 <MudText>@context.StartDate?.ToShortDateString()</MudText>
+                             </MudTd>
+                             <MudTd>
+                                 <MudText>
+                                     @if (pastLup.Count > 0)
                                     {
                                         @foreach (var lup in pastLup)
                                         {
@@ -3337,7 +3354,7 @@
         <DialogContent>
             <MudTabs @bind-ActivePanelIndex="selectedPillar" Outlined="true" Rounded="true" Border="true" TabPanelHeaderPosition="TabHeaderPosition.Before"
                      ApplyEffectsToContainer="true" PanelClass="px-6" Style="max-height: 78vh; min-height: 70vh; width: 100%;">
-                <MudTabPanel >
+                <MudTabPanel>
                     <TabContent>
                         <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">S & E</MudChip>
                     </TabContent>
@@ -3345,7 +3362,7 @@
                         <MudText>Safety & Environment Guide</MudText>
                     </ChildContent>
                 </MudTabPanel>
-                <MudTabPanel >
+                <MudTabPanel>
                     <TabContent>
                         <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Q</MudChip>
                     </TabContent>
@@ -3353,7 +3370,7 @@
                         <MudText>Quality Guide</MudText>
                     </ChildContent>
                 </MudTabPanel>
-                <MudTabPanel >
+                <MudTabPanel>
                     <TabContent>
                         <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">D</MudChip>
                     </TabContent>
@@ -3361,7 +3378,7 @@
                         <MudText>Delivery Guide</MudText>
                     </ChildContent>
                 </MudTabPanel>
-                <MudTabPanel >
+                <MudTabPanel>
                     <TabContent>
                         <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">C</MudChip>
                     </TabContent>
@@ -3369,7 +3386,7 @@
                         <MudText>Cost Guide</MudText>
                     </ChildContent>
                 </MudTabPanel>
-                <MudTabPanel >
+                <MudTabPanel>
                     <TabContent>
                         <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Other</MudChip>
                     </TabContent>
