@@ -59,7 +59,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             };
 
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
-            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
+            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId, true);
 
             departmentID = _lup.DepartmentId != null ? (int)_lup.DepartmentId : departmentID;
 

@@ -28,7 +28,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
 
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
-            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId);
+            jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId, true);
 
             foreach (var evidence in _lup.Evidences)
             {
@@ -64,5 +64,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             visiblePhoto = true;
 
         }
+
+
+        private void CloseChip() { }
     }
 }

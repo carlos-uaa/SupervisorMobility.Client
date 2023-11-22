@@ -69,7 +69,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
                 await GetUserAsync();
 
-                jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
+                jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true);
                 _departments = await DepartmentServices.GetDepartments();
 
                 if (user != null)
