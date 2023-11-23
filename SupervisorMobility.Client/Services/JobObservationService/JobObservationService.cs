@@ -33,6 +33,14 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return  _mapper.Map<JobObservation>(newJobObservation);
         }
 
+        public async Task<JobObservation> CreateJobObservationWithLup(JobObservation _jobObservationWithLup)
+        {
+            var response = await _http.PostAsJsonAsync($"jobobservations/WithLup", _jobObservationWithLup);
+            var newJobObservation = await response.Content.ReadFromJsonAsync<JobObservationNulls>();
+
+            return _mapper.Map<JobObservation>(newJobObservation);
+        }
+
         public async Task DeleteJobObservation(int jobObservationId)
         {
             var response = await _http.DeleteAsync($"jobobservations/{jobObservationId}");

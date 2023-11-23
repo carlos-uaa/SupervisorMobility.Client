@@ -612,6 +612,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
             }
 
+
+            //_jobObservation.Lup = _tempLup;
+            //_jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            //var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            
             var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {

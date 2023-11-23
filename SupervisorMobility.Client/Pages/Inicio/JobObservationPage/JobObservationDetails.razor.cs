@@ -99,8 +99,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-            _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
-            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
+            //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
             _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
