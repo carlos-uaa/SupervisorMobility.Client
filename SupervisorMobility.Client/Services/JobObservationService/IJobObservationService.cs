@@ -13,6 +13,7 @@
 
         // Create job observation
         Task<JobObservation> CreateJobObservation(JobObservation jobObservation);
+        Task<JobObservation> CreateJobObservationWithLup(JobObservation jobObservationWithLup);
 
         // Update job observation
         Task<bool> UpdateJobObservation(JobObservation jobObservation, string loggedUser);

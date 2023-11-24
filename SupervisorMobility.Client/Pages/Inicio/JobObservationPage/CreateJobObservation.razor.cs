@@ -612,52 +612,58 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
             }
 
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+
+            _jobObservation.Lup = _tempLup;
+            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                if (_tempLup.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var temp in _tempLup)
-                    {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
-                        }
-                    }
-                }
-                if (questionAnswers.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var question in questionAnswers)
-                    {
-                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
+                //if (_tempLup.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var temp in _tempLup)
+                //    {
+                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await LupService.CreateLup(temp);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Lup", Severity.Error);
+                //        }
+                //    }
+                //}
+                //if (questionAnswers.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var question in questionAnswers)
+                //    {
+                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Question", Severity.Error);
+                //        }
+                //    }
+                //}
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1238,52 +1244,57 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
 
             }
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+
+            _jobObservation.Lup = _tempLup;
+            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                if (_tempLup.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var temp in _tempLup)
-                    {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
-                        }
-                    }
-                }
-                if (questionAnswers.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var question in questionAnswers)
-                    {
-                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
+                //if (_tempLup.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var temp in _tempLup)
+                //    {
+                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await LupService.CreateLup(temp);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Lup", Severity.Error);
+                //        }
+                //    }
+                //}
+                //if (questionAnswers.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var question in questionAnswers)
+                //    {
+                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Question", Severity.Error);
+                //        }
+                //    }
+                //}
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1446,52 +1457,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+            _jobObservation.Lup = _tempLup;
+            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                if (_tempLup.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var temp in _tempLup)
-                    {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
-                        }
-                    }
-                }
-                if (questionAnswers.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var question in questionAnswers)
-                    {
-                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
+                //if (_tempLup.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var temp in _tempLup)
+                //    {
+                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await LupService.CreateLup(temp);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Lup", Severity.Error);
+                //        }
+                //    }
+                //}
+                //if (questionAnswers.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var question in questionAnswers)
+                //    {
+                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Question", Severity.Error);
+                //        }
+                //    }
+                //}
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1659,52 +1674,57 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
 
             }
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+
+            _jobObservation.Lup = _tempLup;
+            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                if (_tempLup.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var temp in _tempLup)
-                    {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
-                        }
-                    }
-                }
-                if (questionAnswers.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var question in questionAnswers)
-                    {
-                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
+                //if (_tempLup.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var temp in _tempLup)
+                //    {
+                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await LupService.CreateLup(temp);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Lup", Severity.Error);
+                //        }
+                //    }
+                //}
+                //if (questionAnswers.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var question in questionAnswers)
+                //    {
+                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Question", Severity.Error);
+                //        }
+                //    }
+                //}
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1882,52 +1902,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            var result = await JobObservationService.CreateJobObservation(_jobObservation);
+            _jobObservation.Lup = _tempLup;
+            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                if (_tempLup.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var temp in _tempLup)
-                    {
-                        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await LupService.CreateLup(temp);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Lup", Severity.Error);
-                        }
-                    }
-                }
-                if (questionAnswers.Count > 0)
-                {
-                    _jobObservations = await JobObservationService.GetAllJobObservations();
-                    foreach (var question in questionAnswers)
-                    {
-                        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
+                //if (_tempLup.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var temp in _tempLup)
+                //    {
+                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await LupService.CreateLup(temp);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Lup", Severity.Error);
+                //        }
+                //    }
+                //}
+                //if (questionAnswers.Count > 0)
+                //{
+                //    _jobObservations = await JobObservationService.GetAllJobObservations();
+                //    foreach (var question in questionAnswers)
+                //    {
+                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
+                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
+                //        if (result2 != null)
+                //        {
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                //        }
+                //        else
+                //        {
+                //            Snackbar.Clear();
+                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //            Snackbar.Add($"Error in Question", Severity.Error);
+                //        }
+                //    }
+                //}
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
