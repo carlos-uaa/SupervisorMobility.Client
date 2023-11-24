@@ -2,7 +2,7 @@
 
 namespace SupervisorMobility.Client.Data.Entities
 {
-    public class JobObservationVersion
+    public class JobObservationHistoryVersion
     {
         public int JobObservationVersionId { get; set; }
         public DateTime? DateModification { get; set; }

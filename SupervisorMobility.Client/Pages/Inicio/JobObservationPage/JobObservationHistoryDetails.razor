@@ -23,6 +23,7 @@
 @inject IAssyChartService AssychartServices
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
+@inject IChecklistAnswerService ChecklistAnswerServices
 
 @inject NavigationManager NavigationManager
 
@@ -579,7 +580,58 @@ else
                 </MudSimpleTable>
             </MudItem>
             <MudItem Class="ml-2">
-                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
+                @foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    if (category.ChecklistQuestions.Count > 0)
+                    {
+                        <MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @category.Description
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <MudText Style="font-weight:bold;">
+                                                    @Localizer["Questions"]
+                                                </MudText>
+                                            </th>
+                                            <th>
+                                                <MudText Style="text-align:center; font-weight:bold;">
+                                                    @Localizer["Answers"]
+                                                </MudText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var question in category.ChecklistQuestions)
+                                        {
+
+                                            <tr>
+                                                <td width="70%">
+                                                    <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                </td>
+                                                <td>
+                                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                        <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
+                                                            <MudRadio Option="@("YES")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
+                                                        <MudRadio Option="@("NG")" Color="Color.Info" Dense="true" Disabled>NG</MudRadio>
+                                                        <MudRadio Option="@("N/A")" Color="Color.Info" Dense="true" Disabled>N/A</MudRadio>
+                                                    </MudRadioGroup>
+                                                </MudItem>
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </MudSimpleTable>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
+                }
+@*                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
                     <thead>
                         <tr>
                             <th>
@@ -661,7 +713,7 @@ else
                             </td>
                         </tr>
                     </tbody>
-                </MudSimpleTable>
+                </MudSimpleTable>*@
             </MudItem>
             <MudItem Class="ml-2">
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mt-6 mb-6">
@@ -2164,7 +2216,7 @@ else
 
 
     public JobObservation _jobObservation { get; set; } = new();
-    public JobObservationVersion _jobObservationVersion { get; set; } = new();
+    public JobObservationHistoryVersion _jobObservationVersion { get; set; } = new();
 
 
     List<Product> _products { get; set; } = new();
@@ -2235,6 +2287,10 @@ else
     public int kpiID = 0;
     public int auxErgonomicsLevel = 0;
 
+    public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+    public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
+    private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+
     protected async override Task OnInitializedAsync()
     {
 
@@ -2244,13 +2300,46 @@ else
         glosary = await GlosaryService.GetGlosary();
         _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-        _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
+        _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
         _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
 
 
         _jobObservationVersion = await JobObservationService.GetOneHistoryJobObservation(JobObservationId, JobObservationVersionId);
 
         _products = await ProductService.GetProducts();
+
+        _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+        _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
+        if (_checklistAnswers.Count > 0)
+        {
+            foreach (var category in _checklistCategoriesAndQuestions)
+            {
+                foreach (var question in category.ChecklistQuestions)
+                {
+                    if (_checklistAnswers.Any(answer => answer.QuestionID == question.QuestionID))
+                    {
+                        var answer = _checklistAnswers.First(a => a.QuestionID == question.QuestionID);
+                        questionResponses[question.QuestionID] = answer.Answer;
+                    }
+                    else
+                    {
+                        questionResponses[question.QuestionID] = null;
+                    }
+                }
+            }
+
+
+        }
+        else
+        {
+            foreach (var category in _checklistCategoriesAndQuestions)
+            {
+                foreach (var question in category.ChecklistQuestions)
+                {
+                    questionResponses[question.QuestionID] = null;
+                }
+            }
+        }
 
         if (_jobObservationVersion.KpiId != null)
         {

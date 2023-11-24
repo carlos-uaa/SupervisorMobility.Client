@@ -934,6 +934,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Clear.
+        /// </summary>
+        public static string ClearFile {
+            get {
+                return ResourceManager.GetString("ClearFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Close.
         /// </summary>
         public static string Close {
@@ -1218,6 +1227,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string EditHeadCout {
             get {
                 return ResourceManager.GetString("EditHeadCout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Download Example.
+        /// </summary>
+        public static string ExamplePlantStructure {
+            get {
+                return ResourceManager.GetString("ExamplePlantStructure", resourceCulture);
             }
         }
         
@@ -2410,6 +2428,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Upload.
+        /// </summary>
+        public static string ProcedUpload {
+            get {
+                return ResourceManager.GetString("ProcedUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Are you sure you want to delete this Product?.
         /// </summary>
         public static string ProductMsgDelete {
@@ -2678,7 +2705,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         ///Description: reassigns supervisors for all records in the table.
         ///Usage: Ideal when you need a global reassignment of supervisors across all records without distribution restrictions.
         ///By Operation:
-        ///Description: Reassigns supervisors for all the records of a specific ope [resto de la cadena truncado]&quot;;.
+        ///Description: Reassigns supervisors for all the records of a speci [resto de la cadena truncado]&quot;;.
         /// </summary>
         public static string SOS_Body_AssignSV {
             get {

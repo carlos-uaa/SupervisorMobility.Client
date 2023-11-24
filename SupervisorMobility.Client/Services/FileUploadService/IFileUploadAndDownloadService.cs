@@ -3,6 +3,11 @@
     public interface IFileUploadAndDownloadService
     {
 
+        Task<FileUpload> UploadPlantStructure(MultipartFormDataContent contentfile, int plantnameid, int userId);
+        Task PlantStructureFormat();
+
+        Task<FileUpload> UploadPathStructure(MultipartFormDataContent contentfile, int userId);
+        Task PathStructureFormat();
 
         Task<FileUpload> UploadFile(MultipartFormDataContent contentfile);
         Task<FileUpload> UploadGuide(MultipartFormDataContent contentfile);

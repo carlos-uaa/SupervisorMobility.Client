@@ -1,0 +1,336 @@
+﻿@page "/plants/{plantId:int}/upladStruct"
+@using System.Net.Http.Headers;
+
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IFileUploadAndDownloadService FileUploaderService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+
+<MudContainer Fixed="true" Class="py-3 mt-10">
+    <MudGrid>
+        <MudItem xs="2" xl="2" class="align-center justify-center mud-width-full">
+            <MudImage Src="Images/uploadcloud.png" Alt="Imagen Upload Clou" Height="120" Width="120"></MudImage>
+
+        </MudItem>
+        <MudItem id="Upload" xs="10" xl="10" class="d-flex flex-column">
+            <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+
+
+                <MudSpacer />
+                <MudItem class="d-flex flex-column flex-column justify-center" style="height:100% ;     max-width: 60vw;    min-width: 40vw;">
+
+
+                    @if (showLoading)
+                    {
+                        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[context.IndexOf(context)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@context</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    }
+                    @if (showUpload)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                    }
+                </MudItem>
+                <MudSpacer />
+
+
+            </MudItem>
+            <MudItem Class="d-flex flex-column align-center justify-center">
+                @*File Upload*@
+                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                    <InputFile id="input" OnChange="@OnChange" hidden single></InputFile>
+
+
+
+                </MudItem>
+                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                    <MudTextField Class="flex-initial d-flex flex-grow-1 px-9" Width="60%" @bind-Value="@FileName" Label="File Name" Variant="Variant.Outlined" Disabled="true" />
+                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2" Width="20%"
+                               HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="input">
+                        @Localizer1["ACUploadFiles"]
+                    </MudButton>
+                </MudItem>
+            </MudItem>
+        </MudItem>
+    </MudGrid>
+
+    <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+        <MudStack Style="width: 80%">
+            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnChange" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+            @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+                <ButtonTemplate Context="DragAndDrop">
+                    <MudPaper Height="200px" Outlined="true" Class="@DragClass">
+                        <MudText Typo="Typo.h6">@Localizer1["DragAndDrop"]</MudText>
+                        @foreach (var file in fileNames)
+                        {
+                            <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                                <MudText Typo="Typo.h6">@file.message</MudText>
+
+                                @switch (file.ftype)
+                                {
+                                    case "xls":
+                                        <img src="Images/xls.png" Height="70" Width="70" />
+                                        break;
+                                    case "xlsx":
+                                        <img src="Images/xlsx.png" Height="70" Width="70" />
+                                        break;
+                                    default:
+                                        <img src="Images/error.png" Height="70" Width="70" />
+                                        break;
+                                }
+
+                                <MudChip Color="Color.Info" Text="@file.name" />
+                            </MudItem>
+                        }
+                    </MudPaper>
+                </ButtonTemplate>
+            </MudFileUpload>
+        </MudStack>
+    </MudItem>
+    <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+        <MudStack Style="width: 80%">
+            <MudToolBar DisableGutters="true" Class="gap-4">
+                <MudButton OnClick="@(() => UploadFunction(showUpload = true))" Disabled="@(!fileNames.Any())" Color="Color.Primary" Variant="Variant.Filled">@Localizer1["ProcedUpload"]</MudButton>
+                <MudButton OnClick="Clear" Disabled="@(!fileNames.Any())" Color="Color.Error" Variant="Variant.Filled">@Localizer1["ClearFile"]</MudButton>
+            </MudToolBar>
+        </MudStack>
+    </MudItem>
+    <MudItem Class="d-flex flex-column align-center justify-center mud-width-full mt-10">
+
+        <MudText Typo="Typo.h5" Align="Align.Center">Need Help?</MudText>
+        
+
+        <MudButton OnClick="DownloadPlantExample"
+                           Target="_blank"
+                           Variant="Variant.Outlined"
+                           EndIcon="@Icons.Material.Filled.FileDownload"
+                           Color="Color.Primary">
+                    <b>@Localizer1["ExamplePlantStructure"]</b>
+                </MudButton>
+    </MudItem>
+
+
+</MudContainer>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="DialgUploadDocumentOk" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    Procesamiento en curso
+                </MudText>
+               <div class="preloader_2">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <MudText>
+                    ¡Gracias por subir tu documento! Estamos procesando la información y te notificaremos por correo o SupervisorMobility tan pronto como esté listo. 
+                    Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nosotros. ¡Gracias por tu paciencia!
+                </MudText>
+                </MudItem>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
+        <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("newhome") )" >Entendido, Go Home</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int PlantId { get; set; }
+
+
+    private string FileName;
+    private string ErrorMessageToDisplay;
+    private IBrowserFile? FileSource;
+
+    //Animation Loading data
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    private bool showLoading = true;
+    //drag and drop
+    private static string DefaultDragClass = "d-flex flex-column align-center justify-center relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    private string DragClass = DefaultDragClass;
+    private List<FileToDisplay> fileNames = new List<FileToDisplay>();
+    private bool showUpload = false;
+
+    //dialog Aviso Carga documet
+    private bool DialgUploadDocumentOk = false;
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true, };
+
+    //User
+    private string json = string.Empty;
+    public User loggedUser = new();
+
+    private class FileToDisplay
+    {
+        public string name { get; set; }
+        public string ftype { get; set; }
+        public string message { get; set; }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        try
+        {
+            await GetUserAsync();
+        }
+        catch (Exception ex) { }
+        finally
+        {
+            showLoading = false;
+        }
+
+
+    }//end OnInitialized
+
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            loggedUser = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
+            loggedUser = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JS.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    async Task OnChange(InputFileChangeEventArgs e)
+    {
+        showUpload = true;
+        //Clear Data
+        FileName = string.Empty;
+        FileSource = null;
+        await Clear();
+
+        //Assign new data
+        FileName = e.File.Name;
+        FileSource = e.File;
+
+        fileNames.Add(new FileToDisplay() { name = FileName, ftype = FileName.Split(".").Last() });
+
+
+        using var content = new MultipartFormDataContent();
+
+        var fileContent = new StreamContent(e.File.OpenReadStream(509600000));
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
+
+        MemoryStream ms = new MemoryStream();
+        await fileContent.CopyToAsync(ms);
+
+        showUpload = false;
+
+
+    }//end function on change
+
+      private async Task Clear()
+    {
+
+        fileNames.Clear();
+        ClearDragClass();
+        await Task.Delay(100);
+    }
+
+    private void ClearDragClass()
+    {
+        DragClass = DefaultDragClass;
+    }
+
+    private void SetDragClass()
+    {
+        DragClass = $"{DefaultDragClass} mud-border-primary";
+    }
+
+    async void UploadFunction(bool overlord)
+    {
+
+        showLoading = true;
+        base.StateHasChanged();
+        await Task.Delay(50);
+        using var content = new MultipartFormDataContent();
+
+        if (FileSource is not null)
+        {
+
+            var fileContent = new StreamContent(FileSource.OpenReadStream(509600000));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(FileSource.ContentType);
+
+            content.Add(
+            content: fileContent,
+            name: "\"file\"",
+            fileName: FileSource.Name);
+
+            var newUploadResults = await FileUploaderService.UploadPlantStructure(content, PlantId, loggedUser.UserId);
+
+            if (newUploadResults is not null)
+            {
+
+                ErrorMessageToDisplay = "Upload Data Succesfull";
+
+                showLoading = false;
+                showUpload = false;
+                DialgUploadDocumentOk = true;
+
+                base.StateHasChanged();
+
+              
+            }
+            else
+            {
+                ErrorMessageToDisplay = $"{@Localizer1["HCFailUpload"]}";
+
+                //error al subir el archivo
+            }
+
+        }
+        else
+        {
+            ErrorMessageToDisplay = $"{@Localizer1["HCSourceNull"]}";
+        }
+
+
+
+    }//upload function
+
+    private async Task DownloadPlantExample()
+    {
+        await FileUploaderService.PlantStructureFormat();
+    }
+}

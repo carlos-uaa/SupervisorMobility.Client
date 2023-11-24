@@ -7,6 +7,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public Lup Lup { get; set; }
         public string? Distribution = string.Empty;
+        public int? DistributionId { get; set; }
 
 
     }

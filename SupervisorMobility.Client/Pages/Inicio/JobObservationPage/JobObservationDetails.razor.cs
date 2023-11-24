@@ -85,6 +85,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public double taktTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
+
+        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
+        private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -94,10 +99,42 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-            _lupJobObservations = await JobObservationService.GetJobObservationWithLup(JobObservationId);
-            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
+            //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
+            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
+            if(_checklistAnswers.Count > 0)
+            {
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        if (_checklistAnswers.Any(answer => answer.QuestionID == question.QuestionID))
+                        {
+                            var answer = _checklistAnswers.First(a => a.QuestionID == question.QuestionID);
+                            questionResponses[question.QuestionID] = answer.Answer;
+                        }
+                        else
+                        {
+                            questionResponses[question.QuestionID] = null;
+                        }
+                    }
+                }
+
+
+            }
+            else
+            {
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        questionResponses[question.QuestionID] = null;
+                    }
+                }
+            }
 
             if (_jobObservation.KpiId != null)
             {

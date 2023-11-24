@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Services.LupService;
@@ -10,12 +11,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         public List<JobObservation> jobObservationList { get; set; }
 
-        public List<LupWithDistribution> _lup { get; set; } = new();
-        public List<LupWithDistribution> _lupS { get; set; } = new();
-        public List<LupWithDistribution> _lupQ { get; set; } = new();
-        public List<LupWithDistribution> _lupD { get; set; } = new();
-        public List<LupWithDistribution> _lupC { get; set; } = new();
-        public List<LupWithDistribution> _lupOther { get; set; } = new();
+        public List<LupWithDistribution> _lups { get; set; } = new();
+        public List<LupWithDistribution> _filterlups { get; set; } = new();
+
 
         LupWithDistribution LupAux = new();
         //Admin
@@ -24,6 +22,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         public int plantId;
         public int areaId;
+
+        //Filters
+
+        public Color color = Color.Default;
+        public bool filters = false;
+        List<Distribution> _distributions = new();
+        List<Department> _departments = new();
+        public int distributionId;
+        public int statusId;
+        public int departmentId;
+
 
         private bool visible = false;
         private int lupId;
@@ -60,14 +69,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
                 await GetUserAsync();
 
-                jobObservationList = await JobObservationServices.GetAllJobObservationsWithLup();
+                jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true);
+                _departments = await DepartmentServices.GetDepartments();
 
-                if(user != null)
+                if (user != null)
                 {
                     GetLupByUser();
-
-
-
                 }
 
             }
@@ -91,15 +98,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                             LupAux = new();
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
-                            _lup.Add(LupAux);
-                            switch (lup.Pillar)
-                            {
-                                case 1: _lupS.Add(LupAux); break;
-                                case 2: _lupQ.Add(LupAux); break;
-                                case 3: _lupD.Add(LupAux); break;
-                                case 4: _lupC.Add(LupAux); break;
-                                case 5: _lupOther.Add(LupAux); break;
-                            }
+                            LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                            _lups.Add(LupAux);
                         }
                     }
                 }
@@ -125,17 +125,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                                 LupAux = new();
                                 LupAux.Lup = lup;
                                 LupAux.Distribution = jobObs.Distribution?.Description;
-
-                                _lup.Add(LupAux);
-                                switch (lup.Pillar)
-                                {
-                                    case 1: _lupS.Add(LupAux); break;
-                                    case 2: _lupQ.Add(LupAux); break;
-                                    case 3: _lupD.Add(LupAux); break;
-                                    case 4: _lupC.Add(LupAux); break;
-                                    case 5: _lupOther.Add(LupAux); break;
-                                }
-
+                                LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                                _lups.Add(LupAux);
                             }
                         }
                     }
@@ -156,16 +147,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                                 LupAux = new();
                                 LupAux.Lup = lup;
                                 LupAux.Distribution = jobObs.Distribution?.Description;
-
-                                _lup.Add(LupAux);
-                                switch (lup.Pillar)
-                                {
-                                    case 1: _lupS.Add(LupAux); break;
-                                    case 2: _lupQ.Add(LupAux); break;
-                                    case 3: _lupD.Add(LupAux); break;
-                                    case 4: _lupC.Add(LupAux); break;
-                                    case 5: _lupOther.Add(LupAux); break;
-                                }
+                                LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                                _lups.Add(LupAux);
 
                             }
                         }
@@ -191,27 +174,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                                 LupAux = new();
                                 LupAux.Lup = lup;
                                 LupAux.Distribution = jobObs.Distribution?.Description;
-
-                                _lup.Add(LupAux);
-                                switch (lup.Pillar)
-                                {
-                                    case 1: _lupS.Add(LupAux); break;
-                                    case 2: _lupQ.Add(LupAux); break;
-                                    case 3: _lupD.Add(LupAux); break;
-                                    case 4: _lupC.Add(LupAux); break;
-                                    case 5: _lupOther.Add(LupAux); break;
-                                }
+                                LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                                _lups.Add(LupAux);
 
                             }
                         }
                     }
                 }
             }
+
+            _filterlups = _lups;
             StateHasChanged();
         }
 
         private async void ShowAreas()
         {
+
+            _lups = new();
             if (plantId == 0)
             {
                 foreach (var jobObs in jobObservationList)
@@ -223,29 +202,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                             LupAux = new();
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
-
-                            _lup.Add(LupAux);
-                            switch (lup.Pillar)
-                            {
-                                case 1: _lupS.Add(LupAux); break;
-                                case 2: _lupQ.Add(LupAux); break;
-                                case 3: _lupD.Add(LupAux); break;
-                                case 4: _lupC.Add(LupAux); break;
-                                case 5: _lupOther.Add(LupAux); break;
-                            }
+                            LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                            _lups.Add(LupAux);
                         }
                     }
                 }
+                areaId = 0;
+                _filterlups = _lups;
                 StateHasChanged();
                 return;
             }
 
-                _lup.Clear();
-            _lupS.Clear();
-            _lupQ.Clear();
-            _lupD.Clear();
-            _lupC.Clear();
-            _lupOther.Clear();
 
             foreach (var jobObs in jobObservationList)
             {
@@ -258,22 +225,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                             LupAux = new();
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
-
-                            _lup.Add(LupAux);
-                            switch (lup.Pillar)
-                            {
-                                case 1: _lupS.Add(LupAux); break;
-                                case 2: _lupQ.Add(LupAux); break;
-                                case 3: _lupD.Add(LupAux); break;
-                                case 4: _lupC.Add(LupAux); break;
-                                case 5: _lupOther.Add(LupAux); break;
-                            }
+                            LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                            _lups.Add(LupAux);
 
                         }
                     }
                 }
             }
 
+            _filterlups = _lups;
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -281,19 +241,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             StateHasChanged();
         }
 
-        private void ShowLups()
+        private async void ShowLups()
         {
             if (areaId == 0)
             {
                 ShowAreas();
                 return;
             }
-            _lup.Clear();
-            _lupS.Clear();
-            _lupQ.Clear();
-            _lupD.Clear();
-            _lupC.Clear();
-            _lupOther.Clear();
+            _lups.Clear();
+
 
             foreach (var jobObs in jobObservationList)
             {
@@ -306,21 +262,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                             LupAux = new();
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
-
-                            _lup.Add(LupAux);
-                            switch (lup.Pillar)
-                            {
-                                case 1: _lupS.Add(LupAux); break;
-                                case 2: _lupQ.Add(LupAux); break;
-                                case 3: _lupD.Add(LupAux); break;
-                                case 4: _lupC.Add(LupAux); break;
-                                case 5: _lupOther.Add(LupAux); break;
-                            }
+                            LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                            _lups.Add(LupAux);
 
                         }
                     }
                 }
             }
+            _filterlups = _lups;
+            _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
             StateHasChanged();
 
         }
@@ -444,5 +394,71 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 return string.Empty;
             }
         }
+
+
+        //Filters
+        private void Filters()
+        {
+            _filterlups = new();
+            _filterlups = _lups;
+
+            if(distributionId != default(int))
+            {
+
+                _filterlups = _filterlups.Where(l =>  l.DistributionId == distributionId).ToList();
+            }
+            if (statusId != default(int))
+            {
+                _filterlups = _filterlups.Where(l => l.Lup.Status == statusId).ToList();
+
+            }
+            if (departmentId != default(int))
+            {
+                _filterlups = _filterlups.Where(l => l.Lup.DepartmentId == departmentId).ToList();
+
+            }
+
+
+
+        }
+
+  
+
+        public void ActiveFilters()
+        {
+            if (!filters && areaId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Select an Area first", Severity.Warning);
+                return;
+            }
+            filters = !filters;
+
+
+
+            if (color == Color.Info)
+            {
+                color = Color.Default;
+            }
+            else
+            {
+                color = Color.Info;
+            }
+
+        }
+
+
+        public void ClearFilters()
+        {
+            _filterlups = _lups;
+            distributionId = new();
+            departmentId = new();
+            statusId = new();
+
+            StateHasChanged();
+        }
+
+
     }
 }

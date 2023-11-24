@@ -29,6 +29,7 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IChecklistService ChecklistService
+@inject IChecklistAnswerService ChecklistAnswerServices
 
 <style>
 
@@ -1074,17 +1075,62 @@
                     </MudSimpleTable>
                 </MudExpansionPanel>
 
-                @*                @foreach (var category in _checklistCategoriesAndQuestions)
+                @foreach (var category in _checklistCategoriesAndQuestions)
                 {
-                if (category.ChecklistQuestions.Count > 0)
-                {
-                <MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
-                <TitleContent>
-                <MudText Typo="Typo.h6" Style="text-align: center;">
-                @category.Description
-                </MudText>
-                </TitleContent>
-                <ChildContent>
+                    if (category.ChecklistQuestions.Count > 0)
+                    {
+                        <MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
+                            <TitleContent>
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @category.Description
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <MudText Style="font-weight:bold;">
+                                                    @Localizer["Questions"]
+                                                </MudText>
+                                            </th>
+                                            <th>
+                                                <MudText Style="text-align:center; font-weight:bold;">
+                                                    @Localizer["Answers"]
+                                                </MudText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var question in category.ChecklistQuestions)
+                                        {
+
+
+                                            <tr>
+                                                <td width="70%">
+                                                    <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                </td>
+                                                <td>
+                                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                        <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
+                                                            <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" >Yes</MudRadio>
+                                                            <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info"Dense="true" @onchange="(() => AddLupOpportunity(question.PillarId, question.NotGood))">NG</MudRadio>
+                                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" >N/A</MudRadio>
+                                                        </MudRadioGroup>
+                                                    </MudItem>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </MudSimpleTable>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
+                }
+                @*     <MudItem Style="text-align: end">
+                <MudButton @onclick="(() => GenerateChecklistAnswers())" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">Botón de Prueba</MudButton>
+                </MudItem>*@
+                @*                <MudExpansionPanel Text="Section 4" IsInitiallyExpanded=true Style="min-width: 100%">
                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
                 <thead>
                 <tr>
@@ -1101,118 +1147,74 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach (var question in category.ChecklistQuestions)
-                {
-
                 <tr>
-                <td width="70%">
-                <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>1.</b> Respeta pasos principales y puntos criticos</MudText>
                 </td>
                 <td>
                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
-                <MudRadio Option="@("YES")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                <MudRadio Option="@("NG")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(question.PillarId, question.NotGood))">NG</MudRadio>
-                <MudRadio Option="@("N/A")" Color="Color.Info" Dense="true">N/A</MudRadio>
+                <MudRadioGroup @bind-SelectedOption="questions[0]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(1))">No</MudRadio>
                 </MudRadioGroup>
                 </MudItem>
                 </td>
                 </tr>
-                }
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>2.</b> Empaque, herramientas, manipuladores estan en buenas condiciones y no hay riesgos de calidad</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[1]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(2))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>3.</b> Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposicion de residuos.</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[2]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(3))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>4.</b> Operador es capaz de nombrar paso principales, puntos criticos y razon</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[3]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(4))">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
+                <tr>
+                <td width="80%">
+                <MudText Align="Align.Justify"><b>5.</b> Si el supervisor identifica un mejora que la describa y agregar los comentarios del operador</MudText>
+                </td>
+                <td>
+                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                <MudRadioGroup @bind-SelectedOption="questions[4]">
+                <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
+                <MudRadio Option="@("false")" Color="Color.Info" Dense="true">No</MudRadio>
+                </MudRadioGroup>
+                </MudItem>
+                </td>
+                </tr>
                 </tbody>
                 </MudSimpleTable>
-                </ChildContent>
-                </MudExpansionPanel>
-                }
-                }
-                <MudItem Style="text-align: end">
-                <MudButton @onclick="(() => PruebaChecklist())" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small">Botón de Prueba</MudButton>
-                </MudItem>*@
-                <MudExpansionPanel Text="Section 4" IsInitiallyExpanded=true Style="min-width: 100%">
-                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-3" Elevation="0">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <MudText Style="font-weight:bold;">
-                                        @Localizer["Questions"]
-                                    </MudText>
-                                </th>
-                                <th>
-                                    <MudText Style="text-align:center; font-weight:bold;">
-                                        @Localizer["Answers"]
-                                    </MudText>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td width="80%">
-                                    <MudText Align="Align.Justify"><b>1.</b> Respeta pasos principales y puntos criticos</MudText>
-                                </td>
-                                <td>
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup @bind-SelectedOption="questions[0]">
-                                            <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                            <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(1))">No</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="80%">
-                                    <MudText Align="Align.Justify"><b>2.</b> Empaque, herramientas, manipuladores estan en buenas condiciones y no hay riesgos de calidad</MudText>
-                                </td>
-                                <td>
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup @bind-SelectedOption="questions[1]">
-                                            <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                            <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(2))">No</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="80%">
-                                    <MudText Align="Align.Justify"><b>3.</b> Respeta el cumplimiento a los estados de referencia, identificación de sustancias y disposicion de residuos.</MudText>
-                                </td>
-                                <td>
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup @bind-SelectedOption="questions[2]">
-                                            <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                            <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(3))">No</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="80%">
-                                    <MudText Align="Align.Justify"><b>4.</b> Operador es capaz de nombrar paso principales, puntos criticos y razon</MudText>
-                                </td>
-                                <td>
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup @bind-SelectedOption="questions[3]">
-                                            <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                            <MudRadio Option="@("false")" Color="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(4))">No</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="80%">
-                                    <MudText Align="Align.Justify"><b>5.</b> Si el supervisor identifica un mejora que la describa y agregar los comentarios del operador</MudText>
-                                </td>
-                                <td>
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup @bind-SelectedOption="questions[4]">
-                                            <MudRadio Option="@("true")" Color="Color.Info" Dense="true">Yes</MudRadio>
-                                            <MudRadio Option="@("false")" Color="Color.Info" Dense="true">No</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </MudExpansionPanel>
+                </MudExpansionPanel>*@
                 <MudExpansionPanel Text="Section 5" IsInitiallyExpanded=true Style="min-width: 100%">
                     <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
                         <tbody>

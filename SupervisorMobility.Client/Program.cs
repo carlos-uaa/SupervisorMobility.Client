@@ -15,6 +15,7 @@ global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
 global using SupervisorMobility.Client.Services.LoginService;
 global using SupervisorMobility.Client.Services.LupService;
+global using SupervisorMobility.Client.Services.ChecklistAnswerService;
 global using SupervisorMobility.Client.Services.TreeServices;
 global using SupervisorMobility.Client.Services.OperationService;
 global using SupervisorMobility.Client.Services.PlantService;
@@ -73,6 +74,7 @@ builder.Services.AddScoped<IGlosaryService, GlosaryService>();
 builder.Services.AddScoped<IJobObservationTypeService, JobObservationTypeService>();
 builder.Services.AddScoped<IJobObservationService, JobObservationService>();
 builder.Services.AddScoped<ILupService, LupService>();
+builder.Services.AddScoped<IChecklistAnswerService, ChecklistAnswerService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
@@ -164,40 +166,3 @@ public class DateTimeTypeConverter : ITypeConverter<DateTime?, DateTime>
     }
 }
 
-
-public class CustomHttpClientService
-{
-    private readonly HttpClient _apiHttpClient;
-    private readonly HttpClient _apiExtendsHttpClient;
-    private readonly HttpClient _bridgeHttpClient;
-
-    public CustomHttpClientService()
-    {
-        //Dev
-        _apiHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        _apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/") };
-        _bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.49.2:3000/") };
-
-        //Prod
-        //_apiHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/") };
-        //_apiExtendsHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/") };
-        //_bridgeHttpClient = new HttpClient { BaseAddress = new Uri("https://10.91.117.5:3000/") };
-
-        _apiExtendsHttpClient.Timeout = TimeSpan.FromMinutes(15);
-
-    }
-
-    public HttpClient GetApiHttpClient()
-    {
-        return _apiHttpClient;
-    } 
-    
-    public HttpClient GetApiExtendsHttpClient()
-    {
-        return _apiExtendsHttpClient;
-    }
-    public HttpClient GetBridgeHttpClient()
-    {
-        return _bridgeHttpClient;
-    }
-}
