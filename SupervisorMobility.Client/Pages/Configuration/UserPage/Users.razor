@@ -4,6 +4,7 @@
 @inject IUserService UsersServices
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource1> Localizer
+@using FuzzyString;
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersTitle"]</PageTitle>
@@ -307,6 +308,8 @@ else
 
 @code {
 
+
+
     List<User> _users = new List<User>();
     List<User> allUsers = new List<User>();
     string searchString = "";
@@ -336,7 +339,7 @@ else
         {
             if (loggedUser.UserType == 1)
             {
-               _users.AddRange(await UsersServices.GetUsersByType(1, false, false));
+                _users.AddRange(await UsersServices.GetUsersByType(1, false, false));
                 _users.AddRange(await UsersServices.GetUsersByType(5, true, false));
                 _users.AddRange(await UsersServices.GetUsersByType(6, true, false));
                 _users.AddRange(await UsersServices.GetUsersByType(7, true, false));
@@ -370,12 +373,12 @@ else
                     case 2:
                         //SSV
                         _users.Add(loggedUser);
-                       
+
                         foreach (User item in loggedUser.Subordinates)
                         {
                             //add SV
                             _users.Add(item);
-                                //Operators
+                            //Operators
                             _users.AddRange(await UsersServices.GetSubordinates(item.UserId));
                         }
                         break;
@@ -476,126 +479,74 @@ else
 
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        
+
         if (element.UserId != 0)
         {
             if(element.UserId.ToString().Length >= searchString.Length )
-            if ((bool)element.UserId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.UserId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
 
         if (element.ObjectId != null)
         {
             if (element.ObjectId.Length >= searchString.Length)
-            if ((bool)element.ObjectId?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.ObjectId?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
+
         if (element.Email != null)
         {
             if(element.Email.Length >= searchString.Length )
-            if ((bool)element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
 
-        if(element.Name.Length >= searchString.Length )
-        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
+       
         if (element.Payroll != null)
         {
             if(element.Payroll.ToString().Length >= searchString.Length )
-            if ((bool)element.Payroll?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.Payroll?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
         if (element.Plant != null)
         {
             if (element.Plant?.Description.ToString().Length >= searchString.Length)
-            if ((bool)element.Plant?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.Plant?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
         if (element.Area != null)
         {
             if (element.Area?.Description.ToString().Length >= searchString.Length)
-            if ((bool)element.Area?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                if ((bool)element.Area?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
         }
         if (element.Group != null)
         {
             if (element.Group?.Description.ToString().Length >= searchString.Length)
-            if ((bool)element.Group?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        if (element.Name.Split(" ").Length > 3)
-        {
- 
-            var splitedname = element.Name.Split(", ");
-     
-
-        if (splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
-        {
-            var nombres = splitedname[1].Split(' ');
-            var apellidos = splitedname[0].Split(' ');
-
-
-            if ($"{nombres[0]} {nombres[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
-                return true;  
-                
-           if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]}".Contains(searchString))
-                return true;  
-
-          if ($"{apellidos[0]} {apellidos[1]} {nombres[0]}".Contains(searchString))
+                if ((bool)element.Group?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                     return true;
-
-            if ($"{nombres[0]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
-                return true;
-
-            if ($"{nombres[0]} {apellidos[0]}".Contains(searchString))
-                return true;
         }
-        else if (splitedname[0].Contains(' ') && !splitedname[1].Contains(' '))
+
+        if (element.Name.ToString().Length >= searchString.Length)
         {
-                var apellidos = splitedname[0].Split(' ');
 
-                if ($"{splitedname[1]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
-                return true;
+            string[] partesBusqueda = searchString.ToLower().Split(' ');
 
-                if ($"{apellidos[0]} {apellidos[1]} {splitedname[1]}".Contains(searchString))
-                return true;
-                
-                if ($"{apellidos[0]} {splitedname[1]}".Contains(searchString))
-                return true;
-        }
-            else if (!splitedname[0].Contains(' ') && splitedname[1].Contains(' '))
+            double simility = partesBusqueda.Select(part => element.Name.ToLower().JaccardDistance(part)).Average();
+
+
+            // Puedes ajustar el umbral de similitud según tus necesidades
+            if (simility > 0.95)
             {
-                var nombres = splitedname[1].Split(' ');
-
-                if ($"{splitedname[0]} {nombres[0]} {nombres[1]}".Contains(searchString))
-                    return true;
-
-                if ($"{nombres[0]} {nombres[1]} {splitedname[0]}".Contains(searchString))
-                    return true;
-
-                if ($"{nombres[0]} {splitedname[0]}".Contains(searchString))
-                    return true;
-            }
-        else
-        {
-            var nombres = splitedname[1].Split(' ');
-            var apellidos = splitedname[0].Split(' ');
-
-            if (nombres.Length == 2)
-                if ($"{nombres[0]} {nombres[1]} {nombres[2]} {apellidos[0]} {apellidos[1]}".Contains(searchString))
-                    return true;
-
-            if (nombres.Length > 2)
-                if ($"{nombres[0]} {nombres[1]} {nombres[2]}  {apellidos[0]} {apellidos[1]}".Contains(searchString))
-                    return true;
-
-            if ($"{apellidos[0]} {apellidos[1]} {nombres[0]} {nombres[1]} {nombres[2]}".Contains(searchString))
+            Console.WriteLine($"{element.Name} = {simility}");
                 return true;
+            }
         }
 
-        }
+        if (element.Name.Length >= searchString.Length)
+            if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
 
         return false;
     }

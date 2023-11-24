@@ -905,17 +905,16 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (var question in category.ChecklistQuestions)
+                                            @if (_jobObservation.Status != 6)
                                             {
-                                                @if (_jobObservation.Status != 6)
+                                                @foreach (var question in category.ChecklistQuestions)
                                                 {
                                                     @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
                                                     {
-
                                                         ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
                                                         <tr>
                                                             <td width="70%">
-                                                                <MudText Align="Align.Justify">Respuesta: <b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                                <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
                                                             </td>
                                                             <td>
                                                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
@@ -933,7 +932,7 @@
 
                                                         <tr>
                                                             <td width="70%">
-                                                                <MudText Align="Align.Justify">Nueva:<b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                                <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
                                                             </td>
                                                             <td>
                                                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
@@ -947,14 +946,33 @@
                                                         </tr>
                                                     }
                                                 }
-                                                else
+
+
+
+                                            }
+                                            else
+                                            {
+                                                @foreach (var question in category.ChecklistQuestions)
                                                 {
-
+                                                    @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                                                    {
+                                                        ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                                        <tr>
+                                                            <td width="70%">
+                                                                <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            </td>
+                                                            <td>
+                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                    <MudRadioGroup @bind-SelectedOption="answer.Answer">
+                                                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true">Yes</MudRadio>
+                                                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity( question.PillarId, question.NotGood))">NG</MudRadio>
+                                                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true">N/A</MudRadio>
+                                                                    </MudRadioGroup>
+                                                                </MudItem>
+                                                            </td>
+                                                        </tr>
+                                                    }
                                                 }
-
-
-
-
                                             }
                                         </tbody>
                                     </MudSimpleTable>

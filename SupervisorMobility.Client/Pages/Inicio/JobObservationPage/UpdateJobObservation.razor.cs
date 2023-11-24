@@ -500,7 +500,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public async Task ChangeDate()
         {
-
             if (_jobObservation.Justification == null || _jobObservation.Justification == "")
             {
                 Snackbar.Clear();
@@ -569,10 +568,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _jobObservation.Status = 1;
                 }
+                _ = await GenerateChecklistAnswers();
+             
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -590,8 +591,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -656,10 +655,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _jobObservation.Status = 1;
                 }
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -677,7 +678,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -765,9 +765,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _jobObservation.Justification = null;
                 }
+
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -785,7 +789,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -841,10 +844,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _jobObservation.Justification = null;
                 }
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -862,7 +867,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -967,9 +971,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation.Status = 4;
 
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -987,8 +994,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
-
 
                 if (result)
                 {
@@ -1048,9 +1053,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation.Status = 4;
 
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1068,9 +1076,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-
-                    var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
-
 
                 if (result)
                 {
@@ -1171,9 +1176,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 5;
 
                 _jobObservation.FinishedDate = DateTime.Now;
+
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1191,7 +1200,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -1244,9 +1252,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 5;
 
                 _jobObservation.FinishedDate = DateTime.Now;
+
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1264,7 +1276,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -1366,9 +1377,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Status = 6;
                 _jobObservation.FinishedDate = DateTime.Now;
 
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1386,7 +1400,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -1437,9 +1450,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
+
+                _ = await GenerateChecklistAnswers();
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
                 if (questionAnswers.Count > 0)
                 {
-
                     foreach (var question in questionAnswers)
                     {
                         question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1457,7 +1474,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
-                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
                 if (result)
                 {
@@ -1484,9 +1500,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 visibleSign = false;
                 return;
             }
+            _ = await GenerateChecklistAnswers();
+
+            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
             if (questionAnswers.Count > 0)
             {
-
                 foreach (var question in questionAnswers)
                 {
                     question.Value.JobObservationId = _jobObservation.JobObservationId;
@@ -1504,7 +1523,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
-            var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
             if (result)
             {
@@ -2785,7 +2803,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         void CloseGuideModal() => visibleGuide = false;
         private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
+        private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
+        {
 
+            foreach (var kvp in questionResponses)
+            {
+                int questionId = kvp.Key;
+                string answer = kvp.Value;
+                var notGood = "";
+
+                foreach (var category in _checklistCategoriesAndQuestions)
+                {
+                    foreach (var question in category.ChecklistQuestions)
+                    {
+                        if (question.QuestionID == questionId)
+                        {
+                            notGood = question.Prompt;
+                        }
+                    }
+                }
+
+                ChecklistAnswer Answer = new ChecklistAnswer
+                {
+                    QuestionID = questionId,
+                    Answer = answer,
+                    Prompt = notGood,
+
+                };
+
+                if (!Answer.Answer.IsNullOrEmpty() )
+                {
+                    questionAnswers[questionId] = Answer;
+                }
+
+            }
+
+            foreach (var cka in _jobObservation.ChecklistAnswers)
+            {
+
+                if (questionAnswers.ContainsKey(cka.QuestionID))
+                {
+                    // Eliminar la llave si existe
+                    questionAnswers.Remove(cka.QuestionID);
+                    Console.WriteLine($"La llave '{cka.QuestionID}' fue eliminada del diccionario.");
+                }
+               
+            }
+
+
+            return new AsyncVoidMethodBuilder();
+        }
 
 
     }
