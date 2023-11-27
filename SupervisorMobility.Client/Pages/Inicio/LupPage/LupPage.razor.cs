@@ -459,6 +459,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             StateHasChanged();
         }
 
+        public string GetStatusLabel(int status)
+        {
+            return status switch
+            {
+                1 => "new",
+                2 => "inProgress",
+                3 => "cancel",
+                4 => "finished",
+                _ => "",
+            };
+        }
+
+
 
     }
 }
