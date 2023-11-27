@@ -42,9 +42,8 @@ namespace SupervisorMobility.Client.Services.LoginService
             };
 
             //var content = new FormUrlEncodedContent(parameters);
-            var json = JsonConvert.SerializeObject(parameters); 
-
-            var content = new StringContent(json, Encoding.UTF8, "application/json"); 
+            var json = JsonConvert.SerializeObject(parameters);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
