@@ -46,9 +46,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             var response = await _http.DeleteAsync($"jobobservations/{jobObservationId}");
         }
 
-        public async Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false)
+        public async Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false, bool ForSosProgram = false, int year = 0)
         {
-            var response = await _http.GetAsync($"jobobservations?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}");
+            var response = await _http.GetAsync($"jobobservations?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}&ForSosProgram={ForSosProgram}&year={year}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

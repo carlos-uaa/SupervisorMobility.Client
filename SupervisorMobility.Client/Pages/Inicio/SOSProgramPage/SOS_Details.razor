@@ -12,6 +12,7 @@
 @inject IUserService UsersServices
 @inject IAreaService AreasServices
 @inject IOperationService OperationsServices
+@inject IJobObservationService JobObsServices
 @inject IPATService PATsServices
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
@@ -23,7 +24,7 @@
 @inject ISOSReviewService SOSServices
 @inject IAssyChartService AssyChartsServices
 @inject IBridgeCDMSService CDMSServices
-
+@inject IMapper _mapper;
 
 <style>
 
@@ -188,13 +189,13 @@
                             @foreach (Distribution Distribution_Item in _distributions)
                             {
                                 var rowTotal = Distribution_Item.Operations.Count() != 0 ? Distribution_Item.Operations.Count() * 2 + 1 : 2;
-                                var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out int opInDist);
+                                var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out SosJobCount opInDist);
                                 <MudTr>
                                     <MudTd colspan="19" DataLabel="Distribution">
                                         <MudButton Style=" display: -webkit-box;" FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
                                             @((Distribution_Item.ShowDetails == true) ? "Hide" : "Show") Details of: @Distribution_Item.Description
-                                        <MudChip>
-                                                        Realizadas: @opInDist  de @Distribution_Item.Operations.Count()
+                                                <MudChip>
+                                                        Info Her
                                                 </MudChip>
                                         </MudButton>
                                                 
@@ -2715,7 +2716,7 @@
     private List<Operation> _Operations = new();
 
     private Dictionary<(int, int), List<SOSRegisterJobObservation>?> SOS_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<SOSRegisterJobObservation>?>();
-    public Dictionary<int, int> OperationsInDistributionCount = new Dictionary<int, int>();
+    private Dictionary<int, SosJobCount> OperationsInDistributionCount = new Dictionary<int, SosJobCount>();
     private Dictionary<int, SOSRegUserOperationRelationship?> SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
     private Dictionary<int, SOSRegUserOperationRelationship?> Suggested_SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
     private Dictionary<(int, int), List<JobObservationNulls>?> Suggested_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<JobObservationNulls>?>();
@@ -2724,6 +2725,7 @@
     public List<SOSRegUserOperation> _SosRegistersrUserOperation { get; set; } = new();
 
     public List<JobObservationNulls> _SOSJobobservation { get; set; } = new();
+    public List<JobObservationNulls> _AnotherJobs { get; set; } = new();
     public List<JobObservationNulls> _All_SOSJobobservation { get; set; } = new();
     public List<JobObservationNulls> _All_Suggested_SOSJobobservation { get; set; } = new();
 
@@ -2732,6 +2734,19 @@
         public bool StateUpdate { get; set; }
         public bool Exist { get; set; }
         public SOSRegUserOperation Register { get; set; }
+    }
+
+    private class SosJobCount{
+        public int TotalJobs { get; set; }
+        public int ProgramJobs { get; set; }
+
+        public int TotalOutSosJobs { get; set; }
+        public int planned {get; set;}
+        public int inProgress {get; set;}
+        public int late {get; set;}
+        public int underReview {get; set;}
+        public int rejected {get; set;}
+        public int finished {get; set;}
     }
 
     //User
@@ -2872,6 +2887,9 @@
         }
         else
         {
+                
+        }
+        {
             await GetUserAsync();
             SOS_Review = await SOSServices.GetSOSById(sosId, true);
             _distributions = await DistributionServices.GetDistributionsWithCollections((int)SOS_Review.PlantId, (int)SOS_Review.AreaId);
@@ -2882,6 +2900,7 @@
             _Users = await UsersServices.GetUsersByUserTypeInPlantAndArea(SOS_Review.PlantId, SOS_Review.AreaId, 3, true, false);
             _UsersSV_Copy = ObjectCloner.ObjectCloner.DeepClone(_Users);
             _assyCharts = await AssyChartsServices.GetAssyChartsByArea((int)SOS_Review.PlantId, (int)SOS_Review.AreaId);
+            _AnotherJobs = _mapper.Map<List<JobObservationNulls>>( await JobObsServices.GetAllJobObservations(false, false, false, false, false, false, (int)SOS_Review.AplicationYear) );
             await PrepareDataTable();
             StateHasChanged();
         }
@@ -3132,11 +3151,11 @@
                         {
                             if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
                             {
-                                OperationsInDistributionCount[dist.DistributionId] += 1;
+                                // OperationsInDistributionCount[dist.DistributionId] += 1;
                             }
                             else
                             {
-                                OperationsInDistributionCount.Add(dist.DistributionId, 1);
+                                // OperationsInDistributionCount.Add(dist.DistributionId, 1);
                             }
                             break;
                         }
@@ -3928,11 +3947,11 @@
                                             {
                                                  if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
                                                     {
-                                                        OperationsInDistributionCount[dist.DistributionId] += 1;
+                                                        // OperationsInDistributionCount[dist.DistributionId] += 1;
                                                     }
                                                     else
                                                     {
-                                                        OperationsInDistributionCount.Add(dist.DistributionId, 1);
+                                                        // OperationsInDistributionCount.Add(dist.DistributionId, 1);
                                                     }
                                                     break;
                                             }
