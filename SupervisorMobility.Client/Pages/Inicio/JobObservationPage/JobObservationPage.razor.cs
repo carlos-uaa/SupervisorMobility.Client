@@ -35,26 +35,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Filters
         public List<JobObservation> _filterJobObservation { get; set; } = new();
-        public List<JobObservation> _filterPlannedJobObservation { get; set; } = new();
-        public List<JobObservation> _filterInProgressJobObservation { get; set; } = new();
-        public List<JobObservation> _filterLateJobObservation { get; set; } = new();
-        public List<JobObservation> _filterUnderReviewJobObservation { get; set; } = new();
-        public List<JobObservation> _filterRejectedJobObservation { get; set; } = new();
-        public List<JobObservation> _filterFinishedJobObservation { get; set; } = new();
-        public List<JobObservation> _filterProgrammedJobObservation { get; set; } = new();
+
 
 
         //Job observations status lists.
         public List<JobObservation> _jobObservations { get; set; } = new();
         public List<JobObservation> _jobObservationsAux { get; set; } = new();
-        public List<JobObservation> _plannedJobObservation { get; set; } = new();
-        public List<JobObservation> _inProgressJobObservation { get; set; } = new();
-        public List<JobObservation> _lateJobObservation { get; set; } = new();
-        public List<JobObservation> _underReviewJobObservation { get; set; } = new();
-        public List<JobObservation> _rejectedJobObservation { get; set; } = new();
-        public List<JobObservation> _finishedJobObservation { get; set; } = new();
 
-        public List<JobObservation> _SOSJobobservation { get; set; } = new();
 
         //Admin
         List<Plant> _plants { get; set; } = new();
@@ -67,6 +54,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string totalRejected;
         public string totalFinished;
         public string totalProgrammed;
+
 
         public int plantId;
         public int areaId;
@@ -104,43 +92,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await GetUserAsync();
                 await LateDates();
                 _jobObservations.Clear();
+                JobObservationsTotalCount();
+                ClearFilters();
 
-                if(user != null)
+                if (user != null)
                 {
-                    _jobObservationsAux = await JobObservationService.GetAllJobObservations(true,true);
+                    _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true);
 
                     if (user.UserType == 1 || user.UserType == 6)
                     {
-                        ClearFilters();
                         _plants = await PlantServices.GetPlants();
                         _plants = _plants.OrderBy(p => p.Description).ToList();
 
                         foreach (var jobobs in _jobObservationsAux)
                         {
-                            if(jobobs.Status != 7)
-                            {
-                                _jobObservations.Add(jobobs);
-                                switch (jobobs.Status)
-                                {
-                                    case 1: _plannedJobObservation.Add(jobobs); break;
-                                    case 2: _inProgressJobObservation.Add(jobobs); break;
-                                    case 3: _lateJobObservation.Add(jobobs); break;
-                                    case 4: _underReviewJobObservation.Add(jobobs); break;
-                                    case 5: _rejectedJobObservation.Add(jobobs); break;
-                                    case 6: _finishedJobObservation.Add(jobobs); break;
-                                }
 
-                            }
-                            else
-                            {
-                                _SOSJobobservation.Add(jobobs);
-                            }
+                            _jobObservations.Add(jobobs);
+
                         }
 
                     }
-                    else if(user.UserType == 2)
+                    else if (user.UserType == 2)
                     {
-                        ClearFilters();
                         plantId = (int)user.PlantId;
 
                         if (user.Areas != null)
@@ -156,23 +129,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 {
                                     if (jobobs.SupervisorId == usr.UserId && jobobs.PlantId == plantId)
                                     {
-                                        if(jobobs.Status != 7)
-                                        {
-                                            _jobObservations.Add(jobobs);
-                                            switch (jobobs.Status)
-                                            {
-                                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                                case 3: _lateJobObservation.Add(jobobs); break;
-                                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                                case 6: _finishedJobObservation.Add(jobobs); break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _SOSJobobservation.Add(jobobs);
-                                        }
+                                        _jobObservations.Add(jobobs);
+
                                     }
                                 }
                             }
@@ -180,52 +138,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     }
 
-                    else if(user.UserType == 3)
+                    else if (user.UserType == 3)
                     {
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
 
                         foreach (var jobobs in _jobObservationsAux)
                         {
-                            if(plantId == jobobs.PlantId &&  areaId == jobobs.AreaId && user.UserId == jobobs.SupervisorId)
+                            if (plantId == jobobs.PlantId && areaId == jobobs.AreaId && user.UserId == jobobs.SupervisorId)
                             {
-                                if(jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
+                                _jobObservations.Add(jobobs);
 
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
                             }
                         }
 
                         _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
-                        //operator User
-                        //users = await UsersService.GetUsers(false, false);
-                        //foreach (var operatorUser in users)
-                        //{
-                        //    if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
-                        //    {
-                        //        operatorUsers.Add(operatorUser);
-                        //    }
-                        //}
                         operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
                     }
-                    else if(user.UserType == 5)
+                    else if (user.UserType == 5)
                     {
-                        ClearFilters();
                         _plants = await PlantServices.GetPlants();
                         _plants = _plants.OrderBy(p => p.Description).ToList();
 
@@ -241,23 +173,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 {
                                     if (jobobs.Supervisor.SuperiorId == usr.UserId)
                                     {
-                                        if(jobobs.Status != 7)
-                                        {
-                                            _jobObservations.Add(jobobs);
-                                            switch (jobobs.Status)
-                                            {
-                                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                                case 3: _lateJobObservation.Add(jobobs); break;
-                                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                                case 6: _finishedJobObservation.Add(jobobs); break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _SOSJobobservation.Add(jobobs);
-                                        }
+
+                                        _jobObservations.Add(jobobs);
+
                                     }
 
                                 }
@@ -266,25 +184,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
 
                     _filterJobObservation = _jobObservations;
-                    _filterPlannedJobObservation = _plannedJobObservation;
-                    _filterInProgressJobObservation = _inProgressJobObservation;
-                    _filterLateJobObservation = _lateJobObservation;
-                    _filterUnderReviewJobObservation = _underReviewJobObservation;
-                    _filterRejectedJobObservation = _rejectedJobObservation;
-                    _filterFinishedJobObservation = _finishedJobObservation;
-                    _filterProgrammedJobObservation = _SOSJobobservation;
-
-                    totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-                    totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-                    totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-                    totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-                    totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-                    totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-                    totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
-
+                    JobObservationsTotalCount();
+                    StateHasChanged();
                 }
             }
         }
+
+
+        private void JobObservationsTotalCount()
+        {
+
+            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).ToList().Count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).ToList().Count + ")";
+            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).ToList().Count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).ToList().Count + ")";
+            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).ToList().Count + ")";
+            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).ToList().Count + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).ToList().Count + ")";
+        }
+
 
         private async void ShowAreas()
         {
@@ -296,41 +214,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservations = new();
                 foreach (var jobobs in _jobObservationsAux)
                 {
-                    if (jobobs.Status != 7)
-                    {
-                        _jobObservations.Add(jobobs);
-                        switch (jobobs.Status)
-                        {
-                            case 1: _plannedJobObservation.Add(jobobs); break;
-                            case 2: _inProgressJobObservation.Add(jobobs); break;
-                            case 3: _lateJobObservation.Add(jobobs); break;
-                            case 4: _underReviewJobObservation.Add(jobobs); break;
-                            case 5: _rejectedJobObservation.Add(jobobs); break;
-                            case 6: _finishedJobObservation.Add(jobobs); break;
-                        }
 
-                    }
-                    else
-                    {
-                        _SOSJobobservation.Add(jobobs);
-                    }
+                    _jobObservations.Add(jobobs);
+
                 }
                 _filterJobObservation = _jobObservations;
-                _filterPlannedJobObservation = _plannedJobObservation;
-                _filterInProgressJobObservation = _inProgressJobObservation;
-                _filterLateJobObservation = _lateJobObservation;
-                _filterUnderReviewJobObservation = _underReviewJobObservation;
-                _filterRejectedJobObservation = _rejectedJobObservation;
-                _filterFinishedJobObservation = _finishedJobObservation;
-                _filterProgrammedJobObservation = _SOSJobobservation;
-
-                totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-                totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-                totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-                totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-                totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-                totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-                totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+                JobObservationsTotalCount();
                 StateHasChanged();
                 return;
 
@@ -343,57 +232,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorUsers.Clear();
             _jobObservations.Clear();
 
-            _plannedJobObservation.Clear();
-            _inProgressJobObservation.Clear();
-            _lateJobObservation.Clear();
-            _underReviewJobObservation.Clear();
-            _rejectedJobObservation.Clear();
-            _finishedJobObservation.Clear();
-            _SOSJobobservation.Clear();
-
 
             foreach (var jobobs in _jobObservationsAux)
             {
                 if (plantId == jobobs.PlantId)
                 {
-                    if(jobobs.Status != 7)
-                    {
-                        _jobObservations.Add(jobobs);
-                        switch (jobobs.Status)
-                        {
-                            case 1: _plannedJobObservation.Add(jobobs); break;
-                            case 2: _inProgressJobObservation.Add(jobobs); break;
-                            case 3: _lateJobObservation.Add(jobobs); break;
-                            case 4: _underReviewJobObservation.Add(jobobs); break;
-                            case 5: _rejectedJobObservation.Add(jobobs); break;
-                            case 6: _finishedJobObservation.Add(jobobs); break;
-                        }
 
-                    }
-                    else
-                    {
-                        _SOSJobobservation.Add(jobobs);
-                    }
+                    _jobObservations.Add(jobobs);
+
                 }
             }
 
             _filterJobObservation = _jobObservations;
-            _filterPlannedJobObservation = _plannedJobObservation;
-            _filterInProgressJobObservation = _inProgressJobObservation;
-            _filterLateJobObservation = _lateJobObservation;
-            _filterUnderReviewJobObservation = _underReviewJobObservation;
-            _filterRejectedJobObservation = _rejectedJobObservation;
-            _filterFinishedJobObservation = _finishedJobObservation;
-            _filterProgrammedJobObservation = _SOSJobobservation;
-
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
-
+            JobObservationsTotalCount();
 
 
             _areas = await AreaServices.GetAreas(plantId);
@@ -405,7 +256,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async void ShowJobObs()
         {
-            if(areaId == 0)
+            if (areaId == 0)
             {
                 ShowAreas();
                 return;
@@ -414,42 +265,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             ClearFilters();
             _jobObservations.Clear();
             operatorUsers.Clear();
-            _plannedJobObservation.Clear();
-            _inProgressJobObservation.Clear();
-            _lateJobObservation.Clear();
-            _underReviewJobObservation.Clear();
-            _rejectedJobObservation.Clear();
-            _finishedJobObservation.Clear();
-            _SOSJobobservation.Clear();
 
-            if(user.UserType == 1 || user.UserType == 6)
+
+            if (user.UserType == 1 || user.UserType == 6)
             {
                 foreach (var jobobs in _jobObservationsAux)
                 {
                     if (plantId == jobobs.PlantId && areaId == jobobs.AreaId)
                     {
-                        if(jobobs.Status != 7)
-                        {
-                            _jobObservations.Add(jobobs);
-                            switch (jobobs.Status)
-                            {
-                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                case 3: _lateJobObservation.Add(jobobs); break;
-                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                case 6: _finishedJobObservation.Add(jobobs); break;
-                            }
 
-                        }
-                        else
-                        {
-                            _SOSJobobservation.Add(jobobs);
-                        }
+                        _jobObservations.Add(jobobs);
+
                     }
                 }
             }
-            else if(user.UserType == 2)
+            else if (user.UserType == 2)
             {
                 foreach (var jobobs in _jobObservationsAux)
                 {
@@ -459,56 +289,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
                             {
-                                if(jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
 
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
+                                _jobObservations.Add(jobobs);
+
                             }
                         }
                     }
                 }
             }
-            else if(user.UserType == 3)
+            else if (user.UserType == 3)
             {
                 foreach (var jobobs in _jobObservationsAux)
                 {
                     if (plantId == jobobs.PlantId && jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
                     {
-                        if(jobobs.Status != 7)
-                        {
-                            _jobObservations.Add(jobobs);
-                            switch (jobobs.Status)
-                            {
-                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                case 3: _lateJobObservation.Add(jobobs); break;
-                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                case 6: _finishedJobObservation.Add(jobobs); break;
-                            }
-                        }
-                        else
-                        {
-                            _SOSJobobservation.Add(jobobs);
-                        }
+
+                        _jobObservations.Add(jobobs);
+
                     }
                 }
             }
-            else if(user.UserType == 5)
+            else if (user.UserType == 5)
             {
                 foreach (var jobobs in _jobObservationsAux)
                 {
@@ -518,23 +319,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             if (jobobs.Supervisor.SuperiorId == usr.UserId && jobobs.AreaId == areaId)
                             {
-                                if(jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
+
+                                _jobObservations.Add(jobobs);
+
                             }
                         }
                     }
@@ -542,21 +329,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _filterJobObservation = _jobObservations;
-            _filterPlannedJobObservation = _plannedJobObservation;
-            _filterInProgressJobObservation = _inProgressJobObservation;
-            _filterLateJobObservation = _lateJobObservation;
-            _filterUnderReviewJobObservation = _underReviewJobObservation;
-            _filterRejectedJobObservation = _rejectedJobObservation;
-            _filterFinishedJobObservation = _finishedJobObservation;
-            _filterProgrammedJobObservation = _SOSJobobservation;
-
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+            JobObservationsTotalCount();
 
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
@@ -587,13 +360,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             filters = !filters;
 
             _jobObservations = _filterJobObservation;
-            _plannedJobObservation= _filterPlannedJobObservation;
-            _inProgressJobObservation = _filterInProgressJobObservation;
-            _lateJobObservation = _filterLateJobObservation;
-            _underReviewJobObservation= _filterUnderReviewJobObservation;
-            _rejectedJobObservation= _filterRejectedJobObservation;
-            _finishedJobObservation= _filterFinishedJobObservation;
-            _SOSJobobservation = _filterProgrammedJobObservation;
+            JobObservationsTotalCount();
 
             idFilter = new();
             distributionId = new();
@@ -603,7 +370,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorId = new();
             statusId = new();
 
-            if(color == Color.Info)
+            if (color == Color.Info)
             {
                 color = Color.Default;
             }
@@ -618,21 +385,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public void ClearFilters()
         {
             _jobObservations = _filterJobObservation;
-            _plannedJobObservation = _filterPlannedJobObservation;
-            _inProgressJobObservation = _filterInProgressJobObservation;
-            _lateJobObservation = _filterLateJobObservation;
-            _underReviewJobObservation = _filterUnderReviewJobObservation;
-            _rejectedJobObservation = _filterRejectedJobObservation;
-            _finishedJobObservation = _filterFinishedJobObservation;
-            _SOSJobobservation = _filterProgrammedJobObservation;
-
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
 
             idFilter = new();
             distributionId = new();
@@ -648,165 +400,81 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Filters
         private void FilterDistributions()
         {
+
+            if(distributionId == 0)
+            {
+                return;
+            }
+
             operationId = new();
             _jobObservations = _filterJobObservation;
-            _plannedJobObservation = _filterPlannedJobObservation;
-            _inProgressJobObservation = _filterInProgressJobObservation;
-            _lateJobObservation = _filterLateJobObservation;
-            _underReviewJobObservation = _filterUnderReviewJobObservation;
-            _rejectedJobObservation = _filterRejectedJobObservation;
-            _finishedJobObservation = _filterFinishedJobObservation;
-            _SOSJobobservation = _filterProgrammedJobObservation;
+
 
             operationFlag = true;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == distributionId)].Operations;
-            _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _finishedJobObservation = _filterFinishedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-            _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+
 
             if (statusId != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+
             }
             if (operatorId != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+
             }
             if (filterDate != null)
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+
             }
             if (idFilter != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-            }
 
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+            }
+            JobObservationsTotalCount();
+
         }
 
         private void Filters()
         {
             _jobObservations = _filterJobObservation;
-            _plannedJobObservation = _filterPlannedJobObservation;
-            _inProgressJobObservation = _filterInProgressJobObservation;
-            _lateJobObservation = _filterLateJobObservation;
-            _underReviewJobObservation = _filterUnderReviewJobObservation;
-            _rejectedJobObservation = _filterRejectedJobObservation;
-            _finishedJobObservation = _filterFinishedJobObservation;
-            _SOSJobobservation = _filterProgrammedJobObservation;
 
-            if (distributionId != default(int)) {
+
+            if (distributionId != default(int))
+            {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+
             }
-            if (operationId!= default(int))
+            if (operationId != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.OperationId == operationId).ToList();
+
             }
             if (statusId != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.Status == statusId).ToList();
+
             }
             if (operatorId != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+
             }
-            if(filterDate != null)
+            if (filterDate != null)
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+
             }
-            if(idFilter != default(int))
+            if (idFilter != default(int))
             {
                 _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _plannedJobObservation = _plannedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _inProgressJobObservation = _inProgressJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _lateJobObservation = _lateJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _underReviewJobObservation = _underReviewJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _rejectedJobObservation = _rejectedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _finishedJobObservation = _finishedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-                _SOSJobobservation = _filterProgrammedJobObservation.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+
             }
 
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+            JobObservationsTotalCount();
         }
 
         public void ClearStatus()
@@ -845,7 +513,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             foreach (var jobobs in _jobObservationsAux)
             {
-                if(Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
+                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
                 {
                     jobobs.Status = 3;
 
@@ -860,13 +528,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservations.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
             await JobObservationService.DeleteJobObservation(jobObservationId);
             ClearFilters();
-            _plannedJobObservation.Clear();
-            _inProgressJobObservation.Clear();
-            _lateJobObservation.Clear();
-            _underReviewJobObservation.Clear();
-            _rejectedJobObservation.Clear();
-            _finishedJobObservation.Clear();
-            _SOSJobobservation.Clear();
+
 
             if (user.UserType == 1)
             {
@@ -874,24 +536,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     if (plantId == jobobs.PlantId && areaId == jobobs.AreaId)
                     {
-                        if (jobobs.Status != 7)
-                        {
-                            _jobObservations.Add(jobobs);
-                            switch (jobobs.Status)
-                            {
-                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                case 3: _lateJobObservation.Add(jobobs); break;
-                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                case 6: _finishedJobObservation.Add(jobobs); break;
-                            }
 
-                        }
-                        else
-                        {
-                            _SOSJobobservation.Add(jobobs);
-                        }
+                        _jobObservations.Add(jobobs);
+
+
                     }
                 }
             }
@@ -905,24 +553,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
                             {
-                                if (jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
 
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
+                                _jobObservations.Add(jobobs);
+
                             }
                         }
                     }
@@ -934,23 +567,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     if (plantId == jobobs.PlantId && jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
                     {
-                        if (jobobs.Status != 7)
-                        {
-                            _jobObservations.Add(jobobs);
-                            switch (jobobs.Status)
-                            {
-                                case 1: _plannedJobObservation.Add(jobobs); break;
-                                case 2: _inProgressJobObservation.Add(jobobs); break;
-                                case 3: _lateJobObservation.Add(jobobs); break;
-                                case 4: _underReviewJobObservation.Add(jobobs); break;
-                                case 5: _rejectedJobObservation.Add(jobobs); break;
-                                case 6: _finishedJobObservation.Add(jobobs); break;
-                            }
-                        }
-                        else
-                        {
-                            _SOSJobobservation.Add(jobobs);
-                        }
+
+                        _jobObservations.Add(jobobs);
+
                     }
                 }
             }
@@ -964,37 +583,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             if (jobobs.Supervisor.SuperiorId == usr.UserId && jobobs.AreaId == areaId)
                             {
-                                if (jobobs.Status != 7)
-                                {
-                                    _jobObservations.Add(jobobs);
-                                    switch (jobobs.Status)
-                                    {
-                                        case 1: _plannedJobObservation.Add(jobobs); break;
-                                        case 2: _inProgressJobObservation.Add(jobobs); break;
-                                        case 3: _lateJobObservation.Add(jobobs); break;
-                                        case 4: _underReviewJobObservation.Add(jobobs); break;
-                                        case 5: _rejectedJobObservation.Add(jobobs); break;
-                                        case 6: _finishedJobObservation.Add(jobobs); break;
-                                    }
-                                }
-                                else
-                                {
-                                    _SOSJobobservation.Add(jobobs);
-                                }
+
+                                _jobObservations.Add(jobobs);
+
                             }
                         }
                     }
                 }
             }
 
-
-            totalPlanned = Localizer["planned"] + " (" + _plannedJobObservation.Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _inProgressJobObservation.Count + ")";
-            totalLate = Localizer["late"] + " (" + _lateJobObservation.Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _underReviewJobObservation.Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _rejectedJobObservation.Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _finishedJobObservation.Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _SOSJobobservation.Count + ")";
+            JobObservationsTotalCount();
 
             visibleDelete = false;
 
@@ -1034,7 +632,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
                 var formatedDate = date;
 
-                var EnglishDate =  formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+                var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
 
                 var dateString = EnglishDate.Replace("/", "-");
                 NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
@@ -1136,6 +734,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 return string.Empty;
             }
+        }
+
+
+
+        public string GetStatusLabel(int status)
+        {
+            return status switch
+            {
+                1 => "planned",
+                2 => "inProgress",
+                3 => "late",
+                4 => "underReview",
+                5 => "rejected",
+                6 => "finished",
+                _ => "",
+            };
         }
     }
 }
