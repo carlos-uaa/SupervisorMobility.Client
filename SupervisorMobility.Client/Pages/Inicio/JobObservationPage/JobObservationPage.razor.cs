@@ -97,7 +97,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (user != null)
                 {
-                    _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true);
+                    if(user.UserType != 3)
+                    {
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true);
+                    }
+                    else
+                    {
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true,false,false,false,false,0, user.UserId);
+                    }
 
                     if (user.UserType == 1 || user.UserType == 6)
                     {
@@ -143,14 +150,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         plantId = (int)user.PlantId;
                         areaId = (int)user.AreaId;
 
-                        foreach (var jobobs in _jobObservationsAux)
-                        {
-                            if (plantId == jobobs.PlantId && areaId == jobobs.AreaId && user.UserId == jobobs.SupervisorId)
-                            {
-                                _jobObservations.Add(jobobs);
-
-                            }
-                        }
+                        _jobObservations = _jobObservationsAux.ToList();
 
                         _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
