@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     else
                     {
                         Console.WriteLine(user.UserId);
-                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true,false,false,false, 0, user.UserId);
+                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true, idUser: user.UserId);
                     }
                     _departments = await DepartmentServices.GetDepartments();
 

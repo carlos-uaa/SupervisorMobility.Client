@@ -103,7 +103,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true,false,false,false,false,0, user.UserId);
+                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId);
                     }
 
                     if (user.UserType == 1 || user.UserType == 6)
