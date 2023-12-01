@@ -1,6 +1,7 @@
 ﻿@page "/headCount"
 
 @using System.Net.Http.Headers;
+@using ClosedXML.Excel;
 @using System.Runtime.CompilerServices;
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
@@ -126,9 +127,24 @@
                     </MudStack>
                 </MudItem>
 
+                <MudItem Class="d-flex flex-row align-center justify-center mud-width-full">
+                    @if (showDataDocument)
+                    {
+                        <div>
+                            @HtmlTable
+                        </div>
+                    }
+                </MudItem>
+
 
             </MudContainer>
+
+
+
+
         </ChildContent>
+
+
     </MudTabPanel>
     <MudTabPanel @ref="panel02_View" Icon="@Icons.Material.Filled.BubbleChart" Text="@Localizer1["ViewHeadCount"]" OnClick="InstanceData">
         <ChildContent>
@@ -221,7 +237,7 @@
                               GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
                               GroupFooterClass="mb-4"
                               Dense="true" FixedHeader="true"
-                              Virtualize="true" 
+                              Virtualize="true"
                               RowClassFunc="@SelectedRowClassFunc" @ref="ReferenceGrid"
                               Height="65vh" HorizontalScrollbar="true" Class="mud-width-full styled-table table-striped">
                         <ColGroup>
@@ -247,12 +263,12 @@
                             <col />
                         </ColGroup>
                         <ToolBarContent>
-            <MudText Typo="Typo.h6" Align="Align.Center"></MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="@_searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
-            <MudSpacer />
-            <MudText Typo="Typo.h6" Align="Align.Center"></MudText>
-        </ToolBarContent>
+                            <MudText Typo="Typo.h6" Align="Align.Center"></MudText>
+                            <MudSpacer />
+                            <MudTextField @bind-Value="@_searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
+                            <MudSpacer />
+                            <MudText Typo="Typo.h6" Align="Align.Center"></MudText>
+                        </ToolBarContent>
                         <HeaderContent>
                             <MudTh>                                <MudTableSortLabel SortBy="new Func<HeadCount, object>(x=>x.HeadCountId)" Enabled="true">@Localizer1["HCId"]</MudTableSortLabel></MudTh>
                             <MudTh>                                <MudTableSortLabel SortBy="new Func<HeadCount, object>(x=>x.Codigo)" Enabled="true">@Localizer1["HCSSFF"]</MudTableSortLabel></MudTh>
@@ -430,213 +446,213 @@
             }
         </ChildContent>
     </MudTabPanel>
-   @*  <MudTabPanel @ref="panel04_Procces" Icon="@Icons.Material.Filled.Task" Text="@Localizer1["TitleProcess"]" BadgeData='"☰"' OnClick="@( () => StartProcess() )">
-        <ChildContent>
-            <MudTabs @ref="tabsProcess" Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true">
-                <MudTabPanel @ref="panel01_SeeAllProcess" Text="@Localizer1["SeeAllProcess"]" OnClick="@( () => StartProcess() )">
-                    @if (showLoading)
-                    {
-                        <MudCarousel Class="mud-width-full styled-table table-striped" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
-                            <ItemTemplate>
-                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
-                                    <MudItem class="d-flex flex-column justify-center align-self-center">
-                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
-                                    </MudItem>
-                                    
-                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
-                                </div>
-                            </ItemTemplate>
-                        </MudCarousel>
+    @*  <MudTabPanel @ref="panel04_Procces" Icon="@Icons.Material.Filled.Task" Text="@Localizer1["TitleProcess"]" BadgeData='"☰"' OnClick="@( () => StartProcess() )">
+    <ChildContent>
+    <MudTabs @ref="tabsProcess" Elevation="4" Color="@Color.Info" TabPanelClass="px-10 mx-10" Rounded="true" ApplyEffectsToContainer="true" Centered="true">
+    <MudTabPanel @ref="panel01_SeeAllProcess" Text="@Localizer1["SeeAllProcess"]" OnClick="@( () => StartProcess() )">
+    @if (showLoading)
+    {
+    <MudCarousel Class="mud-width-full styled-table table-striped" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+    <ItemTemplate>
+    <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+    <MudItem class="d-flex flex-column justify-center align-self-center">
+    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudItem>
 
-                        <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
-                            <thead>
-                                <tr>
-                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
-                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
-                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
-                                    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
-                                </tr>
-                            </thead>
-                            <tbody>
+    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+    </div>
+    </ItemTemplate>
+    </MudCarousel>
 
-                                <tr>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
-                                </tr>
-                                <tr>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
-                                </tr>
-                                <tr>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
-                                </tr>
-                                <tr>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
-                                </tr>
-                                <tr>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
-                                    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
-                                </tr>
+    <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+    <thead>
+    <tr>
+    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+    <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+    </tr>
+    </thead>
+    <tbody>
 
-                            </tbody>
-                        </MudSimpleTable>
+    <tr>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+    </tr>
+    <tr>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+    </tr>
+    <tr>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+    </tr>
+    <tr>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+    </tr>
+    <tr>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+    <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+    </tr>
 
-                    }
-                    else
-                    {
-                        @if (_allProcess?.Count == 0)
-                        {
-                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                                    <img src="Images/navegador.png" Height="140" Width="140" />
-                                </MudItem>
+    </tbody>
+    </MudSimpleTable>
 
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    }
+    else
+    {
+    @if (_allProcess?.Count == 0)
+    {
+    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    <img src="Images/navegador.png" Height="140" Width="140" />
+    </MudItem>
 
-                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
 
-                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
-                                    </MudItem>
-                                </MudItem>
-                            </MudItem>
-                        }
-                        else
-                        {
-                            <MudDataGrid T="HeadCountProcess" Items="@_allProcess" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilterProcess" FixedHeader="true"
-                                         Hideable="true" RowClick="@RowClickedProcess" Virtualize="true" @ref="ReferenceGridProcess" RowClassFunc="SelectedRowProcessClassFunc"
-                                         Height="60vh" HorizontalScrollbar="true" Class="mud-width-full styled-table table-striped">
-                                <ToolBarContent>
-                                    <MudText Typo="Typo.h6">Headcount Process</MudText>
-                                    <MudSpacer />
-                                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                                </ToolBarContent>
-                                <Columns>
-                                    <TemplateColumn>
-                                        <CellTemplate>
-                                            <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartedEditingProcess(context.Item))" />
-                                        </CellTemplate>
-                                    </TemplateColumn>
-                                    <PropertyColumn Property="x => x.HeadCountProcessId" Title="@Localizer1["HCProcessId"]" Sortable="false" Filterable="false" />
-                                    <PropertyColumn Property="x => x.Process" Title="@Localizer1["HCProcess"]" />
-                                </Columns>
-                                <PagerContent>
-                                    <MudDataGridPager T="HeadCountProcess" />
-                                </PagerContent>
-                            </MudDataGrid>
+    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
 
-                        }
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
+    </MudItem>
+    </MudItem>
+    </MudItem>
+    }
+    else
+    {
+    <MudDataGrid T="HeadCountProcess" Items="@_allProcess" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilterProcess" FixedHeader="true"
+    Hideable="true" RowClick="@RowClickedProcess" Virtualize="true" @ref="ReferenceGridProcess" RowClassFunc="SelectedRowProcessClassFunc"
+    Height="60vh" HorizontalScrollbar="true" Class="mud-width-full styled-table table-striped">
+    <ToolBarContent>
+    <MudText Typo="Typo.h6">Headcount Process</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+    AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+    <TemplateColumn>
+    <CellTemplate>
+    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => StartedEditingProcess(context.Item))" />
+    </CellTemplate>
+    </TemplateColumn>
+    <PropertyColumn Property="x => x.HeadCountProcessId" Title="@Localizer1["HCProcessId"]" Sortable="false" Filterable="false" />
+    <PropertyColumn Property="x => x.Process" Title="@Localizer1["HCProcess"]" />
+    </Columns>
+    <PagerContent>
+    <MudDataGridPager T="HeadCountProcess" />
+    </PagerContent>
+    </MudDataGrid>
 
-                    }
-                </MudTabPanel>
-                <MudTabPanel @ref="panel02_ViewEditProcess" Text="@(ProcessUpdate ? @Localizer1["EditProcess"] : @Localizer1["DetailsProcess"])">
-                    @if (_IdUpdateProcess != -1)
-                    {
-                        @if (ProcessUpdate)
-                        {
-                            <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
-                                <EditForm Model="ProcessSelected" OnValidSubmit="UpdateProcess" @bind-IsValid="@success">
-                                    <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
-                                    @bind-Value="ProcessSelected.Process" For="@(() => ProcessSelected.Process)" />
+    }
 
-                                    <div class="d-flex align-center justify-space-between">
-                                        <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
-                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
-                                    </div>
-                                </EditForm>
-                            </MudPaper>
-                        }
-                        else
-                        {
-                            <MudCard>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h6">@Localizer1["HCProcessDetails"]</MudText>
-                                    </CardHeaderContent>
-                                    <CardHeaderActions>
-                                        <MudChip @onclick="()=>ProcessUpdate = true" @ontouchstart="()=> ProcessUpdate = true" Variant="Variant.Filled" Class="ml-auto" Icon="@Icons.Material.Filled.Edit" Color="Color.Info">@Localizer1["HCProcessEdit"]</MudChip>
-                                    </CardHeaderActions>
-                                </MudCardHeader>
+    }
+    </MudTabPanel>
+    <MudTabPanel @ref="panel02_ViewEditProcess" Text="@(ProcessUpdate ? @Localizer1["EditProcess"] : @Localizer1["DetailsProcess"])">
+    @if (_IdUpdateProcess != -1)
+    {
+    @if (ProcessUpdate)
+    {
+    <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
+    <EditForm Model="ProcessSelected" OnValidSubmit="UpdateProcess" @bind-IsValid="@success">
+    <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
+    @bind-Value="ProcessSelected.Process" For="@(() => ProcessSelected.Process)" />
+
+    <div class="d-flex align-center justify-space-between">
+    <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
+    </div>
+    </EditForm>
+    </MudPaper>
+    }
+    else
+    {
+    <MudCard>
+    <MudCardHeader>
+    <CardHeaderContent>
+    <MudText Typo="Typo.h6">@Localizer1["HCProcessDetails"]</MudText>
+    </CardHeaderContent>
+    <CardHeaderActions>
+    <MudChip @onclick="()=>ProcessUpdate = true" @ontouchstart="()=> ProcessUpdate = true" Variant="Variant.Filled" Class="ml-auto" Icon="@Icons.Material.Filled.Edit" Color="Color.Info">@Localizer1["HCProcessEdit"]</MudChip>
+    </CardHeaderActions>
+    </MudCardHeader>
 
 
-                                <MudCardContent>
-                                    <MudItem Style="max-height: 70vh; min-width: 70vw; display: flex; flex-wrap: wrap; justify-content: center;" Class="gap-4">
-                                        <MudText Align="Align.Center">@ProcessSelected.Process</MudText>
-                                    </MudItem>
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => ProcessUpdate = true)">@Localizer["HCProcessEdit"]</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        }
+    <MudCardContent>
+    <MudItem Style="max-height: 70vh; min-width: 70vw; display: flex; flex-wrap: wrap; justify-content: center;" Class="gap-4">
+    <MudText Align="Align.Center">@ProcessSelected.Process</MudText>
+    </MudItem>
+    </MudCardContent>
+    <MudCardActions>
+    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => ProcessUpdate = true)">@Localizer["HCProcessEdit"]</MudButton>
+    </MudCardActions>
+    </MudCard>
+    }
 
-                    }
-                    else
-                    {
-                        @if (_allProcess?.Count == 0)
-                        {
-                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                                    <img src="Images/navegador.png" Height="140" Width="140" />
-                                </MudItem>
+    }
+    else
+    {
+    @if (_allProcess?.Count == 0)
+    {
+    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    <img src="Images/navegador.png" Height="140" Width="140" />
+    </MudItem>
 
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
 
-                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
+    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataTitle"]</MudText>
 
-                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
-                                    </MudItem>
-                                </MudItem>
-                            </MudItem>
-                        }
-                        else
-                        {
-                            <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
-                                    <img src="Images/navegador.png" Height="140" Width="140" />
-                                </MudItem>
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessDataMsg"]</MudText>
+    </MudItem>
+    </MudItem>
+    </MudItem>
+    }
+    else
+    {
+    <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full mt-10">
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    <img src="Images/navegador.png" Height="140" Width="140" />
+    </MudItem>
 
-                                <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
 
-                                    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectTitle"]</MudText>
+    <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectTitle"]</MudText>
 
-                                    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
-                                        <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectMsg"]</MudText>
-                                    </MudItem>
-                                </MudItem>
-                            </MudItem>
-                        }
-                    }
-                </MudTabPanel>
-                <MudTabPanel @ref="panel03_Create" Text="@Localizer1["CreateProcess"]" OnClick="@( () => ProcessUpdate = false)">
-                    <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
-                        <EditForm Model="ProcessToCreate" OnValidSubmit="CreateProcess" @bind-IsValid="@success">
-                            <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
-                            @bind-Value="ProcessToCreate.Process" For="@(() => ProcessToCreate.Process)" />
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer1["NoHCProcessSelectMsg"]</MudText>
+    </MudItem>
+    </MudItem>
+    </MudItem>
+    }
+    }
+    </MudTabPanel>
+    <MudTabPanel @ref="panel03_Create" Text="@Localizer1["CreateProcess"]" OnClick="@( () => ProcessUpdate = false)">
+    <MudPaper Class="pa-6" Elevation="1" MaxHeight="70vh" Style="overflow-x: scroll;">
+    <EditForm Model="ProcessToCreate" OnValidSubmit="CreateProcess" @bind-IsValid="@success">
+    <MudTextField T="string" Label="@Localizer1["HCProcess"]" Required="true" RequiredError="@Localizer1["HCProcessError"]" Validation="@(new Func<string, string>(StringNoNull))"
+    @bind-Value="ProcessToCreate.Process" For="@(() => ProcessToCreate.Process)" />
 
-                            <div class="d-flex align-center justify-space-between">
-                                <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
-                            </div>
-                        </EditForm>
-                    </MudPaper>
-                </MudTabPanel>
-            </MudTabs>
-        </ChildContent>
+    <div class="d-flex align-center justify-space-between">
+    <MudCheckBox T="bool" Required="true" @bind-Checked="@success" RequiredError="@Localizer1["HCErrorAcept"]" Label="@Localizer1["HCAcept"]" />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" ButtonType="ButtonType.Submit" Class="ml-auto">@Localizer["save"]</MudButton>
+    </div>
+    </EditForm>
+    </MudPaper>
+    </MudTabPanel>
+    </MudTabs>
+    </ChildContent>
     </MudTabPanel> *@
 </MudTabs>
 
@@ -647,22 +663,22 @@
                 <MudText Typo="Typo.h6">
                     Procesamiento en curso
                 </MudText>
-               <div class="preloader_2">
+                <div class="preloader_2">
                     <span></span>
                     <span></span>
                     <span></span>
                     <span></span>
                 </div>
                 <MudText>
-                    ¡Gracias por subir tu documento! Estamos procesando la información y te notificaremos por correo o SupervisorMobility tan pronto como esté listo. 
+                    ¡Gracias por subir tu documento! Estamos procesando la información y te notificaremos por correo o SupervisorMobility tan pronto como esté listo.
                     Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nosotros. ¡Gracias por tu paciencia!
                 </MudText>
-                </MudItem>
+            </MudItem>
         </MudContainer>
     </DialogContent>
     <DialogActions>
         @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
-        <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("newhome") )" >Entendido, Go Home</MudButton>
+        <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("newhome") )">Entendido, Go Home</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -670,6 +686,9 @@
 @code {
 
     private List<BreadcrumbItem> _links;
+
+    [Inject] private IDialogService DialogService { get; set; }
+
 
     //Objects to Interacting with the archive upload Name display
     private string FileName;
@@ -688,6 +707,10 @@
     private string DragClass = DefaultDragClass;
     private List<FileToDisplay> fileNames = new List<FileToDisplay>();
     private bool showUpload = false;
+    private bool showDataDocument = false;
+
+    //Table Document Container
+    private MarkupString HtmlTable = new();
 
     //muddata grid
     private List<HeadCount>? HeadCountData = new List<HeadCount>();
@@ -705,6 +728,8 @@
     //dialog Aviso Carga documet
     private bool DialgUploadDocumentOk = false;
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, DisableBackdropClick = true, CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true, };
+
+    private List<string[]> DataInDocument = new List<string[]>();
 
     //mudtabs
     MudTabs tabs;
@@ -813,74 +838,208 @@
 
         fileNames.Add(new FileToDisplay() { name = FileName, ftype = FileName.Split(".").Last() });
 
+        System.Text.RegularExpressions.Regex fileExtentionExcel = new System.Text.RegularExpressions.Regex(@".+\.xls", System.Text.RegularExpressions.RegexOptions.Compiled);
 
-        using var content = new MultipartFormDataContent();
+        if (!fileExtentionExcel.IsMatch(FileName))
+        {
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "otro", message = "This not a XLSX/csv file " });
+            ErrorMessageToDisplay = "This not a XLSX/XLS File";
+            FileName = string.Empty;
+            FileSource = null;
+        }
+        else
+        {
+            using var content = new MultipartFormDataContent();
 
-        var fileContent = new StreamContent(e.File.OpenReadStream(509600000));
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
+            var fileContent = new StreamContent(e.File.OpenReadStream(509600000));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
 
-        MemoryStream ms = new MemoryStream();
-        await fileContent.CopyToAsync(ms);
+            MemoryStream ms = new MemoryStream();
+            await fileContent.CopyToAsync(ms);
 
+            if (fileExtentionExcel.IsMatch(FileName))
+            {
+                try
+                {
+                    DataInDocument = await GetDataTableFromExcel(e.File);
+
+                    HtmlTable = (MarkupString)GenerateHtmlTable(15);
+
+                    // isOkFile = true;
+                    showDataDocument = true;
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+
+        }
         showUpload = false;
 
 
     }//end function on change
 
+    public static async Task<List<string[]>> GetDataTableFromExcel(IBrowserFile file)
+    {
+        List<string[]> DataToReturn = new List<string[]>();
+        List<string> RowsInFile = new List<string>();
+        int maxSize = 20 * 1024;
+
+        using (MemoryStream memStream = new MemoryStream())
+        {
+            await file.OpenReadStream(file.Size).CopyToAsync(memStream, maxSize);
+            using (XLWorkbook workBook = new XLWorkbook(memStream, XLEventTracking.Disabled))
+            {
+                //Read the first Sheet from Excel file.
+                IXLWorksheet workSheet = workBook.Worksheet(1);
+
+                //Loop through the Worksheet rows.
+                foreach (IXLRow row in workSheet.Rows())
+                {
+                    if (!row.IsEmpty())
+                    {
+                        RowsInFile.Clear();
+
+                        foreach (IXLCell cell in row.Cells(1, 20))
+                        {
+                            string toinsert = "§";
+
+                            // Verificar si la celda no está vacía antes de obtener su valor
+                            if (!cell.IsEmpty())
+                            {
+                                toinsert = cell.Value.ToString();
+                            }
+
+                            RowsInFile.Add(toinsert);
+                        }
+                        DataToReturn.Add(RowsInFile.ToArray());
+                    }
+
+                    if(workSheet.Rows().Count() > 20 && row.RowNumber() == 16)
+                    {
+                        break;
+                    }
+
+                }
+            }
+        }
+        return DataToReturn;
+    }
+
+    private string GenerateHtmlTable(int rowCount)
+    {
+        int maxlength = 15;
+        var htmlTable = new System.Text.StringBuilder("<table Class=\"styled-table table-striped\">");
+
+        htmlTable.Append("<thead><th></th>");
+        for (char c = 'A'; c <= 'M'; c++)
+        {
+            htmlTable.Append($"<th>{c}</th>");
+            int letterPos = c - 65;
+            bool todosiguales = DataInDocument.All(fila => fila.Skip(letterPos).All(elemento => elemento == "§"));
+
+            if (todosiguales)
+            {
+                maxlength = letterPos;
+                break;
+            }
+
+        }
+        htmlTable.Append("</thead>");
+
+        htmlTable.Append("<tbody>");
+        for (int i = 0; i < Math.Min(rowCount, DataInDocument.Count); i++)
+        {
+            htmlTable.Append("<tr>");
+
+            htmlTable.Append($"<td>{i + 1}</td>");
+
+            string[] cell = DataInDocument[i];
+            for (int c = 0; c <= maxlength; c++)
+            {
+                if (cell[c] != "§")
+                {
+                    htmlTable.Append($"<td>{cell[c]}</td>");
+                }
+                else
+                {
+                    htmlTable.Append($"<td> </td>");
+                }
+            }
+
+            htmlTable.Append("</tr>");
+        }
+        htmlTable.Append("</tbody>");
+
+        htmlTable.Append("</table>");
+
+        return htmlTable.ToString();
+    }
+
     async void UploadFunction(bool overlord)
     {
 
-        showLoading = true;
-        base.StateHasChanged();
-        await Task.Delay(50);
-        using var content = new MultipartFormDataContent();
+        var result = await DialogService.ShowMessageBox($"Confirmation",
+                    (MarkupString)$"Esta seguro de subir el docuemeto",
+                    yesText: $"Si, Proceder!", noText: $"No, Comenzar de nuevo");
 
-        if (FileSource is not null)
+        if (result == true)
         {
-
-            var fileContent = new StreamContent(FileSource.OpenReadStream(509600000));
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(FileSource.ContentType);
-
-            content.Add(
-            content: fileContent,
-            name: "\"file\"",
-            fileName: FileSource.Name);
-
-            var newUploadResults = await HeadCountServices.UploadHeadCount(content, loggedUser.UserId);
-
-            if (newUploadResults is not null)
-            {
-
-                ErrorMessageToDisplay = "Upload Data Succesfull";
-
-                showLoading = false;
-                showUpload = false;
-                DialgUploadDocumentOk = true;
-
+          
+                showLoading = true;
                 base.StateHasChanged();
+                await Task.Delay(50);
+                using var content = new MultipartFormDataContent();
 
-                //aqui va el dialogo para mostrar al usuario
+                if (FileSource is not null)
+                {
 
-                //Se esta procesando el documento
-                //se notificara mediante notificacion de supervisor y se enviara un correo (Mostrar correo)
+                    var fileContent = new StreamContent(FileSource.OpenReadStream(509600000));
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(FileSource.ContentType);
+
+                    content.Add(
+                    content: fileContent,
+                    name: "\"file\"",
+                    fileName: FileSource.Name);
+
+                    var newUploadResults = await HeadCountServices.UploadHeadCount(content, loggedUser.UserId);
+
+                    if (newUploadResults is not null)
+                    {
+
+                        ErrorMessageToDisplay = "Upload Data Succesfull";
+
+                        showLoading = false;
+                        showUpload = false;
+                        DialgUploadDocumentOk = true;
+
+                        base.StateHasChanged();
+
+                        //aqui va el dialogo para mostrar al usuario
+
+                        //Se esta procesando el documento
+                        //se notificara mediante notificacion de supervisor y se enviara un correo (Mostrar correo)
 
 
-                // InstanceData();
-                // tabs.ActivatePanel(panel02_View);
-            }
-            else
-            {
-                ErrorMessageToDisplay = $"{@Localizer1["HCFailUpload"]}";
+                        // InstanceData();
+                        // tabs.ActivatePanel(panel02_View);
+                    }
+                    else
+                    {
+                        ErrorMessageToDisplay = $"{@Localizer1["HCFailUpload"]}";
 
-                //error al subir el archivo
-            }
+                        //error al subir el archivo
+                    }
 
+                }
+                else
+                {
+                    ErrorMessageToDisplay = $"{@Localizer1["HCSourceNull"]}";
+                }
+               
         }
-        else
-        {
-            ErrorMessageToDisplay = $"{@Localizer1["HCSourceNull"]}";
-        }
-
 
 
     }//upload function
@@ -1002,7 +1161,7 @@
         // {
         //     _IdUpdate = -1;
         //     selectedRowNumber = -1;
-        // }        
+        // }
     }
 
     private string SelectedRowClassFunc(HeadCount element, int rowNumber)
@@ -1017,7 +1176,7 @@
 
     private void RowClickedProcess(DataGridRowClickEventArgs<HeadCountProcess> args)
     {
-        
+
         if (selectedRowNumber == args.RowIndex)
         {
 
@@ -1044,7 +1203,7 @@
 
     }
 
-   
+
 
     private string SelectedRowProcessClassFunc(HeadCountProcess element, int rowNumber)
     {

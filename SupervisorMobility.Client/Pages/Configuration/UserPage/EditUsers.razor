@@ -9,11 +9,12 @@
 @inject IGroupService GroupServices
 @inject NavigationManager NavigationManager
 @inject IUserService UserServices
-
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource1> Localizer
 @using ObjectCloner;
+@using System.ComponentModel.DataAnnotations
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersEdit"]</PageTitle>
 @*Breadcrumb links*@
@@ -150,8 +151,8 @@
 
                                 @if (_user.UserType != 4 && _user.UserType != 0)
                                 {
-                                    <MudTextField Mask="@emailMask" Label="@Localizer["UsersEmail"]" HelperText="@emailMask.Mask"
-                                    @bind-Value="@_user.Email" For="@(() => _user.Email)" Variant="@Variant.Text" Clearable />
+                                    <MudTextField T="string" Label="@Localizer["UsersEmail"]"  @bind-Value="@_user.Email"  For="@(() => _user.Email)" RequiredError="Email is required!"
+                                     Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
                                 }
 
                                 @if (_user.UserType > 1 && _user.UserType != 6 && _user.UserType != 7)
@@ -2415,7 +2416,8 @@ else
 
     private List<BreadcrumbItem> _links;
 
-    public IMask emailMask = RegexMask.Email();
+
+  
 
     private User _user = new User();
     private User _usercopy = new User();

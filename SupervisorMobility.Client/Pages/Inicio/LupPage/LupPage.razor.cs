@@ -69,11 +69,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
                 await GetUserAsync();
 
-                jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true);
-                _departments = await DepartmentServices.GetDepartments();
-
                 if (user != null)
                 {
+                    if(user.UserType != 3)
+                    {
+                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true);
+                    }
+                    else
+                    {
+                        Console.WriteLine(user.UserId);
+                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true, idUser: user.UserId);
+                    }
+                    _departments = await DepartmentServices.GetDepartments();
+
                     GetLupByUser();
                 }
 
@@ -120,7 +128,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     {
                         foreach (var lup in jobObs.Lup)
                         {
-                            if (plantId == jobObs.PlantId)
+                            if (plantId == jobObs.PlantId && user.Subordinates?.Where(sv => sv.UserId == jobObs.SupervisorId).ToList().Count > 0)
                             {
                                 LupAux = new();
                                 LupAux.Lup = lup;
@@ -142,15 +150,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     {
                         foreach (var lup in jobObs.Lup)
                         {
-                            if (plantId == jobObs.PlantId && areaId == jobObs.AreaId)
-                            {
-                                LupAux = new();
-                                LupAux.Lup = lup;
-                                LupAux.Distribution = jobObs.Distribution?.Description;
-                                LupAux.DistributionId = jobObs.Distribution?.DistributionId;
-                                _lups.Add(LupAux);
-
-                            }
+                            LupAux = new();
+                            LupAux.Lup = lup;
+                            LupAux.Distribution = jobObs.Distribution?.Description;
+                            LupAux.DistributionId = jobObs.Distribution?.DistributionId;
+                            _lups.Add(LupAux);
                         }
                     }
                 }
@@ -458,6 +462,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
             StateHasChanged();
         }
+
+        public string GetStatusLabel(int status)
+        {
+            return status switch
+            {
+                1 => "new",
+                2 => "inProgress",
+                3 => "cancel",
+                4 => "finished",
+                _ => "",
+            };
+        }
+
 
 
     }
