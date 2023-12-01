@@ -107,7 +107,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                 if (user != null)
                 {
-                    _allJobObservations = await JobObservationService.GetAllJobObservations();
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true);
 
                     _plants = await PlantServices.GetPlants();
                     _plants = _plants.OrderBy(p => p.Description).ToList();

@@ -117,12 +117,12 @@ namespace SupervisorMobility.Client.Shared
 
             if (user != null)
             {
-                jobObservations = await JobObservationService.GetAllJobObservations();
+                jobObservations = await JobObservationService.GetAllJobObservations(true);
                 jobObservations = jobObservations.Where(j => j.IsActive == true).ToList();
 
                 foreach (var jobobs in jobObservations)
                 {
-                    if (jobobs.Supervisor.Name == user.Name)
+                    if (jobobs.SupervisorId == user.UserId)
                     {
                         //yesterday
                         if (Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(yesterday.ToShortDateString()).Date >= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)

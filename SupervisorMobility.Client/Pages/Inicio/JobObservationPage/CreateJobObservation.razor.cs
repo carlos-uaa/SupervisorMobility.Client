@@ -203,27 +203,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         _jobObservation.OperationId = int.Parse(PatOperationId);
 
-                        //_allSupervisors = await UsersService.GetUsersByType(3);
-                        //foreach (User sv in _allSupervisors)
-                        //{
-                        //    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
-                        //    {
-                        //        _supervisors.Add(sv);
-                        //    }
-                        //}
 
                         _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
                         _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-
-                        //_operators = await UsersService.GetUsersByType(4);
-                        ////operator User
-                        //foreach (var operatorUser in _operators)
-                        //{
-                        //    if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
-                        //    {
-                        //        operatorUsers.Add(operatorUser);
-                        //    }
-                        //}
 
                         _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                         _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -249,8 +231,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.SupervisorId = 0;
                     //_allSupervisors = await UsersService.GetUsersByType(3);
                     //_operators = await UsersService.GetUsersByType(4);
-                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
-                    _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
 
                 }
                 else
@@ -416,13 +397,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else if (user.UserType == 2)
             {
-                foreach (User sv in _allSupervisors)
-                {
-                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId && sv.SuperiorId == user.UserId)
-                    {
-                        _supervisors.Add(sv);
-                    }
-                }
+                _supervisors = new();
+                _supervisors = await UsersService.GetSubordinates(user.UserId, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+                
             }
 
             _jobObservation.OperatorId = 0;
@@ -439,7 +417,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
                 ShowPastJobObservations();
 
-            if (user.UserType == 1)
+            if (user.UserType == 1 || user.UserType == 2)
             {
                 _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                 _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -624,46 +602,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                //if (_tempLup.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var temp in _tempLup)
-                //    {
-                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await LupService.CreateLup(temp);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Lup", Severity.Error);
-                //        }
-                //    }
-                //}
-                //if (questionAnswers.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var question in questionAnswers)
-                //    {
-                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Question", Severity.Error);
-                //        }
-                //    }
-                //}
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1255,46 +1193,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                //if (_tempLup.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var temp in _tempLup)
-                //    {
-                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await LupService.CreateLup(temp);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Lup", Severity.Error);
-                //        }
-                //    }
-                //}
-                //if (questionAnswers.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var question in questionAnswers)
-                //    {
-                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Question", Severity.Error);
-                //        }
-                //    }
-                //}
+
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1467,46 +1366,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                //if (_tempLup.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var temp in _tempLup)
-                //    {
-                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await LupService.CreateLup(temp);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Lup", Severity.Error);
-                //        }
-                //    }
-                //}
-                //if (questionAnswers.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var question in questionAnswers)
-                //    {
-                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Question", Severity.Error);
-                //        }
-                //    }
-                //}
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1685,46 +1544,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                //if (_tempLup.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var temp in _tempLup)
-                //    {
-                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await LupService.CreateLup(temp);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Lup", Severity.Error);
-                //        }
-                //    }
-                //}
-                //if (questionAnswers.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var question in questionAnswers)
-                //    {
-                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Question", Severity.Error);
-                //        }
-                //    }
-                //}
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1912,46 +1731,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
-                //if (_tempLup.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var temp in _tempLup)
-                //    {
-                //        temp.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await LupService.CreateLup(temp);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Lup item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Lup", Severity.Error);
-                //        }
-                //    }
-                //}
-                //if (questionAnswers.Count > 0)
-                //{
-                //    _jobObservations = await JobObservationService.GetAllJobObservations();
-                //    foreach (var question in questionAnswers)
-                //    {
-                //        question.Value.JobObservationId = _jobObservations.Last().JobObservationId;
-                //        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(question.Value);
-                //        if (result2 != null)
-                //        {
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                //        }
-                //        else
-                //        {
-                //            Snackbar.Clear();
-                //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //            Snackbar.Add($"Error in Question", Severity.Error);
-                //        }
-                //    }
-                //}
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -2506,44 +2285,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 questionAnswers[questionId] = Answer;
             }
 
-            foreach (var kvp in questionAnswers)
-            {
-                int questionId = kvp.Key;
-                string answer = kvp.Value.Answer;
-                string prompt = kvp.Value.Prompt;
-
-            }
         }
 
-
-        //private void AddLupOpportunity(int question)
-        //{
-        //    Snackbar.Configuration.MaxDisplayedSnackbars = 4;
-        //    switch (question)
-        //    {
-        //        case 1:
-        //            areaQ = "No respeta pasos principales y puntos críticos";
-        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 2:
-        //            areaQ = "El empaque, herramientas, manipuladores no están en buenas condiciones y hay riesgos de calidad";
-        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 3:
-        //            areaS = "No respeta el cumplimiento a los estados de referencia, identificación de sustancias ni disposición de residuos";
-        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //            Snackbar.Add("LUP added in Safety Pillar SECTION 3", Severity.Warning);
-        //            break;
-        //        case 4:
-        //            areaQ = "El operador no es capaz de nombrar paso principales, puntos críticos ni razón";
-        //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        //            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-        //            break;
-
-        //    }
-        //    StateHasChanged();
-        //}
     }
 }
