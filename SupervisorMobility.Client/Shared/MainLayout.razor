@@ -18,7 +18,7 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 
-<MudThemeProvider />
+<MudThemeProvider @ref="@_mudThemeProvider" Theme="_currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -139,10 +139,13 @@
             </MudMenu>
         }
 
-
+@*        <MudIconButton Icon="@Icons.Material.Filled.Brightness4"
+                       Color="Color.Inherit"
+                       Class="nav-button"
+                       OnClick="@ThemeToggle" />*@
 
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1"  >
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">Supervisor Mobility</MudText>
         </MudDrawerHeader>
@@ -569,7 +572,6 @@
 
     private string json = string.Empty;
 
-    bool _drawerOpen = true;
     bool languageCheck = false;
     bool _IsHovering = false;
     bool NoifyDialog = false;
@@ -599,6 +601,49 @@
 
     private int timeLeft = 5; // Tiempo en segundos
     private System.Timers.Timer countdownTimer;
+
+
+    bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private MudThemeProvider _mudThemeProvider;
+
+    private readonly MudTheme _currentTheme = new()
+        {
+            Palette = new PaletteLight
+            {
+                Primary = "#0A7BCF",
+                Secondary = "#4CAF50",
+                Info = "#20a8e1",
+                Success = "#2ECC40",
+                Warning = "#FFC107",
+                Error = "#FF0000",
+                AppbarBackground = "#20a8e1",
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary = "#6585e0",
+                Secondary = "#607D8B",
+                Info = "#a4c2dd",
+                Success = "#0bd18a",
+                Warning = "#eee500",
+                Error = "#fc6161",
+                AppbarBackground = "#121212",
+                
+            }
+        };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
+    void ThemeToggle() => _isDarkMode = !_isDarkMode;
+
 
     protected async override Task OnInitializedAsync()
     {
@@ -969,12 +1014,6 @@
 
     private async Task<bool> HasPropertyAsync() => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
     protected void OnMouseOver(MouseEventArgs mouseEvent)
     {
         if (!_IsHovering)
@@ -1034,5 +1073,7 @@
 
         StateHasChanged();
     }
+
+
 
 }

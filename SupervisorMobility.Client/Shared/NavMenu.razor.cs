@@ -155,19 +155,19 @@ namespace SupervisorMobility.Client.Shared
 
             }
         }
-        public async Task LateDates()
-        {
-            jobObservations = await JobObservationService.GetAllJobObservations();
-            jobObservations = jobObservations.Where(j => j.IsActive == true).ToList();
-            foreach (var jobobs in jobObservations)
-            {
-                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
-                {
-                    jobobs.Status = 3;
-                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
-                }
-            }
-        }
+        //public async Task LateDates()
+        //{
+        //    jobObservations = await JobObservationService.GetAllJobObservations();
+        //    jobObservations = jobObservations.Where(j => j.IsActive == true).ToList();
+        //    foreach (var jobobs in jobObservations)
+        //    {
+        //        if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3)
+        //        {
+        //            jobobs.Status = 3;
+        //            await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
+        //        }
+        //    }
+        //}
 
         //Local storage user
         private async Task GetUserAsync()

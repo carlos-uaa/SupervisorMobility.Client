@@ -100,7 +100,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             {
 
                 await GetUserAsync();
-                await LateDates();
+                //await LateDates();
                 monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
                 GenerateCalendarHead();
                 GenerateCalendarBody();
@@ -242,20 +242,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
 
         //Change the status if the observation is late
-        public async Task LateDates()
-        {
-            _allJobObservations = await JobObservationService.GetAllJobObservations();
+        //public async Task LateDates()
+        //{
+        //    _allJobObservations = await JobObservationService.GetAllJobObservations();
 
-            foreach (var jobobs in _allJobObservations)
-            {
-                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
-                {
-                    jobobs.Status = 3;
+        //    foreach (var jobobs in _allJobObservations)
+        //    {
+        //        if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
+        //        {
+        //            jobobs.Status = 3;
 
-                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
-                }
-            }
-        }
+        //            await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
+        //        }
+        //    }
+        //}
 
 
         private async Task HandleVisibleChanged(bool newValue)
