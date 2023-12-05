@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Pages.Configuration
         {
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "", disabled: true)
             };
             await GetUserAsync();

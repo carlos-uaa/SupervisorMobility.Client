@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             displayInfo = true;
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["jobObservationSchedule"], href: "", disabled: true)
             };
 

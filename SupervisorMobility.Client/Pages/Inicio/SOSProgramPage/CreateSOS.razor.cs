@@ -32,7 +32,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
             new BreadcrumbItem(text: Localizer["createSOS"], href: "", disabled: true)
         };

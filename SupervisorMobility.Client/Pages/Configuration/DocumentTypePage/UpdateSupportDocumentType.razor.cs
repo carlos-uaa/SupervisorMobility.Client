@@ -21,7 +21,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
             _supportDocumentType = dbSupportDocumentType;
             _links = new List<BreadcrumbItem>
         {
-              new BreadcrumbItem(text: Localizer["home"], href: "#"),
+              new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
             new BreadcrumbItem(text: Localizer["JOTTitle"], href: "/documenttypes"),
             new BreadcrumbItem(text: Localizer["JOTUpdate"], href: "", disabled: true)

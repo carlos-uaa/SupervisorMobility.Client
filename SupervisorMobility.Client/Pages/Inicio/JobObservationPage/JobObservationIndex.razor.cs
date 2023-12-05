@@ -24,7 +24,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Job Observation", href: "", disabled: true)
         };
 

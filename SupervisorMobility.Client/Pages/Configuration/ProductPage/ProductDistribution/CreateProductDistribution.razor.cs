@@ -20,7 +20,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.ProductDistr
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Products", href: "/products"),
         };
