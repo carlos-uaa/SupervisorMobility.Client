@@ -111,7 +111,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart", disabled: true),
             };

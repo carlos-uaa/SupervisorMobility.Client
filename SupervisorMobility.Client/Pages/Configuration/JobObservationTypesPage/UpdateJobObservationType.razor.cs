@@ -21,7 +21,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobObservationTypesPage
 
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
             new BreadcrumbItem(text: Localizer["JOTTitle"], href: "/jobobservationtypes"),
             new BreadcrumbItem("UpdateJobObservationType", href: "", disabled: true)

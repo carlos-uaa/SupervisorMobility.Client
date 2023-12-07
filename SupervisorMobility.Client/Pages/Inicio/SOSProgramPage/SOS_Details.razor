@@ -402,7 +402,6 @@
                                                                                                                 <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
                                                                                                                 </MudPaper>
                                                                                                         }
-
                                                                                                         @if (item.CommonDirectionHOE != "")
                                                                                                         {
                                                                                                             <MudPaper Elevation="0">
@@ -415,7 +414,6 @@
                                                                                                                     </MudButton>
                                                                                                                 </MudPaper>
                                                                                                         }
-
                                                                                                     </MudItem>
 
                                                                                                     <MudItem Style="flex-direction: column;">
@@ -482,19 +480,11 @@
                                                                                                                             </MudTooltip>
                                                                                                                         </MudTooltip>
                                                                                                                     </MudButton>
-
                                                                                                                 </MudPaper>
                                                                                                         }
                                                                                                     </MudItem>
-
-
-
-
-
-
                                                                                                 </MudItem>
                                                                                             </MudItem>
-
                                                                                         </ChildContent>
                                                                                     </MudExpansionPanel>
                                                                                 }
@@ -2954,6 +2944,8 @@
 
     protected async override Task OnInitializedAsync()
     {
+        ShowLoading = false;
+
         _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
         _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
         _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -2980,7 +2972,7 @@
 
         _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
             new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
         };
@@ -3027,7 +3019,6 @@
 
         showMonth = month.ToUpper();
 
-        ShowLoading = false;
     }
 
     private void GenerateCalendarHead()
@@ -3199,6 +3190,7 @@
         SOS_Registers_Matrix?.Clear();
         _SosRegisters?.Clear();
         _AnotherJobs?.Clear();
+        OperationsInDistributionCount?.Clear();
 
         //Actualizacion local y evitar peticiones... cuando quede chida la pagina
         _SosRegisters = await SOSServices.GetSOSRegisters(SOS_Review.SOSid);
@@ -3250,6 +3242,7 @@
                 }
             }
 
+        }
             foreach (var reg in _SosRegisters)
             {
                 foreach (var dist in _distributions)
@@ -3414,7 +3407,6 @@
                 }
 
             }
-        }
 
         //_Subordinates = await UsersServices.GetSubordinates(SOS_Review.Supervisor.UserId);
 
@@ -4040,13 +4032,13 @@
                     var result = await SOSServices.CreateSOSRegUserOperation(SOS_Review.SOSid, context.Register.Supervisor.UserId, op);
                     if (result != null)
                     {
-                        //ShowTable = false;
+                        ShowTable = false;
                         StateHasChanged();
                         context.Register = result;
-                        context.Register.Supervisor = SOS_Review.Supervisors.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                        context.Register.Supervisor = _Users.Find(u => u.UserId == context.Register.SupervisorId);
                         context.Exist = true;
                         context.StateUpdate = false;
-                        //await PrepareDataTable();
+                        await PrepareDataTable();
 
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -4098,13 +4090,13 @@
                                     var result1 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 1);
                                     if (result1 != null)
                                     {
-                                        //ShowTable = false;
+                                        ShowTable = false;
                                         StateHasChanged();
                                         context.Register = result1;
-                                        context.Register.Supervisor = SOS_Review.Supervisors.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                        context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
                                         context.Exist = true;
                                         context.StateUpdate = false;
-                                        //await PrepareDataTable();
+                                        await PrepareDataTable();
 
                                         Snackbar.Clear();
                                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -4120,13 +4112,13 @@
                                     var result2 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 2);
                                     if (result2 != null)
                                     {
-                                        //ShowTable = false;
+                                        ShowTable = false;
                                         StateHasChanged();
                                         context.Register = result2;
-                                        context.Register.Supervisor = SOS_Review.Supervisors.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                        context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
                                         context.Exist = true;
                                         context.StateUpdate = false;
-                                        //await PrepareDataTable();
+                                        await PrepareDataTable();
 
                                         Snackbar.Clear();
                                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -4142,13 +4134,13 @@
                                     var result3 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 3);
                                     if (result3 != null)
                                     {
-                                        //ShowTable = false;
+                                        ShowTable = false;
                                         StateHasChanged();
                                         context.Register = result3;
-                                        context.Register.Supervisor = SOS_Review.Supervisors.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                        context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
                                         context.Exist = true;
                                         context.StateUpdate = false;
-                                        //await PrepareDataTable();
+                                        await PrepareDataTable();
 
                                         Snackbar.Clear();
                                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -4173,7 +4165,7 @@
                                     regAux.Register = item;
                                     regAux.StateUpdate = false;
                                     regAux.Exist = true;
-                                    SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
+                                    SOS_Registers_UserOperationRelationship.Add((int)item.OperationId , regAux);
                                 }
 
                                 foreach (var itemOp in _All_Operations)
@@ -4189,170 +4181,7 @@
                                     }
                                 }
 
-                                foreach (var reg in _SosRegisters)
-                                {
-                                    foreach (var dist in _distributions)
-                                    {
-                                        if (dist.Operations.Any(o => o.OperationId == reg.OperationId))
-                                        {
-                                            if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
-                                            {
-                                                OperationsInDistributionCount[dist.DistributionId].TotalSosJobs++;
-                                                switch (reg.JobObservation.Status)
-                                                {
-                                                    case 1:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosplanned++;
-                                                        break;
-                                                    case 2:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosinProgress++;
-                                                        break;
-                                                    case 3:
-                                                        OperationsInDistributionCount[dist.DistributionId].soslate++;
-                                                        break;
-                                                    case 4:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosunderReview++;
-                                                        break;
-                                                    case 5:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosrejected++;
-                                                        break;
-                                                    case 6:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosfinished++;
-                                                        break;
-                                                    case 7:
-                                                        OperationsInDistributionCount[dist.DistributionId].sosprogramed++;
-                                                        break;
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                SosJobCount newReg = new SosJobCount();
-
-                                                newReg.TotalJobs = dist.Operations.Count();
-
-                                                newReg.TotalSosJobs++;
-                                                //1 @Localizer["planned"]
-                                                //2 @Localizer["inProgress"]
-                                                //3 @Localizer["late"]
-                                                //4 @Localizer["underReview"]
-                                                //5 @Localizer["rejected"]
-                                                //6 @Localizer["finished"]
-                                                switch (reg.JobObservation.Status)
-                                                {
-                                                    case 1:
-                                                        newReg.sosplanned++;
-                                                        break;
-                                                    case 2:
-                                                        newReg.sosinProgress++;
-                                                        break;
-                                                    case 3:
-                                                        newReg.soslate++;
-                                                        break;
-                                                    case 4:
-                                                        newReg.sosunderReview++;
-                                                        break;
-                                                    case 5:
-                                                        newReg.sosrejected++;
-                                                        break;
-                                                    case 6:
-                                                        newReg.sosfinished++;
-                                                        break;
-
-                                                    case 7:
-                                                        newReg.sosprogramed++;
-                                                        break;
-                                                }
-
-                                                OperationsInDistributionCount.Add(dist.DistributionId, newReg);
-                                            }
-                                            break;
-                                        }
-                                    }
-
-                                }
-
-                                foreach (var reg in _AnotherJobs)
-                                {
-                                    foreach (var dist in _distributions)
-                                    {
-                                        if (dist.Operations.Any(o => o.OperationId == reg.OperationId))
-                                        {
-                                            if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
-                                            {
-                                                OperationsInDistributionCount[dist.DistributionId].TotalOutSosJobs++;
-                                                switch (reg.Status)
-                                                {
-                                                    case 1:
-                                                        OperationsInDistributionCount[dist.DistributionId].planned++;
-                                                        break;
-                                                    case 2:
-                                                        OperationsInDistributionCount[dist.DistributionId].inProgress++;
-                                                        break;
-                                                    case 3:
-                                                        OperationsInDistributionCount[dist.DistributionId].late++;
-                                                        break;
-                                                    case 4:
-                                                        OperationsInDistributionCount[dist.DistributionId].underReview++;
-                                                        break;
-                                                    case 5:
-                                                        OperationsInDistributionCount[dist.DistributionId].rejected++;
-                                                        break;
-                                                    case 6:
-                                                        OperationsInDistributionCount[dist.DistributionId].finished++;
-                                                        break;
-
-                                                    case 7:
-                                                        OperationsInDistributionCount[dist.DistributionId].programed++;
-                                                        break;
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                SosJobCount newReg = new SosJobCount();
-
-                                                newReg.TotalJobs = dist.Operations.Count();
-
-                                                newReg.TotalOutSosJobs++;
-                                                //1 @Localizer["planned"]
-                                                //2 @Localizer["inProgress"]
-                                                //3 @Localizer["late"]
-                                                //4 @Localizer["underReview"]
-                                                //5 @Localizer["rejected"]
-                                                //6 @Localizer["finished"]
-                                                switch (reg.Status)
-                                                {
-                                                    case 1:
-                                                        newReg.planned++;
-                                                        break;
-                                                    case 2:
-                                                        newReg.inProgress++;
-                                                        break;
-                                                    case 3:
-                                                        newReg.late++;
-                                                        break;
-                                                    case 4:
-                                                        newReg.underReview++;
-                                                        break;
-                                                    case 5:
-                                                        newReg.rejected++;
-                                                        break;
-                                                    case 6:
-                                                        newReg.finished++;
-                                                        break;
-
-                                                    case 7:
-                                                        newReg.programed++;
-                                                        break;
-                                                }
-
-                                                OperationsInDistributionCount.Add(dist.DistributionId, newReg);
-                                            }
-                                            break;
-                                        }
-                                    }
-
-                                }
+                               
                             }
 
 

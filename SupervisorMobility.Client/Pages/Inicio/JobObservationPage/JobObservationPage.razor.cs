@@ -47,6 +47,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
 
+        public string totalJobObservations;
         public string totalPlanned;
         public string totalInProgress;
         public string totalLate;
@@ -90,7 +91,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
 
                 await GetUserAsync();
-                await LateDates();
+                //await LateDates();
                 _jobObservations.Clear();
                 JobObservationsTotalCount();
                 ClearFilters();
@@ -193,14 +194,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-
-            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).ToList().Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).ToList().Count + ")";
-            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).ToList().Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).ToList().Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).ToList().Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).ToList().Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).ToList().Count + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
+            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).Count() + ")";
+            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).Count() + ")";
+            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).Count() + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).Count() + ")";
         }
 
 
@@ -403,6 +404,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if(distributionId == 0)
             {
+                _jobObservations = _filterJobObservation;
                 return;
             }
 
@@ -413,6 +415,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operationFlag = true;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == distributionId)].Operations;
 
+
+            _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
 
             if (statusId != default(int))
             {
@@ -507,20 +511,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
-        public async Task LateDates()
-        {
-            _jobObservationsAux = await JobObservationService.GetAllJobObservations();
+        //public async Task LateDates()
+        //{
+        //    _jobObservationsAux = await JobObservationService.GetAllJobObservations();
 
-            foreach (var jobobs in _jobObservationsAux)
-            {
-                if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
-                {
-                    jobobs.Status = 3;
+        //    foreach (var jobobs in _jobObservationsAux)
+        //    {
+        //        if (Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date < DateTime.Today && jobobs.Status != 6 && jobobs.Status != 3 && jobobs.Status != 7)
+        //        {
+        //            jobobs.Status = 3;
 
-                    await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
-                }
-            }
-        }
+        //            await JobObservationService.UpdateJobObservation(jobobs, "S.M. System");
+        //        }
+        //    }
+        //}
 
 
         async Task DeleteJobObservation(int jobObservationId)

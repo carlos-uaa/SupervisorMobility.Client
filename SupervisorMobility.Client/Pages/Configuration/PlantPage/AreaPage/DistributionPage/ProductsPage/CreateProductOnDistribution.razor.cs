@@ -32,7 +32,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
 
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
                 new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"),

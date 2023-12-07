@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GuidesPage
         {
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: @Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: @Localizer["home"], href: "/"),
             new BreadcrumbItem(text: @Localizer["GuidesTitle"], href: "", disabled: true)
         };
             _Guides = await GuidesServices.GetAllGuidesWhitFile();

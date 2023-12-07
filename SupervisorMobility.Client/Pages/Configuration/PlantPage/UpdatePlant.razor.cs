@@ -19,7 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         {
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
                 new BreadcrumbItem(text: Localizer["updatePlant"], href: "", disabled: true)

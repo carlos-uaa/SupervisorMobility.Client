@@ -50,12 +50,12 @@ namespace SupervisorMobility.Client.Pages
         {
             _login = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["login"], href: "#", disabled: true)
+                new BreadcrumbItem(text: Localizer["login"], href: "/", disabled: true)
             };
 
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#", disabled: true)
+                new BreadcrumbItem(text: Localizer["home"], href: "/", disabled: true)
             };
 
             logged = await HasPropertyAsync();
