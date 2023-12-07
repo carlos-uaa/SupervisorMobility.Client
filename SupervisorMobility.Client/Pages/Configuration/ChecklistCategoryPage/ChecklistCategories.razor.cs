@@ -8,7 +8,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Home", href: "#"),
+            new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
             new BreadcrumbItem("Checklist categories", href: "", disabled: true),
         };

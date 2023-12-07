@@ -20,7 +20,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.DocumentTypePage
 
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["SDTTitle"], href: "", disabled: true)
             };

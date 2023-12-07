@@ -36,7 +36,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem("PAT", href: "/PAT"),
             new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
         };

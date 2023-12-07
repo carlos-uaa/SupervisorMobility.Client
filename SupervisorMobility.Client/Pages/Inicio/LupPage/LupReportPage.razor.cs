@@ -32,7 +32,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
             _links = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem("LUP", href: "/lup"),
                 new BreadcrumbItem(text: Localizer["lupReport"], href: "/lupReport", disabled: true)
             };

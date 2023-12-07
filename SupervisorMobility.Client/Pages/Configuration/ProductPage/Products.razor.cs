@@ -19,7 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         {
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
             new BreadcrumbItem(text: Localizer["ProductsTitle"],  href: "", disabled: true)
         };

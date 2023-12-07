@@ -65,7 +65,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             _links = new List<BreadcrumbItem>
             {
-                    new BreadcrumbItem(text: Localizer["home"], href: "#"),
+                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["assychart"], href: "/assychart"),
                 new BreadcrumbItem(text: Localizer["ACUploadAC"], href: "/UploadAssyCharts", disabled: true),

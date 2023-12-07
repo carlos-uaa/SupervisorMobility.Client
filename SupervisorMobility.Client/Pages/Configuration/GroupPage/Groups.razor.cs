@@ -18,7 +18,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
             _groups = await GroupService.GetGroups();
             _links = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem(text: Localizer["home"], href: "#"),
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
             new BreadcrumbItem(text: Localizer["GroupTitle"], href: "", disabled: true)
         };
