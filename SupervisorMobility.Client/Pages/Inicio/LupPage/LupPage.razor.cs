@@ -41,6 +41,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         private List<BreadcrumbItem> _links;
 
+
+        public string totalLups;
+        public string totalSE;
+        public string totalQuality;
+        public string totalDelivery;
+        public string totalCost;
+        public string totalOther;
+
         //User
         private string json = string.Empty;
         public User user = new();
@@ -66,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
             else
             {
-
+                LupTotalCount();
                 await GetUserAsync();
 
                 if (user != null)
@@ -188,8 +196,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
 
             _filterlups = _lups;
+            LupTotalCount();
             StateHasChanged();
         }
+
+        private void LupTotalCount()
+        {
+            totalLups = Localizer["allLup"] + " (" + _filterlups.Count + ")";
+            totalSE = Localizer["safety"] + " (" + _filterlups.Where(j => j.Lup.Pillar == 1).Count() + ")";
+            totalQuality = Localizer["quality"] + " (" + _filterlups.Where(j => j.Lup.Pillar == 2).Count() + ")";
+            totalDelivery = Localizer["delivery"] + " (" + _filterlups.Where(j => j.Lup.Pillar == 3).Count() + ")";
+            totalCost = Localizer["cost"] + " (" + _filterlups.Where(j => j.Lup.Pillar == 4).Count() + ")";
+            totalOther = Localizer["other"] + " (" + _filterlups.Where(j => j.Lup.Pillar == 5).Count() + ")";
+        }
+
 
         private async void ShowAreas()
         {
@@ -213,6 +233,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 }
                 areaId = 0;
                 _filterlups = _lups;
+                LupTotalCount();
                 StateHasChanged();
                 return;
             }
@@ -242,6 +263,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
 
+            LupTotalCount();
             StateHasChanged();
         }
 
@@ -275,6 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
             _filterlups = _lups;
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
+            LupTotalCount();
             StateHasChanged();
 
         }
@@ -306,7 +329,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             await LupServices.DeleteLup(lupId);
 
             GetLupByUser();
-
             visibleDelete = false;
 
         }
@@ -423,10 +445,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             }
 
 
+            LupTotalCount();
 
         }
 
-  
+
 
         public void ActiveFilters()
         {
@@ -449,6 +472,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             {
                 color = Color.Info;
             }
+            LupTotalCount();
 
         }
 
@@ -459,6 +483,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             distributionId = new();
             departmentId = new();
             statusId = new();
+
+            LupTotalCount();
 
             StateHasChanged();
         }

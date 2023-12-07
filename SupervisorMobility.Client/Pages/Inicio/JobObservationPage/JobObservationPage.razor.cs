@@ -47,6 +47,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
 
+        public string totalJobObservations;
         public string totalPlanned;
         public string totalInProgress;
         public string totalLate;
@@ -193,14 +194,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-
-            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).ToList().Count + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).ToList().Count + ")";
-            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).ToList().Count + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).ToList().Count + ")";
-            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).ToList().Count + ")";
-            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).ToList().Count + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).ToList().Count + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Count + ")";
+            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
+            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).Count() + ")";
+            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).Count() + ")";
+            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).Count() + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).Count() + ")";
         }
 
 
