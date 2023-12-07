@@ -10,5 +10,10 @@
         public string Container { get; set; } = "QuestionContainer";
         public bool? IsActive { get; set; } = false;
         public int ChecklistCategoryId { get; set; }
+        public bool show { get; set; } = false;
+        public ICollection<FileUpload>? Evidences { get; set; } = new List<FileUpload>();
+
+        public string? CommentarySV { get; set; } = string.Empty;
+        public string? CommentarySSV { get; set; } = string.Empty;
     }
 }
