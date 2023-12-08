@@ -1,4 +1,5 @@
-﻿using BlazorCameraStreamer;
+﻿using AutoMapper;
+using BlazorCameraStreamer;
 using Blazorise.Extensions;
 using DocumentFormat.OpenXml.Office2010.PowerPoint;
 using DocumentFormat.OpenXml.Packaging;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Charts;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System;
@@ -18,6 +20,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Security;
+using System.Text;
 using System.Timers;
 
 
@@ -147,8 +150,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
 
+        Dictionary<int, string> imageUrls = new Dictionary<int, string>();
+
+
         protected async override Task OnInitializedAsync()
         {
+
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -167,6 +174,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
+                _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
+
+
                 _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
                 foreach (var category in _checklistCategoriesAndQuestions)
                 {
@@ -174,12 +184,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         if (!_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.QuestionID))
                         {
-                            Console.WriteLine($"New Question Id:{question.QuestionID}");
                             ChecklistAnswer newChAnswer = new();
                             newChAnswer.JobObservationId = _jobObservation.JobObservationId;
                             newChAnswer.QuestionID = question.QuestionID;
                             newChAnswer.Prompt = question.Prompt;
                             questionAnswers.Add(question.QuestionID, newChAnswer);
+                        }
+                        else
+                        {
+                            var item = _jobObservation.ChecklistAnswers.ToList().Find(cka => cka.QuestionID == question.QuestionID);
+                            if (item.Evidences.Count > 0)
+                            {
+                                foreach (var evidence in item.Evidences)
+                                {
+                                    var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                                    imageUrls[evidence.FileUploadId] = imageUrl;
+
+                                }
+                            }
                         }
                     }
                 }
@@ -188,7 +210,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 glosary = await GlosaryService.GetGlosary();
                 _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-                _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
                 //Por ahora te lo clono
                 _lupJobObservations = ObjectCloner.ObjectCloner.DeepClone(_jobObservation);
 
@@ -582,163 +603,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
 
-                if (_jobObservation.ChecklistAnswers.Count > 0)
-                    foreach (var question in _jobObservation.ChecklistAnswers)
-                    {
 
-                        if (question.Edited)
-                        {
-                            using var content = new MultipartFormDataContent();
-                            for (int i = 0; i < question.capturedImagesFiles.Count; i++)
-                            {
-                                question.NewFilesStreams.ElementAt(i).Position = 0;
-                                var fileContent = new StreamContent(question.NewFilesStreams.ElementAt(i));
-                                fileContent.Headers.ContentType = new MediaTypeHeaderValue(question.capturedImagesFiles.ElementAt(i).ContentType);
-
-                                content.Add(
-                                    content: fileContent,
-                                    name: "\"file\"",
-                                    fileName: question.capturedImagesFiles.ElementAt(i).Name
-                                );
-                            }
-
-                            foreach (var imageData in question.capturedImages)
-                            {
-                                if (!string.IsNullOrEmpty(imageData))
-                                {
-                                    // Elimina la cabecera si está presente
-                                    var base64Data = imageData.Replace("data:image/png;base64,", "");
-
-                                    if (IsValidBase64String(base64Data))
-                                    {
-                                        // Convierte base64Data en bytes
-                                        var imageBytes = Convert.FromBase64String(base64Data);
-
-                                        var imageStream = new MemoryStream(imageBytes);
-                                        var fileContent = new StreamContent(imageStream);
-                                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                                        content.Add(
-                                            content: fileContent,
-                                            name: "\"file\"",
-                                            fileName: "CameraEvidence.png");
-
-                                    }
-                                    else
-                                    {
-                                        Snackbar.Clear();
-                                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                        Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
-                                    }
-                                }
-                                else
-                                {
-                                    Snackbar.Clear();
-                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                    Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
-                                }
-                            }
-
-                            if (question.JobObservationId != 0)
-                            {
-                                question.JobObservationId = _jobObservation.JobObservationId;
-                            }
-
-                            var JsonAnswer = Newtonsoft.Json.JsonConvert.SerializeObject(question);
-                            content.Add(content: new StringContent(JsonAnswer), name: "checklistAnswer");
-
-                            var result1 = await ChecklistAnswerServices.CreateEvidencesChecklistAnswer(content);
-
-                            if (result1 != null)
-                            {
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Job observation Question item Update Evidences", Severity.Info);
-                            }
-                            else
-                            {
-                                Snackbar.Clear();
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add($"Error in Question Update Evidences", Severity.Error);
-                            }
-                        }
-                    }
-
-
-                if (questionAnswers.Count > 0)
-                {
-                    foreach (var question in questionAnswers)
-                    {
-                        using var content = new MultipartFormDataContent();
-                        for (int i = 0; i < question.Value.capturedImagesFiles.Count; i++)
-                        {
-                            question.Value.NewFilesStreams.ElementAt(i).Position = 0;
-                            var fileContent = new StreamContent(question.Value.NewFilesStreams.ElementAt(i));
-                            fileContent.Headers.ContentType = new MediaTypeHeaderValue(question.Value.capturedImagesFiles.ElementAt(i).ContentType);
-
-                            content.Add(
-                                content: fileContent,
-                                name: "\"file\"",
-                                fileName: question.Value.capturedImagesFiles.ElementAt(i).Name
-                            );
-                        }
-
-                        foreach (var imageData in question.Value.capturedImages)
-                        {
-                            if (!string.IsNullOrEmpty(imageData))
-                            {
-                                // Elimina la cabecera si está presente
-                                var base64Data = imageData.Replace("data:image/png;base64,", "");
-
-                                if (IsValidBase64String(base64Data))
-                                {
-                                    // Convierte base64Data en bytes
-                                    var imageBytes = Convert.FromBase64String(base64Data);
-
-                                    var imageStream = new MemoryStream(imageBytes);
-                                    var fileContent = new StreamContent(imageStream);
-                                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                                    content.Add(
-                                        content: fileContent,
-                                        name: "\"file\"",
-                                        fileName: "CameraEvidence.png");
-
-                                }
-                                else
-                                {
-                                    Snackbar.Clear();
-                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                    Snackbar.Add("Invalid image data, Answer", Severity.Error);
-                                }
-                            }
-                            else
-                            {
-                                Snackbar.Clear();
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add("No image data to upload, Answer", Severity.Warning);
-                            }
-                        }
-
-                        question.Value.JobObservationId = _jobObservation.JobObservationId;
-
-                        var JsonAnswer = Newtonsoft.Json.JsonConvert.SerializeObject(question.Value);
-                        content.Add(content: new StringContent(JsonAnswer), name: "Answer");
-
-                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(content);
-
-                        if (result2 != null)
-                        {
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
-                        }
-                        else
-                        {
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Error in Question", Severity.Error);
-                        }
-                    }
-                }
 
                 if (result)
                 {
@@ -2664,6 +2529,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             base.StateHasChanged();
         }
+        
+        private void RemoveEvidenceAnswer(ChecklistAnswer item, int index)
+        {
+            if (index >= 0 && index < item.Evidences.ToList().Count)
+            {
+                var elementRemove = item.Evidences.ToList()[index];
+                item.Evidences.Remove(elementRemove);
+                item.Edited = true;
+            }
+            base.StateHasChanged();
+        }
 
         private void RemoveImageFileAnswer(ChecklistAnswer item, int index)
         {
@@ -2739,7 +2615,199 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
         {
 
+            if (_jobObservation.ChecklistAnswers.Count > 0)
+                foreach (var question in _jobObservation.ChecklistAnswers)
+                {
+                    if (question.Edited)
+                    {
+                        using var content = new MultipartFormDataContent();
+                        for (int i = 0; i < question.capturedImagesFiles.Count; i++)
+                        {
+                            question.NewFilesStreams.ElementAt(i).Position = 0;
 
+                            var fileContent = new StreamContent(question.NewFilesStreams.ElementAt(i));
+                            fileContent.Headers.ContentType = new MediaTypeHeaderValue(question.capturedImagesFiles.ElementAt(i).ContentType);
+
+                            content.Add(
+                                content: fileContent,
+                                name: "Files",
+                                fileName: question.capturedImagesFiles.ElementAt(i).Name
+                            );
+                        }
+
+                        if(question.capturedImages.Count > 0)
+                        foreach (var imageData in question.capturedImages)
+                        {
+                            if (!string.IsNullOrEmpty(imageData))
+                            {
+                                // Elimina la cabecera si está presente
+                                var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                                if (IsValidBase64String(base64Data))
+                                {
+                                    // Convierte base64Data en bytes
+                                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                                    var imageStream = new MemoryStream(imageBytes);
+                                    imageStream.Position = 0;
+                                    var fileContent = new StreamContent(imageStream);
+                                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                                    content.Add(
+                                        content: fileContent,
+                                        name: "Files",
+                                        fileName: "CameraEvidence.png");
+
+                                }
+                                else
+                                {
+                                    Snackbar.Clear();
+                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                    Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
+                                }
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
+                            }
+                        }
+
+                        if (question.JobObservationId != 0)
+                        {
+                            question.JobObservationId = _jobObservation.JobObservationId;
+                        }
+
+                        ChecklistAnswerDto DtoAnswer = _mapper.Map<ChecklistAnswerDto>(question);
+
+                        content.Add(content: new StringContent(DtoAnswer.AnswerId.ToString()), name: "checklistAnswer.AnswerId");
+                        content.Add(content: new StringContent(DtoAnswer.JobObservationId.ToString()), name: "checklistAnswer.JobObservationId");
+                        content.Add(content: new StringContent(DtoAnswer.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
+                        content.Add(content: new StringContent(DtoAnswer.Prompt.ToString()), name: "checklistAnswer.Prompt");
+                        content.Add(content: new StringContent(DtoAnswer.Answer.ToString()), name: "checklistAnswer.Answer");
+                        if(!DtoAnswer.CommentarySV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(DtoAnswer.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
+                        if(!DtoAnswer.CommentarySSV.IsNullOrEmpty())
+                        content.Add(content: new StringContent(DtoAnswer.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+
+                        //string strevi = "";
+                        //strevi = JsonSerializer.Serialize(question.Evidences);
+                        //content.Add(content: new StringContent(strevi), name: "checklistAnswer.Evidences");
+                        //content.Add(content: new StringContent(strevi), name: "Evidences");
+
+
+                        var result1 = await ChecklistAnswerServices.CreateEvidencesChecklistAnswer(content);
+
+                        if (result1 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Update Evidences", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question Update Evidences", Severity.Error);
+                        }
+                    }
+                }
+
+
+            if (questionAnswers.Count > 0)
+            {
+                foreach (var question in questionAnswers)
+                {
+                    if (question.Value.Answer != "" || question.Value.Edited)
+                    {
+                        using var content = new MultipartFormDataContent();
+                        for (int i = 0; i < question.Value.capturedImagesFiles.Count; i++)
+                        {
+                            question.Value.NewFilesStreams.ElementAt(i).Position = 0;
+
+                            var fileContent = new StreamContent(question.Value.NewFilesStreams.ElementAt(i));
+                            fileContent.Headers.ContentType = new MediaTypeHeaderValue(question.Value.capturedImagesFiles.ElementAt(i).ContentType);
+
+                            content.Add(
+                                content: fileContent,
+                                name: "Files",
+                                fileName: question.Value.capturedImagesFiles.ElementAt(i).Name
+                            );
+                        }
+
+
+                        foreach (var imageData in question.Value.capturedImages)
+                        {
+                            if (!string.IsNullOrEmpty(imageData))
+                            {
+
+                                // Elimina la cabecera si está presente
+                                var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                                if (IsValidBase64String(base64Data))
+                                {
+                                    // Convierte base64Data en bytes
+                                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                                    var imageStream = new MemoryStream(imageBytes);
+                                    imageStream.Position = 0;
+                                    var fileContent = new StreamContent(imageStream);
+                                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                                    content.Add(
+                                        content: fileContent,
+                                        name: "Files",
+                                        fileName: "CameraEvidence.png");
+
+                                }
+                                else
+                                {
+                                    Snackbar.Clear();
+                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                    Snackbar.Add("Invalid image data, Answer", Severity.Error);
+                                }
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add("No image data to upload, Answer", Severity.Warning);
+                            }
+                        }
+
+                        question.Value.JobObservationId = _jobObservation.JobObservationId;
+
+
+
+                        ChecklistAnswerDto DtoAnswer = _mapper.Map<ChecklistAnswerDto>(question.Value);
+
+                        content.Add(content: new StringContent(DtoAnswer.AnswerId.ToString()), name: "checklistAnswer.AnswerId");
+                        content.Add(content: new StringContent(DtoAnswer.JobObservationId.ToString()), name: "checklistAnswer.JobObservationId");
+                        content.Add(content: new StringContent(DtoAnswer.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
+                        content.Add(content: new StringContent(DtoAnswer.Prompt.ToString()), name: "checklistAnswer.Prompt");
+                        content.Add(content: new StringContent(DtoAnswer.Answer.ToString()), name: "checklistAnswer.Answer");
+                        if (!DtoAnswer.CommentarySV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(DtoAnswer.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
+                        if (!DtoAnswer.CommentarySSV.IsNullOrEmpty())
+                        content.Add(content: new StringContent(DtoAnswer.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+
+
+                        var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(content);
+
+                        if (result2 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Created", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question", Severity.Error);
+                        }
+                    }
+                }
+            }
             //foreach (var kvp in questionResponses)
             //{
             //    int questionId = kvp.Key;
@@ -2790,7 +2858,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task UploadFiles(InputFileChangeEventArgs e, ChecklistAnswer item)
         {
-            Console.WriteLine($"Item is {item.QuestionID} {item.Prompt}");
             if (e.File.ContentType.StartsWith("image/"))
             {
                 item.Edited = true;
@@ -2808,7 +2875,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
+        private async Task DownloadFile(int fileId, string filename)
+        {
+            await FilesServices.DownloadFileEvidence(fileId, filename);
+        }
 
+        //Show Photo
+        private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visiblePhoto = false;
+
+        private int photoIndex = 0;
+
+        private void OpenPhotoDialog(int index, ChecklistAnswer item)
+        {
+            SelectedAnswer = item;
+            photoIndex = index;
+            visiblePhoto = true;
+        }
     }//end class
 
 }//end namespace

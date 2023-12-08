@@ -113,6 +113,9 @@ public class AutoMapperProfiles : Profile
 {
     public AutoMapperProfiles()
     {
+        CreateMap<ChecklistAnswer, ChecklistAnswerDto>().ReverseMap();
+        CreateMap<ChecklistAnswerDto, ChecklistAnswer>().ReverseMap();
+
         CreateMap<int?, int>().ConvertUsing<IntTypeConverter>();
         CreateMap<DateTime?, DateTime>().ConvertUsing<DateTimeTypeConverter>();
 

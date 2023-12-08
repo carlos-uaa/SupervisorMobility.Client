@@ -18,9 +18,18 @@ namespace SupervisorMobility.Client.Services.ChecklistAnswerService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
+        
         public async Task<ChecklistAnswer> CreateChecklistAnswer(MultipartFormDataContent checklistAnswer)
         {
-            var response = await _http.PostAsJsonAsync($"checklistAnswers", checklistAnswer);
+            var response = await _http.PostAsync("checklistAnswers", checklistAnswer);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
             var newChecklistAnswer = await response.Content.ReadFromJsonAsync<ChecklistAnswer>();
 
             return newChecklistAnswer;
@@ -28,7 +37,15 @@ namespace SupervisorMobility.Client.Services.ChecklistAnswerService
 
         public async Task<ChecklistAnswer> CreateEvidencesChecklistAnswer(MultipartFormDataContent checklistAnswer)
         {
-            var response = await _http.PostAsJsonAsync($"checklistAnswers/evidences", checklistAnswer);
+            var response = await _http.PostAsync("checklistAnswers/evidences", checklistAnswer);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
             var newChecklistAnswer = await response.Content.ReadFromJsonAsync<ChecklistAnswer>();
 
             return newChecklistAnswer;
