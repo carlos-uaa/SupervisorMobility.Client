@@ -946,13 +946,12 @@
 
                                                                         @if (_jobObservation.Status != 6)
                                                                         {
-
                                                                             <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
 
-                                                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count() < 5)
+                                                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count() < 6)
                                                                                 {
                                                                                     <InputFile id="@(answer.QuestionID.ToString())" OnChange="@( (e) => UploadFiles(e, answer))" hidden single accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
-                                                                                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                                                                                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2 mb-4"
                                                                                                HtmlTag="label"
                                                                                                Variant="Variant.Filled"
                                                                                                Color="Color.Primary"
@@ -962,7 +961,7 @@
                                                                                     </MudButton>
                                                                                 }
 
-                                                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count < 5)
+                                                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count < 6)
                                                                                 {
 
                                                                                     <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
@@ -991,7 +990,7 @@
                                                                                                 <MudItem Style="display:flex; flex-direction: column; align-items: center;">
                                                                                                     <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                                                         <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog(index, answer))" />
+                                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog(index, answer))" />
                                                                                                         </MudTooltip>
                                                                                                         <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
                                                                                                             <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveEvidenceAnswer(answer, index)"></MudIcon>
@@ -1001,7 +1000,7 @@
                                                                                                     <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
                                                                                                         <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
                                                                                                             <MudItem>
-                                                                                                                <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@evidence?.FileName" Color="Color.Info" />
+                                                                                                                <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@(evidence?.FileName.Length > 13 ? evidence?.FileName.Substring(0,10) + "..." : evidence?.FileName )" Color="Color.Info" />
                                                                                                             </MudItem>
                                                                                                         </MudButton>
                                                                                                     </MudTooltip>
@@ -1022,14 +1021,12 @@
                                                                                                 <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer(answer, index)"></MudIcon>
                                                                                             </MudTooltip>
                                                                                         </MudItem>
-                                                                                        <MudListItem Icon="@Icons.Material.Filled.PictureInPicture" @key="@file">
-                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src="@answer.MediaUris.ElementAt(index)" Elevation="25" Class="rounded-lg" />
+                                                                                        <MudListItem Icon="@Icons.Material.Filled.PhotoSizeSelectActual" @key="@file">
+                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="@answer.MediaUris.ElementAt(index)" Elevation="25" Class="rounded-lg" />
                                                                                         </MudListItem>
                                                                                     </MudItem>
                                                                                 }
-                                                                            </MudItem>
-                                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
-
+            
                                                                                 @foreach (var (image, index) in answer.capturedImages.Select((image, index) => (image, index)))
                                                                                 {
                                                                                     <MudItem Class=" mr-8 mb-4">
@@ -1038,18 +1035,18 @@
                                                                                                 <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer(answer, index)"></MudIcon>
                                                                                             </MudTooltip>
                                                                                         </MudItem>
-                                                                                        <MudListItem Icon="@Icons.Material.Filled.Camera" @key="@image">
-                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                                        <MudListItem Icon="@Icons.Material.Filled.CameraAlt" @key="@image">
+                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
                                                                                         </MudListItem>
                                                                                     </MudItem>
                                                                                 }
                                                                             </MudItem>
                                                                         </MudItem>
                                                                     </MudItem>
-                                                                    <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
-                                                                        <MudTextField Disabled="@(user.UserId != 3 || _jobObservation.Status == 6)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
+                                                                    <MudItem Style="width: 30%" Class="ma-5">
+                                                                        <MudTextField Disabled="@(user.UserId != 3 || _jobObservation.Status == 6)" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
 
-                                                                        <MudTextField Disabled="@(user.UserId > 2 || _jobObservation.Status == 6)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
+                                                                        <MudTextField Disabled="@(user.UserId > 2 || _jobObservation.Status == 6)" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
                                                                     </MudItem>
                                                                 </MudItem>
                                                             </td>
@@ -1347,7 +1344,7 @@
                                                             {
                                                                 <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
                                                                  <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
-                                                                     <TitleContent>
+                                                                     <TitleContent >
                                                                          <MudText Style="text-align: center; padding:0 !important">
                                                                              @Localizer["Add Evidence Photos "]
                                                                                 <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
@@ -1364,11 +1361,11 @@
                                                                             </MudText>
                                                                         </TitleContent>
                                                                         <ChildContent>
-                                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                                                                            <MudItem Class="d-flex mt-4" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
 
                                                                                 @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
                                                                                 {
-                                                                                    <MudItem Class=" mr-8 mb-4">
+                                                                                    <MudItem Class="mr-8 mb-4">
                                                                                         <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                                             <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
                                                                                                 <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index)"></MudIcon>
