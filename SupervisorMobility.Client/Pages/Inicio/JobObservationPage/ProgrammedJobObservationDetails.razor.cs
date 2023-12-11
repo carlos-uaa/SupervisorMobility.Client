@@ -99,7 +99,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true);
 
             _plants = await PlantServices.GetPlants();
             //_products = await ProductService.GetProducts();
@@ -107,7 +107,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
 
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-
+            operatorUsers = await UsersService.GetSubordinates(_jobObservation.SupervisorId);
+            StateHasChanged();
 
 
             try
@@ -145,7 +146,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            operatorUsers = await UsersService.GetSubordinates(_jobObservation.SupervisorId);
 
             if (_jobObservation.PlantId != 0)
             {

@@ -194,7 +194,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Count + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Status != 7).Count() + ")";
             totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
             totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
             totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
