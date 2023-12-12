@@ -1,28 +1,14 @@
-﻿using AutoMapper;
-using BlazorCameraStreamer;
+﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
-using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using DocumentFormat.OpenXml.Packaging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
 using Microsoft.JSInterop;
 using MudBlazor;
-using MudBlazor.Charts;
-using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
-using System;
-using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Globalization;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
 using System.Timers;
-using static SupervisorMobility.Client.Services.ChecklistAnswerService.ChecklistAnswerService;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -2533,6 +2519,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
+        private void RemoveImageFileAnswer(ChecklistAnswer item, int index)
+        {
+            if (index >= 0 && index < item.capturedImagesFiles.Count)
+            {
+                item.capturedImagesFiles.RemoveAt(index);
+                item.MediaUris.RemoveAt(index);
+            }
+            base.StateHasChanged();
+        }
+
         private void RemoveEvidenceAnswer(ChecklistAnswer item, int index)
         {
             if (index >= 0 && index < item.Evidences.ToList().Count)
@@ -2559,15 +2555,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        private void RemoveImageFileAnswer(ChecklistAnswer item, int index)
-        {
-            if (index >= 0 && index < item.capturedImagesFiles.Count)
-            {
-                item.capturedImagesFiles.RemoveAt(index);
-                item.MediaUris.RemoveAt(index);
-            }
-            base.StateHasChanged();
-        }
+        
 
         //Questions and answers
 
@@ -2843,49 +2831,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
-            //foreach (var kvp in questionResponses)
-            //{
-            //    int questionId = kvp.Key;
-            //    string answer = kvp.Value;
-            //    var notGood = "";
 
-            //    foreach (var category in _checklistCategoriesAndQuestions)
-            //    {
-            //        foreach (var question in category.ChecklistQuestions)
-            //        {
-            //            if (question.QuestionID == questionId)
-            //            {
-            //                notGood = question.Prompt;
-            //            }
-            //        }
-            //    }
-
-            //    ChecklistAnswer Answer = new ChecklistAnswer
-            //    {
-            //        QuestionID = questionId,
-            //        Answer = answer,
-            //        Prompt = notGood,
-
-            //    };
-
-            //    if (!Answer.Answer.IsNullOrEmpty() )
-            //    {
-            //        questionAnswers[questionId] = Answer;
-            //    }
-
-            //}
-
-            //foreach (var cka in _jobObservation.ChecklistAnswers)
-            //{
-
-            //    if (questionAnswers.ContainsKey(cka.QuestionID))
-            //    {
-            //        // Eliminar la llave si existe
-            //        questionAnswers.Remove(cka.QuestionID);
-            //        Console.WriteLine($"La llave '{cka.QuestionID}' fue eliminada del diccionario.");
-            //    }
-
-            //}
 
 
             return new AsyncVoidMethodBuilder();
