@@ -2626,6 +2626,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Show Supervisors.
+        /// </summary>
+        public static string SOS_ShowSupervisors {
+            get {
+                return ResourceManager.GetString("SOS_ShowSupervisors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SOS Details.
         /// </summary>
         public static string sosDetails {

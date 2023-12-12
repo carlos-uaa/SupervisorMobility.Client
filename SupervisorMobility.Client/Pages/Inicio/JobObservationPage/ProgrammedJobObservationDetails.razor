@@ -50,16 +50,29 @@ else
         <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
             <MudItem Class="d-flex justify-space-between pa-1 ma-1 mt-6">
 
-
                 <MudItem Style="text-align: start">
-                    @if (_assychart != null)
+                    @if (!searchAssychart && messageErrorFolders == null)
+                    {
+                        <MudItem Class="d-flex justify-center align-center">
+                            <MudChip Color="Color.Info" Variant="Variant.Outlined">
+                                <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" Class="mr-3" />
+                                Loading Assy Chart
+                            </MudChip>
+                        </MudItem>
+                    }
+                    @if (!searchAssychart && messageErrorFolders != null)
+                    {
+                        <MudItem class="d-flex flex-column justify-center align-self-start">
+                            <MudAlert Severity="Severity.Info">@messageErrorFolders</MudAlert>
+                        </MudItem>
+                    }
+                    @if (searchAssychart && messageErrorFolders == null)
                     {
                         <MudItem Class="d-flex flex-row align-start justify-center">
 
                             @if (_assychart.RoutesProductsAssyChart?.Count > 0)
                             {
                                 <MudMenu Dense=true AnchorOrigin="Origin.BottomRight" Style="display: flex" TransformOrigin="Origin.CenterLeft">
-
                                     <ActivatorContent>
                                         <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Directorys</MudButton>
                                     </ActivatorContent>
@@ -360,57 +373,7 @@ else
                             }
                         </MudItem>
                     }
-                    else
-                    {
-                        @if (_jobObservation.PlantId == 0 && _assychart is null)
-                        {
-                            <MudPaper Elevation="0">
-
-                                <MudAlert Severity="Severity.Info">
-                                    @Localizer["firstSelectAPlant"]
-                                </MudAlert>
-                            </MudPaper>
-                        }
-                        else if (_jobObservation.PlantId != 0 && _jobObservation.AreaId == 0 && _assychart is null)
-                        {
-                            <MudPaper Elevation="0">
-                                <MudAlert Severity="Severity.Info">
-                                    @Localizer["firstSelectAnArea"]
-                                </MudAlert>
-                            </MudPaper>
-                        }
-                        else if (_jobObservation.PlantId != 0 && _jobObservation.AreaId != 0 && _jobObservation.DistributionId == 0 && _assychart is null)
-                        {
-                            <MudPaper Elevation="0">
-                                <MudAlert Severity="Severity.Info">
-                                    @Localizer["selectADistributionFirst"]
-                                </MudAlert>
-                            </MudPaper>
-                        }
-                        else if (_assychart != null)
-                        {
-                            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
-                        }
-                        else if (_assychart is null)
-                        {
-                            <MudItem class="d-flex flex-column justify-center align-self-start">
-                                <MudPaper Elevation="0">
-                                    <MudAlert Severity="Severity.Info">
-                                        No AssyCharts Found
-                                    </MudAlert>
-                                </MudPaper>
-                            </MudItem>
-                        }
-                        else
-                        {
-                            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
-                        }
-
-
-                    }
-
                 </MudItem>
-
                 <MudItem Style="text-align: end">
                     <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" OnClick="@history" Icon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudChip>
 
@@ -419,7 +382,16 @@ else
             <MudText Typo="Typo.h6" Class="mt-5">
                 @Localizer["jobObservacionCiclycalCard"] @_jobObservation.JobObservationId
                 <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">@Localizer["sosReviewProgram"]</MudChip>
-                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                @if (_jobObservation.StartDate < DateTime.Now)
+                {
+
+                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Error" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                }
+                else
+                {
+
+                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                }
             </MudText>
         </MudItem>
         <MudPaper Class="" Elevation="0">
@@ -442,7 +414,7 @@ else
                                 </div>
                             </td>
                             <td class="d-flex">
-                                <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2"  />
+                                <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
                                 <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
                             </td>
                         </tr>
@@ -453,14 +425,14 @@ else
                                     <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">@_jobObservation.Distribution?.Code - @_jobObservation.Distribution?.Description</MudSelectItem>
                                 </MudSelect>
                             </td>
-                            <td >
+                            <td>
                                 <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" />
-@*                              <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly/>
+                                @*                              <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" ReadOnly/>
                                 <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" ReadOnly />*@
                             </td>
                         </tr>
                         <tr>
-                            <td >
+                            <td>
                                 @*Mud select of Operations *@
                                 <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)">
                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
@@ -484,9 +456,9 @@ else
                         <tr>
                             <td colspan="2" style="text-align: center;">
                                 <MudRadioGroup @bind-SelectedOption="_jobObservation.Option">
-                                    <MudRadio Option="1" Color="Color.Info" Size="Size.Small" >@Localizer["verifyTraining"]</MudRadio>
-                                    <MudRadio Option="2" Color="Color.Info" Size="Size.Small" >@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
-                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small" >
+                                    <MudRadio Option="1" Color="Color.Info" Size="Size.Small">@Localizer["verifyTraining"]</MudRadio>
+                                    <MudRadio Option="2" Color="Color.Info" Size="Size.Small">@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
+                                    <MudRadio Option="3" Color="Color.Info" Size="Size.Small">
                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Management of the anomaly"))
                                         {
                                             Glosary word;
@@ -516,7 +488,8 @@ else
         </MudPaper>
 
         <MudCardActions>
-            @if(LoggedUser.UserType == 1 || LoggedUser.UserType == 2 || LoggedUser.UserType == 3){
+            @if (LoggedUser.UserType == 1 || LoggedUser.UserType == 2 || LoggedUser.UserType == 3)
+            {
                 <MudItem Class="ml-auto">
                     <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => PlanNewJobObservation())">@Localizer["planJobObservation"]</MudButton>
                 </MudItem>
