@@ -133,6 +133,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a You need to add a comment.
+        /// </summary>
+        public static string AddComment {
+            get {
+                return ResourceManager.GetString("AddComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Add existing product.
         /// </summary>
         public static string addExistingProduct {
@@ -318,6 +327,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string anomaly {
             get {
                 return ResourceManager.GetString("anomaly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Write down the anomaly first.
+        /// </summary>
+        public static string AnomalyFirst {
+            get {
+                return ResourceManager.GetString("AnomalyFirst", resourceCulture);
             }
         }
         
@@ -862,6 +880,42 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Date Changed in Job Observation.
+        /// </summary>
+        public static string DateChangeInJob {
+            get {
+                return ResourceManager.GetString("DateChangeInJob", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error in End Date.
+        /// </summary>
+        public static string DateEndError {
+            get {
+                return ResourceManager.GetString("DateEndError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error in Date End.
+        /// </summary>
+        public static string DateError {
+            get {
+                return ResourceManager.GetString("DateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error in StartDate.
+        /// </summary>
+        public static string DateStartError {
+            get {
+                return ResourceManager.GetString("DateStartError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a mm/dd/yyyy.
         /// </summary>
         public static string dd_mm_yyyy {
@@ -1132,6 +1186,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error C Area is empty.
+        /// </summary>
+        public static string ErrorCArea {
+            get {
+                return ResourceManager.GetString("ErrorCArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error D Area is empty.
+        /// </summary>
+        public static string ErrorDArea {
+            get {
+                return ResourceManager.GetString("ErrorDArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error Others Area is empty.
+        /// </summary>
+        public static string ErrorOthersArea {
+            get {
+                return ResourceManager.GetString("ErrorOthersArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error Q Area is empty.
+        /// </summary>
+        public static string ErrorQArea {
+            get {
+                return ResourceManager.GetString("ErrorQArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error S Area is empty.
+        /// </summary>
+        public static string ErrorSArea {
+            get {
+                return ResourceManager.GetString("ErrorSArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Error con Usuario / Contraseña no coinciden..
         /// </summary>
         public static string errorWithUsernamePasswordDoesNotMatch {
@@ -1155,6 +1254,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string evidence {
             get {
                 return ResourceManager.GetString("evidence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a &quot;Feedback is missing!&quot;.
+        /// </summary>
+        public static string Feedbackmissing {
+            get {
+                return ResourceManager.GetString("Feedbackmissing", resourceCulture);
             }
         }
         
@@ -1218,6 +1326,60 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string firstSelectASupervisor {
             get {
                 return ResourceManager.GetString("firstSelectASupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Takt Time.
+        /// </summary>
+        public static string firstTakeTime {
+            get {
+                return ResourceManager.GetString("firstTakeTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Hoe Standard Time 1.
+        /// </summary>
+        public static string firstTakeTime1 {
+            get {
+                return ResourceManager.GetString("firstTakeTime1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Hoe Standard Time 2.
+        /// </summary>
+        public static string firstTakeTime2 {
+            get {
+                return ResourceManager.GetString("firstTakeTime2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Hoe Standard Time 3.
+        /// </summary>
+        public static string firstTakeTime3 {
+            get {
+                return ResourceManager.GetString("firstTakeTime3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Hoe Standard Time 4.
+        /// </summary>
+        public static string firstTakeTime4 {
+            get {
+                return ResourceManager.GetString("firstTakeTime4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First enter the Hoe Standard Time 5.
+        /// </summary>
+        public static string firstTakeTime5 {
+            get {
+                return ResourceManager.GetString("firstTakeTime5", resourceCulture);
             }
         }
         
@@ -2037,6 +2199,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string operatorsByOperation {
             get {
                 return ResourceManager.GetString("operatorsByOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operator&apos;s Signature is missing!.
+        /// </summary>
+        public static string operatorsignaturemiss {
+            get {
+                return ResourceManager.GetString("operatorsignaturemiss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operator Signature doesn&apos;t match.
+        /// </summary>
+        public static string operatorsignaturenotmarch {
+            get {
+                return ResourceManager.GetString("operatorsignaturenotmarch", resourceCulture);
             }
         }
         
@@ -2941,6 +3121,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Time is NG, LUP added to Delivery Pillar.
+        /// </summary>
+        public static string timeNG___ {
+            get {
+                return ResourceManager.GetString("timeNG...", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Today.
         /// </summary>
         public static string today {
@@ -3126,6 +3315,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string year {
             get {
                 return ResourceManager.GetString("year", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a You need to change the date first.
+        /// </summary>
+        public static string YouNeedChangeDate {
+            get {
+                return ResourceManager.GetString("YouNeedChangeDate", resourceCulture);
             }
         }
     }

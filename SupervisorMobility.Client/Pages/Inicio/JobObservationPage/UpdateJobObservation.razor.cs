@@ -427,25 +427,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             catch (Exception ex)
                             {
-                                messageErrorFolders = "The folders with the information provided were not located.";
+                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
 
                         }
                         else
                         {
-                            messageErrorFolders = "Job Observation does not contain a valid distribution";
+                            messageErrorFolders = Localizer["jobObservationDoesNotContainAValidDistribution"];
                             Console.WriteLine("missing plant");
                         }
                     }
                     else
                     {
-                        messageErrorFolders = "Job Observation does not contain a valid area";
+                        messageErrorFolders = Localizer["jobObservationDoesNotContainAValidArea"];
+
                         Console.WriteLine("missing plant");
                     }
                 }
                 else
                 {
-                    messageErrorFolders = "Job Observation does not contain a valid plant";
+                    messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
+
                     Console.WriteLine("missing plant");
                 }
             }
@@ -524,7 +526,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"You need to add a comment", Severity.Error);
+                Snackbar.Add(Localizer["AddComment"], Severity.Error);
                 return;
             }
 
@@ -562,7 +564,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -580,7 +582,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"You need to change the date first", Severity.Error);
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
                     return;
                 }
 
@@ -599,7 +601,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Date Changed in Job Observation {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else
@@ -618,7 +620,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -631,7 +633,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -649,7 +651,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"You need to change the date first", Severity.Error);
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
                     return;
                 }
 
@@ -667,7 +669,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Date Changed in Job Observation {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["DateChangeInJob"] +  $" {_jobObservation.JobObservationId}", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else
@@ -683,7 +685,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                Snackbar.Add(Localizer["AnomalyFirst"], Severity.Error);
                 return;
             }
 
@@ -718,7 +720,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -731,7 +733,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -779,7 +781,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -792,7 +794,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -841,7 +843,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
                 return;
             }
@@ -850,7 +852,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
                 return;
             }
 
@@ -883,7 +885,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -896,7 +898,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
@@ -959,7 +961,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
@@ -1071,7 +1073,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1129,7 +1131,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1235,7 +1237,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1279,7 +1281,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -1292,7 +1294,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1332,7 +1334,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Feedback is missing!", Severity.Warning);
+                Snackbar.Add(Localizer["Feedbackmissing"], Severity.Warning);
                 visibleSign = false;
                 return;
             }
@@ -1468,7 +1470,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Takt Time", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime"], Severity.Warning);
                 return;
             }
 
@@ -1477,7 +1479,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 1", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime1"], Severity.Warning);
                 return;
             }
             else if (option == 2 && HoeTimes[1] == 0.0)
@@ -1485,28 +1487,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime2"], Severity.Warning);
                 return;
             }
             else if (option == 3 && HoeTimes[2] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 3", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime3"], Severity.Warning);
                 return;
             }
             else if (option == 4 && HoeTimes[3] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 4", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime4"], Severity.Warning);
                 return;
             }
             else if (option == 5 && HoeTimes[4] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 5", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime5"], Severity.Warning);
                 return;
             }
             opt = option;
@@ -1619,7 +1621,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             Snackbar.Clear();
                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Time is NG, LUP added to Delivery Pillar", Severity.Warning);
+                            Snackbar.Add(Localizer["timeNG..."], Severity.Warning);
                             areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than Takt time ({taktTime})";
                         }
                     }
@@ -1647,7 +1649,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorSArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1661,7 +1663,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorQArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1675,7 +1677,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorDArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1689,7 +1691,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorCArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1703,7 +1705,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorOtherArea"], Severity.Error);
                         return;
                     }
                     break;
