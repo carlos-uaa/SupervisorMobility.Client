@@ -1,4 +1,6 @@
-﻿using Blazorise.Extensions;
+﻿using BlazorCameraStreamer;
+using Blazorise.Extensions;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -8,6 +10,8 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Timers;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http.Headers;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
@@ -148,13 +152,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
             _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+          
             foreach (var category in _checklistCategoriesAndQuestions)
             {
                 foreach (var question in category.ChecklistQuestions)
                 {
-                    questionResponses[question.QuestionID] = null;
+                        ChecklistAnswer newChAnswer = new();
+                        newChAnswer.JobObservationId = _jobObservation.JobObservationId;
+                        newChAnswer.QuestionID = question.QuestionID;
+                        newChAnswer.Prompt = question.Prompt;
+                        questionAnswers.Add(question.QuestionID, newChAnswer);
                 }
             }
+
             await GetUserAsync();
             StateHasChanged();
 
@@ -512,7 +522,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            GenerateChecklistAnswers();
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -592,15 +601,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             _jobObservation.Lup = _tempLup;
-            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+            foreach (var question in questionAnswers)
+            {
+                if (question.Value.Answer != "" || question.Value.Edited)
+                {
+                    _jobObservation.ChecklistAnswers?.Add(question.Value);
+                }
+            }
 
-            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
-
+                    var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+            
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
+
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
 
 
                 NavigationManager.NavigateTo("/jobobservation");
@@ -1078,7 +1096,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            GenerateChecklistAnswers();
+            
             startHour = DateTime.Now.TimeOfDay;
 
 
@@ -1184,7 +1202,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.Lup = _tempLup;
-            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+            foreach (var question in questionAnswers)
+            {
+                if (question.Value.Answer != "" || question.Value.Edited)
+                {
+                    _jobObservation.ChecklistAnswers?.Add(question.Value);
+                }
+            }
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1192,7 +1216,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
-
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1259,7 +1284,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            GenerateChecklistAnswers();
+         
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1357,7 +1382,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.Lup = _tempLup;
-            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+            foreach (var question in questionAnswers)
+            {
+                if (question.Value.Answer != "" || question.Value.Edited)
+                {
+                    _jobObservation.ChecklistAnswers?.Add(question.Value);
+                }
+            }
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1366,6 +1397,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -1438,7 +1471,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            GenerateChecklistAnswers();
+           
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1535,7 +1568,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.Lup = _tempLup;
-            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+            foreach (var question in questionAnswers)
+            {
+                if (question.Value.Answer != "" || question.Value.Edited)
+                {
+                    _jobObservation.ChecklistAnswers?.Add(question.Value);
+                }
+            }
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1544,6 +1583,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
 
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -1617,7 +1658,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            GenerateChecklistAnswers();
+           
 
             _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
@@ -1722,7 +1763,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.Lup = _tempLup;
-            _jobObservation.ChecklistAnswers = questionAnswers.Values;
+            foreach (var question in questionAnswers)
+            {
+                if (question.Value.Answer != "" || question.Value.Edited)
+                {
+                    _jobObservation.ChecklistAnswers?.Add(question.Value);
+                }
+            }
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1730,7 +1777,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation Created", Severity.Info);
-
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -2212,7 +2260,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private void AddLupOpportunity(int pillarId, string notGood)
+        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
@@ -2242,49 +2290,273 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
+            item.Show = true;
+            item.Edited = true;
 
-            foreach (var kvp in questionResponses)
-            {
-                int questionId = kvp.Key;
-                string answer = kvp.Value;
-                Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
+            //foreach (var kvp in questionResponses)
+            //{
+            //    int questionId = kvp.Key;
+            //    string answer = kvp.Value;
+            //    Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
 
-            }
+            //}
 
             StateHasChanged();
         }
 
-        private void GenerateChecklistAnswers()
+        private async Task UploadFiles(InputFileChangeEventArgs e, ChecklistAnswer item)
+        {
+            if (e.File.ContentType.StartsWith("image/"))
+            {
+                item.Edited = true;
+                using (Stream mediaStream = e.File.OpenReadStream(e.File.Size))
+                {
+                    MemoryStream ms = new();
+                    await mediaStream.CopyToAsync(ms);
+                    string MediaUri = $"data:{e.File.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                    item.MediaUris.Add(MediaUri);
+                    item.capturedImagesFiles?.Add(e.File);
+                    item.NewFilesStreams.Add(ms);
+                }
+            }
+
+        }
+
+        //camara for atachment answer
+        bool visibleDialogAnswerCamera = false;
+        ChecklistAnswer SelectedAnswer { get; set; }
+        private void OpenCameraAnswerDialog(ChecklistAnswer item)
+        {
+            SelectedAnswer = item;
+            visibleDialogAnswerCamera = true;
+        }
+
+        //Camera
+        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
+        private List<string> capturedImages = new List<string>();
+
+        public int lupPhotosId = 0;
+        public string oportunity = "";
+        public int photosPillar = 0;
+
+        private bool visibleCamera = false;
+        public bool accessCamera = false;
+        private void OpenCameraDialog(int lupId, string lupOportunity, int pillar)
+        {
+            photosPillar = pillar;
+            oportunity = lupOportunity;
+            lupPhotosId = lupId;
+
+            visibleCamera = true;
+
+        }
+        void Close2() => visibleCamera = false;
+        private CameraStreamer CameraStreamerReference;
+
+        private string? cameraId = null;
+
+        private int frameCount;
+
+        private string imageData;
+
+
+        private async void OnRenderedHandler()
         {
 
-            foreach (var kvp in questionResponses)
+            frameCount = 0;
+            if (await CameraStreamerReference.GetCameraAccessAsync())
             {
-                int questionId = kvp.Key;
-                string answer = kvp.Value;
-                var notGood = "";
+                await CameraStreamerReference.ReloadAsync();
 
-                foreach (var category in _checklistCategoriesAndQuestions)
+            }
+        }
+
+        private async void Start()
+        {
+            await CameraStreamerReference.StartAsync();
+        }
+
+        private async void Stop()
+        {
+            await CameraStreamerReference.StopAsync();
+        }
+
+        private void OnFrameHandler(string _)
+        {
+            ++frameCount;
+        }
+
+        private async void GetCurrentFrame()
+        {
+            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                capturedImages.Add(imageData);
+            }
+            visibleCamera = false;
+            StateHasChanged();
+            Stop();
+        }
+
+        private async void GetCurrentFrameAnswer()
+        {
+            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                SelectedAnswer.capturedImages.Add(imageData);
+            }
+            visibleDialogAnswerCamera = false;
+            SelectedAnswer.Edited = true;
+
+            StateHasChanged();
+            Stop();
+        }
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private void RemoveImageAnswer(ChecklistAnswer item, int index)
+        {
+            if (index >= 0 && index < item.capturedImages.Count)
+            {
+                item.capturedImages.RemoveAt(index);
+            }
+            base.StateHasChanged();
+        }
+
+        private void RemoveImageFileAnswer(ChecklistAnswer item, int index)
+        {
+            if (index >= 0 && index < item.capturedImagesFiles.Count)
+            {
+                item.capturedImagesFiles.RemoveAt(index);
+                item.MediaUris.RemoveAt(index);
+            }
+            base.StateHasChanged();
+        }
+
+        private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
+        {
+            if (_jobObservation.ChecklistAnswers.Count > 0)
+            {
+                foreach ((ChecklistAnswer question, int index) in _jobObservation.ChecklistAnswers.Select((question, index) => (question, index)))
                 {
-                    foreach (var question in category.ChecklistQuestions)
+                    ChecklistAnswer answer = questionAnswers[question.QuestionID];
+
+                    if (answer.Edited)
                     {
-                        if (question.QuestionID == questionId)
+                        using var content = new MultipartFormDataContent();
+
+                        for (int i = 0; i < answer.capturedImagesFiles.Count; i++)
                         {
-                            notGood = question.Prompt;
+                            answer.NewFilesStreams.ElementAt(i).Position = 0;
+
+                            var fileContent = new StreamContent(answer.NewFilesStreams.ElementAt(i));
+                            fileContent.Headers.ContentType = new MediaTypeHeaderValue(answer.capturedImagesFiles.ElementAt(i).ContentType);
+
+                            content.Add(
+                                content: fileContent,
+                                name: "Files",
+                                fileName: answer.capturedImagesFiles.ElementAt(i).Name
+                            );
+                        }
+
+                        if (answer.capturedImages.Count > 0)
+                            foreach (var imageData in answer.capturedImages)
+                            {
+                                if (!string.IsNullOrEmpty(imageData))
+                                {
+                                    // Elimina la cabecera si está presente
+                                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                                    if (IsValidBase64String(base64Data))
+                                    {
+                                        // Convierte base64Data en bytes
+                                        var imageBytes = Convert.FromBase64String(base64Data);
+
+                                        var imageStream = new MemoryStream(imageBytes);
+                                        imageStream.Position = 0;
+                                        var fileContent = new StreamContent(imageStream);
+                                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                                        content.Add(
+                                            content: fileContent,
+                                            name: "Files",
+                                            fileName: "CameraEvidence.png");
+
+                                    }
+                                    else
+                                    {
+                                        Snackbar.Clear();
+                                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                        Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
+                                    }
+                                }
+                                else
+                                {
+                                    Snackbar.Clear();
+                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                    Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
+                                }
+                            }
+
+                        if (question.JobObservationId != 0)
+                        {
+                            question.JobObservationId = _jobObservation.JobObservationId;
+                        }
+
+
+                        content.Add(content: new StringContent(question.AnswerId.ToString()), name: "checklistAnswer.AnswerId");
+                        content.Add(content: new StringContent(question.JobObservationId.ToString()), name: "checklistAnswer.JobObservationId");
+                        content.Add(content: new StringContent(question.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
+                        content.Add(content: new StringContent(question.Prompt.ToString()), name: "checklistAnswer.Prompt");
+                        content.Add(content: new StringContent(question.Answer.ToString()), name: "checklistAnswer.Answer");
+                        if (!question.CommentarySV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(question.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
+                        if (!question.CommentarySSV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(question.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+
+
+
+                        var result1 = await ChecklistAnswerServices.CreateEvidencesChecklistAnswer(content);
+
+                        if (result1 != null)
+                        {
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Job observation Question item Update Evidences", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"Error in Question Update Evidences", Severity.Error);
                         }
                     }
                 }
-
-                ChecklistAnswer Answer = new ChecklistAnswer
-                {
-                    QuestionID = questionId,
-                    Answer = answer,
-                    Prompt = notGood,
-
-                };
-
-                questionAnswers[questionId] = Answer;
             }
 
+
+
+
+
+            return new AsyncVoidMethodBuilder();
         }
 
     }

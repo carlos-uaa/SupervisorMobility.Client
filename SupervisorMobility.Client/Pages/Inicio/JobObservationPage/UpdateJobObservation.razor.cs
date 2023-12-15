@@ -1,26 +1,13 @@
-﻿using AutoMapper;
-using BlazorCameraStreamer;
+﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
-using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using DocumentFormat.OpenXml.Packaging;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
 using Microsoft.JSInterop;
 using MudBlazor;
-using MudBlazor.Charts;
-using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
-using System;
-using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Globalization;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
 using System.Timers;
 
 
@@ -149,6 +136,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        private Dictionary<int, List<int>> questionDelete = new Dictionary<int, List<int>>();
 
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
 
@@ -205,6 +193,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
+
                 _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
@@ -438,25 +427,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             catch (Exception ex)
                             {
-                                messageErrorFolders = "The folders with the information provided were not located.";
+                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
 
                         }
                         else
                         {
-                            messageErrorFolders = "Job Observation does not contain a valid distribution";
+                            messageErrorFolders = Localizer["jobObservationDoesNotContainAValidDistribution"];
                             Console.WriteLine("missing plant");
                         }
                     }
                     else
                     {
-                        messageErrorFolders = "Job Observation does not contain a valid area";
+                        messageErrorFolders = Localizer["jobObservationDoesNotContainAValidArea"];
+
                         Console.WriteLine("missing plant");
                     }
                 }
                 else
                 {
-                    messageErrorFolders = "Job Observation does not contain a valid plant";
+                    messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
+
                     Console.WriteLine("missing plant");
                 }
             }
@@ -535,7 +526,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"You need to add a comment", Severity.Error);
+                Snackbar.Add(Localizer["AddComment"], Severity.Error);
                 return;
             }
 
@@ -573,7 +564,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -591,7 +582,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"You need to change the date first", Severity.Error);
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
                     return;
                 }
 
@@ -610,7 +601,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Date Changed in Job Observation {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else
@@ -629,7 +620,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -642,7 +633,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -660,7 +651,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"You need to change the date first", Severity.Error);
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
                     return;
                 }
 
@@ -678,7 +669,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Date Changed in Job Observation {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["DateChangeInJob"] +  $" {_jobObservation.JobObservationId}", Severity.Info);
                     NavigationManager.NavigateTo("/jobobservation");
                 }
                 else
@@ -694,7 +685,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Write down the anomaly first", Severity.Error);
+                Snackbar.Add(Localizer["AnomalyFirst"], Severity.Error);
                 return;
             }
 
@@ -729,7 +720,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -742,7 +733,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -790,7 +781,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -803,7 +794,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -852,7 +843,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
                 return;
             }
@@ -861,7 +852,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
                 return;
             }
 
@@ -894,7 +885,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -907,7 +898,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
@@ -970,7 +961,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
                 if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
@@ -1082,7 +1073,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1140,7 +1131,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1246,7 +1237,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1290,7 +1281,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
@@ -1303,7 +1294,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
                     Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
@@ -1343,7 +1334,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Feedback is missing!", Severity.Warning);
+                Snackbar.Add(Localizer["Feedbackmissing"], Severity.Warning);
                 visibleSign = false;
                 return;
             }
@@ -1479,7 +1470,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Takt Time", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime"], Severity.Warning);
                 return;
             }
 
@@ -1488,7 +1479,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 1", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime1"], Severity.Warning);
                 return;
             }
             else if (option == 2 && HoeTimes[1] == 0.0)
@@ -1496,28 +1487,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime2"], Severity.Warning);
                 return;
             }
             else if (option == 3 && HoeTimes[2] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 3", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime3"], Severity.Warning);
                 return;
             }
             else if (option == 4 && HoeTimes[3] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 4", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime4"], Severity.Warning);
                 return;
             }
             else if (option == 5 && HoeTimes[4] == 0.0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 5", Severity.Warning);
+                Snackbar.Add(Localizer["firstTakeTime5"], Severity.Warning);
                 return;
             }
             opt = option;
@@ -1630,7 +1621,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             Snackbar.Clear();
                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Time is NG, LUP added to Delivery Pillar", Severity.Warning);
+                            Snackbar.Add(Localizer["timeNG..."], Severity.Warning);
                             areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than Takt time ({taktTime})";
                         }
                     }
@@ -1658,7 +1649,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorSArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1672,7 +1663,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorQArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1686,7 +1677,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorDArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1700,7 +1691,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorCArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -1714,7 +1705,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+                        Snackbar.Add(Localizer["ErrorOtherArea"], Severity.Error);
                         return;
                     }
                     break;
@@ -2529,17 +2520,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             base.StateHasChanged();
         }
-        
-        private void RemoveEvidenceAnswer(ChecklistAnswer item, int index)
-        {
-            if (index >= 0 && index < item.Evidences.ToList().Count)
-            {
-                var elementRemove = item.Evidences.ToList()[index];
-                item.Evidences.Remove(elementRemove);
-                item.Edited = true;
-            }
-            base.StateHasChanged();
-        }
 
         private void RemoveImageFileAnswer(ChecklistAnswer item, int index)
         {
@@ -2550,6 +2530,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             base.StateHasChanged();
         }
+
+        private void RemoveEvidenceAnswer(ChecklistAnswer item, int index)
+        {
+            if (index >= 0 && index < item.Evidences.ToList().Count)
+            {
+                var elementRemove = item.Evidences.ToList()[index];
+
+                if (questionDelete.ContainsKey(item.QuestionID))
+                {
+                    List<int> listaExistente = questionDelete[item.QuestionID];
+
+                    // Agrega el nuevo número a la lista
+                    listaExistente.Add(elementRemove.FileUploadId);
+                }
+                else
+                {
+                    List<int> newList = new List<int>();
+                    newList.Add(elementRemove.FileUploadId);
+                    questionDelete.Add(item.QuestionID, newList);
+                }
+
+                item.Evidences.Remove(elementRemove);
+                item.Edited = true;
+            }
+            base.StateHasChanged();
+        }
+
+        
 
         //Questions and answers
 
@@ -2616,11 +2624,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
 
             if (_jobObservation.ChecklistAnswers.Count > 0)
-                foreach (var question in _jobObservation.ChecklistAnswers)
+            {
+                foreach ((ChecklistAnswer question, int index) in _jobObservation.ChecklistAnswers.Select((question, index) => (question, index)))
                 {
                     if (question.Edited)
                     {
                         using var content = new MultipartFormDataContent();
+
                         for (int i = 0; i < question.capturedImagesFiles.Count; i++)
                         {
                             question.NewFilesStreams.ElementAt(i).Position = 0;
@@ -2635,67 +2645,81 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             );
                         }
 
-                        if(question.capturedImages.Count > 0)
-                        foreach (var imageData in question.capturedImages)
-                        {
-                            if (!string.IsNullOrEmpty(imageData))
+                        if (question.capturedImages.Count > 0)
+                            foreach (var imageData in question.capturedImages)
                             {
-                                // Elimina la cabecera si está presente
-                                var base64Data = imageData.Replace("data:image/png;base64,", "");
-
-                                if (IsValidBase64String(base64Data))
+                                if (!string.IsNullOrEmpty(imageData))
                                 {
-                                    // Convierte base64Data en bytes
-                                    var imageBytes = Convert.FromBase64String(base64Data);
+                                    // Elimina la cabecera si está presente
+                                    var base64Data = imageData.Replace("data:image/png;base64,", "");
 
-                                    var imageStream = new MemoryStream(imageBytes);
-                                    imageStream.Position = 0;
-                                    var fileContent = new StreamContent(imageStream);
-                                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+                                    if (IsValidBase64String(base64Data))
+                                    {
+                                        // Convierte base64Data en bytes
+                                        var imageBytes = Convert.FromBase64String(base64Data);
 
-                                    content.Add(
-                                        content: fileContent,
-                                        name: "Files",
-                                        fileName: "CameraEvidence.png");
+                                        var imageStream = new MemoryStream(imageBytes);
+                                        imageStream.Position = 0;
+                                        var fileContent = new StreamContent(imageStream);
+                                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
 
+                                        content.Add(
+                                            content: fileContent,
+                                            name: "Files",
+                                            fileName: "CameraEvidence.png");
+
+                                    }
+                                    else
+                                    {
+                                        Snackbar.Clear();
+                                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                        Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
+                                    }
                                 }
                                 else
                                 {
                                     Snackbar.Clear();
                                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                    Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
+                                    Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
                                 }
                             }
-                            else
-                            {
-                                Snackbar.Clear();
-                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
-                            }
-                        }
 
                         if (question.JobObservationId != 0)
                         {
                             question.JobObservationId = _jobObservation.JobObservationId;
                         }
 
-                        ChecklistAnswerDto DtoAnswer = _mapper.Map<ChecklistAnswerDto>(question);
 
-                        content.Add(content: new StringContent(DtoAnswer.AnswerId.ToString()), name: "checklistAnswer.AnswerId");
-                        content.Add(content: new StringContent(DtoAnswer.JobObservationId.ToString()), name: "checklistAnswer.JobObservationId");
-                        content.Add(content: new StringContent(DtoAnswer.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
-                        content.Add(content: new StringContent(DtoAnswer.Prompt.ToString()), name: "checklistAnswer.Prompt");
-                        content.Add(content: new StringContent(DtoAnswer.Answer.ToString()), name: "checklistAnswer.Answer");
-                        if(!DtoAnswer.CommentarySV.IsNullOrEmpty())
-                            content.Add(content: new StringContent(DtoAnswer.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
-                        if(!DtoAnswer.CommentarySSV.IsNullOrEmpty())
-                        content.Add(content: new StringContent(DtoAnswer.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+                        content.Add(content: new StringContent(question.AnswerId.ToString()), name: "checklistAnswer.AnswerId");
+                        content.Add(content: new StringContent(question.JobObservationId.ToString()), name: "checklistAnswer.JobObservationId");
+                        content.Add(content: new StringContent(question.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
+                        content.Add(content: new StringContent(question.Prompt.ToString()), name: "checklistAnswer.Prompt");
+                        content.Add(content: new StringContent(question.Answer.ToString()), name: "checklistAnswer.Answer");
+                        if (!question.CommentarySV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(question.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
+                        if (!question.CommentarySSV.IsNullOrEmpty())
+                            content.Add(content: new StringContent(question.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
 
-                        //string strevi = "";
-                        //strevi = JsonSerializer.Serialize(question.Evidences);
-                        //content.Add(content: new StringContent(strevi), name: "checklistAnswer.Evidences");
-                        //content.Add(content: new StringContent(strevi), name: "Evidences");
 
+                        if (questionDelete.ContainsKey(question.QuestionID))
+                        {
+
+                            var result0 = await ChecklistAnswerServices.RemoveEvidencesChecklistAnswer(question.AnswerId, questionDelete[question.QuestionID]);
+
+                            if (result0 != null)
+                            {
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Answer Update Succesfull", Severity.Info);
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                Snackbar.Add($"Error in Answer Update", Severity.Error);
+                            }
+                        }
+
+                       
 
                         var result1 = await ChecklistAnswerServices.CreateEvidencesChecklistAnswer(content);
 
@@ -2712,6 +2736,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
                 }
+            }
 
 
             if (questionAnswers.Count > 0)
@@ -2789,7 +2814,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (!DtoAnswer.CommentarySV.IsNullOrEmpty())
                             content.Add(content: new StringContent(DtoAnswer.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
                         if (!DtoAnswer.CommentarySSV.IsNullOrEmpty())
-                        content.Add(content: new StringContent(DtoAnswer.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+                            content.Add(content: new StringContent(DtoAnswer.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
 
 
                         var result2 = await ChecklistAnswerServices.CreateChecklistAnswer(content);
@@ -2808,49 +2833,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
-            //foreach (var kvp in questionResponses)
-            //{
-            //    int questionId = kvp.Key;
-            //    string answer = kvp.Value;
-            //    var notGood = "";
 
-            //    foreach (var category in _checklistCategoriesAndQuestions)
-            //    {
-            //        foreach (var question in category.ChecklistQuestions)
-            //        {
-            //            if (question.QuestionID == questionId)
-            //            {
-            //                notGood = question.Prompt;
-            //            }
-            //        }
-            //    }
-
-            //    ChecklistAnswer Answer = new ChecklistAnswer
-            //    {
-            //        QuestionID = questionId,
-            //        Answer = answer,
-            //        Prompt = notGood,
-
-            //    };
-
-            //    if (!Answer.Answer.IsNullOrEmpty() )
-            //    {
-            //        questionAnswers[questionId] = Answer;
-            //    }
-
-            //}
-
-            //foreach (var cka in _jobObservation.ChecklistAnswers)
-            //{
-
-            //    if (questionAnswers.ContainsKey(cka.QuestionID))
-            //    {
-            //        // Eliminar la llave si existe
-            //        questionAnswers.Remove(cka.QuestionID);
-            //        Console.WriteLine($"La llave '{cka.QuestionID}' fue eliminada del diccionario.");
-            //    }
-
-            //}
 
 
             return new AsyncVoidMethodBuilder();

@@ -26,6 +26,8 @@
 @inject ITreeService TreeServices
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IChecklistAnswerService ChecklistAnswerServices
+@inject IFileUploadAndDownloadService FilesServices
+
 
 @inject NavigationManager NavigationManager
 
@@ -777,21 +779,135 @@ else
                                     <tbody>
                                         @foreach (var question in category.ChecklistQuestions)
                                         {
+                                                @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                                                {
+                                                    ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                                    <tr>
+                                                        <td width="70%">
+                                                            <MudText Align="Align.Justify">Existe: <b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            </td>
+                                                            <td width="25%">
+                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                    <MudRadioGroup @bind-SelectedOption="answer.Answer" Disabled="true">
+                                                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
+                                                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">NG</MudRadio>
+                                                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
+                                                                    </MudRadioGroup>
+                                                                </MudItem>
+                                                            </td>
+                                                            <td>
+                                                                <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
+                                                                </MudButton>
+                                                            </td>
+                                                        </tr>
+                                                    @if (answer.Show)
+                                                    {
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <MudItem Style="display:flex; justify-content: space-around; flex-wrap: nowrap;">
+                                                                    <MudItem Style="width: 60%; display: flex; justify-content: center; flex-direction: column">
 
-                                            <tr>
-                                                <td width="70%">
-                                                    <MudText Align="Align.Justify"><b>@question.CategorySequence.</b> @question.Prompt</MudText>
-                                                </td>
-                                                <td>
-                                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                        <MudRadioGroup @bind-SelectedOption="questionResponses[question.QuestionID]">
-                                                            <MudRadio Option="@("YES")" Color="Color.Info" Dense="true" Disabled>Yes</MudRadio>
-                                                        <MudRadio Option="@("NG")" Color="Color.Info" Dense="true" Disabled>NG</MudRadio>
-                                                        <MudRadio Option="@("N/A")" Color="Color.Info" Dense="true" Disabled>N/A</MudRadio>
-                                                    </MudRadioGroup>
-                                                </MudItem>
-                                            </td>
-                                        </tr>
+                                                                        <MudItem Class="d-flex" Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                                                                                @if (answer.Evidences.ToList().Count > 0)
+                                                                                {
+                                                                                    <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                                        <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="@(() => OpenPhotoDialog(0, answer))"></MudIcon>
+                                                                                    </MudTooltip>
+                                                                                }
+                                                                                @if (answer.Evidences.ToList().Count > 0)
+                                                                                {
+                                                                                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: center;">
+
+                                                                                        @foreach (var (evidence, index) in answer.Evidences.Select((evidence, index) => (evidence, index)))
+                                                                                        {
+                                                                                            <MudItem Class=" mr-8 mb-4">
+                                                                                                <MudItem Style="display:flex; flex-direction: column; align-items: center;">
+                                                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                                                        <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
+                                                                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog(index, answer))" />
+                                                                                                        </MudTooltip>
+                                                                                                    </MudItem>
+
+                                                                                                    <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
+                                                                                                        <MudButton @onclick="@(() => DownloadFile(evidence.FileUploadId, evidence?.FileName) )">
+                                                                                                            <MudItem>
+                                                                                                                <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@(evidence?.FileName.Length > 13 ? evidence?.FileName.Substring(0,10) + "..." : evidence?.FileName )" Color="Color.Info" />
+                                                                                                            </MudItem>
+                                                                                                        </MudButton>
+                                                                                                    </MudTooltip>
+                                                                                                </MudItem>
+                                                                                            </MudItem>
+                                                                                        }
+                                                                                    </MudItem>
+                                                                                }
+                                                                            </MudItem>
+
+                                                                        </MudItem>
+                                                                    </MudItem>
+                                                                    <MudItem Style="width: 30%;" Class="mb-5">
+                                                                        <MudTextField Disabled="true" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
+
+                                                                        <MudTextField Disabled="true" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
+                                                                    </MudItem>
+                                                                </MudItem>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    ChecklistAnswer answer = questionAnswers[question.QuestionID];
+                                                    <tr>
+                                                        <td width="70%">
+                                                            <MudText Align="Align.Justify">Nueva:  <b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            </td>
+                                                            <td width="25%">
+                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                    <MudRadioGroup @bind-SelectedOption="answer.Answer" Disabled="@(_jobObservation.Status == 6)">
+                                                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => questionAnswers[question.QuestionID].Show = true)">Yes</MudRadio>
+                                                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true"  @onchange="@(() => questionAnswers[question.QuestionID].Show = true)">NG</MudRadio>
+                                                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => questionAnswers[question.QuestionID].Show = true)">N/A</MudRadio>
+                                                                    </MudRadioGroup>
+                                                                </MudItem>
+                                                            </td>
+
+                                                            <td>
+                                                                <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                                                            </td>
+                                                        </tr>
+                                                    @if (answer.Show)
+                                                    {
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <MudItem Style="display:flex; justify-content: space-around; flex-wrap: nowrap;">
+                                                                    <MudItem Style="width: 60%; display: flex; justify-content: center; flex-direction: column">
+
+                                                                    
+                                                                        <MudItem Class="d-flex" Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                                            </MudItem>
+                                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                                               
+                                                                            </MudItem>
+                                                                        </MudItem>
+                                                                    </MudItem>
+                                                                    <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
+                                                                        <MudTextField Disabled="true" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
+
+                                                                        <MudTextField Disabled="true" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
+                                                                    </MudItem>
+                                                                </MudItem>
+                                                            </td>
+                                                        </tr>
+                                                    }
+
+                                                }
+                                         
                                         }
                                     </tbody>
                                 </MudSimpleTable>
@@ -2558,4 +2674,36 @@ else
     <DialogActions>
         <MudButton OnClick="CloseModalFiles" Variant="Variant.Filled">@Localizer["Close"]</MudButton>
     </DialogActions>
+</MudDialog>
+
+
+    @*Photo Modal*@
+    <MudDialog DisableSidePadding="false" @bind-IsVisible="visiblePhoto" Options="dialogPhotoOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+                <MudPaper Elevation="0">
+                    <MudCarousel Class="mud-width-full" Style="height: 81vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                        <PreviousButtonTemplate>
+                            <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                                <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                            </MudAvatar>
+                        </PreviousButtonTemplate>
+                        <NextButtonTemplate>
+                            <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                                <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                            </MudAvatar>
+                        </NextButtonTemplate>
+                        <ChildContent>
+                            @foreach (var evidence in SelectedAnswer.Evidences)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudText Typo="Typo.h6" Style="text-align:center">@evidence.FileName</MudText>
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 70vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
 </MudDialog>

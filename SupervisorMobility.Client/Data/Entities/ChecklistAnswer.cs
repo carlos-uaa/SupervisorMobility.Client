@@ -18,10 +18,13 @@ namespace SupervisorMobility.Client.Data.Entities
         public bool Show { get; set; } = false;
         public bool Edited { get; set; } = false;
         
+        [JsonIgnore]
         public List<IBrowserFile>? capturedImagesFiles { get; set; } = new();
+        [JsonIgnore]
         public List<MemoryStream> NewFilesStreams { get; set; } = new();
+        [JsonIgnore]
         public List<string> MediaUris = new();
-
+        [JsonIgnore]
         public List<string> capturedImages = new List<string>();
 
        

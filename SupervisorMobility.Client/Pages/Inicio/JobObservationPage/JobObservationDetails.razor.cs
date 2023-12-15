@@ -89,6 +89,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
+        
+        private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        Dictionary<int, string> imageUrls = new Dictionary<int, string>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -99,42 +102,44 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
-            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
+            _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, includeCkAnswers: true);
             //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
             _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
-            if(_checklistAnswers.Count > 0)
-            {
-                foreach (var category in _checklistCategoriesAndQuestions)
-                {
-                    foreach (var question in category.ChecklistQuestions)
-                    {
-                        if (_checklistAnswers.Any(answer => answer.QuestionID == question.QuestionID))
-                        {
-                            var answer = _checklistAnswers.First(a => a.QuestionID == question.QuestionID);
-                            questionResponses[question.QuestionID] = answer.Answer;
-                        }
-                        else
-                        {
-                            questionResponses[question.QuestionID] = null;
-                        }
-                    }
-                }
 
 
-            }
-            else
+            foreach (var category in _checklistCategoriesAndQuestions)
             {
-                foreach (var category in _checklistCategoriesAndQuestions)
+                foreach (var question in category.ChecklistQuestions)
                 {
-                    foreach (var question in category.ChecklistQuestions)
+                    if (_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.QuestionID))
                     {
-                        questionResponses[question.QuestionID] = null;
+                        var item = _jobObservation.ChecklistAnswers.ToList().Find(cka => cka.QuestionID == question.QuestionID);
+                        if (item.Evidences.Count > 0)
+                        {
+                            item.Show = true;
+                            foreach (var evidence in item.Evidences)
+                            {
+                                var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                                imageUrls[evidence.FileUploadId] = imageUrl;
+
+                            }
+                        }
+                       
+                    }
+                    else
+                    {
+                        ChecklistAnswer newChAnswer = new();
+                        newChAnswer.JobObservationId = _jobObservation.JobObservationId;
+                        newChAnswer.QuestionID = question.QuestionID;
+                        newChAnswer.Prompt = question.Prompt;
+                        questionAnswers.Add(question.QuestionID, newChAnswer);
                     }
                 }
             }
+
 
             if (_jobObservation.KpiId != null)
             {
@@ -809,6 +814,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             return new AsyncVoidMethodBuilder();
 
+        }
+
+        private async Task DownloadFile(int fileId, string filename)
+        {
+            await FilesServices.DownloadFileEvidence(fileId, filename);
+        }
+        //Show Photo
+        private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visiblePhoto = false;
+
+
+        private int photoIndex = 0;
+        ChecklistAnswer SelectedAnswer { get; set; }
+        private void OpenPhotoDialog(int index, ChecklistAnswer item)
+        {
+            SelectedAnswer = item;
+            photoIndex = index;
+            visiblePhoto = true;
         }
     }
 }

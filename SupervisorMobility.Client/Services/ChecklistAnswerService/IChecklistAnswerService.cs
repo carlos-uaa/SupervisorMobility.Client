@@ -7,7 +7,8 @@
         Task<ChecklistAnswer> GetChecklistAnswerById(int checklistAnswerId);
         Task<ChecklistAnswer> CreateChecklistAnswer(MultipartFormDataContent checklistAnswer);
         Task<ChecklistAnswer> CreateEvidencesChecklistAnswer(MultipartFormDataContent checklistAnswer);
-        Task<bool> UpdateChecklistAnswer(ChecklistAnswer checklistAnswer);
+        Task<ChecklistAnswer> RemoveEvidencesChecklistAnswer(int answerID, List<int> evidenceRemove);
+        Task<ChecklistAnswer> UpdateChecklistAnswer(ChecklistAnswer checklistAnswer);
         Task DeleteChecklistAnswer(int checklistAnswer);
     }
 }
