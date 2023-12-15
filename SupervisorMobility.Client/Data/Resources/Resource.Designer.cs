@@ -1051,6 +1051,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Directories.
+        /// </summary>
+        public static string directories {
+            get {
+                return ResourceManager.GetString("directories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Distribution.
         /// </summary>
         public static string distribution {
@@ -1461,6 +1470,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string historyVersions {
             get {
                 return ResourceManager.GetString("historyVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HOE&apos;s Name.
+        /// </summary>
+        public static string HOEName {
+            get {
+                return ResourceManager.GetString("HOEName", resourceCulture);
             }
         }
         
@@ -2019,6 +2037,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string noHOEPathCD {
             get {
                 return ResourceManager.GetString("noHOEPathCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Notes.
+        /// </summary>
+        public static string notes {
+            get {
+                return ResourceManager.GetString("notes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Not found.
+        /// </summary>
+        public static string notFound {
+            get {
+                return ResourceManager.GetString("notFound", resourceCulture);
             }
         }
         
@@ -2586,6 +2622,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string saveProgress {
             get {
                 return ResourceManager.GetString("saveProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Scheduling.
+        /// </summary>
+        public static string scheduling {
+            get {
+                return ResourceManager.GetString("scheduling", resourceCulture);
             }
         }
         
@@ -3279,6 +3324,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string verifyTraining {
             get {
                 return ResourceManager.GetString("verifyTraining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Who reviews.
+        /// </summary>
+        public static string whoReviews {
+            get {
+                return ResourceManager.GetString("whoReviews", resourceCulture);
             }
         }
         
