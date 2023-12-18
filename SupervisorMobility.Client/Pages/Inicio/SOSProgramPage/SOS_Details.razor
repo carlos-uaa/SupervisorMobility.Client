@@ -65,6 +65,7 @@
             <img src="Images/logo.png" Height="50" />
         </MudItem>
     </div>
+    @if(ShowTable){
 
     <MudTabs @ref="tabs" Border="true" Outlined="true" PanelClass="px-4 py-6" ApplyEffectsToContainer="true" Class="mt-0" HeaderPosition="TabHeaderPosition.After" PrevIcon="@Icons.Material.Filled.SkipPrevious" NextIcon="@Icons.Material.Filled.SkipNext">
         <Header>
@@ -128,7 +129,7 @@
                             </tr>
                         </tbody>
                     </MudSimpleTable>
-                    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense Bordered=false>
+                    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; height: 75vh" Dense Bordered=false FixedHeader=true >
                          <thead>
                              <tr>
                              </tr>
@@ -153,27 +154,20 @@
                                         @Localizer["directories"]
                                     </th>
                                     <th rowspan="2" class="vertical-text">
-
                                         <div class="vertical-content">
                                             @Localizer["scheduling"]
                                         </div>
                                     </th>
-                                    <th colspan="12">
-                                        @SOS_Review.AplicationYear
-                                </th>
-                                <th colspan="3" rowspan="2">
-                                    @Localizer["notes"]
-                                </th>
-
-                            </tr>
-
-                            <tr>
-                                @for (var i = 1; i <= 12; i++)
-                                {
-                                    <th style="text-align: center">
-                                        @textInfo.ToTitleCase(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i))
+                                    @for (var i = 1; i <= 12; i++)
+                                    {
+                                        <th style="text-align: center" rowspan="2">
+                                            @textInfo.ToTitleCase(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i))
+                                        </th>
+                                    }
+                                    <th colspan="3" rowspan="2">
+                                        @Localizer["notes"]
                                     </th>
-                                }
+
                             </tr>
 
                         </thead>
@@ -525,7 +519,7 @@
                                                 else
                                                 {
                                                     <MudAlert Severity="Severity.Info">
-                                                        @Localizer1["ACNoAssyChart"]
+                                                        @Localizer1["notFound"]
                                                     </MudAlert>
                                                 }
                                             </MudTd>
@@ -768,20 +762,7 @@
                         </tbody>
                     </MudSimpleTable>
                 }
-                else
-                {
-                    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
-                        <ItemTemplate>
-                            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
-                                <MudItem class="d-flex flex-column justify-center align-self-center">
-                                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
-                                </MudItem>
-                                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
-                                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
-                                </div>
-                            </ItemTemplate>
-                        </MudCarousel>
-                }
+
 
 
             </ChildContent>
@@ -805,14 +786,16 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <div style="min-height: 15vh; overflow-y: scroll; max-height: 15vh; scroll-behavior: smooth; text-align:center;" class="scroll scroll1">
+                                                    <div style="min-height: 15vh; overflow-y: scroll; max-height: 15vh; scroll-behavior: smooth; text-align:center; display: flex; justify-content: center;" class="scroll scroll1">
+                                                    <div style=" display: flex; flex-direction: column;">
+
                                                     @if (totalProgrammed > 0)
                                                     {
                                                         @foreach (var jobobs in _All_SOSJobobservation)
                                                         {
                                                             if (jobobs.Status == 7 && jobobs.StartDate?.Month == _yearMonth?.Month && jobobs.StartDate?.Year == _yearMonth?.Year)
                                                             {
-                                                                if (jobobs.StartDate?.Month >= DateTime.Now.Month && jobobs.StartDate?.Year >= DateTime.Now.Year)
+                                                                if (jobobs.StartDate >= DateTime.Now)
                                                                 {
 
                                                                     <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3(jobobs.JobObservationId))">
@@ -844,6 +827,8 @@
                                                             @Localizer["ThereAreNoJobObservationsProgrammedInSOSForThisMonth"]
                                                         </MudAlert>
                                                     }
+                                                    
+                                                    </div>
                                                 </div>
                                             </td>
 
@@ -1245,7 +1230,7 @@
                                                         else
                                                         {
                                                             <MudAlert Severity="Severity.Info">
-                                                                @Localizer1["ACNoAssyChart"]
+                                                                @Localizer1["notFound"]
                                                             </MudAlert>
                                                         }
                                                     </MudTd>
@@ -2008,7 +1993,7 @@
                                                                     else
                                                                     {
                                                                         <MudAlert Severity="Severity.Info">
-                                                                            @Localizer1["ACNoAssyChart"]
+                                                                            @Localizer1["notFound"]
                                                                         </MudAlert>
                                                                     }
                                                                 </MudTd>
@@ -2401,7 +2386,21 @@
         }
     </ChildContent>
 </MudTabs>
-
+    }
+    else
+    {
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                    </div>
+                </ItemTemplate>
+            </MudCarousel>
+    }
 <MudDialog DisableSidePadding="false" @bind-IsVisible="SVSinCharge" Options="dialogOptions">
     <DialogContent>
         <MudItem Style="display: flex; justify-content: space-evenly;">
