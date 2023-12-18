@@ -547,6 +547,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a To change the date, press the button Change Date.
+        /// </summary>
+        public static string btnChangeDate {
+            get {
+                return ResourceManager.GetString("btnChangeDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a To change the hour, press the button Change Date.
+        /// </summary>
+        public static string btnChangeHour {
+            get {
+                return ResourceManager.GetString("btnChangeHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Calendar.
         /// </summary>
         public static string calendar {
@@ -1519,6 +1537,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Image Added to Lup.
+        /// </summary>
+        public static string imgAddLup {
+            get {
+                return ResourceManager.GetString("imgAddLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Failed to upload Image to Lup.
+        /// </summary>
+        public static string imgErrorLup {
+            get {
+                return ResourceManager.GetString("imgErrorLup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Improve / Activity Detected.
         /// </summary>
         public static string improveActivityDetected {
@@ -1569,6 +1605,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string inProgress {
             get {
                 return ResourceManager.GetString("inProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Invalid image data.
+        /// </summary>
+        public static string InvalidImgData {
+            get {
+                return ResourceManager.GetString("InvalidImgData", resourceCulture);
             }
         }
         
@@ -1785,6 +1830,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string logout {
             get {
                 return ResourceManager.GetString("logout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a LUP added in Cost Pillar.
+        /// </summary>
+        public static string LUPAddCP {
+            get {
+                return ResourceManager.GetString("LUPAddCP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a LUP added in Delivery Pillar.
+        /// </summary>
+        public static string LUPAddDP {
+            get {
+                return ResourceManager.GetString("LUPAddDP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a LUP added in Other Pillar.
+        /// </summary>
+        public static string LUPAddOP {
+            get {
+                return ResourceManager.GetString("LUPAddOP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a LUP added in Quality Pillar.
+        /// </summary>
+        public static string LupAddQP {
+            get {
+                return ResourceManager.GetString("LupAddQP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a LUP added in Safety &amp; Environment Pillar.
+        /// </summary>
+        public static string LupAddSE {
+            get {
+                return ResourceManager.GetString("LupAddSE", resourceCulture);
             }
         }
         
@@ -2037,6 +2127,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string noHOEPathCD {
             get {
                 return ResourceManager.GetString("noHOEPathCD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No image data to upload.
+        /// </summary>
+        public static string NoImgData {
+            get {
+                return ResourceManager.GetString("NoImgData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No images to upload.
+        /// </summary>
+        public static string NoImgsUpload {
+            get {
+                return ResourceManager.GetString("NoImgsUpload", resourceCulture);
             }
         }
         
