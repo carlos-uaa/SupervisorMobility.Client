@@ -1935,14 +1935,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"To change the date, press the button Change Date", Severity.Info);
+            Snackbar.Add(Localizer["btnChangeDate"], Severity.Info);
         }
 
         public void ShowHourMessage()
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"To change the hour, press the button Change Date", Severity.Info);
+            Snackbar.Add(Localizer["btnChangeHour"], Severity.Info);
         }
 
 
@@ -2468,28 +2468,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             {
                                 Snackbar.Configuration.MaxDisplayedSnackbars = 10;
                                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add("Image Added to Lup", Severity.Info);
+                                Snackbar.Add(Localizer["imgAddLup"], Severity.Info);
                                 StateHasChanged();
                             }
                             else
                             {
                                 Snackbar.Clear();
                                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                Snackbar.Add("Failed to upload Image to Lup", Severity.Error);
+                                Snackbar.Add(Localizer["imgErrorLup"], Severity.Error);
                             }
                         }
                         else
                         {
                             Snackbar.Clear();
                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add("Invalid image data", Severity.Error);
+                            Snackbar.Add(Localizer["InvalidImgData"], Severity.Error);
                         }
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        Snackbar.Add(Localizer["NoImgData"], Severity.Warning);
                     }
                 }
 
@@ -2500,7 +2500,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add("No images to upload", Severity.Warning);
+                Snackbar.Add(Localizer["NoImgsUpload"], Severity.Warning);
             }
         }
 
@@ -2570,23 +2570,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 case 1:
                     areaS = notGood;
-                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                    Snackbar.Add(Localizer["LupAddSE"], Severity.Warning);
                     break;
                 case 2:
                     areaQ = notGood;
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    Snackbar.Add(Localizer["LupAddQP"], Severity.Warning);
                     break;
                 case 3:
                     areaD = notGood;
-                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
+                    Snackbar.Add(Localizer["LUPAddDP"], Severity.Warning);
                     break;
                 case 4:
                     areaC = notGood;
-                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                    Snackbar.Add(Localizer["LUPAddCP"], Severity.Warning);
                     break;
                 case 5:
                     areaOther = notGood;
-                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
+                    Snackbar.Add(Localizer["LUPAddOP"], Severity.Warning);
                     break;
 
             }

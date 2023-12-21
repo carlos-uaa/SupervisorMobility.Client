@@ -43,27 +43,52 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 new BreadcrumbItem(text: Localizer["sosProgram"], href: "/", disabled: true),
             };
 
-            
+
 
             try
             {
                 ShowLoading = true;
-              
+
                 logged = await HasPropertyAsync();
                 if (logged)
                 {
                     await GetUserAsync();
                     _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true);
-                    if(user.UserId == 3)
+
+
+                    if (user.UserType == 2)
                     {
-                    _SosReviewList = _SosReviewList.Where(s => s.Supervisors.Any(x => x.UserId == user.UserId)).ToList();
+                                        _SosReviewList = _SosReviewList
+                        .Where(s => s.Supervisors != null &&
+                                    s.Supervisors.Any(x => user.Subordinates.Any(subordinate => subordinate.UserId == x.UserId)))
+                        .ToList();
+
+                        // Imprime información para depurar
+                        foreach (var sosReviewProgram in _SosReviewList)
+                        {
+                            Console.WriteLine($"SOSReviewProgramId: {sosReviewProgram.Area.Description}");
+                            foreach (var supervisor in sosReviewProgram.Supervisors)
+                            {
+                                Console.WriteLine($"Supervisor UserId: {supervisor.UserId}");
+                            }
+                        }
+                    }
+                    else if (user.UserType == 3)
+                    {
+                        HashSet<int> userIds = new HashSet<int>(_SosReviewList.SelectMany(s => s.Supervisors?.Select(u => u.UserId) ?? Enumerable.Empty<int>()));
+
+                        _SosReviewList = _SosReviewList
+                        .Where(s => s.Supervisors != null && s.Supervisors.Any(x => x.UserId == user.UserId))
+                        .ToList();
+
+                       
 
                     }
                     StateHasChanged();
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
@@ -133,7 +158,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-  
+
 
 
         // Create pat
@@ -168,7 +193,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 return true;
             if (element.Status.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Supervisors.Any( u => u.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+            if (element.Supervisors.Any(u => u.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)))
                 return true;
             if (element.Plant.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
