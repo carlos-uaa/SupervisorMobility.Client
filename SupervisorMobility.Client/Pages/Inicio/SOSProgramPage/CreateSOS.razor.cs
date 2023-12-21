@@ -215,6 +215,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
 
+            if (_sosReview.Supervisors == null)
+            {
+                _sosReview.Supervisors = new List<User>();
+            }
+
+
+            if (selectedSupervisorOfList != null)
+            {
+                if(user.UserType == 3)
+                _sosReview.Supervisors.Add(user);
+            }
+
+
             var result = await SOSReviewServices.CreateSOSReview(_sosReview);
             if (result != null)
             {

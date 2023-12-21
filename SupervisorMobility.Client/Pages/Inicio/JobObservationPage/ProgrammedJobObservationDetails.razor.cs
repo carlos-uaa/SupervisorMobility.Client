@@ -29,6 +29,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         [Parameter]
         public string ProgrammedStartDate { get; set; }
 
+        public DateTime? AuxProgrammedDate { get; set; } 
+
         public JobObservation _jobObservation { get; set; } = new();
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
@@ -92,6 +94,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            AuxProgrammedDate = DateTime.Parse(ProgrammedStartDate);
 
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
