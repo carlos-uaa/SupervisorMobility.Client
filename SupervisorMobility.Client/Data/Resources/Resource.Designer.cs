@@ -529,6 +529,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Workload in which plants, areas, distributions, operations and products can be massively routed with HOE, GOS and CCP routes..
+        /// </summary>
+        public static string assyChartConfigDescription {
+            get {
+                return ResourceManager.GetString("assyChartConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Attendance.
         /// </summary>
         public static string attendance {
@@ -655,6 +664,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage categories as well as change the order of sequence, you can also create questions dynamically..
+        /// </summary>
+        public static string ChecklistCategoriesConfigDescription {
+            get {
+                return ResourceManager.GetString("ChecklistCategoriesConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Clear.
         /// </summary>
         public static string clear {
@@ -705,6 +723,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string configuration {
             get {
                 return ResourceManager.GetString("configuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Administration module to manage the system information and to make modifications to plants, products, groups, users, etc..
+        /// </summary>
+        public static string configurationDescription {
+            get {
+                return ResourceManager.GetString("configurationDescription", resourceCulture);
             }
         }
         
@@ -1438,6 +1465,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage words along with their meaning..
+        /// </summary>
+        public static string glosaryConfigDescription {
+            get {
+                return ResourceManager.GetString("glosaryConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Go Back.
         /// </summary>
         public static string goBack {
@@ -1474,11 +1510,38 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage groups..
+        /// </summary>
+        public static string groupsConfigDescription {
+            get {
+                return ResourceManager.GetString("groupsConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Guides.
         /// </summary>
         public static string guides {
             get {
                 return ResourceManager.GetString("guides", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage guides in PDF format for user download..
+        /// </summary>
+        public static string guidesConfigDescription {
+            get {
+                return ResourceManager.GetString("guidesConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User information is managed and can be uploaded in bulk, as well as modifying previously uploaded information..
+        /// </summary>
+        public static string HeadCountDescription {
+            get {
+                return ResourceManager.GetString("HeadCountDescription", resourceCulture);
             }
         }
         
@@ -1735,6 +1798,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Calendar where you can visualize and program job observations by filters.
+        /// </summary>
+        public static string jobObservationProgramDescription {
+            get {
+                return ResourceManager.GetString("jobObservationProgramDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Job Observations.
         /// </summary>
         public static string jobObservations {
@@ -1749,6 +1821,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string jobObservationSchedule {
             get {
                 return ResourceManager.GetString("jobObservationSchedule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage job observations forms for zones and staff working within a manufacturing plant..
+        /// </summary>
+        public static string jobObservationsDescription {
+            get {
+                return ResourceManager.GetString("jobObservationsDescription", resourceCulture);
             }
         }
         
@@ -2455,6 +2536,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a View and modify the skill level of operators for certain distribution operations..
+        /// </summary>
+        public static string patDescription {
+            get {
+                return ResourceManager.GetString("patDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a PAT Details.
         /// </summary>
         public static string PATDetails {
@@ -2469,6 +2559,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string pathDetails {
             get {
                 return ResourceManager.GetString("pathDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage HOE, CCP and GOS routes..
+        /// </summary>
+        public static string PathsConfigDescription {
+            get {
+                return ResourceManager.GetString("PathsConfigDescription", resourceCulture);
             }
         }
         
@@ -2590,6 +2689,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage plants, areas, distributions, products and operations..
+        /// </summary>
+        public static string plantsConfigDescription {
+            get {
+                return ResourceManager.GetString("plantsConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Structure Upload.
         /// </summary>
         public static string PlantUpload {
@@ -2667,6 +2775,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string products {
             get {
                 return ResourceManager.GetString("products", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Create, update, delete and manage products and distributions..
+        /// </summary>
+        public static string productsConfigDescription {
+            get {
+                return ResourceManager.GetString("productsConfigDescription", resourceCulture);
             }
         }
         
@@ -3076,6 +3193,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Periodic review whenever the conditions of a standard operation change or an improvement has been introduced..
+        /// </summary>
+        public static string sosProgramDescription {
+            get {
+                return ResourceManager.GetString("sosProgramDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SOS Review Program.
         /// </summary>
         public static string sosReviewProgram {
@@ -3418,6 +3544,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Update, delete and manage problems (LUP) forms for zones and staff working within a manufacturing plant..
+        /// </summary>
+        public static string toDoLupDescription {
+            get {
+                return ResourceManager.GetString("toDoLupDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Total Lup.
         /// </summary>
         public static string totalLup {
@@ -3531,6 +3666,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string usersManagment {
             get {
                 return ResourceManager.GetString("usersManagment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a User information is managed and can be bulk uploaded, and you can also view the information, edit and delete each user..
+        /// </summary>
+        public static string usersManagmentConfigDescription {
+            get {
+                return ResourceManager.GetString("usersManagmentConfigDescription", resourceCulture);
             }
         }
         
