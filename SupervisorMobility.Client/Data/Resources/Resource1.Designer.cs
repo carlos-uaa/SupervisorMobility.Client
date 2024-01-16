@@ -2383,7 +2383,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Delete Notification.
+        ///   Busca una cadena traducida similar a Archive Notification.
         /// </summary>
         public static string notifyDelete {
             get {

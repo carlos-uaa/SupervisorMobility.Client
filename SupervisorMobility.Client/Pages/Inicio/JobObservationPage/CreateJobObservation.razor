@@ -464,11 +464,10 @@
                             <tbody>
                                 <tr>
                                     <td style="width:50%">
-                                        <div class="d-flex">
                                             @if (user.UserType == 1)
                                             {
                                                 @*Mud select for Plants for Admin*@
-                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
                                                     @foreach (var type in _plants)
                                                     {
@@ -479,7 +478,7 @@
                                             else
                                             {
                                                 @*Mud select for Plants *@
-                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
                                                     @foreach (var type in _plants)
                                                     {
                                                         if (type.PlantId == user.PlantId)
@@ -489,8 +488,18 @@
                                                     }
                                                 </MudSelect>
                                             }
-
-
+                                    </td>
+                                    <td class="d-flex">
+                                        @if (_jobObservation.StartDate > _jobObservation.EndDate)
+                                        {
+                                            _jobObservation.EndDate = _jobObservation.StartDate;
+                                        }
+                                        <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2"  />
+                                        <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
                                             @if (_jobObservation.PlantId != 0 && user.UserType == 1)
                                             {
                                                 @*Mud select for Areas for Admin *@
@@ -534,16 +543,23 @@
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
                                                 </MudSelect>
                                             }
-                                        </div>
-
                                     </td>
-                                    <td class="d-flex">
-                                        @if (_jobObservation.StartDate > _jobObservation.EndDate)
-                                        {
-                                            _jobObservation.EndDate = _jobObservation.StartDate;
-                                        }
-                                        <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2"  />
-                                        <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                                    <td class="d-flex mt-3">
+                                        <MudSelect T="int" Label=@Localizer["product1"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="models[0]" SelectedValuesChanged="Option1">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                                            @foreach (var type in _products)
+                                            {
+                                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
+                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                            <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
+                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
+                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
+                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
+                                            <MudSelectItem Value="5">@($"Other")</MudSelectItem>
+                                        </MudSelect>
                                     </td>
                                 </tr>
                                 <tr>
@@ -570,14 +586,14 @@
                                             </MudSelect>
                                         }
                                     </td>
-                                    <td class="d-flex mt-3">
+                                    <td>
                                         @if (user.UserType == 1)
                                         {
                                             @if (_jobObservation.AreaId != 0)
                                             {
                                                 @if (_supervisors.Count > 0)
                                                 {
-                                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" Class="mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="ShowOperators">
+                                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="ShowOperators">
                                                         <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
                                                         @foreach (var type in _supervisors)
                                                         {
@@ -586,14 +602,6 @@
                                                             </MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
-                                                        <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                                        <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
-                                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                                            <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                                                        </MudSelect>
                                                 }
                                                 else
                                                 {
@@ -604,12 +612,9 @@
                                             }
                                             else
                                             {
-                                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" Class="mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
+                                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
                                                 </MudSelect>
-                                                <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" Disabled>
-                                                <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                            </MudSelect>
                                             }
 
                                         }
@@ -619,7 +624,7 @@
                                             {
                                                 @if (_supervisors.Count > 0)
                                                 {
-                                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" Class="mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="ShowOperators">
+                                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="ShowOperators">
                                                         <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
                                                         @foreach (var type in _supervisors)
                                                         {
@@ -628,14 +633,6 @@
                                                             </MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
-                                                        <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                                        <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
-                                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                                            <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                                                        </MudSelect>
                                                 }
                                                 else
                                                 {
@@ -646,25 +643,14 @@
                                             }
                                             else
                                             {
-                                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" Class="mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
+                                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
                                                 </MudSelect>
-                                                <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" Disabled>
-                                                <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                            </MudSelect>
                                             }
                                         }
                                         else if (user.UserType == 3)
                                         {
-                                            <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label=@Localizer["observer"] Class="mr-4" ReadOnly />
-                                            <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
-                                                <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                                <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
-                                                    <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                                    <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                                    <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                                    <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                                                </MudSelect>
+                                            <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label=@Localizer["observer"] ReadOnly />
                                         }
                                         @*                              <MudTimePicker Label="Start hour" @bind-Time="startHour" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
                                         <MudTimePicker Label="End hour" @bind-Time="endHour" Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2"/>*@
