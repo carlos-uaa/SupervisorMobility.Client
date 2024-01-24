@@ -289,9 +289,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         HoeTimes[i] = 0.0;
                     }
                 }
-                if (_jobObservation.Models != null)
+                if (_jobObservation.ModelsSpecification != null)
                 {
-                    var prod = _jobObservation.Models.Split('|');
+                    var prod = _jobObservation.ModelsSpecification.Split('|');
                     for (int i = 0; i < 5; i++)
                     {
                         models[i] = Int32.Parse(prod[i]);
@@ -691,7 +691,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             startHour = DateTime.Now.TimeOfDay;
             _jobObservation.KpiId = kpiID;
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
             _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
@@ -857,7 +857,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.KpiId = kpiID;
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
             _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
@@ -1033,7 +1033,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.KpiId = kpiID;
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
             _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
@@ -1197,7 +1197,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _jobObservation.KpiId = kpiID;
             endHour = DateTime.Now.TimeOfDay;
-            _jobObservation.Models = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
+            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
             _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];

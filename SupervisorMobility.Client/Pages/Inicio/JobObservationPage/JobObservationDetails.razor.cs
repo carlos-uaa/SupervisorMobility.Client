@@ -184,9 +184,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 HoeTimes[3] = "";
                 HoeTimes[4] = "";
             }
-            if (_jobObservation.Models != null)
+            if (_jobObservation.ModelsSpecification != null)
             {
-                var prod = _jobObservation.Models.Split('|');
+                var prod = _jobObservation.ModelsSpecification.Split('|');
                 models[0] = Int32.Parse(prod[0]);
                 models[1] = Int32.Parse(prod[1]);
                 models[2] = Int32.Parse(prod[2]);

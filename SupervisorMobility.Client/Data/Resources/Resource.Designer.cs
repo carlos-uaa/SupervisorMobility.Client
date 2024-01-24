@@ -2716,51 +2716,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Product 1.
-        /// </summary>
-        public static string product1 {
-            get {
-                return ResourceManager.GetString("product1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Product 2.
-        /// </summary>
-        public static string product2 {
-            get {
-                return ResourceManager.GetString("product2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Product 3.
-        /// </summary>
-        public static string product3 {
-            get {
-                return ResourceManager.GetString("product3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Product 4.
-        /// </summary>
-        public static string product4 {
-            get {
-                return ResourceManager.GetString("product4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a Product 5.
-        /// </summary>
-        public static string product5 {
-            get {
-                return ResourceManager.GetString("product5", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Busca una cadena traducida similar a Product Details.
         /// </summary>
         public static string productDetails {
@@ -3022,6 +2977,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Select spec..
+        /// </summary>
+        public static string selectAnSpecification {
+            get {
+                return ResourceManager.GetString("selectAnSpecification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Select an SSV.
         /// </summary>
         public static string selectAnSSV {
@@ -3207,6 +3171,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string sosReviewProgram {
             get {
                 return ResourceManager.GetString("sosReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification 1.
+        /// </summary>
+        public static string specification1 {
+            get {
+                return ResourceManager.GetString("specification1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification 2.
+        /// </summary>
+        public static string specification2 {
+            get {
+                return ResourceManager.GetString("specification2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification 3.
+        /// </summary>
+        public static string specification3 {
+            get {
+                return ResourceManager.GetString("specification3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification 4.
+        /// </summary>
+        public static string specification4 {
+            get {
+                return ResourceManager.GetString("specification4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification 5.
+        /// </summary>
+        public static string specification5 {
+            get {
+                return ResourceManager.GetString("specification5", resourceCulture);
             }
         }
         
