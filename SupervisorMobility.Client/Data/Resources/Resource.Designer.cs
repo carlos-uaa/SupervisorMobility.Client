@@ -520,7 +520,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Assy Chart.
+        ///   Busca una cadena traducida similar a JobAllocation.
         /// </summary>
         public static string assyChart {
             get {

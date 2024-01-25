@@ -88,7 +88,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Warning, Assychart already exists!.
+        ///   Busca una cadena traducida similar a Warning, JobAllocation already exists!.
         /// </summary>
         public static string AC_Msg_Title {
             get {
@@ -97,7 +97,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a AssyChart&apos;s Resume.
+        ///   Busca una cadena traducida similar a JobAllocation&apos;s Resume.
         /// </summary>
         public static string ACACResume {
             get {
@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a All AssyCharts.
+        ///   Busca una cadena traducida similar a All JobAllocations.
         /// </summary>
         public static string ACAll {
             get {
@@ -160,7 +160,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Bulk Assy Chart.
+        ///   Busca una cadena traducida similar a Bulk JobAllocation.
         /// </summary>
         public static string ACBulkAC {
             get {
@@ -232,7 +232,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create AssyChart.
+        ///   Busca una cadena traducida similar a Create JobAllocation.
         /// </summary>
         public static string ACCreate {
             get {
@@ -250,7 +250,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Delete AssyChart.
+        ///   Busca una cadena traducida similar a Delete JobAllocation.
         /// </summary>
         public static string ACDelete {
             get {
@@ -259,7 +259,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Details AssyChart.
+        ///   Busca una cadena traducida similar a Details JobAllocation.
         /// </summary>
         public static string ACDetails {
             get {
@@ -322,7 +322,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Edit AssyChart.
+        ///   Busca una cadena traducida similar a Edit JobAllocation.
         /// </summary>
         public static string ACEdit {
             get {
@@ -349,7 +349,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a AssyChart Format.
+        ///   Busca una cadena traducida similar a JobAllocation Format.
         /// </summary>
         public static string ACFormat {
             get {
@@ -448,7 +448,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a AssyChart Id.
+        ///   Busca una cadena traducida similar a JobAllocation Id.
         /// </summary>
         public static string ACId {
             get {
@@ -610,7 +610,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a New Assy Chart.
+        ///   Busca una cadena traducida similar a New JobAllocation.
         /// </summary>
         public static string ACNewAC {
             get {
@@ -619,7 +619,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a This AssyChart has no products added..
+        ///   Busca una cadena traducida similar a This JobAllocation has no products added..
         /// </summary>
         public static string ACNoProducts {
             get {
@@ -628,7 +628,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Assy Chart List not found.
+        ///   Busca una cadena traducida similar a JobAllocation List not found.
         /// </summary>
         public static string ACNotFound {
             get {
@@ -772,7 +772,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Assy Chart List By Plant not Found .
+        ///   Busca una cadena traducida similar a JobAllocation List By Plant not Found .
         /// </summary>
         public static string ACPlantsNotFound {
             get {
@@ -817,7 +817,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Are you sure you want to delete this AssyChart?.
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this JobAllocation?.
         /// </summary>
         public static string ACquestionDelete {
             get {
@@ -862,7 +862,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Update AssyChart.
+        ///   Busca una cadena traducida similar a Update JobAllocation.
         /// </summary>
         public static string ACUpdate {
             get {
@@ -880,7 +880,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Upload Assy Chart.
+        ///   Busca una cadena traducida similar a Upload JobAllocation.
         /// </summary>
         public static string ACUploadAC {
             get {
@@ -903,15 +903,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Alert {
             get {
                 return ResourceManager.GetString("Alert", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Busca una cadena traducida similar a AssyChart.
-        /// </summary>
-        public static string assychart {
-            get {
-                return ResourceManager.GetString("assychart", resourceCulture);
             }
         }
         
@@ -2064,6 +2055,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string IsActive {
             get {
                 return ResourceManager.GetString("IsActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a JobAllocation.
+        /// </summary>
+        public static string JobAllocation {
+            get {
+                return ResourceManager.GetString("JobAllocation", resourceCulture);
             }
         }
         
