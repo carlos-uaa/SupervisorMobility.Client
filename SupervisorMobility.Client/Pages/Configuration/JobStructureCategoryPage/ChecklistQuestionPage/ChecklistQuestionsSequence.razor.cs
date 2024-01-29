@@ -1,7 +1,7 @@
 ﻿using MudBlazor;
 using MudBlazor.Utilities;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.ChecklistQuestionPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
     public partial class ChecklistQuestionsSequence
     {
@@ -14,13 +14,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("Job Structure Category", href: "/checklistcategories"),
             new BreadcrumbItem("CategoryDetail", href: ""),
             new BreadcrumbItem("Sequence", href: "", disabled: true),
         };
 
         // Objects
-        public ChecklistCategory _checklistCategoryAndQuestions { get; set; } = new();
+        public JobCategoryStructure _checklistCategoryAndQuestions { get; set; } = new();
         public ChecklistQuestion _checklistQuestion { get; set; } = new();
 
 

@@ -86,7 +86,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
-        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         

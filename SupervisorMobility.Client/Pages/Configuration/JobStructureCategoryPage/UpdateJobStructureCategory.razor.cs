@@ -1,8 +1,8 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class UpdateChecklistCategory
+    public partial class UpdateJobStructureCategory
     {
         // Parameters
         [Parameter]
@@ -18,12 +18,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         };
 
         // Objects
-        public ChecklistCategory _checklistCategory { get; set; } = new();
+        public JobCategoryStructure _checklistCategory { get; set; } = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            ChecklistCategory dbCategory = await ChecklistService.GetCategoryById(CategoryId);
+            JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(CategoryId);
             _checklistCategory = dbCategory;
         }
 

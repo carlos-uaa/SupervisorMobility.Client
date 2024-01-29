@@ -1,8 +1,8 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class CreateChecklistCategory
+    public partial class CreateJobStructureCategory
     {
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
+        JobCategoryStructure _checklistCategory = new();
 
         // Create checklist category
         async void CreateCategoryAsync()

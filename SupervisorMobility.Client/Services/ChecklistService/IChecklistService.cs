@@ -3,25 +3,25 @@
     public interface IChecklistService
     {
         // Get all checklist categories
-        Task<List<ChecklistCategory>> GetChecklistCategories(bool includeChecklistQuestions = false);
+        Task<List<JobCategoryStructure>> GetChecklistCategories(bool includeChecklistQuestions = false);
 
         // Get checklist category by Id
-        Task<ChecklistCategory> GetCategoryById(int id);
+        Task<JobCategoryStructure> GetCategoryById(int id);
 
         // Get checklist category including questions
-        Task<ChecklistCategory> GetCategoryIncludingQuestions(int id);
+        Task<JobCategoryStructure> GetCategoryIncludingQuestions(int id);
 
         // Create checklist category
-        Task<ChecklistCategory> CreateCategory(ChecklistCategory category);
+        Task<JobCategoryStructure> CreateCategory(JobCategoryStructure category);
 
         // Update checklist category
-        Task UpdateCategory(ChecklistCategory category);
+        Task UpdateCategory(JobCategoryStructure category);
 
         // Delete checklist category
         Task DeleteCategory(int id);
 
         // Update checklist category sequence
-        Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory);
+        Task UpdateCategorySequence(int categoryId, JobCategoryStructure checklistCategory);
 
         // Get all checklist questions by category Id
         Task<List<ChecklistQuestion>> GetChecklistQuestionsByCategoryId(int categoryId);

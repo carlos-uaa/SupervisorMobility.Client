@@ -1,10 +1,10 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class ChecklistCategoryDetail
-    {
+    public partial class JobStructureCategoryDetail
+{
         // Parameters
         [Parameter]
         public int CategoryId { get; set; }
@@ -19,7 +19,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
+        JobCategoryStructure _checklistCategory = new();
         public List<ChecklistQuestion> _checklistQuestions { get; set; } = new();
 
         // Initialization

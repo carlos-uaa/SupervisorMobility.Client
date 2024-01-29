@@ -1,42 +1,52 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.ChecklistQuestionPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
-    public partial class CreateChecklistQuestion
+    public partial class UpdateChecklistQuestion
     {
         // Parameters
         [Parameter]
         public int categoryId { get; set; }
+
+        [Parameter]
+        public int questionId { get; set; }
+
+        public List<Pillar> _pillars { get; set; } = new();
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("Job Structure Categorys", href: "/checklistcategories"),
             new BreadcrumbItem("CategoryDetail", href: ""),
-            new BreadcrumbItem("New question", href: "", disabled: true),
+            new BreadcrumbItem("UpdateQuestion", href: "", disabled: true),
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
-        ChecklistQuestion _question = new();
+        JobCategoryStructure _checklistCategory = new();
+        public ChecklistQuestion _question { get; set; } = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
-        public List<Pillar> _pillars { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()
         {
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
+
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            ChecklistQuestion dbQuestion = await ChecklistService.GetQuestionById(categoryId, questionId);
             _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
+            _question = dbQuestion;
             _pillars = await PillarsService.GetPillars();
         }
 
-        // Create question
-        async void CreateQuestionAsync()
+        // Update question
+        void UpdateQuestionAsync()
         {
-            _question.IsActive = true;
-            var result = await ChecklistService.CreateQuestion(categoryId, _question);
+            ChecklistService.UpdateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 

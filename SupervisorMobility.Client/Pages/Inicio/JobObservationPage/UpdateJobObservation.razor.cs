@@ -133,7 +133,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int auxErgonomicsLevel = 0;
 
         //Checklist Categories and questions
-        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
         private Dictionary<int, List<int>> questionDelete = new Dictionary<int, List<int>>();

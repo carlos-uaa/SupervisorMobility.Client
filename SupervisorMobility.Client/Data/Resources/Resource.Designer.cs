@@ -655,7 +655,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Checklist categories.
+        ///   Busca una cadena traducida similar a Job Structure categories.
         /// </summary>
         public static string checklistCategories {
             get {

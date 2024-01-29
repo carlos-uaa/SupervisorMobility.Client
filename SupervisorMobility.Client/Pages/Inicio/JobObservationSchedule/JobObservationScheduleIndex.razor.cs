@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         private string month;
         private string showMonth;
         private string year;
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
 
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();

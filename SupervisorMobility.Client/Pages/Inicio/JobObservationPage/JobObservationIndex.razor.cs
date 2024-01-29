@@ -10,7 +10,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public DateTime? date = DateTime.Today;
 
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()

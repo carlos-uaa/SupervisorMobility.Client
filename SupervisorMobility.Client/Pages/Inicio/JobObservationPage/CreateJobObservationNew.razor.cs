@@ -125,7 +125,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Checklist Categories and questions
-        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
 

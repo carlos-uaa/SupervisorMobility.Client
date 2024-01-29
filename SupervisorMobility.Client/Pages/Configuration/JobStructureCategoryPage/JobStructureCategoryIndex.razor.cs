@@ -1,20 +1,20 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class ChecklistCategories
+    public partial class JobStructureCategoryIndex
     {
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "", disabled: true),
+            new BreadcrumbItem("Job Structure categories", href: "", disabled: true),
         };
 
         // Objects
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
 
             if (confirm)
             {
-                _checklistCategories.RemoveAll(category => category.ChecklistCategoryId == categoryId);
+                _checklistCategories.RemoveAll(category => category.JobCategoryStructureId == categoryId);
                 await ChecklistService.DeleteCategory(categoryId);
             }
         }
@@ -48,11 +48,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
 
         private string searchString = "";
 
-        private bool FilterFunc(ChecklistCategory element)
+        private bool FilterFunc(JobCategoryStructure element)
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.ChecklistCategoryId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.JobCategoryStructureId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
@@ -60,7 +60,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
                 return true;
             if (element.Sequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.ChecklistCategoryId} {element.Code} {element.Description} {element.Sequence}".Contains(searchString))
+            if ($"{element.JobCategoryStructureId} {element.Code} {element.Description} {element.Sequence}".Contains(searchString))
                 return true;
             return false;
         }

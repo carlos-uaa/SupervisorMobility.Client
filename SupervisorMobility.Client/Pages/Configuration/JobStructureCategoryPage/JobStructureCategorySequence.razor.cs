@@ -1,9 +1,9 @@
 ﻿using MudBlazor;
 using MudBlazor.Utilities;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class ChecklistCategoriesSequence
+    public partial class JobStructureCategorySequence
     {
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
@@ -15,8 +15,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         };
 
         // Objects
-        public List<ChecklistCategory> _checklistCategories { get; set; } = new();
-        public ChecklistCategory _checklistCategory { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
+        public JobCategoryStructure _checklistCategory { get; set; } = new();
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -25,7 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         }
 
         // Drag and drop category
-        async void ItemUpdated(MudItemDropInfo<ChecklistCategory> dropItem)
+        async void ItemUpdated(MudItemDropInfo<JobCategoryStructure> dropItem)
         {
             dropItem.Item.Container = dropItem.DropzoneIdentifier;
 
@@ -35,10 +35,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
 
             _checklistCategories.UpdateOrder(dropItem, item => item.Sequence, indexOffset);
 
-            currentCategory = dropItem.Item.ChecklistCategoryId;
+            currentCategory = dropItem.Item.JobCategoryStructureId;
             newSequence = dropItem.IndexInZone + 1;
 
-            ChecklistCategory dbCategory = await ChecklistService.GetCategoryById(currentCategory);
+            JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(currentCategory);
             _checklistCategory = dbCategory;
             _checklistCategory.Sequence = newSequence;
 
@@ -46,7 +46,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         }
 
         // Update sequence
-        void UpdateSequence(int currentCategory, ChecklistCategory checklistCategory)
+        void UpdateSequence(int currentCategory, JobCategoryStructure checklistCategory)
         {
             ChecklistService.UpdateCategorySequence(currentCategory, checklistCategory);
         }
