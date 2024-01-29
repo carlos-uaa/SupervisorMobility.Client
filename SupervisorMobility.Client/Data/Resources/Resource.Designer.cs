@@ -1357,6 +1357,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First select a distribution.
+        /// </summary>
+        public static string firstSelectADistribution {
+            get {
+                return ResourceManager.GetString("firstSelectADistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a First Select an Area.
         /// </summary>
         public static string firstSelectAnArea {
@@ -1380,6 +1389,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string firstSelectAPlant {
             get {
                 return ResourceManager.GetString("firstSelectAPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First select a product.
+        /// </summary>
+        public static string firstSelectAProduct {
+            get {
+                return ResourceManager.GetString("firstSelectAProduct", resourceCulture);
             }
         }
         
@@ -2653,6 +2671,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Plan SOS review program.
+        /// </summary>
+        public static string planSOSReviewProgram {
+            get {
+                return ResourceManager.GetString("planSOSReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Plant.
         /// </summary>
         public static string plant {
@@ -3171,6 +3198,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string sosReviewProgram {
             get {
                 return ResourceManager.GetString("sosReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification.
+        /// </summary>
+        public static string specification {
+            get {
+                return ResourceManager.GetString("specification", resourceCulture);
             }
         }
         

@@ -1,6 +1,7 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
 using Newtonsoft.Json.Linq;
@@ -30,6 +31,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+        List<Operation> _filteredOperations = new();
 
         List<User> _supervisors { get; set; } = new();
         List<User> _allSupervisors = new();
@@ -474,6 +476,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
+        private int[] StepsNumber = new int[5];
+        private int[] DoubleManagment = new int[5];
+        private int[] Waiting = new int[5];
 
 
         private void UpdateValue(int operationId, int cycleIndex, double newValue)
@@ -511,9 +516,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void NextOperation()
         {
-            if (currentOperationIndex < _operations.Count)
+            if (currentOperationIndex < _filteredOperations.Count)
             {
-                var currentOperation = _operations[currentOperationIndex];
+                var currentOperation = _filteredOperations[currentOperationIndex];
 
                 if (currentOperationIndex > 0)
                 {
@@ -528,7 +533,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 previousOperationTime = GetElapsedCentiseconds();
 
                 currentOperationIndex++;
-                if (currentOperationIndex >= _operations.Count)
+                if (currentOperationIndex >= _filteredOperations.Count)
                 {
                     currentOperationIndex = 0;
                     currentCycle++;
@@ -594,7 +599,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
             StateHasChanged();
         }
-
 
         private void StartTimer()
         {
@@ -673,7 +677,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public void InitializeCycleTimes()
         {
-            foreach (var op in _operations)
+            _filteredOperations = new();
+            StepsNumber = new int[5];
+            DoubleManagment = new int[5];
+            Waiting = new int[5];
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            foreach (var op in _filteredOperations)
             {
                 if (!OperationTimes.ContainsKey(op.OperationId))
                 {
@@ -693,6 +704,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             return random.NextDouble() * (max - min) + min;
         }
 
+        private void HandleKeyDown(KeyboardEventArgs args)
+        {
+            if (isTimerRunning2 && args.Code == "KeyN")
+            {
+                NextOperation();
+            }
+        }
 
         private void ShowSpecifications()
         {

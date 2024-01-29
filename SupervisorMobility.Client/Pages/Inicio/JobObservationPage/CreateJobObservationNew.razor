@@ -75,7 +75,7 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["jobObservations"]</PageTitle>
 @*Breadcrumb links*@
-<div style="display: flex; align-items: center; justify-content: space-between;">
+<div style="display: flex; align-items: center; justify-content: space-between;" @onkeydown="HandleKeyDown">
     <MudItem>
         <MudBreadcrumbs Items="_links" >
             <ItemTemplate Context="item">
@@ -89,10 +89,10 @@
 </div>
 
 @* Job Observation Form*@
-<EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
+<EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation" >
     <DataAnnotationsValidator />
 
-    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px" >
         <MudItem lg="10" md="12" sm="12" xs="12">
             <MudItem Class="d-flex justify-space-between mb-2">
                 <MudItem Style="text-align: start">
@@ -550,13 +550,20 @@
                                             }
                                     </td>
                                     <td class="d-flex mt-3">
-                                        <MudSelect T="string" Label=@Localizer["specification1"] Variant="Variant.Text" Class="mt-3 mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="InitializeCycleTimes">
-                                            <MudSelectItem Disabled="true" Value="@("0")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                            @foreach (var type in _specifications)
-                                            {
-                                                <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                        @if(jobProductId != 0){
+                                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="InitializeCycleTimes">
+                                                <MudSelectItem Disabled="true" Value="@("0")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                @foreach (var type in _specifications)
+                                                {
+                                                    <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else{
+                                            <MudSelect T="int" Label=@Localizer["specification"] Disabled Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAProduct"]</MudSelectItem>
+                                                </MudSelect>
+                                        }
                                         <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
                                             <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
                                             <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
@@ -663,13 +670,21 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="ShowSpecifications">
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                                            @foreach (var type in _products)
-                                            {
-                                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                        @if(_jobObservation.DistributionId != 0){
+                                            <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="ShowSpecifications">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                                                @foreach (var type in _products)
+                                                {
+                                                    <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else{
+                                                <MudSelect T="int" Label=@Localizer["product"] Disabled Variant="Variant.Text"  AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
+                                                </MudSelect>
+                                        }
+
 @*                                        @if (_jobObservation.DistributionId != 0)
                                         {
                                             <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="ShowPastJobObservations">
@@ -776,7 +791,7 @@
                                 <td style="width: 32%" >
                                     <div style="display:flex; align-items: center; margin-left: 55%">
                                         <MudToggleIconButton Toggled="@isTimerRunning2" Color="Color.Info" @onclick="StartOrPauseTimer" Variant="Variant.Outlined" Class="mr-1"
-                                            Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" />
+                                                             Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" @onkeydown="HandleKeyDown" />
                                         @if (isTimerRunning2)
                                         {
                                             <MudText Color="Color.Error">Restart Cycle</MudText>
@@ -792,7 +807,7 @@
 
                                 </td>
                                 <td  style="width: 32%">
-                                    <MudButton @onclick="NextOperation" Disabled="!isTimerRunning2" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Info">
+                                    <MudButton @onclick="NextOperation" Disabled="!isTimerRunning2" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Info" @onkeydown="HandleKeyDown">
                                         Next operation
                                     </MudButton>
                                 </td>
@@ -801,7 +816,7 @@
 
                     </MudSimpleTable>
 
-                    @if(@_jobObservation.DistributionId != 0){
+                    @if(productSpecification != "0"){
                         <MudSimpleTable Hover="true" Dense="true" Elevation="0">
                             <thead>
                                 <tr>
@@ -815,7 +830,7 @@
                                 </tr>
                             </thead>
                         <tbody>
-                            @foreach (var op in _operations)
+                            @foreach (var op in _filteredOperations)
                             {
                                 var standardTime ="0.0";
                                 <tr>
@@ -875,7 +890,7 @@
                                                 cycleColor = "green";
                                             }
 
-                                            if (currentOperationIndex == _operations.IndexOf(op) && i == currentCycle)
+                                                if (currentOperationIndex == _filteredOperations.IndexOf(op) && i == currentCycle)
                                             {
                                                 cycleColor += " current-time";
                                             }
@@ -894,15 +909,64 @@
                                     }
                                 </tr>
                             }
+
+                            <tr>
+                                <td colspan="2">Total Cycle Time</td>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    var totalCycleTime = _filteredOperations.Sum(op => OperationTimes.ContainsKey(op.OperationId) && OperationTimes[op.OperationId].ContainsKey(i)
+                                        ? OperationTimes[op.OperationId][i]
+                                        : 0.0);
+
+                                    <td>
+                                        <span>@Math.Round(totalCycleTime, 2)</span>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                            <td colspan="2">StepsNumber</td>
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    var stepsNumberValue = StepsNumber[i];
+
+                                    <td>
+                                        <MudTextField T="int" @bind-Value="stepsNumberValue" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    </td>
+                                }
+                            </tr>
+
+                        <tr>
+                            <td colspan="2">DoubleManagment</td>
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var doubleManagmentValue = DoubleManagment[i];
+
+                                <td>
+                                    <MudTextField T="int" @bind-Value="doubleManagmentValue" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                </td>
+                            }
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">Waiting</td>
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var waitingValue = Waiting[i];
+
+                                <td>
+                                    <MudTextField T="int" @bind-Value="waitingValue" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                </td>
+                            }
+                        </tr>
                         </tbody>
 
 
 
                         </MudSimpleTable>
+                        <MudButton @onclick="StartOver" EndIcon="@Icons.Material.Filled.RestartAlt" Variant="Variant.Filled" Color="Color.Info">
+                            Start over
+                        </MudButton>
                     }
-                    <MudButton @onclick="StartOver" EndIcon="@Icons.Material.Filled.RestartAlt" Variant="Variant.Filled" Color="Color.Info">
-                        Start over
-                    </MudButton>
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="Section 2" IsInitiallyExpanded=true Style="min-width: 100%">
                     <MudSimpleTable Dense=true Style="overflow-x: auto;" Bordered=true Elevation="0">
