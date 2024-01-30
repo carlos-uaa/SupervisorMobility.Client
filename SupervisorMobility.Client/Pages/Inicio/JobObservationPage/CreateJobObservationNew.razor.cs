@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
 using Newtonsoft.Json.Linq;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System.Globalization;
 using System.Net.Http.Headers;
@@ -871,8 +872,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+
         private async Task CreateNewJobObservation()
         {
+            Console.WriteLine("aa");
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
@@ -881,14 +884,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-
-            _jobObservation.ModelsSpecification = modelsSpecification[0] + "|" + modelsSpecification[1] + "|" + modelsSpecification[2] + "|" + modelsSpecification[3] + "|" + modelsSpecification[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
             _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
             _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.OperationId = jobProductId;
+            _jobObservation.ProductId = jobProductId;
+
             if (_jobObservation.HOEStandardTimes != null)
                 _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
             if (_jobObservation.Cycles != null)

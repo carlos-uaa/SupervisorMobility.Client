@@ -32,8 +32,6 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Distribution")]
         public int DistributionId { get; set; }
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Operation")]
         public int OperationId { get; set; }    
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Supervisor")]
@@ -72,5 +70,9 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? Questions { get; set; }
         public int? ProductId { get; set; }
 
+        public string? OperationTimesJson { get; set; }
+        public string? StepsNumber { get; set; }
+        public string? DoubleManagment { get; set; }
+        public string? Waiting { get; set; }
     }
 }
