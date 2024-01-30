@@ -26,6 +26,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         protected override async Task OnParametersSetAsync()
         {
             _checklistCategory = await ChecklistService.GetCategoryIncludingQuestions(CategoryId);
+
+            if(_checklistCategory.Type != StructureType.Checklist)
+            {
+                //redirection 
+                NavigationManager.NavigateTo($"checklistcategories");
+            }
+
             _checklistQuestions = await ChecklistService.GetChecklistQuestionsByCategoryId(CategoryId);
         }
 

@@ -18,20 +18,67 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         };
 
         // Objects
-        public JobCategoryStructure _checklistCategory { get; set; } = new();
-
+        public JobCategoryStructure _JobCategory { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(CategoryId);
-            _checklistCategory = dbCategory;
+            _checklistCategories = await ChecklistService.GetChecklistCategories();
+
+            try
+            {
+                JobCategoryStructure dbCategory = _checklistCategories.Find(c => c.JobCategoryStructureId == CategoryId);
+                _JobCategory = dbCategory;
+
+            }catch (Exception ex)
+            {
+                Console.WriteLine("Error al seleccionar elemento de listado - Update Job structure");
+                Console.WriteLine(ex.Message);
+            }
         }
 
         // Update category
         void UpdateCategory()
         {
-            ChecklistService.UpdateCategory(_checklistCategory);
+            ChecklistService.UpdateCategory(_JobCategory);
             NavigationManager.NavigateTo($"checklistcategories");
+        }
+
+        private string GetStructureTypeText(StructureType type)
+        {
+            switch (type)
+            {
+                case StructureType.Titular:
+                    return "Title & Info";
+                case StructureType.Checklist:
+                    return "Checklist Section";
+                case StructureType.Timer:
+                    return "Cicle Timer's";
+                case StructureType.LUP:
+                    return "LUP";
+                case StructureType.Signature:
+                    return "Signature & Commentary";
+                
+                default:
+                    return "Desconocido";
+            }
+        }
+
+        private bool HasTitularCategory()
+        {
+            return _checklistCategories.Any(c => c.Type == StructureType.Titular && c.JobCategoryStructureId != _JobCategory.JobCategoryStructureId);
+        }
+        private bool HasLUPCategory()
+        {
+            return _checklistCategories.Any(c => c.Type == StructureType.LUP && c.JobCategoryStructureId != _JobCategory.JobCategoryStructureId);
+        } 
+        private bool HasTimerCategory()
+        {
+            return _checklistCategories.Any(c => c.Type == StructureType.Timer && c.JobCategoryStructureId != _JobCategory.JobCategoryStructureId);
+        } 
+        private bool HasSignatureCategory()
+        {
+            return _checklistCategories.Any(c => c.Type == StructureType.Signature && c.JobCategoryStructureId != _JobCategory.JobCategoryStructureId);
         }
     }
 }

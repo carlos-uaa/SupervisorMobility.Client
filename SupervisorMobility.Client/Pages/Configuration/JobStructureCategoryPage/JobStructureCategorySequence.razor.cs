@@ -27,22 +27,23 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Drag and drop category
         async void ItemUpdated(MudItemDropInfo<JobCategoryStructure> dropItem)
         {
-            dropItem.Item.Container = dropItem.DropzoneIdentifier;
 
-            var indexOffset = 0;
-            int currentCategory;
-            int newSequence;
+                var indexOffset = 2;
 
-            _checklistCategories.UpdateOrder(dropItem, item => item.Sequence, indexOffset);
+                dropItem.Item.Container = dropItem.DropzoneIdentifier;
 
-            currentCategory = dropItem.Item.JobCategoryStructureId;
-            newSequence = dropItem.IndexInZone + 1;
+                _checklistCategories.UpdateOrder(dropItem, item => item.Sequence, indexOffset);
 
-            JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(currentCategory);
-            _checklistCategory = dbCategory;
-            _checklistCategory.Sequence = newSequence;
+                int currentCategory = dropItem.Item.JobCategoryStructureId;
+                int newSequence = dropItem.IndexInZone + 1;
 
-            UpdateSequence(currentCategory, _checklistCategory);
+                JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(currentCategory);
+                _checklistCategory = dbCategory;
+                _checklistCategory.Sequence = newSequence;
+
+                UpdateSequence(currentCategory, _checklistCategory);
+            
+               base.StateHasChanged();
         }
 
         // Update sequence

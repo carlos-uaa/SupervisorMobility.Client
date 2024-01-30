@@ -1,7 +1,7 @@
 ﻿@page "/checklistcategories/category/updatecategory/{categoryId:int}"
 @inject IChecklistService ChecklistService
 @inject NavigationManager NavigationManager
-
+@inject IStringLocalizer<Resource1> Localizer1
 @*Title*@
 <PageTitle>Supervisor Mobility | Update Job Structure Category</PageTitle>
 
@@ -10,7 +10,7 @@
     <ItemTemplate Context="item">
         @if (item.Text == "UpdateCategory")
         {
-            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">Update @_checklistCategory.Description</MudButton>
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">Update @_JobCategory.Description</MudButton>
         }
         else
         {
@@ -20,7 +20,7 @@
 </MudBreadcrumbs>
 
 @*Form*@
-<EditForm Model="_checklistCategory" OnValidSubmit="UpdateCategory">
+<EditForm Model="_JobCategory" OnValidSubmit="UpdateCategory">
     <DataAnnotationsValidator />
     <MudGrid>
         <MudItem xs="12">
@@ -35,10 +35,38 @@
                 </MudCardHeader>
                 <MudCardContent>
                     <MudTextField Label="Plant description"
-                                  @bind-Value="_checklistCategory.Description" For="@(() => _checklistCategory.Description)" />
+                    @bind-Value="_JobCategory.Description" For="@(() => _JobCategory.Description)" />
                     <MudTextField Label="Code" Class="mt-3"
-                                  @bind-Value="_checklistCategory.Code" For="@(() => _checklistCategory.Code)" />
-                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_checklistCategory.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    @bind-Value="_JobCategory.Code" For="@(() => _JobCategory.Code)" />
+                    <MudSelect T="StructureType" Label="@Localizer1["TypeStrucureLabel"]" Variant="Variant.Text" Placeholder="@Localizer1["TypeStrucurePH"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_JobCategory.Type" For="@(() => _JobCategory.Type)">
+
+                        @if (!HasTitularCategory() || _JobCategory.Type == StructureType.Titular || _JobCategory.Type == null)
+                        {
+                            <MudSelectItem Value="StructureType.Titular">@GetStructureTypeText(StructureType.Titular)</MudSelectItem>
+                        }
+
+                        @if (_JobCategory.Type != StructureType.Checklist)
+                        {
+                            <MudSelectItem Value="StructureType.Checklist">@GetStructureTypeText(StructureType.Checklist)</MudSelectItem>
+                        }
+
+                        @if (!HasLUPCategory() || _JobCategory.Type == StructureType.LUP)
+                        {
+                            <MudSelectItem Value="StructureType.LUP">@GetStructureTypeText(StructureType.LUP)</MudSelectItem>
+                        }
+
+                        @if (!HasTimerCategory() || _JobCategory.Type == StructureType.Timer)
+                        {
+                            <MudSelectItem Value="StructureType.Timer">@GetStructureTypeText(StructureType.Timer)</MudSelectItem>
+                        }
+
+                        @if (!HasSignatureCategory() || _JobCategory.Type == StructureType.Signature)
+                        {
+                            <MudSelectItem Value="StructureType.Signature">@GetStructureTypeText(StructureType.Signature)</MudSelectItem>
+                        }
+
+                    </MudSelect>
+                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_JobCategory.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
