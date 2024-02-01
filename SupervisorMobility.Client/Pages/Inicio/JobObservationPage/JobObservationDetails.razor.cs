@@ -121,7 +121,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
             _operations = _operations.OrderBy(o => o.Description).ToList();
-            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
 
             jobProductId = (int)_jobObservation.ProductId;
