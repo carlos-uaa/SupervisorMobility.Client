@@ -37,8 +37,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
         protected override async Task OnParametersSetAsync()
         {
-            ChecklistQuestion dbQuestion = await ChecklistService.GetQuestionById(categoryId, questionId);
-            _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
+            ChecklistQuestion dbQuestion = await JobStructureCategoriesService.GetQuestionById(categoryId, questionId);
+            _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _question = dbQuestion;
             _pillars = await PillarsService.GetPillars();
         }
@@ -46,7 +46,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Update question
         void UpdateQuestionAsync()
         {
-            ChecklistService.UpdateQuestion(categoryId, _question);
+            JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 

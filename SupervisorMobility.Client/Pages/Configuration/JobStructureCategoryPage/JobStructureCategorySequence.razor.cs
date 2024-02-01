@@ -21,7 +21,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _checklistCategories = await ChecklistService.GetChecklistCategories();
+            _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
         }
 
         // Drag and drop category
@@ -37,7 +37,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 int currentCategory = dropItem.Item.JobCategoryStructureId;
                 int newSequence = dropItem.IndexInZone + 1;
 
-                JobCategoryStructure dbCategory = await ChecklistService.GetCategoryById(currentCategory);
+                JobCategoryStructure dbCategory = await JobStructureCategoriesService.GetCategoryById(currentCategory);
                 _checklistCategory = dbCategory;
                 _checklistCategory.Sequence = newSequence;
 
@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Update sequence
         void UpdateSequence(int currentCategory, JobCategoryStructure checklistCategory)
         {
-            ChecklistService.UpdateCategorySequence(currentCategory, checklistCategory);
+            JobStructureCategoriesService.UpdateCategorySequence(currentCategory, checklistCategory);
         }
     }
 }

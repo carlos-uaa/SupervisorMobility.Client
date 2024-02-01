@@ -24,7 +24,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _checklistCategories = await ChecklistService.GetChecklistCategories();
+            _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
 
             await GetUserAsync();
             logged = await HasPropertyAsync();
@@ -73,7 +73,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             if (confirm)
             {
                 _checklistCategories.RemoveAll(category => category.JobCategoryStructureId == categoryId);
-                await ChecklistService.DeleteCategory(categoryId);
+                await JobStructureCategoriesService.DeleteCategory(categoryId);
             }
         }
 

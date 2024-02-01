@@ -165,7 +165,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
 
 
-                _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+                _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
                 foreach (var category in _checklistCategoriesAndQuestions)
                 {
                     foreach (var question in category.ChecklistQuestions)

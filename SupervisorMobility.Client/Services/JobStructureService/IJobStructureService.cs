@@ -1,9 +1,10 @@
-﻿namespace SupervisorMobility.Client.Services.ChecklistService
+﻿namespace SupervisorMobility.Client.Services.JobStructureService
 {
-    public interface IChecklistService
+    public interface IJobStructureService
     {
         // Get all checklist categories
         Task<List<JobCategoryStructure>> GetChecklistCategories(bool includeChecklistQuestions = false);
+        Task<List<JobCategoryStructure>> GetAllChecklistCategories(bool includeChecklistQuestions = false);
 
         // Get checklist category by Id
         Task<JobCategoryStructure> GetCategoryById(int id);

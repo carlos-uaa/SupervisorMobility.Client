@@ -15,7 +15,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _checklistCategories = await ChecklistService.GetChecklistCategories();
+            _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
         }
 
         public int category = 1;

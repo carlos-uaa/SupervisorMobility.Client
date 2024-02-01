@@ -157,7 +157,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
-            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
 
             foreach (var category in _checklistCategoriesAndQuestions)
             {

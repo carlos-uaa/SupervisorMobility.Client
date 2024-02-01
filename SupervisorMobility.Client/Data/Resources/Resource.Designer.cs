@@ -853,7 +853,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create SOS.
+        ///   Busca una cadena traducida similar a Créate Sos Review program plan.
         /// </summary>
         public static string createSOS {
             get {

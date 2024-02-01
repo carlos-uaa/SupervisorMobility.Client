@@ -23,7 +23,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _checklistCategories = await ChecklistService.GetChecklistCategories();
+            _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
 
             try
             {
@@ -40,7 +40,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Update category
         void UpdateCategory()
         {
-            ChecklistService.UpdateCategory(_JobCategory);
+            JobStructureCategoriesService.UpdateCategory(_JobCategory);
             NavigationManager.NavigateTo($"checklistcategories");
         }
 

@@ -1,15 +1,15 @@
 ﻿using Microsoft.JSInterop;
 using System.Net.Http.Json;
 
-namespace SupervisorMobility.Client.Services.ChecklistService
+namespace SupervisorMobility.Client.Services.JobStructureService
 {
-    public class ChecklistService : IChecklistService
+    public class JobStructureService : IJobStructureService
     {
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public ChecklistService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
+        public JobStructureService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
             _http = customHttpClientService;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -66,6 +66,20 @@ namespace SupervisorMobility.Client.Services.ChecklistService
         public async Task<List<JobCategoryStructure>> GetChecklistCategories(bool includeChecklistQuestions = false)
         {
             var response = await _http.GetAsync($"checklistcategories?includeChecklistQuestions={includeChecklistQuestions}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var categories = JsonSerializer.Deserialize<List<JobCategoryStructure>>(content, _options);
+
+            return categories;
+        } 
+        public async Task<List<JobCategoryStructure>> GetAllChecklistCategories(bool includeChecklistQuestions = false)
+        {
+            var response = await _http.GetAsync($"all/checklistcategories?includeChecklistQuestions={includeChecklistQuestions}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

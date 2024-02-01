@@ -25,7 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _checklistCategory = await ChecklistService.GetCategoryIncludingQuestions(CategoryId);
+            _checklistCategory = await JobStructureCategoriesService.GetCategoryIncludingQuestions(CategoryId);
 
             if(_checklistCategory.Type != StructureType.Checklist)
             {
@@ -33,7 +33,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 NavigationManager.NavigateTo($"checklistcategories");
             }
 
-            _checklistQuestions = await ChecklistService.GetChecklistQuestionsByCategoryId(CategoryId);
+            _checklistQuestions = await JobStructureCategoriesService.GetChecklistQuestionsByCategoryId(CategoryId);
         }
 
         // Create question
@@ -53,7 +53,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             if (confirm)
             {
                 _checklistQuestions.RemoveAll(question => question.QuestionID == questionId);
-                await ChecklistService.DeleteQuestion(categoryId, questionId);
+                await JobStructureCategoriesService.DeleteQuestion(categoryId, questionId);
             }
         }
 
