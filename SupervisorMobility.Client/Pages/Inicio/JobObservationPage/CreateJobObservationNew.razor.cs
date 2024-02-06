@@ -135,6 +135,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         public string productSpecification = "0";
+        bool showLoading = true;
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -159,8 +161,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _plants = _plants.OrderBy(p => p.Description).ToList();
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
 
+            string jobCategoryStructureIds = "";
+
             foreach (var category in _checklistCategoriesAndQuestions)
             {
+                jobCategoryStructureIds += category.JobCategoryStructureId + "|";
                 foreach (var question in category.ChecklistQuestions)
                 {
                     ChecklistAnswer newChAnswer = new();
@@ -171,7 +176,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
+            if (!string.IsNullOrEmpty(jobCategoryStructureIds))
+            {
+                jobCategoryStructureIds = jobCategoryStructureIds.TrimEnd('|');
+            }
+
+            _jobObservation.SectionIds = jobCategoryStructureIds;
+
             await GetUserAsync();
+
+            showLoading = false;
             StateHasChanged();
 
             if (user != null)
@@ -188,6 +202,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 var PatOperationId = queryString["OperationId"];
                 var PatOperatorId = queryString["OperatorId"];
                 var PatSupervisorId = queryString["SupervisorId"];
+
 
 
                 if (user.UserType == 1)

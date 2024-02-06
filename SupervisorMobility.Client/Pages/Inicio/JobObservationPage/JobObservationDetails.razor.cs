@@ -104,6 +104,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Operation> _filteredOperations = new();
         List<string> _specifications { get; set; } = new();
 
+        bool showLoading = true;
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -214,6 +216,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             string operationTimesJson = _jobObservation.OperationTimesJson;
 
             OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+            showLoading = false;
 
             StateHasChanged();
 
