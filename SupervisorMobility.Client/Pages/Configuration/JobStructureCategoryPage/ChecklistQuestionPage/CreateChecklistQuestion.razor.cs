@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.ChecklistQuestionPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
     public partial class CreateChecklistQuestion
     {
@@ -13,13 +13,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("Job Structure Category", href: "/checklistcategories"),
             new BreadcrumbItem("CategoryDetail", href: ""),
             new BreadcrumbItem("New question", href: "", disabled: true),
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
+        JobCategoryStructure _checklistCategory = new();
         ChecklistQuestion _question = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
         public List<Pillar> _pillars { get; set; } = new();
@@ -28,7 +28,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         protected async override Task OnInitializedAsync()
         {
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
-            _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
+            _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _pillars = await PillarsService.GetPillars();
         }
 
@@ -36,7 +36,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         async void CreateQuestionAsync()
         {
             _question.IsActive = true;
-            var result = await ChecklistService.CreateQuestion(categoryId, _question);
+            var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 

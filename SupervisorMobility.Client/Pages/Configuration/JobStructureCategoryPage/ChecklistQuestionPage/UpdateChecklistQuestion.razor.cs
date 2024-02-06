@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.ChecklistQuestionPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
     public partial class UpdateChecklistQuestion
     {
@@ -18,13 +18,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         {
             new BreadcrumbItem("Home", href: "/"),
             new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
+            new BreadcrumbItem("Job Structure Categorys", href: "/checklistcategories"),
             new BreadcrumbItem("CategoryDetail", href: ""),
             new BreadcrumbItem("UpdateQuestion", href: "", disabled: true),
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
+        JobCategoryStructure _checklistCategory = new();
         public ChecklistQuestion _question { get; set; } = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
 
@@ -37,8 +37,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
 
         protected override async Task OnParametersSetAsync()
         {
-            ChecklistQuestion dbQuestion = await ChecklistService.GetQuestionById(categoryId, questionId);
-            _checklistCategory = await ChecklistService.GetCategoryById(categoryId);
+            ChecklistQuestion dbQuestion = await JobStructureCategoriesService.GetQuestionById(categoryId, questionId);
+            _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _question = dbQuestion;
             _pillars = await PillarsService.GetPillars();
         }
@@ -46,7 +46,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage.Ch
         // Update question
         void UpdateQuestionAsync()
         {
-            ChecklistService.UpdateQuestion(categoryId, _question);
+            JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 

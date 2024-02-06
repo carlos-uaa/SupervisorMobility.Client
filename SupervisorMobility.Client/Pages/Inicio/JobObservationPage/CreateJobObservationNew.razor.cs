@@ -1,22 +1,20 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
+using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
-using SupervisorMobility.Client.Pages.Configuration.PlantPage;
-using System;
 using System.Globalization;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Timers;
-using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http.Headers;
-using SupervisorMobility.Client.Services.AssyChartService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
-    public partial class CreateJobObservation
+    public partial class CreateJobObservationNew
     {
 
         [Parameter]
@@ -34,6 +32,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
+        List<Operation> _filteredOperations = new();
 
         List<User> _supervisors { get; set; } = new();
         List<User> _allSupervisors = new();
@@ -41,6 +40,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Lup> _tempLup { get; set; } = new();
         Lup lup { get; set; } = new();
         List<Lup> _lup { get; set; } = new();
+        List<string> _specifications { get; set; } = new();
 
         AssyChart? _assychart { get; set; }
 
@@ -53,7 +53,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string areaC;
         public string areaOther;
 
-        int[] models = new int[5];
+        string[] modelsSpecification = new string[5] { "0", "0", "0", "0", "0" };
+        double[] TimeArray = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
         string[] cycles = new string[5] { "", "", "", "", "" };
         double[] HoeTimes = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
 
@@ -118,10 +119,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<User> operatorUsers = new();
 
         public string[] questions = new string[5];
-        public double taktTime { get; set; }
+        public double taktTime { get; set; } = 1.46;
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
-
+        public int jobProductId = 0;
 
 
         //Checklist Categories and questions
@@ -130,6 +131,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
+        Dictionary<string, double> specificationTimes = new Dictionary<string, double>();
+
+
+        public string productSpecification = "0";
 
         protected async override Task OnInitializedAsync()
         {
@@ -390,6 +395,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
+
+
         private async void ShowDistributions()
         {
             _jobObservation.SupervisorId = 0;
@@ -469,13 +476,365 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
+        private int[] StepsNumber = new int[5];
+        private int[] DoubleManagment = new int[5];
+        private int[] Waiting = new int[5];
 
+
+        private void UpdateValue(int operationId, int cycleIndex, double newValue)
+        {
+            if (!OperationTimes.ContainsKey(operationId))
+            {
+                OperationTimes[operationId] = new Dictionary<int, double>();
+            }
+
+            OperationTimes[operationId][cycleIndex] = newValue;
+            StateHasChanged();
+
+            Console.WriteLine("Diccionario actualizado:");
+            foreach (var kvp in OperationTimes)
+            {
+                Console.WriteLine($"OperationId: {kvp.Key}");
+                foreach (var cycleKvp in kvp.Value)
+                {
+                    Console.WriteLine($"  CycleIndex: {cycleKvp.Key}, Value: {cycleKvp.Value}");
+                }
+            }
+
+        }
+
+        private string elapsedTime2 = "00:00:00.000";
+        private DateTime startTime2;
+        private bool isTimerRunning2 = false;
+        private System.Timers.Timer timer2;
+
+        private int currentOperationIndex = 0;
+        private int currentCycle = 1;
+        private string cronometerTime = "0.00";
+
+        private double previousOperationTime = 0.0;
+
+        private void NextOperation()
+        {
+            if (currentOperationIndex < _filteredOperations.Count)
+            {
+                var currentOperation = _filteredOperations[currentOperationIndex];
+
+                if (currentOperationIndex > 0)
+                {
+                    double elapsedCentiseconds = GetElapsedCentiseconds() - previousOperationTime;
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
+                }
+                else
+                {
+                    OperationTimes[currentOperation.OperationId][currentCycle] = GetElapsedCentiseconds();
+                }
+
+                previousOperationTime = GetElapsedCentiseconds();
+
+                currentOperationIndex++;
+                if (currentOperationIndex >= _filteredOperations.Count)
+                {
+                    currentOperationIndex = 0;
+                    currentCycle++;
+                    Console.WriteLine("Total cycle time: " + cronometerTime);
+                    PauseTimer();
+                    cronometerTime = "0.00";
+                }
+
+                StateHasChanged();
+            }
+        }
+
+
+        private void StartOrPauseTimer()
+        {
+            if (isTimerRunning2)
+            {
+                PauseTimer();
+            }
+            else
+            {
+                StartTimer();
+            }
+
+        }
+
+
+        private double GetElapsedCentiseconds()
+        {
+            TimeSpan hundreths;
+            double centiseconds = 0.0;
+            if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = hundreths.TotalMilliseconds / 60000.0;
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
+
+            return Math.Round(centiseconds, 2);
+        }
+
+        private void OnTimerTick(object sender, ElapsedEventArgs e)
+        {
+            if (isTimerRunning2)
+            {
+                TimeSpan hundreths;
+                double centiseconds = 0.0;
+                if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+                {
+                    centiseconds = hundreths.TotalMilliseconds / 60000.0;
+                }
+                else
+                {
+                    Console.WriteLine("Wrong timestamp format.");
+                }
+
+                cronometerTime = string.Format("{0:0.000}", centiseconds);
+            }
+
+            DateTime currentTime = e.SignalTime;
+            elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
+            StateHasChanged();
+        }
+
+        private void StartTimer()
+        {
+            isTimerRunning2 = true;
+            startTime2 = DateTime.Now;
+            timer2 = new System.Timers.Timer(1);
+            timer2.Elapsed += OnTimerTick;
+            timer2.AutoReset = true;
+            timer2.Enabled = true;
+
+        }
+
+        private void PauseTimer()
+        {
+            cronometerTime = "0.00";
+            isTimerRunning2 = false;
+            timer2.Enabled = false;
+            currentOperationIndex = 0;
+
+            previousOperationTime = 0.0;
+            foreach (var operationId in OperationTimes.Keys)
+            {
+                OperationTimes[operationId][currentCycle] = 0.0;
+            }
+        }
+
+        private void StartOver()
+        {
+            currentCycle = 1;
+            cronometerTime = "0.00";
+            isTimerRunning2 = false;
+            timer2.Enabled = false;
+            currentOperationIndex = 0;
+
+            previousOperationTime = 0.0;
+            foreach (var operationId in OperationTimes.Keys)
+            {
+                for (int cycle = 1; cycle <= 5; cycle++)
+                {
+                    OperationTimes[operationId][cycle] = 0.0;
+                }
+            }
+
+
+            StateHasChanged();
+        }
+
+
+
+
+        public void actualizarCampo()
+        {
+            if (currentOperationIndex < _operations.Count)
+            {
+                var currentOperation = _operations[currentOperationIndex];
+                OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
+
+                currentOperationIndex++;
+
+                if (currentOperationIndex >= _operations.Count && currentCycle < 5)
+                {
+                    currentCycle++;
+                    currentOperationIndex = 0;
+                }
+
+                StateHasChanged();
+            }
+            else
+            {
+                currentCycle = 1;
+                currentOperationIndex = 0;
+                StateHasChanged();
+            }
+        }
+
+
+        public void InitializeCycleTimes()
+        {
+            _filteredOperations = new();
+            StepsNumber = new int[5];
+            DoubleManagment = new int[5];
+            Waiting = new int[5];
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            foreach (var op in _filteredOperations)
+            {
+                if (!OperationTimes.ContainsKey(op.OperationId))
+                {
+                    OperationTimes[op.OperationId] = new Dictionary<int, double>();
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        OperationTimes[op.OperationId][i] = 0.0;
+                    }
+                }
+            }
+        }
+
+
+        private double GetRandomNumber(double min, double max)
+        {
+            Random random = new Random();
+            return random.NextDouble() * (max - min) + min;
+        }
+
+        private void HandleKeyDown(KeyboardEventArgs args)
+        {
+            if (isTimerRunning2 && args.Code == "KeyN")
+            {
+                NextOperation();
+            }
+        }
+
+        private void ShowSpecifications()
+        {
+            _specifications = new();
+            productSpecification = "0";
+            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            if (prodName != null)
+            {
+                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                {
+                    var names = op.NameTime.Replace(',', '.').Split("§");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (!string.IsNullOrEmpty(names[i]))
+                        {
+                            _specifications.Add(names[i]);
+                        }
+                    }
+
+                }
+            }
+
+            StateHasChanged();
+        }
 
         private async void ShowPastJobObservations()
         {
             flag = true;
-
+            _specifications = new();
+            HoeTimes = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+            modelsSpecification = new string[5] { "0", "0", "0", "0", "0" };
+            jobProductId = 0;
+            specificationTimes = new();
+            
             operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+
+            //if (operation.JsonTimeProduct != null)
+            //{
+            //    string json = operation.JsonTimeProduct;
+            //    JArray arr = JArray.Parse(json);
+            //    JObject obj = arr[0] as JObject;
+
+            //    JProperty prop = obj.Properties().First();
+            //    string productName = prop.Name;
+
+            //    string nameTime = obj[productName]["NameTime"].ToString();
+            //    string time = obj[productName]["Time"].ToString();
+            //    string aditionalTime = obj[productName]["aditionalTime"].ToString();
+            //    string standardTime = obj[productName]["standarTime"].ToString();
+
+            //    Console.WriteLine(productName);
+            //    Console.WriteLine(nameTime);
+            //    Console.WriteLine(time);
+            //    Console.WriteLine(aditionalTime);
+            //    Console.WriteLine(standardTime);
+            //    var cont = 0;
+
+            //    if (nameTime != null)
+            //    {
+            //        var names = nameTime.Replace(',', '.').Split("§");
+            //        for (int i = 0; i < 5; i++)
+            //        {
+            //            if (!string.IsNullOrEmpty(names[i]))
+            //            {
+            //                _specifications.Add(names[i]);
+            //                cont++;
+            //            }
+            //        }
+
+            //    }
+            //    if (time != null)
+            //    {
+            //        var times = time.Replace(',', '.').Split("§");
+            //        for (int i = 0; i < 5; i++)
+            //        {
+            //            if (!string.IsNullOrEmpty(times[i]))
+            //            {
+            //                if(cont == 1)
+            //                {
+            //                    for(int j = 0; j < 5; j++)
+            //                    {
+            //                        HoeTimes[j] = double.Parse(times[i], CultureInfo.InvariantCulture);
+            //                        modelsSpecification[j] = _specifications[0];
+            //                    }
+            //                    break;
+            //                }
+            //                //else
+            //                //{
+            //                //    HoeTimes[i] = double.Parse(times[i], CultureInfo.InvariantCulture);
+            //                //    modelsSpecification[i] = _specifications[i];
+            //                //}
+            //            }
+            //        }
+
+            //    }
+
+            //    var prodIndex = _products.FindIndex(x => x.Code == productName);
+            //    if (prodIndex != -1)
+            //    {
+            //        var opId = _products[prodIndex].ProductId;
+            //        jobProductId = opId;
+            //    }
+
+            //    if (!string.IsNullOrEmpty(nameTime) && !string.IsNullOrEmpty(time))
+            //    {
+                    
+            //        var names = nameTime.Replace(',', '.').Split("§");
+            //        var times = time.Replace(',', '.').Split("§");
+
+            //        for (int i = 0; i < 5; i++)
+            //        {
+            //            if (!string.IsNullOrEmpty(names[i]) && !string.IsNullOrEmpty(times[i]))
+            //            {
+            //                double parsedTime = double.Parse(times[i], CultureInfo.InvariantCulture);
+            //                specificationTimes.Add(names[i], parsedTime);
+            //            }
+            //        }
+            //    }
+            //}
+
+
+
             pastjobObservations = new();
             pastLup = new();
             if (user != null)
@@ -513,8 +872,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+
         private async Task CreateNewJobObservation()
         {
+            Console.WriteLine("aa");
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
@@ -523,18 +884,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-
-            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
-            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
+            _jobObservation.ProductId = jobProductId;
 
-            if (_jobObservation.HOEStandardTimes != null)
-                _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-            if (_jobObservation.Cycles != null)
-                _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
 
             //Eventual
             _jobObservation.Type = 2;
@@ -633,263 +992,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             NavigationManager.NavigateTo("/jobobservation");
         }
-
-
-        //timer
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cycles[0] = string.Format("{0:0.000}", centiseconds); break;
-                case 2:
-                    cycles[1] = string.Format("{0:0.000}", centiseconds); break;
-                case 3:
-                    cycles[2] = string.Format("{0:0.000}", centiseconds); break;
-                case 4:
-                    cycles[3] = string.Format("{0:0.000}", centiseconds); break;
-                case 5:
-                    cycles[4] = string.Format("{0:0.000}", centiseconds); break;
-            }
-
-            DateTime currentTime = e.SignalTime;
-            elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0, 12);
-            StateHasChanged();
-        }
-
-        void StartTimer(int option)
-        {
-            startTime = DateTime.Now;
-            timer = new System.Timers.Timer(1);
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
-            timer.Enabled = true;
-            switch (option)
-            {
-                case 1: isRunning = true; cycle1Color = ""; break;
-                case 2: isRunning2 = true; cycle2Color = ""; break;
-                case 3: isRunning3 = true; cycle3Color = ""; break;
-                case 4: isRunning4 = true; cycle4Color = ""; break;
-                case 5: isRunning5 = true; cycle5Color = ""; break;
-            }
-
-        }
-        void StopTimer()
-        {
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cycles[0] = string.Format("{0:0.000}", centiseconds); isRunning = false; break;
-                case 2:
-                    cycles[1] = string.Format("{0:0.000}", centiseconds); isRunning2 = false; break;
-                case 3:
-                    cycles[2] = string.Format("{0:0.000}", centiseconds); isRunning3 = false; break;
-                case 4:
-                    cycles[3] = string.Format("{0:0.000}", centiseconds); isRunning4 = false; break;
-                case 5:
-                    cycles[4] = string.Format("{0:0.000}", centiseconds); isRunning5 = false; break;
-            }
-
-            isRunning = false;
-            Console.WriteLine($"Elapsed Time: {elapsedTime}");
-            timer.Enabled = false;
-            elapsedTime = DEFAULT_TIME;
-
-
-        }
-
-        void OnTimerChanged(int option)
-        {
-            if (taktTime == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Takt Time", Severity.Warning);
-                return;
-            }
-            if (option == 1 && HoeTimes[0] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 1", Severity.Warning);
-                return;
-            }
-            else if (option == 2 && HoeTimes[1] == 0.0)
-            {
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 2", Severity.Warning);
-                return;
-            }
-            else if (option == 3 && HoeTimes[2] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 3", Severity.Warning);
-                return;
-            }
-            else if (option == 4 && HoeTimes[3] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 4", Severity.Warning);
-                return;
-            }
-            else if (option == 5 && HoeTimes[4] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First enter the Hoe Standard Time 5", Severity.Warning);
-                return;
-            }
-            opt = option;
-
-            if (opt == 1 && !isRunning || opt == 2 && !isRunning2 || opt == 3 && !isRunning3 || opt == 4 && !isRunning4 || opt == 5 && !isRunning5)
-            {
-                StopTimer();
-                switch (opt)
-                {
-                    case 1:
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 2:
-                        isRunning = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 3:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 4:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning5 = false;
-                        break;
-                    case 5:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        break;
-                }
-
-                StartTimer(opt);
-            }
-            else
-            {
-
-                StopTimer();
-
-
-                for (int i = 0; i < HoeTimes.Length; i++)
-                {
-                    if (double.TryParse(cycles[i], out double cycleValue2) && HoeTimes[i] != 0.0)
-                    {
-                        double lowerBound = HoeTimes[i] * 0.95; // Valor mínimo permitido (95% de HoeTimes)
-                        double upperBound = HoeTimes[i] * 1.05; // Valor máximo permitido (105% de HoeTimes)
-
-                        if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "green"; break;
-                                case 1: cycle2Color = "green"; break;
-                                case 2: cycle3Color = "green"; break;
-                                case 3: cycle4Color = "green"; break;
-                                case 4: cycle5Color = "green"; break;
-                            }
-                        }
-                        else if (cycleValue2 < HoeTimes[i])
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "yellow"; break;
-                                case 1: cycle2Color = "yellow"; break;
-                                case 2: cycle3Color = "yellow"; break;
-                                case 3: cycle4Color = "yellow"; break;
-                                case 4: cycle5Color = "yellow"; break;
-                            }
-                        }
-                        else
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "red"; break;
-                                case 1: cycle2Color = "red"; break;
-                                case 2: cycle3Color = "red"; break;
-                                case 3: cycle4Color = "red"; break;
-                                case 4: cycle5Color = "red"; break;
-                            }
-                            if (areaD == "" || areaD == null)
-                                areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
-                            else
-                            {
-                                if (areaD.Contains($"Cycle time {i + 1}"))
-                                {
-                                    continue;
-                                }
-                                areaD = areaD + $", Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
-                            }
-                        }
-                        if (cycleValue2 > taktTime)
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "red"; break;
-                                case 1: cycle2Color = "red"; break;
-                                case 2: cycle3Color = "red"; break;
-                                case 3: cycle4Color = "red"; break;
-                                case 4: cycle5Color = "red"; break;
-                            }
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add($"Time is NG, LUP added to Delivery Pillar", Severity.Warning);
-                            areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than Takt time ({taktTime})";
-                        }
-                    }
-                }
-
-
-            }
-            StateHasChanged();
-        }
-
-        void Option1() => opt = 1;
-        void Option2() => opt = 2;
-        void Option3() => opt = 3;
-        void Option4() => opt = 4;
-        void Option5() => opt = 5;
-
 
         //Lup
         void Closed(MudChip chip)
@@ -1073,14 +1175,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 visibleSign = false;
                 return;
             }
-            if (_jobObservation.OperationId == new int())
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select an operation!", Severity.Error);
-                visibleSign = false;
-                return;
-            }
 
             if (_jobObservation.OperatorId == new int())
             {
@@ -1102,16 +1196,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             startHour = DateTime.Now.TimeOfDay;
 
 
-            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
-            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
-            if (_jobObservation.HOEStandardTimes != null)
-                _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-            if (_jobObservation.Cycles != null)
-                _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+            _jobObservation.ProductId = jobProductId;
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 2;
@@ -1242,14 +1335,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 visibleSign = false;
                 return;
             }
-            if (_jobObservation.OperationId == new int())
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select an operation!", Severity.Error);
-                visibleSign = false;
-                return;
-            }
 
             if (_jobObservation.OperatorId == new int())
             {
@@ -1288,16 +1373,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
 
-            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
-            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
-            if (_jobObservation.HOEStandardTimes != null)
-                _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-            if (_jobObservation.Cycles != null)
-                _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+            _jobObservation.ProductId = jobProductId;
 
             //Eventual
             _jobObservation.Type = 2;
@@ -1421,14 +1505,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 visibleSign = false;
                 return;
             }
-            if (_jobObservation.OperationId == new int())
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select an operation!", Severity.Error);
-                visibleSign = false;
-                return;
-            }
 
             if (_jobObservation.OperatorId == new int())
             {
@@ -1475,16 +1551,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
 
-            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
-            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
-            if (_jobObservation.HOEStandardTimes != null)
-                _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-            if (_jobObservation.Cycles != null)
-                _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+            _jobObservation.ProductId = jobProductId;
             //Eventual
             _jobObservation.Type = 2;
 
@@ -1662,16 +1737,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
 
-            _jobObservation.ModelsSpecification = models[0] + "|" + models[1] + "|" + models[2] + "|" + models[3] + "|" + models[4];
-            _jobObservation.Cycles = cycles[0] + "|" + cycles[1] + "|" + cycles[2] + "|" + cycles[3] + "|" + cycles[4];
-            _jobObservation.HOEStandardTimes = HoeTimes[0] + "|" + HoeTimes[1] + "|" + HoeTimes[2] + "|" + HoeTimes[3] + "|" + HoeTimes[4];
-            _jobObservation.Questions = questions[0] + "|" + questions[1] + "|" + questions[2] + "|" + questions[3] + "|" + questions[4];
+            _jobObservation.OperationId = 0;
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
+            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
+            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.KpiId = kpiID;
-            if (_jobObservation.HOEStandardTimes != null)
-                _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-            if (_jobObservation.Cycles != null)
-                _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
+            _jobObservation.ProductId = jobProductId;
             _jobObservation.SsvSignature = "Signed";
 
             //Eventual

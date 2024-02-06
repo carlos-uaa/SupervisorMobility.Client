@@ -7,7 +7,8 @@ namespace SupervisorMobility.Client.Data.Entities
     {
         public int SOSid { get; set; }
         public int Status { get; set; }
-
+        public virtual ICollection<SOSReviewDistSuggestion>? Suggestions { get; set; }
+           = new List<SOSReviewDistSuggestion>();
         public ICollection<User>? Supervisors { get; set; }
   
         public int PlantId { get; set; }

@@ -55,6 +55,5 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? KpiId { get; set; }
         public string? TaktTime { get; set; }
         public string? Questions { get; set; }
-
     }
 }
