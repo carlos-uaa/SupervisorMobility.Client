@@ -3166,7 +3166,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Details.
+        ///   Busca una cadena traducida similar a SOS Program Review Plan Details.
         /// </summary>
         public static string sosDetails {
             get {
@@ -3193,7 +3193,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Review Program.
+        ///   Busca una cadena traducida similar a SOS Program Review Plan.
         /// </summary>
         public static string sosReviewProgram {
             get {

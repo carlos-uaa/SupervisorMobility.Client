@@ -76,10 +76,24 @@
                 <MudItem Style="display: flex; justify-content: space-evenly;">
                     <MudText Typo="Typo.h6">
                         <MudTooltip Text=@Localizer["lastMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                            @if (_yearMonth.Value.Month >= 2)
+
+                            @if (SuggestionMode)
                             {
-                                <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
+                                if (_yearMonth.Value.Month >= 2 && (_yearMonth.Value.Month - 1) > DateTime.Now.Month)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
+                                }
                             }
+                            else
+                            {
+
+                                if (_yearMonth.Value.Month >= 2)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
+                                }
+                            }
+
+
 
                         </MudTooltip>
                         @showMonth @year
@@ -96,7 +110,7 @@
 
         <ChildContent>
 
-            <MudTabPanel Text="@Localizer["yearly"]" ID='"pn_one"' OnClick="@( () => MonthlyView = false)">
+            <MudTabPanel Text="@Localizer["yearly"]" ID='"pn_one"' OnClick="@( () => SuggestionMode = MonthlyView = false)">
                 <ChildContent>
                     @if (ShowTable)
                     {
@@ -772,7 +786,7 @@
                 </ChildContent>
             </MudTabPanel>
 
-            <MudTabPanel Text="@Localizer["monthly"]" ID='"pn_two"' OnClick="@( () => MonthlyView = true)">
+            <MudTabPanel Text="@Localizer["monthly"]" ID='"pn_two"' OnClick="@( () => {MonthlyView = true; SuggestionMode = false; })">
                 <ChildContent>
                     @if (ShowTable)
                     {
@@ -1530,17 +1544,18 @@
                             <Header>
                                 <MudItem Style="display: flex; justify-content: space-evenly;">
                                     <MudSpacer />
-                                     
-                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="(() => CreateNewSuggestion())" Class="mr-1">@Localizer["generateSuggestion"]</MudButton>
+                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="(() => CreateNewSuggestion())" Disabled="@isButtonDisabled" Class="mr-1">@Localizer["generateSuggestion"]</MudButton>
                                     <MudSpacer />
-                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Success" OnClick="(() => ApplySuggest())" Class="mr-1">@Localizer["confirmSuggestion"]</MudButton>
+                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Success" OnClick="(() => ApplySuggest())" Disabled="@isButtonDisabled" Class="mr-1">@Localizer["confirmSuggestion"]</MudButton>
                                     <MudSpacer />
                                 </MudItem>
                             </Header>
                             <ChildContent>
                                 <MudTabPanel Text="@Localizer["monthly"]" ID='"suggest_two"' OnClick="@( () => MonthlyView = true)">
                                     <ChildContent>
-                                <MudItem Style="display: flex; justify-content: space-evenly;">
+                                        <MudItem Style="display: flex; justify-content: space-evenly;">
+                                            <MudSpacer />
+
                                             <MudItem Style="display: flex; justify-content: space-evenly;">
                                                 @if (_distributions?.Count > 0)
                                                 {
@@ -1554,7 +1569,7 @@
                                                 }
                                             </MudItem>
                                             <MudSpacer />
-                                            <MudDatePicker MinDate="@FirstdayYear" MaxDate="@LastdayYear" DateChanged="@(dt => OnFirstDateChanged(dt))" Date="@startDate" PickerVariant="PickerVariant.Dialog" Label="@Localizer["startingDay"]" HelperText="Select Date" Class="mt-2" Clearable="true" />
+                                            <MudDatePicker MinDate="@FirstdayYear" MaxDate="@LastdayYear" DateChanged="@(dt => OnFirstDateChanged(dt))" Date="@Startday" PickerVariant="PickerVariant.Dialog" Label="@Localizer["startingDay"]" HelperText="Select Date" Class="mt-2" Clearable="true" />
 
                                             <MudSpacer />
                                             <MudTextField @bind-Value="JobsPorDia" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="@Localizer["jobsXDay"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2 mr-1" Clearable="true" Style="width: 10vw">
@@ -1570,11 +1585,11 @@
                                             <MudSelect T="int" Label="@Localizer["sorting"]" Style="z-index:40;" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2 mr-1" AnchorOrigin="Origin.BottomCenter" @bind-Value="OptionRandom">
                                                 <MudSelectItem Value="0">@Localizer["sequential"]</MudSelectItem>
                                                 <MudSelectItem Value="1">@Localizer["randomOperations"]</MudSelectItem>
-                                                <MudSelectItem Value="2">@Localizer["randomDistributions"]</MudSelectItem>
+                                                @* <MudSelectItem Value="2">@Localizer["randomDistributions"]</MudSelectItem> *@
                                             </MudSelect>
                                             <MudSpacer />
 
-                                </MudItem>
+                                        </MudItem>
 
                                         @if (ShowTable)
                                         {
@@ -1647,7 +1662,7 @@
                                                              <tbody>
                                                                  <tr>
                                                                      <MudTd Style="width: 20wh" rowspan="2" colspan="2">
-                                                                         <MudDatePicker Label=@Localizer["monthYear"] OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" MinDate="@FirstdayYear" MaxDate="@LastdayYear" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+                                                                         <MudDatePicker Label=@Localizer["monthYear"] OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" MinDate="@FirstdayYear.AddDays(-1)" MaxDate="@LastdayYear" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
                                                                      </MudTd>
                                                                      <MudTd colspan="2">
                                                                          <MudItem Class="d-flex">
@@ -1700,6 +1715,36 @@
                                                         </MudText>
                                                     </TitleContent>
                                                     <ChildContent>
+                                                        @if (_UsersSV_Copy?.Count > 0)
+                {
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
+                                          SearchFunc="@SearchSuggestSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} Group:[{e.Group?.Description}]")"
+                                          Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
+                                                  ResetValueOnEmptyText
+                                          ShowProgressIndicator="true" MaxItems="null">
+                             <ItemTemplate Context="e">
+                                 <MudItem Style="text-align: center">
+                                     @switch (e.UserType)
+                                    {
+                                        case 3:
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                            break;
+                                    }
+                                </MudItem>
+                                <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                                <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                            </ItemTemplate>
+                        </MudAutocomplete>
+                    </MudItem>
+                    <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Supervisor </MudButton>
+                }
 
                                                         <MudDropContainer T="User" Items="SV_Manager" ItemsSelector="@((item,dropzone) => item.Container == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
                                                             <ChildContent>
@@ -1710,9 +1755,12 @@
                                                                 </MudDropZone>
                                                             </ChildContent>
                                                             <ItemRenderer>
-                                                                <MudPaper Elevation="25" Class="pa-4 my-4">
+                                                                <MudPaper Elevation="25" Class="pa-4 my-4" Style="    display: flex;    justify-content: space-between;">
                                                                     @($"{context.Name}")
-                                                                </MudPaper>
+                                                                <MudTooltip Text="Delete SV" Color="Color.Error" Placement="Placement.Left" Arrow="true">
+                                                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteSupervisorList(context)" @ontouchstart="() => DeleteSupervisorList(context)"></MudIcon>
+                                                                                                        </MudTooltip>
+                                                                </MudPaper> 
                                                             </ItemRenderer>
                                                         </MudDropContainer>
 
@@ -2423,97 +2471,125 @@ else
 }
 <MudDialog DisableSidePadding="false" @bind-IsVisible="SVSinCharge" Options="dialogOptions">
     <DialogContent>
-        <MudItem Style="display: flex; justify-content: space-evenly;">
-            <MudSpacer />
-            <MudDatePicker MinDate="@FirstdayYear" MaxDate="@LastdayYear" DateChanged="@(dt => OnFirstDateChanged(dt))" PickerVariant="PickerVariant.Dialog" Label="@Localizer["startingDay"]" HelperText="Select Date" Class="mt-2" Clearable="true" />
-            <MudSpacer />
-            <MudTextField @bind-Value="JobsPorDia" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="@Localizer["jobsXDay"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
-
-            </MudTextField>
-
-            <MudSpacer />
-            <MudTextField @bind-Value="diasSeparate" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="@Localizer["separationDays"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
-
-            </MudTextField>
-
-            <MudSpacer />
-            <MudSelect T="int" Label="@Localizer["sorting"]" Style="z-index:40;" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" AnchorOrigin="Origin.BottomCenter" @bind-Value="OptionRandom">
-                <MudSelectItem Value="0">@Localizer["sequential"]</MudSelectItem>
-                <MudSelectItem Value="1">@Localizer["randomOperations"]</MudSelectItem>
-                <MudSelectItem Value="2">@Localizer["randomDistributions"]</MudSelectItem>
-            </MudSelect>
-            <MudSpacer />
-        </MudItem>
-
-        <MudItem Style="display: flex; justify-content: space-evenly;">
-        @if (_distributions?.Count > 0)
+        @if (enableCreateSuggestion)
         {
-            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@selected_distId" For="@(() => selected_distId)" SelectedValuesChanged="UpdateSelectDistribution">
-                <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
-                @foreach (var type in _distributions)
-                {
-                    <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
-                }
-            </MudSelect>
-        } 
-        </MudItem>
-        <MudItem Style="display: flex; justify-content: space-evenly;">
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
 
-        @if (_UsersSV_Copy?.Count > 0)
-        {
-            <MudItem xs="12" sm="12" md="12">
-                <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
-                                  SearchFunc="@SearchSuggestSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} Group:[{e.Group?.Description}]")"
-                                  Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
-                                          ResetValueOnEmptyText
-                                  ShowProgressIndicator="true" MaxItems="null">
-                     <ItemTemplate Context="e">
-                         <MudItem Style="text-align: center">
-                             @switch (e.UserType)
-                            {
-                                case 3:
-                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
-                                    break;
-                            }
-                        </MudItem>
-                        <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
-                        <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
-                        <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
-
-
-                        <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
-                        <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
-
+                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                            </MudItem>
+                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                        </div>
                     </ItemTemplate>
-                </MudAutocomplete>
-            </MudItem>
-            <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Supervisor </MudButton>
+                </MudCarousel>
+            </MudContainer>
         }
-         </MudItem>
-        
-
-        @if (ShowTable)
+        else
         {
-            <MudDropContainer T="User" Items="SV_Manager" ItemsSelector="@((item,dropzone) => item.Container == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
-                <ChildContent>
-                    <MudDropZone T="User" Identifier="CategoryContainer" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1" AllowReorder="true">
-                        <MudText Typo="Typo.h6" Class="mb-4">
-                            @Localizer["reorderSupervisors"]
-                        </MudText>
-                    </MudDropZone>
-                </ChildContent>
-                <ItemRenderer>
-                    <MudPaper Elevation="25" Class="pa-4 my-4">
-                        @($"{context.Name}")
-                    </MudPaper>
-                </ItemRenderer>
-            </MudDropContainer>
+            <MudItem Style="display: flex; justify-content: space-evenly;">
+                <MudSpacer />
+                <MudDatePicker MinDate="@FirstdayYear" MaxDate="@LastdayYear" DateChanged="@(dt => OnFirstDateChanged(dt))" PickerVariant="PickerVariant.Dialog" Label="@Localizer["startingDay"]" HelperText="Select Date" Class="mt-2" Clearable="true" />
+                <MudSpacer />
+                <MudTextField @bind-Value="JobsPorDia" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="@Localizer["jobsXDay"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
+
+                </MudTextField>
+
+                <MudSpacer />
+                <MudTextField @bind-Value="diasSeparate" T="int" Validation="@(new Func<int?, IEnumerable<string>>(ValidateStartDay))" Label="@Localizer["separationDays"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Clearable="true">
+
+                </MudTextField>
+
+                <MudSpacer />
+                <MudSelect T="int" Label="@Localizer["sorting"]" Style="z-index:40;" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" AnchorOrigin="Origin.BottomCenter" @bind-Value="OptionRandom">
+                    <MudSelectItem Value="0">@Localizer["sequential"]</MudSelectItem>
+                    <MudSelectItem Value="1">@Localizer["randomOperations"]</MudSelectItem>
+                    @* <MudSelectItem Value="2">@Localizer["randomDistributions"]</MudSelectItem> *@
+                </MudSelect>
+                <MudSpacer />
+            </MudItem>
+
+            <MudItem Style="display: flex; justify-content: space-evenly;">
+                <MudSpacer />
+                @if (_distributions?.Count > 0)
+                {
+                    <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@selected_distId" For="@(() => selected_distId)" SelectedValuesChanged="UpdateSelectDistribution">
+                        <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                        @foreach (var type in _distributions)
+                        {
+                            <MudSelectItem Value="type.DistributionId">@($"{type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                <MudSpacer />
+            </MudItem>
+            <MudItem Style="display: flex; justify-content: space-evenly;">
+                <MudSpacer />
+                @if (_UsersSV_Copy?.Count > 0)
+                {
+                    <MudItem xs="12" sm="12" md="12">
+                        <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
+                                          SearchFunc="@SearchSuggestSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} Group:[{e.Group?.Description}]")"
+                                          Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person"
+                                                  ResetValueOnEmptyText
+                                          ShowProgressIndicator="true" MaxItems="null">
+                             <ItemTemplate Context="e">
+                                 <MudItem Style="text-align: center">
+                                     @switch (e.UserType)
+                                    {
+                                        case 3:
+                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                            break;
+                                    }
+                                </MudItem>
+                                <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                                <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                            </ItemTemplate>
+                        </MudAutocomplete>
+                    </MudItem>
+                    <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Supervisor </MudButton>
+                }
+                <MudSpacer />
+            </MudItem>
+
+
+            @if (ShowTable)
+            {
+                <MudDropContainer T="User" Items="SV_Manager" ItemsSelector="@((item,dropzone) => item.Container == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+                    <ChildContent>
+                        <MudDropZone T="User" Identifier="CategoryContainer" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1" AllowReorder="true">
+                            <MudText Typo="Typo.h6" Class="mb-4">
+                                @Localizer["reorderSupervisors"]
+                            </MudText>
+                        </MudDropZone>
+                    </ChildContent>
+                    <ItemRenderer>
+                        <MudPaper Elevation="25" Class="pa-4 my-4" Style="    display: flex;    justify-content: space-between;">
+                            @($"{context.Name}")
+
+                            <MudTooltip Text="Delete SV" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteSupervisorList(context)" @ontouchstart="() => DeleteSupervisorList(context)"></MudIcon>
+                            </MudTooltip>
+                        </MudPaper>
+                        
+                    </ItemRenderer>
+                </MudDropContainer>
+            }
         }
 
 
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Info" OnClick="CreateSuggestion">@Localizer["generateSuggestion"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="CreateSuggestion" Disabled="@enableCreateSuggestion">@Localizer["generateSuggestion"]</MudButton>
     </DialogActions>
 </MudDialog>
 

@@ -131,7 +131,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         int diasSeparate = 1;
         int OptionRandom = 0;
         DateTime Startday = DateTime.Now;
-        DateTime FirstdayYear = DateTime.Now;
+        DateTime FirstdayYear = DateTime.Now.AddDays(-1);
         DateTime LastdayYear = DateTime.Now;
         int StartMonth = 1;
         int JobsPorDia = 2;
@@ -153,7 +153,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         List<string> days = new List<string>();
         List<Week> weeks = new List<Week>();
 
-        DateTime? startNullDate;
         DateTime startDate;
         DateTime endDate;
         public int optionStatus { get; set; } = 0;
@@ -287,7 +286,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
             date = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
             LastdayYear = new DateTime((int)SOS_Review.AplicationYear, 12, 31);
-            _yearMonth = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
+            _yearMonth = DateTime.Now;
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
 
             startDate = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
@@ -371,8 +370,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             if (dt.HasValue)
             {
-                startDate = new DateTime(dt.Value.Year, dt.Value.Month, dt.Value.Day);
-                Console.WriteLine(startDate);
+                Startday = new DateTime(dt.Value.Year, dt.Value.Month, dt.Value.Day);
+                Console.WriteLine(Startday);
 
             }
             else
@@ -1544,31 +1543,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             return totalDiasLaborables;
         }
 
-        private async Task<DateTime> FindNextAvailableDate(DateTime startDate, bool isSuggest, int id_SV = 0)
+        private async Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0)
         {
-            int yearToCheck = startDate.Year;
-            int initialDayOfYear = startDate.DayOfYear;
+            int yearToCheck = startAvailabeDate.Year;
+            int initialDayOfYear = startAvailabeDate.DayOfYear;
 
-            while (startDate.Year == yearToCheck || startDate.DayOfYear < initialDayOfYear)
+            while (startAvailabeDate.Year == yearToCheck || startAvailabeDate.DayOfYear < initialDayOfYear)
             {
                 if (isSuggest)
                 {
-                    if (!(await IsDateSuggestAlreadyUsed(startDate, id_SV)) && !(await IsWeekend(startDate)))
+                    if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
                     {
-                        return startDate;
+                        return startAvailabeDate;
                     }
                 }
                 else
                 {
-                    if (!(await IsDateAlreadyUsed(startDate)) && !(await IsWeekend(startDate)))
+                    if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
                     {
-                        return startDate;
+                        return startAvailabeDate;
                     }
                 }
 
-                startDate = startDate.AddDays(diasSeparate);
+                startAvailabeDate = startAvailabeDate.AddDays(diasSeparate);
 
-                if (startDate > DateTime.MaxValue)
+                if (startAvailabeDate > DateTime.MaxValue)
                 {
                     throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
                 }
@@ -1576,7 +1575,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-            return startDate.AddDays(-1);
+            return startAvailabeDate.AddDays(-1);
         }
 
         private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
@@ -1602,10 +1601,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             return dateToCheck.DayOfWeek == DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
         }
 
-
+        bool enableCreateSuggestion = false;
+        bool SuggestionMode = false;
 
         private async Task CreateSuggestion()
         {
+            enableCreateSuggestion = true;
+            base.StateHasChanged();
+            _yearMonth = Startday;
             //bool view dialog reorder userds
             SVSinCharge = false;
             isButtonDisabled = true;
@@ -1620,7 +1623,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             try
             {
                 base.StateHasChanged();
-                Console.WriteLine($"Toal Count {_All_Operations?.Count}");
+                //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
+                Console.WriteLine($"TotalDist Count {selected_distribution.Operations?.Count}");
 
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
@@ -1702,10 +1706,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
             await PrepareSuggestDataTable();
-            Console.WriteLine($" Final  Show {ShowLoading}");
+            Console.WriteLine($" Final First Sugg Generation");
 
 
-
+            enableCreateSuggestion = false;
         }
 
         private async Task CreateNewSuggestion()
@@ -1713,44 +1717,50 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             isButtonDisabled = true;
             ShowLoading = true;
             ShowTable = false;
+            base.StateHasChanged();
             StateHasChanged();
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
 
+            var OperationIterator = selected_distribution.Operations;
 
             Random random = new Random();
 
             switch (OptionRandom)
             {
                 case 0:
-                    _All_Operations?.Clear();
-                    foreach (var item in _distributions)
-                    {
-                        _All_Operations.AddRange(item.Operations);
-                    }
+                    //_All_Operations?.Clear();
+                    //foreach (var item in _distributions)
+                    //{
+                    //    _All_Operations.AddRange(item.Operations);
+                    //}
                     break;
                 case 1:
-                    _All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
+                    //_All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
+                    OperationIterator = OperationIterator.OrderBy(x => random.Next()).ToList();
+
                     break;
                 case 2:
-                    var _distributionsRandom = _distributions.OrderBy(x => random.Next()).ToList();
-                    _All_Operations?.Clear();
-                    foreach (var item in _distributionsRandom)
-                    {
-                        _All_Operations.AddRange(item.Operations);
-                    }
+                    //var _distributionsRandom = _distributions.OrderBy(x => random.Next()).ToList();
+                    //_All_Operations?.Clear();
+                    //foreach (var item in _distributionsRandom)
+                    //{
+                    //    _All_Operations.AddRange(item.Operations);
+                    //}
                     break;
             }
 
             try
             {
                 base.StateHasChanged();
-                Console.WriteLine($"Toal Count {_All_Operations?.Count}");
+                //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
+                Console.WriteLine($"Total Dist Count {OperationIterator?.Count}");
 
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
-                    foreach (var op in _All_Operations)
+                    //foreach (var op in _All_Operations)
+                    foreach (var op in OperationIterator)
                     {
                         if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
                         {
@@ -1826,7 +1836,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 base.StateHasChanged();
             }
 
-            Console.WriteLine($" Final  Show {ShowLoading}");
+            Console.WriteLine($" Final New Sugg Generation");
 
 
         }
@@ -1836,6 +1846,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (SV_Manager.Count == 0)
                 SVSinCharge = true;
 
+            MonthlyView = true;
+            SuggestionMode = true;
         }
 
         // Drag and drop category
@@ -1936,9 +1948,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task<AsyncVoidMethodBuilder> ApplySuggest()
         {
+            isButtonDisabled = true;
             ShowLoading = true;
+            base.StateHasChanged();
+            StateHasChanged();
 
-            var result = await SOSServices.ApplyMassiveSuggest(SOS_Review.SOSid, _All_Suggested_SOSJobobservation);
+            var result = await SOSServices.ApplyMassiveSuggest(SOS_Review.SOSid, _All_Suggested_SOSJobobservation, selected_distId);
             if (result)
             {
                 StateHasChanged();
