@@ -971,7 +971,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             jobId2 = id;
             //verificar formato de envio
-            string fechaComoString = date.ToString("dd-MM-yyyy");
+            string fechaComoString = date.ToString("MM-dd-yyyy");
             programmedStartDate = fechaComoString;
             visible2 = true;
         }
