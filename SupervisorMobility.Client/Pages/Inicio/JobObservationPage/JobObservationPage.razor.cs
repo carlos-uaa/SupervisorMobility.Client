@@ -629,6 +629,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
+        void CreateNewJobObservation()
+        {
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                var formatedDate = date;
+
+                var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+
+                var dateString = EnglishDate.Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/createnewjobobservation/{dateString}");
+            }
+            else
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+                var dateString = date.ToShortDateString().Replace("/", "-");
+                NavigationManager.NavigateTo($"jobobservation/createnewjobobservation/{dateString}");
+            }
+        }
+
         void PlanJobObservation()
         {
             if (CultureInfo.CurrentCulture.Name == "en-US")

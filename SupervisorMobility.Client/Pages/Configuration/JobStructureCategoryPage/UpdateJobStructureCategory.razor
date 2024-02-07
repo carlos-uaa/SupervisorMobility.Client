@@ -1,0 +1,78 @@
+﻿@page "/checklistcategories/category/updatecategory/{categoryId:int}"
+@inject IJobStructureService JobStructureCategoriesService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource1> Localizer1
+@*Title*@
+<PageTitle>Supervisor Mobility | Update Job Structure Category</PageTitle>
+
+@*Breadcrumb links*@
+<MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        @if (item.Text == "UpdateCategory")
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">Update @_JobCategory.Description</MudButton>
+        }
+        else
+        {
+            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+        }
+    </ItemTemplate>
+</MudBreadcrumbs>
+
+@*Form*@
+<EditForm Model="_JobCategory" OnValidSubmit="UpdateCategory">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Category details</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip Variant="Variant.Text" Color="Color.Info">Update category</MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="Plant description"
+                    @bind-Value="_JobCategory.Description" For="@(() => _JobCategory.Description)" />
+                    <MudTextField Label="Code" Class="mt-3"
+                    @bind-Value="_JobCategory.Code" For="@(() => _JobCategory.Code)" />
+                    <MudSelect T="StructureType" Label="@Localizer1["TypeStrucureLabel"]" Variant="Variant.Text" Placeholder="@Localizer1["TypeStrucurePH"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_JobCategory.Type" For="@(() => _JobCategory.Type)">
+
+                        @if (!HasTitularCategory() || _JobCategory.Type == StructureType.Titular || _JobCategory.Type == null)
+                        {
+                            <MudSelectItem Value="StructureType.Titular">@GetStructureTypeText(StructureType.Titular)</MudSelectItem>
+                        }
+
+                        @if (_JobCategory.Type != StructureType.Checklist)
+                        {
+                            <MudSelectItem Value="StructureType.Checklist">@GetStructureTypeText(StructureType.Checklist)</MudSelectItem>
+                        }
+
+                        @if (!HasLUPCategory() || _JobCategory.Type == StructureType.LUP)
+                        {
+                            <MudSelectItem Value="StructureType.LUP">@GetStructureTypeText(StructureType.LUP)</MudSelectItem>
+                        }
+
+                        @if (!HasTimerCategory() || _JobCategory.Type == StructureType.Timer)
+                        {
+                            <MudSelectItem Value="StructureType.Timer">@GetStructureTypeText(StructureType.Timer)</MudSelectItem>
+                        }
+
+                        @if (!HasSignatureCategory() || _JobCategory.Type == StructureType.Signature)
+                        {
+                            <MudSelectItem Value="StructureType.Signature">@GetStructureTypeText(StructureType.Signature)</MudSelectItem>
+                        }
+
+                    </MudSelect>
+                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_JobCategory.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>
+                    <MudButton Href="/checklistcategories" Variant="Variant.Filled" Class="ml-4">Cancel</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>

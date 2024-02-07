@@ -2185,6 +2185,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create Job Structure Category.
+        /// </summary>
+        public static string JSNewCategory {
+            get {
+                return ResourceManager.GetString("JSNewCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Re Order.
+        /// </summary>
+        public static string JSReOrder {
+            get {
+                return ResourceManager.GetString("JSReOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Line Support.
         /// </summary>
         public static string lineSupport {

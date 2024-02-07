@@ -655,7 +655,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Checklist categories.
+        ///   Busca una cadena traducida similar a Job Structure categories.
         /// </summary>
         public static string checklistCategories {
             get {
@@ -853,7 +853,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create SOS.
+        ///   Busca una cadena traducida similar a Créate Sos Review program plan.
         /// </summary>
         public static string createSOS {
             get {
@@ -1357,6 +1357,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First select a distribution.
+        /// </summary>
+        public static string firstSelectADistribution {
+            get {
+                return ResourceManager.GetString("firstSelectADistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a First Select an Area.
         /// </summary>
         public static string firstSelectAnArea {
@@ -1380,6 +1389,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string firstSelectAPlant {
             get {
                 return ResourceManager.GetString("firstSelectAPlant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a First select a product.
+        /// </summary>
+        public static string firstSelectAProduct {
+            get {
+                return ResourceManager.GetString("firstSelectAProduct", resourceCulture);
             }
         }
         
@@ -2653,6 +2671,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Plan SOS review program.
+        /// </summary>
+        public static string planSOSReviewProgram {
+            get {
+                return ResourceManager.GetString("planSOSReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Plant.
         /// </summary>
         public static string plant {
@@ -2707,6 +2734,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Structure Work Upload.
+        /// </summary>
+        public static string PlantUploadWork {
+            get {
+                return ResourceManager.GetString("PlantUploadWork", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Product.
         /// </summary>
         public static string product {
@@ -2752,7 +2788,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Review Job Observations.
+        ///   Busca una cadena traducida similar a Confirm SOS Review Job Observation.
         /// </summary>
         public static string programmedJobObservation {
             get {
@@ -3139,7 +3175,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Details.
+        ///   Busca una cadena traducida similar a SOS Program Review Plan Details.
         /// </summary>
         public static string sosDetails {
             get {
@@ -3166,11 +3202,20 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Review Program.
+        ///   Busca una cadena traducida similar a SOS Program Review Plan.
         /// </summary>
         public static string sosReviewProgram {
             get {
                 return ResourceManager.GetString("sosReviewProgram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Specification.
+        /// </summary>
+        public static string specification {
+            get {
+                return ResourceManager.GetString("specification", resourceCulture);
             }
         }
         
@@ -3409,7 +3454,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a There are no sos created.
+        ///   Busca una cadena traducida similar a There are no sos plan created.
         /// </summary>
         public static string thereAreNoSosCreated {
             get {

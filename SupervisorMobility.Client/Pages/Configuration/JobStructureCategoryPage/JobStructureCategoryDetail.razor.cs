@@ -1,10 +1,10 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
+namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
-    public partial class ChecklistCategoryDetail
-    {
+    public partial class JobStructureCategoryDetail
+{
         // Parameters
         [Parameter]
         public int CategoryId { get; set; }
@@ -19,14 +19,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
         };
 
         // Objects
-        ChecklistCategory _checklistCategory = new();
+        JobCategoryStructure _checklistCategory = new();
         public List<ChecklistQuestion> _checklistQuestions { get; set; } = new();
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
-            _checklistCategory = await ChecklistService.GetCategoryIncludingQuestions(CategoryId);
-            _checklistQuestions = await ChecklistService.GetChecklistQuestionsByCategoryId(CategoryId);
+            _checklistCategory = await JobStructureCategoriesService.GetCategoryIncludingQuestions(CategoryId);
+
+            if(_checklistCategory.Type != StructureType.Checklist)
+            {
+                //redirection 
+                NavigationManager.NavigateTo($"checklistcategories");
+            }
+
+            _checklistQuestions = await JobStructureCategoriesService.GetChecklistQuestionsByCategoryId(CategoryId);
         }
 
         // Create question
@@ -46,7 +53,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ChecklistCategoryPage
             if (confirm)
             {
                 _checklistQuestions.RemoveAll(question => question.QuestionID == questionId);
-                await ChecklistService.DeleteQuestion(categoryId, questionId);
+                await JobStructureCategoriesService.DeleteQuestion(categoryId, questionId);
             }
         }
 

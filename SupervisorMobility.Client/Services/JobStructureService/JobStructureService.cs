@@ -1,25 +1,25 @@
 ﻿using Microsoft.JSInterop;
 using System.Net.Http.Json;
 
-namespace SupervisorMobility.Client.Services.ChecklistService
+namespace SupervisorMobility.Client.Services.JobStructureService
 {
-    public class ChecklistService : IChecklistService
+    public class JobStructureService : IJobStructureService
     {
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
 
         // Constructor
-        public ChecklistService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
+        public JobStructureService(HttpClient customHttpClientService, IJSRuntime jSRuntime)
         {
             _http = customHttpClientService;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
         // Create checklist category
-        public async Task<ChecklistCategory> CreateCategory(ChecklistCategory category)
+        public async Task<JobCategoryStructure> CreateCategory(JobCategoryStructure category)
         {
             var response = await _http.PostAsJsonAsync("checklistcategories", category);
-            var newCategory = await response.Content.ReadFromJsonAsync<ChecklistCategory>();
+            var newCategory = await response.Content.ReadFromJsonAsync<JobCategoryStructure>();
 
             return newCategory;
         }
@@ -31,7 +31,7 @@ namespace SupervisorMobility.Client.Services.ChecklistService
         }
 
         // Get checklist category by Id
-        public async Task<ChecklistCategory> GetCategoryById(int id)
+        public async Task<JobCategoryStructure> GetCategoryById(int id)
         {
             var response = await _http.GetAsync($"checklistcategories/{id}");
             var content = await response.Content.ReadAsStringAsync();
@@ -41,13 +41,13 @@ namespace SupervisorMobility.Client.Services.ChecklistService
                 throw new ApplicationException(content);
             }
 
-            var category = JsonSerializer.Deserialize<ChecklistCategory>(content, _options);
+            var category = JsonSerializer.Deserialize<JobCategoryStructure>(content, _options);
 
             return category;
         }
 
         // Get checklist category including questions
-        public async Task<ChecklistCategory> GetCategoryIncludingQuestions(int id)
+        public async Task<JobCategoryStructure> GetCategoryIncludingQuestions(int id)
         {
             var response = await _http.GetAsync($"checklistcategories/{id}?includeChecklistQuestions=true");
             var content = await response.Content.ReadAsStringAsync();
@@ -57,13 +57,13 @@ namespace SupervisorMobility.Client.Services.ChecklistService
                 throw new ApplicationException(content);
             }
 
-            var category = JsonSerializer.Deserialize<ChecklistCategory>(content, _options);
+            var category = JsonSerializer.Deserialize<JobCategoryStructure>(content, _options);
 
             return category;
         }
 
         // Get all checklist categories
-        public async Task<List<ChecklistCategory>> GetChecklistCategories(bool includeChecklistQuestions = false)
+        public async Task<List<JobCategoryStructure>> GetChecklistCategories(bool includeChecklistQuestions = false)
         {
             var response = await _http.GetAsync($"checklistcategories?includeChecklistQuestions={includeChecklistQuestions}");
             var content = await response.Content.ReadAsStringAsync();
@@ -73,19 +73,33 @@ namespace SupervisorMobility.Client.Services.ChecklistService
                 throw new ApplicationException(content);
             }
 
-            var categories = JsonSerializer.Deserialize<List<ChecklistCategory>>(content, _options);
+            var categories = JsonSerializer.Deserialize<List<JobCategoryStructure>>(content, _options);
+
+            return categories;
+        } 
+        public async Task<List<JobCategoryStructure>> GetAllChecklistCategories(bool includeChecklistQuestions = false)
+        {
+            var response = await _http.GetAsync($"all/checklistcategories?includeChecklistQuestions={includeChecklistQuestions}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var categories = JsonSerializer.Deserialize<List<JobCategoryStructure>>(content, _options);
 
             return categories;
         }
 
         // Update checklist category
-        public async Task UpdateCategory(ChecklistCategory category)
+        public async Task UpdateCategory(JobCategoryStructure category)
         {
-            var response = await _http.PutAsJsonAsync($"checklistcategories/{category.ChecklistCategoryId}", category);
+            var response = await _http.PutAsJsonAsync($"checklistcategories/{category.JobCategoryStructureId}", category);
         }
 
         // Update checklist category sequence
-        public async Task UpdateCategorySequence(int categoryId, ChecklistCategory checklistCategory)
+        public async Task UpdateCategorySequence(int categoryId, JobCategoryStructure checklistCategory)
         {
             var response = await _http.PutAsJsonAsync($"checklistcategories/sequence/{categoryId}", checklistCategory);
 

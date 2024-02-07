@@ -199,11 +199,11 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs)
+        public async Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs, int dist_id)
         {
             
 
-            var response = await _http.PostAsJsonAsync($"SOSReview/Registers/{SOS_Id}/ApplySuggest", Jobs);
+            var response = await _http.PostAsJsonAsync($"SOSReview/Registers/{SOS_Id}/ApplySuggest/{dist_id}", Jobs);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;

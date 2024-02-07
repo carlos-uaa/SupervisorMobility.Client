@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using FuzzyString;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -86,12 +87,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
-        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
+        Dictionary<int, Dictionary<int, double>> OperationTimes = new();
+        private int[] StepsNumber = new int[5];
+        private int[] DoubleManagment = new int[5];
+        private int[] Waiting = new int[5];
+        public int jobProductId = 0;
+
+        List<Distribution> _distributions = new();
+        List<Operation> _operations = new();
+        List<Operation> _filteredOperations = new();
+        List<string> _specifications { get; set; } = new();
+
+        bool showLoading = true;
 
         protected async override Task OnInitializedAsync()
         {
@@ -106,9 +119,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
             _products = await ProductService.GetProducts();
 
-            _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+            _distributions = _distributions.OrderBy(d => d.Description).ToList();
+            _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+            _operations = _operations.OrderBy(o => o.Description).ToList();
+            _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
 
+            jobProductId = (int)_jobObservation.ProductId;
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+
+            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            if (prodName != null)
+            {
+                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                {
+                    var names = op.NameTime.Replace(',', '.').Split("§");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (!string.IsNullOrEmpty(names[i]))
+                        {
+                            _specifications.Add(names[i]);
+                        }
+                    }
+
+                }
+            }
+
+            StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
+            DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
+            Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
             foreach (var category in _checklistCategoriesAndQuestions)
             {
@@ -170,94 +213,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     questions[i] = null;
                 }
             }
+            string operationTimesJson = _jobObservation.OperationTimesJson;
 
-
-            if (_jobObservation.HOEStandardTimes != null)
-            {
-                HoeTimes = _jobObservation.HOEStandardTimes.Replace(',', '.').Split('|');
-            }
-            else
-            {
-                HoeTimes[0] = "";
-                HoeTimes[1] = "";
-                HoeTimes[2] = "";
-                HoeTimes[3] = "";
-                HoeTimes[4] = "";
-            }
-            if (_jobObservation.ModelsSpecification != null)
-            {
-                var prod = _jobObservation.ModelsSpecification.Split('|');
-                models[0] = Int32.Parse(prod[0]);
-                models[1] = Int32.Parse(prod[1]);
-                models[2] = Int32.Parse(prod[2]);
-                models[3] = Int32.Parse(prod[3]);
-                models[4] = Int32.Parse(prod[4]);
-
-            }
-            else
-            {
-                models[0] = 0;
-                models[1] = 0;
-                models[2] = 0;
-                models[3] = 0;
-                models[4] = 0;
-            }
-
-            if (_jobObservation.Cycles != null)
-            {
-                cycles = _jobObservation.Cycles.Replace(',', '.').Split('|');
-            }
-            else
-            {
-                cycles[0] = "";
-                cycles[1] = "";
-                cycles[2] = "";
-                cycles[3] = "";
-                cycles[4] = "";
-            }
-
-            for (int i = 0; i < HoeTimes.Length; i++)
-            {
-                if (double.TryParse(cycles[i], out double cycleValue2) && double.Parse(HoeTimes[i]) != 0.0)
-                {
-                    double lowerBound = double.Parse(HoeTimes[i]) * 0.95; // Valor mínimo permitido (95% de HoeTimes)
-                    double upperBound = double.Parse(HoeTimes[i]) * 1.05; // Valor máximo permitido (105% de HoeTimes)
-
-                    if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
-                    {
-                        switch (i)
-                        {
-                            case 0: cycle1Color = "green"; break;
-                            case 1: cycle2Color = "green"; break;
-                            case 2: cycle3Color = "green"; break;
-                            case 3: cycle4Color = "green"; break;
-                            case 4: cycle5Color = "green"; break;
-                        }
-                    }
-                    else if (cycleValue2 < double.Parse(HoeTimes[i]))
-                    {
-                        switch (i)
-                        {
-                            case 0: cycle1Color = "yellow"; break;
-                            case 1: cycle2Color = "yellow"; break;
-                            case 2: cycle3Color = "yellow"; break;
-                            case 3: cycle4Color = "yellow"; break;
-                            case 4: cycle5Color = "yellow"; break;
-                        }
-                    }
-                    else
-                    {
-                        switch (i)
-                        {
-                            case 0: cycle1Color = "red"; break;
-                            case 1: cycle2Color = "red"; break;
-                            case 2: cycle3Color = "red"; break;
-                            case 3: cycle4Color = "red"; break;
-                            case 4: cycle5Color = "red"; break;
-                        }
-                    }
-                }
-            }
+            OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+            showLoading = false;
 
             StateHasChanged();
 
@@ -360,8 +319,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
         }
 
+        private int[] ConvertStringToArray(string stringValue) =>
+       string.IsNullOrEmpty(stringValue)
+           ? new int[5]
+           : stringValue.Split('|').Select(int.Parse).ToArray();
 
-        
 
         private async Task DownloadFileFromURL(string urlroute, string namefile)
         {

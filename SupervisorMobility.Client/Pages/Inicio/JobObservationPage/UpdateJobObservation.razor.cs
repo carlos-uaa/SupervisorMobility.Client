@@ -133,13 +133,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int auxErgonomicsLevel = 0;
 
         //Checklist Categories and questions
-        public List<ChecklistCategory> _checklistCategoriesAndQuestions { get; set; } = new();
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
         private Dictionary<int, List<int>> questionDelete = new Dictionary<int, List<int>>();
 
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
-
+        public int jobProductId = 0;
 
         protected async override Task OnInitializedAsync()
         {
@@ -165,7 +165,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
 
 
-                _checklistCategoriesAndQuestions = await ChecklistService.GetChecklistCategories(true);
+                _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
                 foreach (var category in _checklistCategoriesAndQuestions)
                 {
                     foreach (var question in category.ChecklistQuestions)
@@ -219,20 +219,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     plannedEndDate = _jobObservation.EndDate;
                 }
 
-                if (CultureInfo.CurrentCulture.Name == "en-US")
-                {
-                    if (_jobObservation.HOEStandardTimes != null)
-                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
-                    if (_jobObservation.Cycles != null)
-                        _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
-                }
-                else
-                {
-                    if (_jobObservation.HOEStandardTimes != null)
-                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(".", ",");
-                    if (_jobObservation.Cycles != null)
-                        _jobObservation.Cycles = _jobObservation.Cycles.Replace(".", ",");
-                }
 
                 _plants = await PlantServices.GetPlants();
                 //_products = await ProductService.GetProducts();
@@ -256,111 +242,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                 }
 
-                if (_jobObservation.Questions != null)
-                {
-                    var quets = _jobObservation.Questions.Split('|');
-                    for (int i = 0; i < 5; i++)
-                    {
-                        questions[i] = quets[i];
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        questions[i] = null;
-                    }
-                }
 
-
-                if (_jobObservation.HOEStandardTimes != null && _jobObservation.HOEStandardTimes != "||||")
-                {
-                    var HOEtime = _jobObservation.HOEStandardTimes.Replace(',', '.').Split('|');
-                    for (int i = 0; i < 5; i++)
-                    {
-                        HoeTimes[i] = double.Parse(HOEtime[i], CultureInfo.InvariantCulture);
-                    }
-                }
-
-                else
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        HoeTimes[i] = 0.0;
-                    }
-                }
-                if (_jobObservation.ModelsSpecification != null)
-                {
-                    var prod = _jobObservation.ModelsSpecification.Split('|');
-                    for (int i = 0; i < 5; i++)
-                    {
-                        models[i] = Int32.Parse(prod[i]);
-                    }
-
-                }
-                else
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        models[i] = 0;
-                    }
-                }
-
-                if (_jobObservation.Cycles != null)
-                {
-                    cycles = _jobObservation.Cycles.Replace(',', '.').Split('|');
-
-                }
-                else
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        cycles[i] = "";
-                    }
-                }
-
-                for (int i = 0; i < HoeTimes.Length; i++)
-                {
-                    if (double.TryParse(cycles[i], out double cycleValue2) && HoeTimes[i] != 0.0)
-                    {
-                        double lowerBound = HoeTimes[i] * 0.95; // Valor mínimo permitido (95% de HoeTimes)
-                        double upperBound = HoeTimes[i] * 1.05; // Valor máximo permitido (105% de HoeTimes)
-
-                        if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "green"; break;
-                                case 1: cycle2Color = "green"; break;
-                                case 2: cycle3Color = "green"; break;
-                                case 3: cycle4Color = "green"; break;
-                                case 4: cycle5Color = "green"; break;
-                            }
-                        }
-                        else if (cycleValue2 < HoeTimes[i])
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "yellow"; break;
-                                case 1: cycle2Color = "yellow"; break;
-                                case 2: cycle3Color = "yellow"; break;
-                                case 3: cycle4Color = "yellow"; break;
-                                case 4: cycle5Color = "yellow"; break;
-                            }
-                        }
-                        else
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "red"; break;
-                                case 1: cycle2Color = "red"; break;
-                                case 2: cycle3Color = "red"; break;
-                                case 3: cycle4Color = "red"; break;
-                                case 4: cycle5Color = "red"; break;
-                            }
-                        }
-                    }
-                }
                 StateHasChanged();
                 _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                 _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -372,6 +254,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         operatorUsers.Add(operatorUser);
                     }
                 }
+
+                jobProductId = (int)_jobObservation.ProductId;
                 StateHasChanged();
                 await GetUserAsync();
 
