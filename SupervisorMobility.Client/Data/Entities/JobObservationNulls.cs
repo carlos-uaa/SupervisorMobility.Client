@@ -69,7 +69,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? StepsNumber { get; set; }
         public string? DoubleManagment { get; set; }
         public string? Waiting { get; set; }
-
+        public string? SectionIds { get; set; }
         public ICollection<ChecklistAnswer> ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
     }
 }
