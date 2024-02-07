@@ -54,6 +54,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public DateTime? dateStart = DateTime.Today;
         public DateTime? dateEnd = DateTime.Today;
+        DateTime LastdayYear = DateTime.Now;
+
 
         public string observer { get; set; } = "Juan";
         public string operator1 { get; set; } = "Pedro";
@@ -141,6 +143,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation.StartDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
                 _jobObservation.EndDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
+
+                LastdayYear = new DateTime(_jobObservation.StartDate.Value.Year, 12, 31);
             }
             else
             {
@@ -207,7 +211,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-
+        private void OnStartDateChanged(DateTime dt) {
+            _jobObservation.StartDate = dt;
+            _jobObservation.EndDate = dt;
+        }
 
         private async Task PlanNewJobObservation()
         {
