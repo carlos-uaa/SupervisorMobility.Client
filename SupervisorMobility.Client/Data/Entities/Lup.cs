@@ -10,6 +10,7 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Job Observation")]
         public int JobObservationId { get; set; }
+        public JobObservation JobObservation { get; set; }
         public string Oportunity { get; set; }
 
         public bool IsActive { get; set; }
@@ -32,6 +33,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-
+        public List<string> Findings { get; set; }
     }
 }

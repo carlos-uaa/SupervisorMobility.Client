@@ -773,7 +773,7 @@
                             {
                                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%">
                                     <TitleContent>
-                                           @title
+                                        @title
                                         <MudText Typo="Typo.h6" Style="text-align: center;">
                                             @category.Description
                                         </MudText>
@@ -800,7 +800,7 @@
                                                     ChecklistAnswer answer = questionAnswers[question.QuestionID];
                                                     <tr>
                                                         <td width="70%">
-                                                            <MudText Align="Align.Justify">Nueva:  <b>@question.CategorySequence.</b> @question.Prompt</MudText>
+                                                            <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @(currentLanguage == "es-ES" ? question.Prompt : question.PromptEN) </MudText>
                                                         </td>
                                                         <td width="25%">
                                                             <MudItem style="align-content: end; display: flex; justify-content: center;">
@@ -1121,17 +1121,28 @@
                                                 }
                                             </td>
                                             <td style="align-content: end">
-                                                <MudTextField T="string" @bind-Value="areaS" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                             </td>
-                                             <td>
-                                                 <MudTooltip Text=@Localizer["addToPillarSInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                     <MudIconButton @onclick="(() => AddTempLup(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                                 </MudTooltip>
-                                             </td>
-                                         </tr>
-                                         <tr>
-                                             <td>
-                                                 @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                                                @* <MudTextField T="string" @bind-Value="areaS" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+
+                                                @if (area_ListS?.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        @foreach (var (find, index) in area_ListS.Select((find, index) => (find, index)))
+                                                        {
+                                                            <MudTextField T="string" @bind-Value="area_ListS[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(1, index))"/>
+                                                        }
+                                                    </MudItem>
+                                                }
+
+                                            </td>
+                                            <td>
+                                                <MudTooltip Text=@Localizer["addToPillarSInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                    <MudIconButton @onclick="(() => AddTempLup(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                                </MudTooltip>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
                                                 {
                                                     Glosary word;
                                                     word = _glosaryInfo["Q"];
@@ -1147,17 +1158,26 @@
                                                 }
                                             </td>
                                             <td style="align-content: end">
-                                                <MudTextField T="string" @bind-Value="areaQ" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                             </td>
-                                             <td>
-                                                 <MudTooltip Text=@Localizer["addToPillarQInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                     <MudIconButton @onclick="(() => AddTempLup(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                                 </MudTooltip>
-                                             </td>
-                                         </tr>
-                                         <tr>
-                                             <td>
-                                                 @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
+                                                @if (area_ListQ?.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        @foreach (var (find, index) in area_ListQ.Select((find, index) => (find, index)))
+                                                        {
+                                                            <MudTextField T="string" @bind-Value="area_ListQ[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(2, index))"/>
+                                                        }
+                                                    </MudItem>
+                                                }
+                                                @* <MudTextField T="string" @bind-Value="areaQ" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                                            </td>
+                                            <td>
+                                                <MudTooltip Text=@Localizer["addToPillarQInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                    <MudIconButton @onclick="(() => AddTempLup(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                                </MudTooltip>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
                                                 {
                                                     Glosary word;
                                                     word = _glosaryInfo["D"];
@@ -1173,17 +1193,26 @@
                                                 }
                                             </td>
                                             <td style="align-content: end">
-                                                <MudTextField T="string" @bind-Value="areaD" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                             </td>
-                                             <td>
-                                                 <MudTooltip Text=@Localizer["addToPillarDInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                     <MudIconButton @onclick="(() => AddTempLup(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                                 </MudTooltip>
-                                             </td>
-                                         </tr>
-                                         <tr>
-                                             <td>
-                                                 @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
+                                                @if (area_ListD?.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        @foreach (var (find, index) in area_ListD.Select((find, index) => (find, index)))
+                                                        {
+                                                            <MudTextField T="string" @bind-Value="area_ListD[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(3, index))"/>
+                                                        }
+                                                    </MudItem>
+                                                }
+                                                @* <MudTextField T="string" @bind-Value="areaD" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                                            </td>
+                                            <td>
+                                                <MudTooltip Text=@Localizer["addToPillarDInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                    <MudIconButton @onclick="(() => AddTempLup(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                                </MudTooltip>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
                                                 {
                                                     Glosary word;
                                                     word = _glosaryInfo["C"];
@@ -1199,17 +1228,26 @@
                                                 }
                                             </td>
                                             <td style="align-content: end">
-                                                <MudTextField T="string" @bind-Value="areaC" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                             </td>
-                                             <td>
-                                                 <MudTooltip Text=@Localizer["addToPillarCInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                     <MudIconButton @onclick="(() => AddTempLup(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                                 </MudTooltip>
-                                             </td>
-                                         </tr>
-                                         <tr>
-                                             <td>
-                                                 @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
+                                                @if (area_ListC?.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        @foreach (var (find, index) in area_ListC.Select((find, index) => (find, index)))
+                                                        {
+                                                            <MudTextField T="string" @bind-Value="area_ListC[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(4, index))" />
+                                                        }
+                                                    </MudItem>
+                                                }
+                                                @* <MudTextField T="string" @bind-Value="areaC" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                                            </td>
+                                            <td>
+                                                <MudTooltip Text=@Localizer["addToPillarCInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                    <MudIconButton @onclick="(() => AddTempLup(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                                </MudTooltip>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
                                                 {
                                                     Glosary word;
                                                     word = _glosaryInfo["Other"];
@@ -1225,43 +1263,52 @@
                                                 }
                                             </td>
                                             <td style="align-content: end">
-                                                <MudTextField T="string" @bind-Value="areaOther" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable />
-                                             </td>
-                                             <td>
-                                                 <MudTooltip Text=@Localizer["addToPillarOtherInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                                     <MudIconButton @onclick="(() => AddTempLup(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
-                                                 </MudTooltip>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </MudSimpleTable>
+                                                @if (area_ListOther?.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        @foreach (var (find, index) in area_ListOther.Select((find, index) => (find, index)))
+                                                        {
+                                                            <MudTextField T="string" @bind-Value="area_ListOther[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(5, index))"/>
+                                                        }
+                                                    </MudItem>
+                                                }
+                                                @* <MudTextField T="string" @bind-Value="areaOther" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                                            </td>
+                                            <td>
+                                                <MudTooltip Text=@Localizer["addToPillarOtherInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                                    <MudIconButton @onclick="(() => AddTempLup(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                                                </MudTooltip>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </MudSimpleTable>
 
-                                 <br>
+                                <br>
 
 
-                                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
-                                     <tbody>
-                                         <tr>
-                                             <td colspan="2">
-                                                 <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
-                                                     <thead>
-                                                         <tr>
-                                                             <th>
-                                                                 <MudText Style="font-weight:bold;">
-                                                                     @Localizer["pillar"]
-                                                                 </MudText>
-                                                             </th>
-                                                             <th>
-                                                                 <MudText Style="text-align:center; font-weight:bold;">
-                                                                     @Localizer["improveActivityDetected"]
-                                                                 </MudText>
-                                                             </th>
-                                                         </tr>
-                                                     </thead>
-                                                     <tbody>
-                                                         <tr>
-                                                             <td width="10%">
-                                                                 @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
+                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2">
+                                                <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                <MudText Style="font-weight:bold;">
+                                                                    @Localizer["pillar"]
+                                                                </MudText>
+                                                            </th>
+                                                            <th>
+                                                                <MudText Style="text-align:center; font-weight:bold;">
+                                                                    @Localizer["improveActivityDetected"]
+                                                                </MudText>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="10%">
+                                                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
                                                                 {
                                                                     Glosary word;
                                                                     word = _glosaryInfo["S & E"];

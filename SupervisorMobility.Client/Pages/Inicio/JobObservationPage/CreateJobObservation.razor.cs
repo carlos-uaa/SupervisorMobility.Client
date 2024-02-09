@@ -44,7 +44,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         AssyChart? _assychart { get; set; }
 
-
+        public List<string> area_ListS = new List<string>();
+        public List<string> area_ListQ = new List<string>();
+        public List<string> area_ListD = new List<string>();
+        public List<string> area_ListC = new List<string>();
+        public List<string> area_ListOther = new List<string>();
         public JobObservation _jobObservation { get; set; } = new();
 
         public string areaS;
@@ -131,8 +135,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
+        string currentLanguage = "es-ES";
         protected async override Task OnInitializedAsync()
         {
+
+            try
+            {
+                currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
+         
+
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -2262,6 +2279,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
+        private void RemoveFromList(int pilarId, int indexRemove)
+        {
+            switch (pilarId)
+            {
+                case 1:
+                    area_ListS?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 2:
+                    area_ListQ?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 3:
+                    area_ListD?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Delivery Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 4:
+                    area_ListC?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    area_ListOther?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Other Pillar SECTION 3", Severity.Warning);
+                    break;
+            }
+
+            base.StateHasChanged();
+        }
         private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item)
         {
 
@@ -2271,22 +2316,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 case 1:
                     areaS = notGood;
+                    area_ListS?.Add(notGood);
                     Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
                     areaQ = notGood;
+                    area_ListQ?.Add(notGood);
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
                     areaD = notGood;
+                    area_ListD?.Add(notGood);
                     Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
                     areaC = notGood;
+                    area_ListC?.Add(notGood);
                     Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
                     break;
                 case 5:
                     areaOther = notGood;
+                    area_ListOther?.Add(notGood);
                     Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                     break;
 
@@ -2304,6 +2354,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //}
 
             StateHasChanged();
+            base.StateHasChanged();
         }
 
         private async Task UploadFiles(InputFileChangeEventArgs e, ChecklistAnswer item)

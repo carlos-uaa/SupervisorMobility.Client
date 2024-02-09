@@ -1,5 +1,6 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -45,9 +46,12 @@ namespace SupervisorMobility.Client.Pages
         InputType PasswordInput = InputType.Password;
         string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
 
+        bool Dev_env { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
+
+            Dev_env = Environment.IsDevelopment();
             _login = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["login"], href: "/", disabled: true)
