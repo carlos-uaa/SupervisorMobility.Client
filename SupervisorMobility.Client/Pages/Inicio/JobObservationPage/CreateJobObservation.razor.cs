@@ -915,13 +915,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
         public void AddTempLup(int pillar)
         {
+            if (_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First select a Supervisor", Severity.Error);
+                return;
+            }
+            lup.Findings = new List<Findings>();
             switch (pillar)
             {
                 case 1:
-                    if (areaS != null && areaS.Length > 0)
+                    if (area_ListS != null && area_ListS.Count > 0)
                     {
-                        lup.Oportunity = areaS;
-                        areaS = "";
+                        foreach(string str in area_ListS)
+                        {
+                            Findings newFinding = new  Findings();
+                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lup.Findings?.Add(newFinding);  
+                        }
+                        area_ListS.Clear();
                     }
                     else
                     {
@@ -932,10 +945,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 2:
-                    if (areaQ != null && areaQ.Length > 0)
+                    if (area_ListQ != null && area_ListQ.Count > 0)
                     {
-                        lup.Oportunity = areaQ;
-                        areaQ = "";
+                        foreach (string str in area_ListQ)
+                        {
+                            Findings newFinding = new Findings();
+                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lup.Findings?.Add(newFinding);
+                        }
+                        area_ListQ.Clear();
                     }
                     else
                     {
@@ -946,10 +964,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 3:
-                    if (areaD != null && areaD.Length > 0)
+                    if (area_ListD != null && area_ListD.Count > 0)
                     {
-                        lup.Oportunity = areaD;
-                        areaD = "";
+                        foreach (string str in area_ListD)
+                        {
+                            Findings newFinding = new Findings();
+                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lup.Findings?.Add(newFinding);
+                        }
+                        area_ListD.Clear();
                     }
                     else
                     {
@@ -960,10 +983,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 4:
-                    if (areaC != null && areaC.Length > 0)
+                    if (area_ListC != null && area_ListC.Count > 0)
                     {
-                        lup.Oportunity = areaC;
-                        areaC = "";
+                        foreach (string str in area_ListC)
+                        {
+                            Findings newFinding = new Findings();
+                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lup.Findings?.Add(newFinding);
+                        }
+                        area_ListC.Clear();
                     }
                     else
                     {
@@ -974,10 +1002,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 5:
-                    if (areaOther != null && areaOther.Length > 0)
+                    if (area_ListOther != null && area_ListOther.Count > 0)
                     {
-                        lup.Oportunity = areaOther;
-                        areaOther = "";
+                        foreach (string str in area_ListOther)
+                        {
+                            Findings newFinding = new Findings();
+                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lup.Findings?.Add(newFinding);
+                        }
+                        area_ListOther.Clear();
                     }
                     else
                     {
@@ -990,13 +1023,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            if (_jobObservation.SupervisorId == 0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select a Supervisor", Severity.Error);
-                return;
-            }
 
             foreach (User supervisor in _supervisors)
             {
@@ -2307,7 +2333,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             base.StateHasChanged();
         }
-        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item)
+        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item, int secction, int order)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
@@ -2316,27 +2342,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 case 1:
                     areaS = notGood;
-                    area_ListS?.Add(notGood);
+                    area_ListS?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
                     areaQ = notGood;
-                    area_ListQ?.Add(notGood);
+                    area_ListQ?.Add($"{secction}.{order}- "+notGood);
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
                     areaD = notGood;
-                    area_ListD?.Add(notGood);
+                    area_ListD?.Add($"{secction}.{order}- "+notGood);
                     Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
                     areaC = notGood;
-                    area_ListC?.Add(notGood);
+                    area_ListC?.Add($"{secction}.{order}- " +notGood);
                     Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
                     break;
                 case 5:
                     areaOther = notGood;
-                    area_ListOther?.Add(notGood);
+                    area_ListOther?.Add($"{secction}.{order}- "+notGood);
                     Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                     break;
 

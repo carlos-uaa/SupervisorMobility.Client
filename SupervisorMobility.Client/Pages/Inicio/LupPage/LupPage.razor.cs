@@ -112,6 +112,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                         foreach (var lup in jobObs.Lup)
                         {
                             LupAux = new();
+                            lup.JobObservation = jobObs;
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
                             LupAux.DistributionId = jobObs.Distribution?.DistributionId;

@@ -33,6 +33,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-        public List<string> Findings { get; set; }
+        public List<Findings> Findings { get; set; }
     }
 }
