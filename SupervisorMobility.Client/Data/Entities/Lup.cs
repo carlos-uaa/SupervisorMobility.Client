@@ -1,4 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net.NetworkInformation;
+
+public enum LUPStatus
+{
+    Titular,
+    Checklist,
+    Timer,
+    LUP,
+    LUP_SSV,
+    Signature
+}
 
 namespace SupervisorMobility.Client.Data.Entities
 {
@@ -33,6 +44,11 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-        public List<Findings> Findings { get; set; }
+        public LUPStatus? StatusOKNG { get; set; }
+
+        public int? StdChange { get; set; }
+        public int? StdUpdate { get; set; }
+
+
     }
 }

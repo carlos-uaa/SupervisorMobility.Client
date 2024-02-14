@@ -922,7 +922,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"First select a Supervisor", Severity.Error);
                 return;
             }
-            lup.Findings = new List<Findings>();
+
+            List<Lup> lupsToAdd = new List<Lup>();
+
             switch (pillar)
             {
                 case 1:
@@ -930,9 +932,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         foreach(string str in area_ListS)
                         {
-                            Findings newFinding = new  Findings();
-                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lup.Findings?.Add(newFinding);  
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);  
                         }
                         area_ListS.Clear();
                     }
@@ -949,9 +951,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         foreach (string str in area_ListQ)
                         {
-                            Findings newFinding = new Findings();
-                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lup.Findings?.Add(newFinding);
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
                         }
                         area_ListQ.Clear();
                     }
@@ -968,9 +970,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         foreach (string str in area_ListD)
                         {
-                            Findings newFinding = new Findings();
-                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lup.Findings?.Add(newFinding);
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
                         }
                         area_ListD.Clear();
                     }
@@ -987,9 +989,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         foreach (string str in area_ListC)
                         {
-                            Findings newFinding = new Findings();
-                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lup.Findings?.Add(newFinding);
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
                         }
                         area_ListC.Clear();
                     }
@@ -1006,9 +1008,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         foreach (string str in area_ListOther)
                         {
-                            Findings newFinding = new Findings();
-                            newFinding.Valor = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lup.Findings?.Add(newFinding);
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
                         }
                         area_ListOther.Clear();
                     }
@@ -1024,22 +1026,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            foreach (User supervisor in _supervisors)
+            User svAux = _supervisors?.Find(u => _jobObservation.SupervisorId == u.UserId);
+
+            foreach(Lup LupItem in lupsToAdd)
             {
-                if (_jobObservation.SupervisorId == supervisor.UserId)
-                {
-                    lup.Observer = supervisor.Name;
+                LupItem.Observer = svAux.Name;
 
-                }
+                LupItem.JobObservationId = 0;
+                LupItem.Pillar = pillar;
+                LupItem.Status = 1;
+                LupItem.CreatedDate = DateTime.Now;
+                LupItem.IsActive = true;
+
+                _tempLup.Add(LupItem);
             }
-            lup.JobObservationId = 0;
-            lup.Pillar = pillar;
-            lup.Status = 1;
-            lup.CreatedDate = DateTime.Now;
-            lup.IsActive = true;
-
-            _tempLup.Add(lup);
-            lup = new();
+                lup = new();
 
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
