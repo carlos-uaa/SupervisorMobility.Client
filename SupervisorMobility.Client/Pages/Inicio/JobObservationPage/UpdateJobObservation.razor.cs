@@ -2,6 +2,7 @@
 using Blazorise.Extensions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
@@ -140,6 +141,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
         public int jobProductId = 0;
+        bool showLoading = true;
+        public string productSpecification = "0";
+        List<string> _specifications { get; set; } = new();
+        List<Operation> _filteredOperations = new();
 
         protected async override Task OnInitializedAsync()
         {
@@ -162,6 +167,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
+                _jobObservation.Supervisor = new();
                 _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
 
 
@@ -194,7 +200,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                _jobObservation.Supervisor = new();
                 //glosary
                 glosary = await GlosaryService.GetGlosary();
                 _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
@@ -243,7 +248,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
 
-                StateHasChanged();
                 _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                 _operators = _operators.OrderBy(o => o.Name).ToList();
                 //operator User
@@ -256,6 +260,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 jobProductId = (int)_jobObservation.ProductId;
+                showLoading = false;
+
+                var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+
+                var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                if (prodName != null)
+                {
+                    var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                    if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                    {
+                        var names = op.NameTime.Replace(',', '.').Split("§");
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (!string.IsNullOrEmpty(names[i]))
+                            {
+                                _specifications.Add(names[i]);
+                            }
+                        }
+
+                    }
+                }
+                string operationTimesJson = _jobObservation.OperationTimesJson;
+
+                OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+
+                StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
+                DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
+                Waiting = ConvertStringToArray(_jobObservation?.Waiting);
+
+
                 StateHasChanged();
                 await GetUserAsync();
 
@@ -364,6 +399,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             StateHasChanged();
         }
+
+        private int[] ConvertStringToArray(string stringValue) =>
+            string.IsNullOrEmpty(stringValue)
+               ? new int[5]
+               : stringValue.Split('|').Select(int.Parse).ToArray();
 
         private async Task GetUserAsync()
         {
@@ -1720,6 +1760,270 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             NavigationManager.NavigateTo($"/");
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
+
+        private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
+        private int[] StepsNumber = new int[5];
+        private int[] DoubleManagment = new int[5];
+        private int[] Waiting = new int[5];
+
+
+        private void UpdateValue(int operationId, int cycleIndex, double newValue)
+        {
+            if (!OperationTimes.ContainsKey(operationId))
+            {
+                OperationTimes[operationId] = new Dictionary<int, double>();
+            }
+
+            OperationTimes[operationId][cycleIndex] = newValue;
+            StateHasChanged();
+
+            Console.WriteLine("Diccionario actualizado:");
+            foreach (var kvp in OperationTimes)
+            {
+                Console.WriteLine($"OperationId: {kvp.Key}");
+                foreach (var cycleKvp in kvp.Value)
+                {
+                    Console.WriteLine($"  CycleIndex: {cycleKvp.Key}, Value: {cycleKvp.Value}");
+                }
+            }
+
+        }
+
+        private string elapsedTime2 = "00:00:00.000";
+        private DateTime startTime2;
+        private bool isTimerRunning2 = false;
+        private System.Timers.Timer timer2;
+
+        private int currentOperationIndex = 0;
+        private int currentCycle = 1;
+        private string cronometerTime = "0.00";
+
+        private double previousOperationTime = 0.0;
+
+        private void NextOperation()
+        {
+            if (currentOperationIndex < _filteredOperations.Count)
+            {
+                var currentOperation = _filteredOperations[currentOperationIndex];
+
+                if (currentOperationIndex > 0)
+                {
+                    double elapsedCentiseconds = GetElapsedCentiseconds() - previousOperationTime;
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
+                }
+                else
+                {
+                    OperationTimes[currentOperation.OperationId][currentCycle] = GetElapsedCentiseconds();
+                }
+
+                previousOperationTime = GetElapsedCentiseconds();
+
+                currentOperationIndex++;
+                if (currentOperationIndex >= _filteredOperations.Count)
+                {
+                    currentOperationIndex = 0;
+                    currentCycle++;
+                    Console.WriteLine("Total cycle time: " + cronometerTime);
+                    PauseTimer();
+                    cronometerTime = "0.00";
+                }
+
+                StateHasChanged();
+            }
+        }
+
+
+        private void StartOrPauseTimer()
+        {
+            if (isTimerRunning2)
+            {
+                PauseTimer();
+            }
+            else
+            {
+                StartTimer();
+            }
+
+        }
+
+
+        private double GetElapsedCentiseconds()
+        {
+            TimeSpan hundreths;
+            double centiseconds = 0.0;
+            if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = hundreths.TotalMilliseconds / 60000.0;
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
+
+            return Math.Round(centiseconds, 2);
+        }
+
+        private void OnTimerTick(object sender, ElapsedEventArgs e)
+        {
+            if (isTimerRunning2)
+            {
+                TimeSpan hundreths;
+                double centiseconds = 0.0;
+                if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+                {
+                    centiseconds = hundreths.TotalMilliseconds / 60000.0;
+                }
+                else
+                {
+                    Console.WriteLine("Wrong timestamp format.");
+                }
+
+                cronometerTime = string.Format("{0:0.000}", centiseconds);
+            }
+
+            DateTime currentTime = e.SignalTime;
+            elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
+            StateHasChanged();
+        }
+
+        private void StartTimer()
+        {
+            isTimerRunning2 = true;
+            startTime2 = DateTime.Now;
+            timer2 = new System.Timers.Timer(1);
+            timer2.Elapsed += OnTimerTick;
+            timer2.AutoReset = true;
+            timer2.Enabled = true;
+
+        }
+
+        private void PauseTimer()
+        {
+            cronometerTime = "0.00";
+            isTimerRunning2 = false;
+            timer2.Enabled = false;
+            currentOperationIndex = 0;
+
+            previousOperationTime = 0.0;
+            foreach (var operationId in OperationTimes.Keys)
+            {
+                OperationTimes[operationId][currentCycle] = 0.0;
+            }
+        }
+
+        private void StartOver()
+        {
+            currentCycle = 1;
+            cronometerTime = "0.00";
+            isTimerRunning2 = false;
+            timer2.Enabled = false;
+            currentOperationIndex = 0;
+
+            previousOperationTime = 0.0;
+            foreach (var operationId in OperationTimes.Keys)
+            {
+                for (int cycle = 1; cycle <= 5; cycle++)
+                {
+                    OperationTimes[operationId][cycle] = 0.0;
+                }
+            }
+
+
+            StateHasChanged();
+        }
+
+
+
+
+        public void actualizarCampo()
+        {
+            if (currentOperationIndex < _operations.Count)
+            {
+                var currentOperation = _operations[currentOperationIndex];
+                OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
+
+                currentOperationIndex++;
+
+                if (currentOperationIndex >= _operations.Count && currentCycle < 5)
+                {
+                    currentCycle++;
+                    currentOperationIndex = 0;
+                }
+
+                StateHasChanged();
+            }
+            else
+            {
+                currentCycle = 1;
+                currentOperationIndex = 0;
+                StateHasChanged();
+            }
+        }
+
+
+        public void InitializeCycleTimes()
+        {
+            _filteredOperations = new();
+            StepsNumber = new int[5];
+            DoubleManagment = new int[5];
+            Waiting = new int[5];
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            foreach (var op in _filteredOperations)
+            {
+                if (!OperationTimes.ContainsKey(op.OperationId))
+                {
+                    OperationTimes[op.OperationId] = new Dictionary<int, double>();
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        OperationTimes[op.OperationId][i] = 0.0;
+                    }
+                }
+            }
+        }
+
+
+        private double GetRandomNumber(double min, double max)
+        {
+            Random random = new Random();
+            return random.NextDouble() * (max - min) + min;
+        }
+
+        private void HandleKeyDown(KeyboardEventArgs args)
+        {
+            if (isTimerRunning2 && args.Code == "KeyN")
+            {
+                NextOperation();
+            }
+        }
+
+        private void ShowSpecifications()
+        {
+            _specifications = new();
+            productSpecification = "0";
+            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            if (prodName != null)
+            {
+                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                {
+                    var names = op.NameTime.Replace(',', '.').Split("§");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (!string.IsNullOrEmpty(names[i]))
+                        {
+                            _specifications.Add(names[i]);
+                        }
+                    }
+
+                }
+            }
+
+            StateHasChanged();
+        }
+
+
 
         //HOE, CCP, GOS
         private bool CcpDialog = false;
