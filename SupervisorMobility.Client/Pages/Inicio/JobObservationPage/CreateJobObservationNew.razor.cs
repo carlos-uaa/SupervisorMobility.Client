@@ -890,7 +890,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task CreateNewJobObservation()
         {
-            Console.WriteLine("aa");
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
