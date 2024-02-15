@@ -3,6 +3,7 @@ using System.Net.NetworkInformation;
 
 public enum LUPStatus
 {
+    Percent0,
     Percent25,
     Percent50,
     Percent75,
@@ -29,6 +30,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? Q4 { get; set; }
         public string? Justification { get; set; }
         public int? Status { get; set; }
+        public LUPStatus? StatusOKNG { get; set; }
 
         //Evidence
         public ICollection<FileUpload> Evidences { get; set; }
@@ -42,7 +44,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-        public LUPStatus? StatusOKNG { get; set; }
 
         public int? StdChange { get; set; }
         public int? StdUpdate { get; set; }

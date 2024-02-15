@@ -40,8 +40,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
-
-
+        //Aux items
+        private int auxStChange = 0;
+        private int auxStUpdate = 0;
+        private int auxStOKNG = 0;
+      
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading = new List<string>();
@@ -59,6 +62,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             };
 
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
+
+
+
+            auxStOKNG = _lup.StatusOKNG != null ? (int)_lup.StatusOKNG : 0;
+            auxStChange = _lup.StdChange != null ? (int)_lup.StdChange : 0;
+            auxStUpdate = _lup.StdUpdate != null ? (int)_lup.StdUpdate : 0;
+
             jobObservation = await JobObservationService.GetJobObservationById(_lup.JobObservationId, true);
 
             departmentID = _lup.DepartmentId != null ? (int)_lup.DepartmentId : departmentID;
@@ -310,6 +320,50 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         private int frameCount;
 
         private string imageData;
+
+        private void SetStatusOKNG(int v)
+        {
+            switch (v)
+            {
+                case 0:
+                    _lup.StatusOKNG = LUPStatus.Percent0;
+                    break;
+                case 1:
+                    _lup.StatusOKNG = LUPStatus.Percent25;
+                    break;
+                case 2:
+                    _lup.StatusOKNG = LUPStatus.Percent50;
+                    break;
+                case 3:
+                    _lup.StatusOKNG = LUPStatus.Percent75;
+                    break;
+                case 4:
+                    _lup.StatusOKNG = LUPStatus.Percent100;
+                    break;
+
+            }
+        }
+
+        double[][] data = { 
+                            new double[] {0,100},
+                            new double[] {25, 75},
+                            new double[] {50, 50},
+                            new double[] {75, 25},
+                            new double[] {100, 0},
+        };
+        string[][] datalabels = {
+                            new string[] {"0", ""},
+                            new string[] { "25", ""},
+                            new string[] { "50", ""},
+                            new string[] { "75", ""},
+                            new string[] { "100", ""},
+        };
+
+        ChartOptions chartOptions = new()
+        {
+            DisableLegend = true
+        };
+
 
         private async void OnRenderedHandler()
         {

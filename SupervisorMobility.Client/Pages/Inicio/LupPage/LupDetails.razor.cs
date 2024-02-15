@@ -19,6 +19,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
 
+        double[][] data = {
+                            new double[] {0,100},
+                            new double[] {25, 75},
+                            new double[] {50, 50},
+                            new double[] {75, 25},
+                            new double[] {100, 0},
+        };
+
+        string[][] datalabels = {
+                            new string[] {"0", ""},
+                            new string[] { "25", ""},
+                            new string[] { "50", ""},
+                            new string[] { "75", ""},
+                            new string[] { "100", ""},
+        };
+
+        ChartOptions chartOptions = new()
+        {
+            DisableLegend = true
+        };
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading = new List<string>();

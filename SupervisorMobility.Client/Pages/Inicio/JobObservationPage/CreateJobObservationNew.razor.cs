@@ -137,9 +137,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string productSpecification = "0";
         bool showLoading = true;
 
+        string currentLanguage = "es-ES";
+
+        //Lup list
+        public List<string> area_ListS = new List<string>();
+        public List<string> area_ListQ = new List<string>();
+        public List<string> area_ListD = new List<string>();
+        public List<string> area_ListC = new List<string>();
+        public List<string> area_ListOther = new List<string>();
 
         protected async override Task OnInitializedAsync()
         {
+
+            try
+            {
+                currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
+
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -1014,13 +1033,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
         public void AddTempLup(int pillar)
         {
+            if (_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First select a Supervisor", Severity.Error);
+                return;
+            }
+
+            List<Lup> lupsToAdd = new List<Lup>();
+
             switch (pillar)
             {
                 case 1:
-                    if (areaS != null && areaS.Length > 0)
+                    if (area_ListS != null && area_ListS.Count > 0)
                     {
-                        lup.Oportunity = areaS;
-                        areaS = "";
+                        foreach (string str in area_ListS)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListS.Clear();
                     }
                     else
                     {
@@ -1031,10 +1065,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 2:
-                    if (areaQ != null && areaQ.Length > 0)
+                    if (area_ListQ != null && area_ListQ.Count > 0)
                     {
-                        lup.Oportunity = areaQ;
-                        areaQ = "";
+                        foreach (string str in area_ListQ)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListQ.Clear();
                     }
                     else
                     {
@@ -1045,10 +1084,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 3:
-                    if (areaD != null && areaD.Length > 0)
+                    if (area_ListD != null && area_ListD.Count > 0)
                     {
-                        lup.Oportunity = areaD;
-                        areaD = "";
+                        foreach (string str in area_ListD)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListD.Clear();
                     }
                     else
                     {
@@ -1059,10 +1103,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 4:
-                    if (areaC != null && areaC.Length > 0)
+                    if (area_ListC != null && area_ListC.Count > 0)
                     {
-                        lup.Oportunity = areaC;
-                        areaC = "";
+                        foreach (string str in area_ListC)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListC.Clear();
                     }
                     else
                     {
@@ -1073,10 +1122,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     break;
                 case 5:
-                    if (areaOther != null && areaOther.Length > 0)
+                    if (area_ListOther != null && area_ListOther.Count > 0)
                     {
-                        lup.Oportunity = areaOther;
-                        areaOther = "";
+                        foreach (string str in area_ListOther)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListOther.Clear();
                     }
                     else
                     {
@@ -1089,39 +1143,57 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-            if (_jobObservation.SupervisorId == 0)
+
+            User svAux = _supervisors?.Find(u => _jobObservation.SupervisorId == u.UserId);
+
+            foreach (Lup LupItem in lupsToAdd)
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select a Supervisor", Severity.Error);
-                return;
+                LupItem.Observer = svAux.Name;
+
+                LupItem.JobObservationId = 0;
+                LupItem.Pillar = pillar;
+                LupItem.Status = 1;
+                LupItem.CreatedDate = DateTime.Now;
+                LupItem.IsActive = true;
+
+                _tempLup.Add(LupItem);
             }
-
-            foreach (User supervisor in _supervisors)
-            {
-                if (_jobObservation.SupervisorId == supervisor.UserId)
-                {
-                    lup.Observer = supervisor.Name;
-
-                }
-            }
-            lup.JobObservationId = 0;
-            lup.Pillar = pillar;
-            lup.Status = 1;
-            lup.CreatedDate = DateTime.Now;
-            lup.IsActive = true;
-
-            _tempLup.Add(lup);
             lup = new();
 
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"Lup item added", Severity.Info);
 
-
-
         }
 
+        private void RemoveFromList(int pilarId, int indexRemove)
+        {
+            switch (pilarId)
+            {
+                case 1:
+                    area_ListS?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 2:
+                    area_ListQ?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 3:
+                    area_ListD?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Delivery Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 4:
+                    area_ListC?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    area_ListOther?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Other Pillar SECTION 3", Severity.Warning);
+                    break;
+            }
+
+            base.StateHasChanged();
+        }
         public void DeleteLup(Lup lup)
         {
             switch (lup.Pillar)
@@ -2350,7 +2422,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item)
+        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item, int secction, int order)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
@@ -2359,22 +2431,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 case 1:
                     areaS = notGood;
+                    area_ListS?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                     break;
                 case 2:
                     areaQ = notGood;
+                    area_ListQ?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                     break;
                 case 3:
                     areaD = notGood;
+                    area_ListD?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                     break;
                 case 4:
                     areaC = notGood;
+                    area_ListC?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
                     break;
                 case 5:
                     areaOther = notGood;
+                    area_ListOther?.Add($"{secction}.{order}- " + notGood);
                     Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                     break;
 
@@ -2392,6 +2469,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //}
 
             StateHasChanged();
+            base.StateHasChanged();
         }
 
         private async Task UploadFiles(InputFileChangeEventArgs e, ChecklistAnswer item)

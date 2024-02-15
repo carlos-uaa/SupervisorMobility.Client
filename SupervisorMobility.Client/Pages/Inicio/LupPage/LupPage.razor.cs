@@ -54,13 +54,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public User user = new();
         public bool logged = false;
 
-        double[][] data = { new double[] {25, 75},
+        double[][] data = {
+                            new double[] {0,100},
+                            new double[] {25, 75},
                             new double[] {50, 50},
                             new double[] {75, 25},
                             new double[] {100, 0},
-                            new double[] {0},
         };
 
+        string[][] datalabels = {
+                            new string[] {"0", ""},
+                            new string[] { "25", ""},
+                            new string[] { "50", ""},
+                            new string[] { "75", ""},
+                            new string[] { "100", ""},
+        };
+
+        ChartOptions chartOptions = new()
+        {
+            DisableLegend = true
+        };
         // Initialization
         protected async override Task OnInitializedAsync()
         {

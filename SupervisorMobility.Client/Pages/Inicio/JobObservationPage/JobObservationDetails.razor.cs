@@ -126,10 +126,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
 
-            jobProductId = (int)_jobObservation.ProductId;
+            jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
 
+            
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            if(jobProductId != 0)
+                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
@@ -213,9 +215,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     questions[i] = null;
                 }
             }
-            string operationTimesJson = _jobObservation.OperationTimesJson;
-
-            OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+            string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty ;
+            if(operationTimesJson.Length > 8)
+                OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
             showLoading = false;
 
             StateHasChanged();
