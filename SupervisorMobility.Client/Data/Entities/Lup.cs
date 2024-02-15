@@ -3,12 +3,10 @@ using System.Net.NetworkInformation;
 
 public enum LUPStatus
 {
-    Titular,
-    Checklist,
-    Timer,
-    LUP,
-    LUP_SSV,
-    Signature
+    Percent25,
+    Percent50,
+    Percent75,
+    Percent100,
 }
 
 namespace SupervisorMobility.Client.Data.Entities

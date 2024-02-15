@@ -2284,6 +2284,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No.
+        /// </summary>
+        public static string Noo {
+            get {
+                return ResourceManager.GetString("Noo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Notes.
         /// </summary>
         public static string notes {
@@ -3310,6 +3319,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Was the standard modified (yes/no)?.
+        /// </summary>
+        public static string StdChange {
+            get {
+                return ResourceManager.GetString("StdChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Is the standard updated (yes/no)?.
+        /// </summary>
+        public static string StdUpdate {
+            get {
+                return ResourceManager.GetString("StdUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Suggestion.
         /// </summary>
         public static string suggestion {
@@ -3792,6 +3819,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Yearly {
             get {
                 return ResourceManager.GetString("Yearly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Yes.
+        /// </summary>
+        public static string yes {
+            get {
+                return ResourceManager.GetString("yes", resourceCulture);
             }
         }
         

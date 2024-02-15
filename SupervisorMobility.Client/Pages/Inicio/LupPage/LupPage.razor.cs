@@ -54,6 +54,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public User user = new();
         public bool logged = false;
 
+        double[][] data = { new double[] {25, 75},
+                            new double[] {50, 50},
+                            new double[] {75, 25},
+                            new double[] {100, 0},
+                            new double[] {0},
+        };
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
