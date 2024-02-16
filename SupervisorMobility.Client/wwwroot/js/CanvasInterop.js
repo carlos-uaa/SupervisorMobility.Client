@@ -75,3 +75,11 @@ window.generateSignature = (canvasId) => {
         return "";
     }
 }
+
+window.disableScroll = function () {
+    document.body.style.overflow = 'hidden';
+}
+
+window.enableScroll = function () {
+    document.body.style.overflow = '';
+}

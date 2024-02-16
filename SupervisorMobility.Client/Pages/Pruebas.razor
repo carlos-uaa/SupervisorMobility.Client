@@ -1,7 +1,16 @@
 ﻿@page "/signature"
 @inject IJSRuntime JS
+@inject IStringLocalizer<Resource> Localizer
 
-<div class="container">
+<div class="container drawing-container pa-8">
+    <div class="row justify-content-center">
+        <div class="col-md-12 text-center position-relative mt-4">
+            <h3>@Localizer["operatorsSignature"]e</h3>
+            <canvas class="canvas-container" id="myCanvas" width="500" height="200"
+            @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
+            @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
+        </div>
+    </div>
     <div class="row justify-content-center">
         <div class="col-md-12 text-center">
             <MudButton Disabled="@(!hasDrawing)" OnClick="GenerateSignature">Save Signature</MudButton>
@@ -9,15 +18,7 @@
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-md-12 text-center position-relative">
-            <canvas class="canvas-container" id="myCanvas" width="500" height="200"
-            @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
-            @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
-            <h3>Operator's signature</h3>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-12">
+        <div class="col-md-12 text-center">
             <img src="@signatureImageBase64" style="display: @signatureImageDisplay;">
         </div>
     </div>
@@ -66,6 +67,7 @@
 
     private async Task StartDrawingTouch(TouchEventArgs e)
     {
+        await JS.InvokeVoidAsync("disableScroll");
         isDrawing = true;
         prevX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
         prevY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
@@ -73,6 +75,8 @@
 
     private void EndDrawingTouch(TouchEventArgs e)
     {
+        JS.InvokeVoidAsync("enableScroll");
+
         isDrawing = false;
         hasDrawing = true; // Set to true when drawing ends
     }
@@ -81,6 +85,7 @@
     {
         if (isDrawing)
         {
+            Console.WriteLine("dibujando");
             var offsetX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
             var offsetY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
 
@@ -126,5 +131,9 @@
 
     .canvas-container:hover {
         transform: scale(1.005);
-    }|
+    }
+
+    .drawing-container {
+        overflow: hidden;
+    }
 </style>

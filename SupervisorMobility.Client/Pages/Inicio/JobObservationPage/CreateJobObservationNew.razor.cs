@@ -390,6 +390,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 folderCCPError = true;
             }
 
+
         }
 
 
@@ -2726,6 +2727,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             return new AsyncVoidMethodBuilder();
         }
+
+        public bool visibleOperatorSignature = false;
+
+        private void OpenSignOperator()
+        {
+            visibleOperatorSignature = true;
+        }
+
+        private DialogOptions dialogOperatorSignatureOptions = new() { CloseOnEscapeKey = true, FullWidth = true, CloseButton = true, DisableBackdropClick = true, FullScreen = true };
 
     }
 }
