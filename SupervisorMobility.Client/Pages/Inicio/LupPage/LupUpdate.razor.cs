@@ -87,6 +87,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         }
         private async Task EditLup()
         {
+            switch (auxStOKNG)
+            {
+                case 0:
+                    _lup.StatusOKNG = LUPStatus.Percent0;
+                    break;
+                case 1:
+                    _lup.StatusOKNG = LUPStatus.Percent25;
+                    break;
+                case 2:
+                    _lup.StatusOKNG = LUPStatus.Percent50;
+                    break;
+                case 3:
+                    _lup.StatusOKNG = LUPStatus.Percent75;
+                    break;
+                case 4:
+                    _lup.StatusOKNG = LUPStatus.Percent100;
+                    break;
+            }
+            _lup.StdChange = auxStChange;
+            _lup.StdChange = auxStUpdate;
+
             _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
 
             _lup.Status = 2;
@@ -106,6 +127,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         public async void CancelLup()
         {
+            switch (auxStOKNG)
+            {
+                case 0:
+                    _lup.StatusOKNG = LUPStatus.Percent0;
+                    break;
+                case 1:
+                    _lup.StatusOKNG = LUPStatus.Percent25;
+                    break;
+                case 2:
+                    _lup.StatusOKNG = LUPStatus.Percent50;
+                    break;
+                case 3:
+                    _lup.StatusOKNG = LUPStatus.Percent75;
+                    break;
+                case 4:
+                    _lup.StatusOKNG = LUPStatus.Percent100;
+                    break;
+            }
+            _lup.StdChange = auxStChange;
+            _lup.StdChange = auxStUpdate;
 
             if (_lup.Justification == null || _lup.Justification.Length == 0)
             {
@@ -140,6 +181,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         public async void FinishedLup()
         {
+            switch (auxStOKNG)
+            {
+                case 0:
+                    _lup.StatusOKNG = LUPStatus.Percent0;
+                    break;
+                case 1:
+                    _lup.StatusOKNG = LUPStatus.Percent25;
+                    break;
+                case 2:
+                    _lup.StatusOKNG = LUPStatus.Percent50;
+                    break;
+                case 3:
+                    _lup.StatusOKNG = LUPStatus.Percent75;
+                    break;
+                case 4:
+                    _lup.StatusOKNG = LUPStatus.Percent100;
+                    break;
+            }
+            _lup.StdChange = auxStChange;
+            _lup.StdChange = auxStUpdate;
+
 
             _lup.EndDate = DateTime.Now;
             _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
@@ -323,25 +385,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
 
         private void SetStatusOKNG(int v)
         {
-            switch (v)
-            {
-                case 0:
-                    _lup.StatusOKNG = LUPStatus.Percent0;
-                    break;
-                case 1:
-                    _lup.StatusOKNG = LUPStatus.Percent25;
-                    break;
-                case 2:
-                    _lup.StatusOKNG = LUPStatus.Percent50;
-                    break;
-                case 3:
-                    _lup.StatusOKNG = LUPStatus.Percent75;
-                    break;
-                case 4:
-                    _lup.StatusOKNG = LUPStatus.Percent100;
-                    break;
-
-            }
+            Console.WriteLine(v);
+            
+            StateHasChanged();
         }
 
         double[][] data = { 

@@ -972,7 +972,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             jobId2 = id;
             //verificar formato de envio
             string fechaComoString = date.ToString("MM-dd-yyyy");
-            programmedStartDate = fechaComoString;
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var formatedStartDate = date;
+
+                var EnglishStartDate = formatedStartDate.Month.ToString() + "/" + formatedStartDate.Day.ToString() + "/" + formatedStartDate.Year.ToString();
+                var formatedStartDate2 = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                programmedStartDate = formatedStartDate2.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                var hour1 = date.ToShortDateString();
+
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy", null, DateTimeStyles.None, out var newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    Console.WriteLine("Unable to parse {es-ES} '{0}'", hour1);
+
+                programmedStartDate = newDate1.ToString("MM-dd-yyyy");
+            }
+
             visible2 = true;
         }
 
@@ -1655,6 +1678,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (selected_distId > 0 && SV_Manager.Count() != 0)
             {
+
                 enableCreateSuggestion = true;
                 base.StateHasChanged();
                 _yearMonth = Startday;
@@ -1670,6 +1694,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 Suggested_SOS_Registers_UserOperationRelationship?.Clear();
                 try
                 {
+                    TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
                     base.StateHasChanged();
                     //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
                     Console.WriteLine($"TotalDist Count {selected_distribution.Operations?.Count}");
@@ -1730,8 +1756,42 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                 DateTime parsedDate = Startday;
                                 parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
 
-                                _newSuggestion.StartDate = parsedDate;
-                                _newSuggestion.PlannedStartDate = parsedDate;
+                                if (CultureInfo.CurrentCulture.Name == "en-US")
+                                {
+                                    var formatedStartDate = _newSuggestion.StartDate;
+
+                                    var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                                    _newSuggestion.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+
+                                    var hour1 = _newSuggestion.StartDate?.ToShortDateString() + $" {startHour}";
+
+                                    if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out var newDate1))
+                                    {
+                                        Console.WriteLine(newDate1);
+                                    }
+                                    else
+                                        Console.WriteLine("Unable to parse '{0}'", hour1);
+
+
+                                    _newSuggestion.PlannedStartDate = newDate1;
+                                    _newSuggestion.StartDate = newDate1;
+                                }
+                                else
+                                {
+                                    var hour1 = _newSuggestion.StartDate?.ToShortDateString() + $" {startHour}";
+
+                                    if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out var newDate1))
+                                    {
+                                        Console.WriteLine(newDate1);
+                                    }
+                                    else
+                                        Console.WriteLine("Unable to parse '{0}'", hour1);
+
+                                    _newSuggestion.StartDate = newDate1;
+                                    _newSuggestion.PlannedStartDate = newDate1;
+                                }
+
 
                                 _All_Suggested_SOSJobobservation.Add(_newSuggestion);
                             }
@@ -1800,6 +1860,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     break;
             }
 
+            TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
             try
             {
                 base.StateHasChanged();
@@ -1859,8 +1921,44 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                             DateTime parsedDate = Startday;
                             parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
 
-                            _newSuggestion.StartDate = parsedDate;
-                            _newSuggestion.PlannedStartDate = parsedDate;
+
+                            if (CultureInfo.CurrentCulture.Name == "en-US")
+                            {
+                                var formatedStartDate = _newSuggestion.StartDate;
+
+                                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                                _newSuggestion.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+
+                                var hour1 = _newSuggestion.StartDate?.ToShortDateString() + $" {startHour}";
+
+                                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out var newDate1))
+                                {
+                                    Console.WriteLine(newDate1);
+                                }
+                                else
+                                    Console.WriteLine("Unable to parse '{0}'", hour1);
+
+
+                                _newSuggestion.PlannedStartDate = newDate1;
+                                _newSuggestion.StartDate = newDate1;
+                            }
+                            else
+                            {
+                                var hour1 = _newSuggestion.StartDate?.ToShortDateString() + $" {startHour}";
+
+                                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out var newDate1))
+                                {
+                                    Console.WriteLine(newDate1);
+                                }
+                                else
+                                    Console.WriteLine("Unable to parse '{0}'", hour1);
+
+                                _newSuggestion.StartDate = newDate1;
+                                _newSuggestion.PlannedStartDate = newDate1;
+                            }
+
+                          
 
 
                             _All_Suggested_SOSJobobservation.Add(_newSuggestion);

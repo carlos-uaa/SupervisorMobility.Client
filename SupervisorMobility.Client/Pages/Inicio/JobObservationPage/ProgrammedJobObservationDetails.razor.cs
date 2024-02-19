@@ -1,6 +1,7 @@
 ﻿using Blazorise.Extensions;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -29,7 +30,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         [Parameter]
         public string ProgrammedStartDate { get; set; }
 
-        public DateTime? AuxProgrammedDate { get; set; } 
+        public DateTime? AuxProgrammedDate { get; set; }
 
         public JobObservation _jobObservation { get; set; } = new();
 
@@ -96,7 +97,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
-            AuxProgrammedDate = DateTime.Parse(ProgrammedStartDate);
+
+            if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
+            {
+                Console.WriteLine($"Primera Conversion Exitosa");
+                AuxProgrammedDate = AuxDate;
+                // La conversión fue exitosa, ahora puedes usar 'date'
+            }
 
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
@@ -139,11 +146,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (ProgrammedStartDate != "" && ProgrammedStartDate != null)
             {
-                ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
-
-                _jobObservation.StartDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
-                _jobObservation.EndDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
-
+                _jobObservation.StartDate = AuxProgrammedDate;
+                _jobObservation.EndDate = AuxProgrammedDate;
                 LastdayYear = new DateTime(_jobObservation.StartDate.Value.Year, 12, 31);
             }
             else
@@ -211,7 +215,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        private void OnStartDateChanged(DateTime dt) {
+        private void OnStartDateChanged(DateTime dt)
+        {
             _jobObservation.StartDate = dt;
             _jobObservation.EndDate = dt;
         }
@@ -239,7 +244,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Select the Operation first", Severity.Warning);
                 return;
             }
-            
+
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
@@ -315,7 +320,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
 
-                
+
             }
             else
             {
