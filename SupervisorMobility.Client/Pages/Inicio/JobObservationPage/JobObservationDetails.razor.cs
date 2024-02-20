@@ -22,7 +22,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int lupId;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
-        public JobObservation _lupJobObservations { get; set; } = new();
 
         private AssyChart _assychart { get; set; } = new AssyChart();
 
@@ -99,16 +98,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int[] Waiting = new int[5];
         public int jobProductId = 0;
 
+        List<Lup> SSV_LupList = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
         List<Operation> _filteredOperations = new();
         List<string> _specifications { get; set; } = new();
 
         bool showLoading = true;
+        string currentLanguage = "es-ES";
 
         protected async override Task OnInitializedAsync()
         {
-
+            try
+            {
+                currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
 
@@ -128,7 +137,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
 
-            
+            SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
+
+
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if(jobProductId != 0)
                 _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
@@ -309,7 +320,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 FilterOperation = true;
             }
 
-        }
+        }//end on inizialized 
 
         void Closed(MudChip chip)
         {

@@ -168,6 +168,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                         }
                     }
                 }
+
+                _lups = _lups.OrderBy(l => l.Lup.EndDate == null ? DateTime.MinValue : l.Lup.EndDate) 
+                .ThenBy(l => l.Lup.CreatedDate).ToList();
             }
             else if (user.UserType == 3)
             {

@@ -145,10 +145,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string productSpecification = "0";
         List<string> _specifications { get; set; } = new();
         List<Operation> _filteredOperations = new();
+        string[] ids { get; set; }
+        string currentLanguage = "es-ES";
 
         protected async override Task OnInitializedAsync()
         {
-
+            try
+            {
+                currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -259,11 +269,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                jobProductId = (int)_jobObservation.ProductId;
+                ids = _jobObservation.SectionIds.Split('|');
+
+                jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
                 showLoading = false;
 
                 var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                if (jobProductId != 0)
+                    _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
                 var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
                 if (prodName != null)
@@ -282,9 +295,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     }
                 }
-                string operationTimesJson = _jobObservation.OperationTimesJson;
-
-                OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+                
+                string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty ;
+                if (operationTimesJson.Length > 8)
+                    OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
 
                 StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                 DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
