@@ -1013,7 +1013,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 _jobObservation = result;
                 _ = await GenerateChecklistAnswers();
-
+                _ = await GenerateOperatorSignatureImage();
 
                 NavigationManager.NavigateTo("/jobobservation");
             }
@@ -2736,6 +2736,62 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private DialogOptions dialogOperatorSignatureOptions = new() { CloseOnEscapeKey = true, FullWidth = true, CloseButton = true, DisableBackdropClick = true, FullScreen = true };
+
+        private string currentImage = "";
+
+        private void HandleSignatureSaved()
+        {
+            currentImage = _signatureImageService.GetImage();
+        }
+
+        private async Task<AsyncVoidMethodBuilder> GenerateOperatorSignatureImage()
+        {
+            if (!string.IsNullOrEmpty(currentImage))
+            {
+                var base64Data = currentImage.Replace("data:image/png;base64,", "");
+
+                if (IsValidBase64String(base64Data))
+                {
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(
+                        content: fileContent,
+                        name: "\"file\"",
+                        fileName: "evidence.png");
+
+                    // Llama a tu servicio de carga de archivos aquí
+
+                    content.Add(content: new StringContent(_jobObservation.JobObservationId.ToString()), name: "JobObservationId");
+                    var result1 = await JobObservationService.CreateOperatorSignature(content);
+
+                    if (result1 != null)
+                    {
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Job observation operator signature Added", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error in Job observation operator signature", Severity.Error);
+                    }
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("Invalid image data", Severity.Error);
+                }
+            }
+
+
+            return new AsyncVoidMethodBuilder();
+        }
 
     }
 }

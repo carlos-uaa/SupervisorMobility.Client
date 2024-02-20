@@ -23,5 +23,6 @@
 
         // Delete job observation
         Task DeleteJobObservation(int jobObservationId);
+        Task<JobObservation> CreateOperatorSignature(MultipartFormDataContent checklistAnswer);
     }
 }

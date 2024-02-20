@@ -13,6 +13,7 @@
         Task<FileUpload> UploadGuide(MultipartFormDataContent contentfile);
         Task<FileUpload> UploadUsers(MultipartFormDataContent contentfile);
         Task<FileUpload> UploadEvidences(MultipartFormDataContent contentfiles, int lupId);
+        Task<FileUpload> UploadOperatorSignature(MultipartFormDataContent contentfiles, int jobObservationId);
         Task<UploadAssyChartResult> ProccedToUpdateData(FileUpload fileinfo);
 
         Task DownloadFileFromOnePlant(int idPlant);
