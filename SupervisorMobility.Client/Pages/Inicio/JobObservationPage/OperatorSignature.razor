@@ -14,7 +14,14 @@
     </div>
     <div class="row justify-content-center">
         <div class="col-md-12 text-center">
-            <MudButton Disabled="@(!hasDrawing)" OnClick="GenerateSignature">Save Signature</MudButton>
+            @if (signatureSaved)
+            {
+                <MudChip Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@Localizer["Signature saved"]</MudChip>
+            }
+            else
+            {
+                <MudChip Disabled="@(!hasDrawing)" OnClick="GenerateSignature" Color="Color.Info" Icon="@Icons.Material.Filled.SaveAs">Save Signature</MudChip>
+            }
             <MudButton OnClick="ClearCanvas">Clear</MudButton>
         </div>
     </div>
@@ -28,6 +35,7 @@
     private double prevX;
     private double prevY;
     private bool hasDrawing = false;
+    private bool signatureSaved = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -93,7 +101,9 @@
     {
         await JS.InvokeVoidAsync("clearCanvas", "myCanvas");
         hasDrawing = false;
+        signatureSaved = false; 
     }
+
 
     private async Task GenerateSignature()
     {
@@ -102,6 +112,7 @@
             string signatureImageBase64 = await JS.InvokeAsync<string>("generateSignature", "myCanvas");
             _signatureImageService.SetImage(signatureImageBase64);
             await OnSignatureSaved.InvokeAsync();
+            signatureSaved = true;
         }
     }
 
