@@ -132,7 +132,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new ApplicationException(content);
+                return null;
             }
 
             var jobObservation = JsonSerializer.Deserialize<JobObservationNulls>(content, _options);
