@@ -241,6 +241,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
 
                 _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
+
+
                 _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
 
                 if (_jobObservation.KpiId != null)
@@ -304,6 +306,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
                 Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
+                if (_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0")
+                    productSpecification =  _jobObservation.ModelsSpecification;
 
                 StateHasChanged();
                 await GetUserAsync();
@@ -1943,7 +1947,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             currentCycle = 1;
             cronometerTime = "0.00";
             isTimerRunning2 = false;
-            timer2.Enabled = false;
+            if (timer2 != null)
+            {
+                timer2.Enabled = false;
+            }
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
@@ -2008,6 +2015,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
+            _jobObservation.ModelsSpecification = productSpecification;
         }
 
 
@@ -2049,7 +2057,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             StateHasChanged();
         }
-
 
 
         //HOE, CCP, GOS

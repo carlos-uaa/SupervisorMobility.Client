@@ -749,7 +749,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private void ShowSpecifications()
-        {
+        { 
             _specifications = new();
             productSpecification = "0";
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
