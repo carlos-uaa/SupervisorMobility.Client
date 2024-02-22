@@ -281,6 +281,25 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             }
         }
 
+        public async Task<string> ShowOperatorSignature(int idfile)
+        {
+            var response = await _http.GetAsync($"File/Signatures/{idfile}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
+
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
+
+
 
         public async Task DownloadAllUsersFormat()
         {

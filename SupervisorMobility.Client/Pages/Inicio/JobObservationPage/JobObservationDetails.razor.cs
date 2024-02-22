@@ -6,6 +6,7 @@ using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
@@ -105,6 +106,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<string> _specifications { get; set; } = new();
 
         bool showLoading = true;
+        private string currentImage = "";
         string currentLanguage = "es-ES";
 
         protected async override Task OnInitializedAsync()
@@ -230,6 +232,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if(operationTimesJson.Length > 8)
                 OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
             showLoading = false;
+
+            if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
+            {
+                var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
+                currentImage = imageUrl;
+            }
 
             StateHasChanged();
 
