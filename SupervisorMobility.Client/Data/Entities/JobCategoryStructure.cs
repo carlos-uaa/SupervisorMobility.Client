@@ -6,6 +6,7 @@
         Checklist,
         Timer,
         LUP,
+        LUP_SSV,
         Signature
     }
     public class JobCategoryStructure

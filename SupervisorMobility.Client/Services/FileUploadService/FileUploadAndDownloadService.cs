@@ -115,6 +115,8 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             return result;
         }
 
+        
+
         //UploadEvidences
         public async Task<FileUpload> UploadEvidences(MultipartFormDataContent? contentfiles, int lupId)
         {
@@ -137,6 +139,30 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             return null;
 
         }
+
+        //Upload Operator Signature
+        public async Task<FileUpload> UploadOperatorSignature(MultipartFormDataContent? contentfiles, int jobObservationId)
+        {
+            var response = await _http.PostAsync($"File/UploadOperatorSignature?jobObservationId={jobObservationId}", contentfiles);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+
+        }
+
         public async Task<UploadAssyChartResult> ProccedToUpdateData(FileUpload fileinfo)
         {
             var response = await _http.PostAsJsonAsync($"File/Data", fileinfo);
@@ -254,6 +280,25 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
                 return "Error Loading Image";
             }
         }
+
+        public async Task<string> ShowOperatorSignature(int idfile)
+        {
+            var response = await _http.GetAsync($"File/Signatures/{idfile}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
+
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
+
 
 
         public async Task DownloadAllUsersFormat()

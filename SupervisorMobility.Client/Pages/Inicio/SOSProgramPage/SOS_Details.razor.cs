@@ -24,6 +24,7 @@ using MudBlazor.Utilities;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -160,6 +161,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public int optionStatus { get; set; } = 0;
 
 
+        public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
+        string jobCategoryStructureIds = "";
 
 
         private CDMS_CCP_Archives? AuxCcpFilesInFolder;
@@ -322,6 +325,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             showMonth = month.ToUpper();
 
+            _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
+
+            //optenemos categorias
+            foreach (var category in _checklistCategoriesAndQuestions)
+            {
+                jobCategoryStructureIds += category.JobCategoryStructureId + "|";
+            }
+
+            if (!string.IsNullOrEmpty(jobCategoryStructureIds))
+            {
+                jobCategoryStructureIds = jobCategoryStructureIds.TrimEnd('|');
+            }
         }
 
         private void GenerateCalendarHead()
@@ -972,7 +987,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             jobId2 = id;
             //verificar formato de envio
             string fechaComoString = date.ToString("MM-dd-yyyy");
-            programmedStartDate = fechaComoString;
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var formatedStartDate = date;
+
+                var EnglishStartDate = formatedStartDate.Month.ToString() + "/" + formatedStartDate.Day.ToString() + "/" + formatedStartDate.Year.ToString();
+                var formatedStartDate2 = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                programmedStartDate = formatedStartDate2.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                var hour1 = date.ToShortDateString();
+
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy", null, DateTimeStyles.None, out var newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    Console.WriteLine("Unable to parse {es-ES} '{0}'", hour1);
+
+                programmedStartDate = newDate1.ToString("MM-dd-yyyy");
+            }
+
             visible2 = true;
         }
 
@@ -1624,7 +1662,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async Task CreateSuggestion()
         {
             //notificacion de es necesaria la distribucion 
-
             if (Startday.Date == DateTime.Now.AddDays(-1).Date)
             {
                 bool? resultDay = await DialogService.ShowMessageBox(
@@ -1655,6 +1692,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (selected_distId > 0 && SV_Manager.Count() != 0)
             {
+
                 enableCreateSuggestion = true;
                 base.StateHasChanged();
                 _yearMonth = Startday;
@@ -1670,6 +1708,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 Suggested_SOS_Registers_UserOperationRelationship?.Clear();
                 try
                 {
+                    TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
                     base.StateHasChanged();
                     //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
                     Console.WriteLine($"TotalDist Count {selected_distribution.Operations?.Count}");
@@ -1725,6 +1765,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                 _newSuggestion.Option = 2;
                                 _newSuggestion.Type = 3;
                                 _newSuggestion.Status = 7;
+                                _newSuggestion.SectionIds = jobCategoryStructureIds;
+
                                 _newSuggestion.IsActive = true;
 
                                 DateTime parsedDate = Startday;
@@ -1732,6 +1774,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                                 _newSuggestion.StartDate = parsedDate;
                                 _newSuggestion.PlannedStartDate = parsedDate;
+
 
                                 _All_Suggested_SOSJobobservation.Add(_newSuggestion);
                             }
@@ -1800,6 +1843,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     break;
             }
 
+            TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
             try
             {
                 base.StateHasChanged();
@@ -1854,6 +1899,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                             _newSuggestion.Option = 2;
                             _newSuggestion.Type = 3;
                             _newSuggestion.Status = 7;
+                            _newSuggestion.SectionIds = jobCategoryStructureIds;
                             _newSuggestion.IsActive = true;
 
                             DateTime parsedDate = Startday;
@@ -1861,6 +1907,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                             _newSuggestion.StartDate = parsedDate;
                             _newSuggestion.PlannedStartDate = parsedDate;
+
 
 
                             _All_Suggested_SOSJobobservation.Add(_newSuggestion);

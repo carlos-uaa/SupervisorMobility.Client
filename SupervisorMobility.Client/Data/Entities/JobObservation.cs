@@ -75,5 +75,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? DoubleManagment { get; set; }
         public string? Waiting { get; set; }
         public string? SectionIds { get; set; }
+
+        public FileUpload? SignatureImage { get; set; } = new();
     }
 }

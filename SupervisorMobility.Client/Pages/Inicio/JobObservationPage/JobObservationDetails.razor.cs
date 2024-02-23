@@ -6,6 +6,7 @@ using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
@@ -22,7 +23,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int lupId;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
-        public JobObservation _lupJobObservations { get; set; } = new();
 
         private AssyChart _assychart { get; set; } = new AssyChart();
 
@@ -99,16 +99,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int[] Waiting = new int[5];
         public int jobProductId = 0;
 
+        List<Lup> SSV_LupList = new();
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
         List<Operation> _filteredOperations = new();
         List<string> _specifications { get; set; } = new();
 
         bool showLoading = true;
+        private string currentImage = "";
+        string currentLanguage = "es-ES";
 
         protected async override Task OnInitializedAsync()
         {
-
+            try
+            {
+                currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
 
@@ -126,10 +137,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
             _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
 
-            jobProductId = (int)_jobObservation.ProductId;
+            jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
+
+            SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
+
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            if(jobProductId != 0)
+                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
@@ -213,10 +228,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     questions[i] = null;
                 }
             }
-            string operationTimesJson = _jobObservation.OperationTimesJson;
-
-            OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+            string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty ;
+            if(operationTimesJson.Length > 8)
+                OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
             showLoading = false;
+
+            if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
+            {
+                var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
+                currentImage = imageUrl;
+            }
 
             StateHasChanged();
 
@@ -307,7 +328,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 FilterOperation = true;
             }
 
-        }
+        }//end on inizialized 
 
         void Closed(MudChip chip)
         {

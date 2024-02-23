@@ -54,6 +54,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public User user = new();
         public bool logged = false;
 
+        double[][] data = {
+                            new double[] {0,100},
+                            new double[] {25, 75},
+                            new double[] {50, 50},
+                            new double[] {75, 25},
+                            new double[] {100, 0},
+        };
+
+        string[][] datalabels = {
+                            new string[] {"0", ""},
+                            new string[] { "25", ""},
+                            new string[] { "50", ""},
+                            new string[] { "75", ""},
+                            new string[] { "100", ""},
+        };
+
+        ChartOptions chartOptions = new()
+        {
+            DisableLegend = true
+        };
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -112,6 +132,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                         foreach (var lup in jobObs.Lup)
                         {
                             LupAux = new();
+                            lup.JobObservation = jobObs;
                             LupAux.Lup = lup;
                             LupAux.Distribution = jobObs.Distribution?.Description;
                             LupAux.DistributionId = jobObs.Distribution?.DistributionId;
@@ -147,6 +168,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                         }
                     }
                 }
+
+                _lups = _lups.OrderBy(l => l.Lup.EndDate == null ? DateTime.MinValue : l.Lup.EndDate) 
+                .ThenBy(l => l.Lup.CreatedDate).ToList();
             }
             else if (user.UserType == 3)
             {

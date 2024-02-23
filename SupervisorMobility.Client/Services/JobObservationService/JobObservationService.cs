@@ -132,7 +132,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new ApplicationException(content);
+                return null;
             }
 
             var jobObservation = JsonSerializer.Deserialize<JobObservationNulls>(content, _options);
@@ -159,5 +159,14 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return false;
         }
 
-}
+        public async Task<JobObservation> CreateOperatorSignature(MultipartFormDataContent operatorSignature)
+        {
+            var response = await _http.PostAsync("jobobservations/operatorSignature", operatorSignature);
+
+            var newJobObservation = await response.Content.ReadFromJsonAsync<JobObservationNulls>();
+
+            return _mapper.Map<JobObservation>(newJobObservation);
+        }
+
+    }
 }
