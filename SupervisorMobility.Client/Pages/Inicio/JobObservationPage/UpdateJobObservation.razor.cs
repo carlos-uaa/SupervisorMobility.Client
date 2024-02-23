@@ -148,6 +148,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Operation> _filteredOperations = new();
         string[] ids { get; set; }
         string currentLanguage = "es-ES";
+        private string currentImage = "";
 
         bool NoData { get; set; } = false;
 
@@ -318,11 +319,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
                     Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
-                    if (_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0")
-                        productSpecification = _jobObservation.ModelsSpecification;
+                if (_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0")
+                    productSpecification =  _jobObservation.ModelsSpecification;
 
-                    StateHasChanged();
-                    await GetUserAsync();
+
+                if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
+                {
+                    var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
+                    currentImage = imageUrl;
+                }
+
+                StateHasChanged();
+                await GetUserAsync();
 
                     if (user != null)
                     {
@@ -647,6 +655,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            if (string.IsNullOrEmpty(_jobObservation.OperatorSignature))
+            {
+                currentImage = "";
+            }
+
+            if (_jobObservation.OperatorId != new int() && !string.IsNullOrEmpty(_jobObservation.OperatorSignature))
+            {
+                User operatorUser = await UsersService.GetUser(_jobObservation.OperatorId);
+
+                if (_jobObservation.OperatorSignature != operatorUser.Payroll.ToString())
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+
+                    currentImage = "";
+                    return;
+                }
+                if (currentImage == "")
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                    return;
+                }
+                else
+                {
+                    await GenerateOperatorSignatureImage();
+                }
+            }
+
             startHour = DateTime.Now.TimeOfDay;
 
 
@@ -807,6 +846,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
+                currentImage = "";
                 return;
             }
 
@@ -815,9 +855,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
+                currentImage = "";
                 return;
             }
-
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                return;
+            }
+            else
+            {
+                await GenerateOperatorSignatureImage();
+            }
 
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
 
@@ -984,8 +1035,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
+                currentImage = "";
                 return;
             }
 
@@ -993,8 +1045,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
+                currentImage = "";
                 return;
+            }
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                return;
+            }
+            else
+            {
+                await GenerateOperatorSignatureImage();
             }
 
 
@@ -1150,8 +1214,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
+                currentImage = "";
                 return;
             }
 
@@ -1159,8 +1224,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator's Signature doesn't match", Severity.Error);
+                Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
+                currentImage = "";
                 return;
+            }
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                return;
+            }
+            else
+            {
+                await GenerateOperatorSignatureImage();
             }
 
             endHour = DateTime.Now.TimeOfDay;
@@ -3117,6 +3194,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             photoIndex = index;
             visiblePhoto = true;
         }
+
+        private void HandleSignatureSaved()
+        {
+            currentImage = _signatureImageService.GetImage();
+        }
+
+        private async Task<AsyncVoidMethodBuilder> GenerateOperatorSignatureImage()
+        {
+            if (!string.IsNullOrEmpty(currentImage))
+            {
+                var base64Data = currentImage.Replace("data:image/png;base64,", "");
+
+                if (IsValidBase64String(base64Data))
+                {
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(
+                        content: fileContent,
+                        name: "\"file\"",
+                        fileName: "evidence.png");
+
+                    // Llama a tu servicio de carga de archivos aquí
+
+                    content.Add(content: new StringContent(_jobObservation.JobObservationId.ToString()), name: "JobObservationId");
+                    var result1 = await JobObservationService.CreateOperatorSignature(content);
+
+                    if (result1 != null)
+                    {
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Job observation operator signature Added", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error in Job observation operator signature", Severity.Error);
+                    }
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add("Invalid image data", Severity.Error);
+                }
+            }
+
+
+            return new AsyncVoidMethodBuilder();
+        }
+
     }//end class
 
 }//end namespace

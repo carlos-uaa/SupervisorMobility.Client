@@ -930,9 +930,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+                    Snackbar.Add($"Operator payroll doesn't match", Severity.Error);
 
                     currentImage = "";
+                    return;
+                }
+                if(currentImage == "")
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Operator Signature is missing", Severity.Error);
                     return;
                 }
             }
@@ -1315,6 +1322,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     currentImage = "";
                     return;
                 }
+                if (currentImage == "")
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                    return;
+                }
             }
 
 
@@ -1498,7 +1512,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 currentImage = "";
                 return;
             }
-
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                return;
+            }
 
 
             _jobObservation.OperationId = 0;
@@ -1678,7 +1698,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Write down the anomaly first", Severity.Error);
                 return;
             }
-
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                return;
+            }
 
 
             _jobObservation.OperationId = 0;
@@ -1864,6 +1890,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
+                return;
+            }
+            if (currentImage == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
             }
 
