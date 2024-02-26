@@ -108,6 +108,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         bool showLoading = true;
         private string currentImage = "";
         string currentLanguage = "es-ES";
+        bool NoData { get; set; } = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -127,205 +128,214 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, includeCkAnswers: true);
-            //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
-            _products = await ProductService.GetProducts();
-
-            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-            _distributions = _distributions.OrderBy(d => d.Description).ToList();
-            _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-            _operations = _operations.OrderBy(o => o.Description).ToList();
-            _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
-            _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
-
-            jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
-
-            SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
-
-
-            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            if(jobProductId != 0)
-                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
-
-            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            if (prodName != null)
+            
+            
+            if(_jobObservation != null)
             {
-                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
-                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
+                _products = await ProductService.GetProducts();
+
+                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                _distributions = _distributions.OrderBy(d => d.Description).ToList();
+                _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+                _operations = _operations.OrderBy(o => o.Description).ToList();
+                _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
+                _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
+
+                jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
+
+                SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
+
+
+                var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                if (jobProductId != 0)
+                    _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+
+                var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                if (prodName != null)
                 {
-                    var names = op.NameTime.Replace(',', '.').Split("§");
-                    for (int i = 0; i < 5; i++)
+                    var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                    if (op != null && !string.IsNullOrEmpty(op.NameTime))
                     {
-                        if (!string.IsNullOrEmpty(names[i]))
+                        var names = op.NameTime.Replace(',', '.').Split("§");
+                        for (int i = 0; i < 5; i++)
                         {
-                            _specifications.Add(names[i]);
-                        }
-                    }
-
-                }
-            }
-
-            StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
-            DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
-            Waiting = ConvertStringToArray(_jobObservation?.Waiting);
-
-            foreach (var category in _checklistCategoriesAndQuestions)
-            {
-                foreach (var question in category.ChecklistQuestions)
-                {
-                    if (_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.QuestionID))
-                    {
-                        var item = _jobObservation.ChecklistAnswers.ToList().Find(cka => cka.QuestionID == question.QuestionID);
-                        if (item.Evidences.Count > 0)
-                        {
-                            item.Show = true;
-                            foreach (var evidence in item.Evidences)
+                            if (!string.IsNullOrEmpty(names[i]))
                             {
-                                var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
-                                imageUrls[evidence.FileUploadId] = imageUrl;
-
+                                _specifications.Add(names[i]);
                             }
                         }
-                       
-                    }
-                    else
-                    {
-                        ChecklistAnswer newChAnswer = new();
-                        newChAnswer.JobObservationId = _jobObservation.JobObservationId;
-                        newChAnswer.QuestionID = question.QuestionID;
-                        newChAnswer.Prompt = question.Prompt;
-                        questionAnswers.Add(question.QuestionID, newChAnswer);
+
                     }
                 }
-            }
 
+                StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
+                DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
+                Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
-            if (_jobObservation.KpiId != null)
-            {
-                kpiID = (int)_jobObservation.KpiId;
-            }
-
-            if (_jobObservation.TaktTime == null)
-            {
-                taktTime = 0.0;
-            }
-            else
-            {
-                taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
-            }
-
-            if (_jobObservation.Questions != null)
-            {
-                var quets = _jobObservation.Questions.Split('|');
-                for (int i = 0; i < 5; i++)
+                foreach (var category in _checklistCategoriesAndQuestions)
                 {
-                    questions[i] = quets[i];
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    questions[i] = null;
-                }
-            }
-            string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty ;
-            if(operationTimesJson.Length > 8)
-                OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
-            showLoading = false;
-
-            if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
-            {
-                var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
-                currentImage = imageUrl;
-            }
-
-            StateHasChanged();
-
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
-
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
-
-
-            startHour = _jobObservation.StartDate?.TimeOfDay;
-            endHour = _jobObservation.EndDate?.TimeOfDay;
-
-            changeStartHour = _jobObservation.PlannedStartDate?.TimeOfDay;
-            changeEndHour = _jobObservation.PlannedEndDate?.TimeOfDay;
-
-            if (_jobObservation.PlantId != 0)
-            {
-                if (_jobObservation.AreaId != 0)
-                {
-                    if (_jobObservation.DistributionId != 0)
+                    foreach (var question in category.ChecklistQuestions)
                     {
-                        if (_jobObservation.DistributionId != 0)
+                        if (_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.QuestionID))
                         {
-                            
-                            try
+                            var item = _jobObservation.ChecklistAnswers.ToList().Find(cka => cka.QuestionID == question.QuestionID);
+                            if (item.Evidences.Count > 0)
                             {
-                                _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
-                                if (_assychart == null)
+                                item.Show = true;
+                                foreach (var evidence in item.Evidences)
                                 {
+                                    var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+                                    imageUrls[evidence.FileUploadId] = imageUrl;
 
-                                    messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                                 }
-                                else
-                                {
-                                    if (_assychart.ErgonomicsLevel != null)
-                                    {
-                                        auxErgonomicsLevel = (int)_assychart.ErgonomicsLevel;
-                                    }
-
-                                    searchAssychart = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                             }
 
                         }
                         else
                         {
-                            messageErrorFolders = Localizer["jobObservationDoesNotContainAValidOperation"];
+                            ChecklistAnswer newChAnswer = new();
+                            newChAnswer.JobObservationId = _jobObservation.JobObservationId;
+                            newChAnswer.QuestionID = question.QuestionID;
+                            newChAnswer.Prompt = question.Prompt;
+                            questionAnswers.Add(question.QuestionID, newChAnswer);
                         }
                     }
-                    else
+                }
+
+
+                if (_jobObservation.KpiId != null)
+                {
+                    kpiID = (int)_jobObservation.KpiId;
+                }
+
+                if (_jobObservation.TaktTime == null)
+                {
+                    taktTime = 0.0;
+                }
+                else
+                {
+                    taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
+                }
+
+                if (_jobObservation.Questions != null)
+                {
+                    var quets = _jobObservation.Questions.Split('|');
+                    for (int i = 0; i < 5; i++)
                     {
-                        messageErrorFolders = Localizer["jobObservationDoesNotContainAValidDistribution"];
+                        questions[i] = quets[i];
                     }
                 }
                 else
                 {
-                    messageErrorFolders = Localizer["jobObservationDoesNotContainAValidArea"];
+                    for (int i = 0; i < 5; i++)
+                    {
+                        questions[i] = null;
+                    }
+                }
+                string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty;
+                if (operationTimesJson.Length > 8)
+                    OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
+                showLoading = false;
+
+                if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
+                {
+                    var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
+                    currentImage = imageUrl;
+                }
+
+                StateHasChanged();
+
+                try
+                {
+                    CCPFolders = await CDMSServices.GetFoldersCCP();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error Get CCP Folder From CCP");
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.Message);
+                }
+
+                if (CCPFolders != null)
+                {
+                    folderCCPError = false;
+                    rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+                }
+                else
+                {
+                    folderCCPError = true;
+                }
+
+
+                startHour = _jobObservation.StartDate?.TimeOfDay;
+                endHour = _jobObservation.EndDate?.TimeOfDay;
+
+                changeStartHour = _jobObservation.PlannedStartDate?.TimeOfDay;
+                changeEndHour = _jobObservation.PlannedEndDate?.TimeOfDay;
+
+                if (_jobObservation.PlantId != 0)
+                {
+                    if (_jobObservation.AreaId != 0)
+                    {
+                        if (_jobObservation.DistributionId != 0)
+                        {
+                            if (_jobObservation.DistributionId != 0)
+                            {
+
+                                try
+                                {
+                                    _assychart = await AssychartServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+                                    if (_assychart == null)
+                                    {
+
+                                        messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
+                                    }
+                                    else
+                                    {
+                                        if (_assychart.ErgonomicsLevel != null)
+                                        {
+                                            auxErgonomicsLevel = (int)_assychart.ErgonomicsLevel;
+                                        }
+
+                                        searchAssychart = true;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
+                                }
+
+                            }
+                            else
+                            {
+                                messageErrorFolders = Localizer["jobObservationDoesNotContainAValidOperation"];
+                            }
+                        }
+                        else
+                        {
+                            messageErrorFolders = Localizer["jobObservationDoesNotContainAValidDistribution"];
+                        }
+                    }
+                    else
+                    {
+                        messageErrorFolders = Localizer["jobObservationDoesNotContainAValidArea"];
+                    }
+                }
+                else
+                {
+                    messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
+                }
+
+                if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count > 0)
+                {
+                    listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+                    FilterOperation = true;
                 }
             }
             else
             {
-                messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
-            }
-
-            if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count > 0)
-            {
-                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
-                FilterOperation = true;
+                NoData  = true;
             }
 
         }//end on inizialized 
