@@ -220,11 +220,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _sosReview.Supervisors = new List<User>();
             }
 
-
-            if (selectedSupervisorOfList != null)
+            switch(user.UserType)
             {
-                if(user.UserType == 3)
+                case 2:
+                    _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
+                    break;
+                case 3:
                 _sosReview.Supervisors.Add(user);
+                    break;
             }
 
 
