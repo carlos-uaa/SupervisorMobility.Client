@@ -37,23 +37,7 @@
             </ItemTemplate>
         </MudBreadcrumbs>
     </MudItem>
-    <MudItem Style="text-align: end">
-        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-            <ActivatorContent>
-                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
-            </ActivatorContent>
-            <ChildContent>
-                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Warning">@Localizer["programmed"]</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">@Localizer["planned"]</MudMenuItem>
-                @*<MudMenuItem Icon="@Icons.Material.Filled.Block" IconColor="Color.Info">@Localizer["plannedWithSSVCoaching"]</MudMenuItem>*@
-                <MudMenuItem Icon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">@Localizer["inProgress"]</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">@Localizer["late"]</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.IncompleteCircle" IconColor="Color.Info">@Localizer["underReview"]</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error">@Localizer["rejected"]</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">@Localizer["finished"]</MudMenuItem>
-            </ChildContent>
-        </MudMenu>
-    </MudItem>
+
 </div>
 
 @*Form*@
@@ -457,16 +441,44 @@
     else
     {
         <MudItem lg="12" md="12" sm="12" xs="12" Class="text-align: center;">
-            <MudItem Style="display: flex; justify-content: space-evenly;">
-                <MudText Typo="Typo.h6">
+            <MudItem Style="display: flex; justify-content: space-between; align-items: center;">
+                <MudText Typo="Typo.h6" Style="display: flex; justify-content: space-evenly;  align-items: center;">
                     <MudTooltip Text=@Localizer["lastMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
                     </MudTooltip>
-                    @showMonth @year
+                    <MudDatePicker Label=@Localizer["monthYear"] OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+@*
+                    @showMonth @year*@
                     <MudTooltip Text=@Localizer["nextMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowForwardIos" Color="Color.Info" @onclick="@(()=>NextMonth())" Class="ml-4"></MudIconButton>
                     </MudTooltip>
                 </MudText>
+                <MudItem Style="display: flex; justify-content: space-evenly;  align-items: center;">
+                    <MudSelect T="int" Label=@Localizer["status"] Variant="Variant.Text" Class="mr-4" Style="width: 10vw" AnchorOrigin="Origin.BottomCenter" @bind-Value="@optionStatus">
+                        <MudSelectItem Value="0">@Localizer["allStatus"]</MudSelectItem>
+                        <MudSelectItem Value="1">@Localizer["planned"]</MudSelectItem>
+                        <MudSelectItem Value="2">@Localizer["inProgress"]</MudSelectItem>
+                        <MudSelectItem Value="3">@Localizer["late"]</MudSelectItem>
+                        <MudSelectItem Value="4">@Localizer["underReview"]</MudSelectItem>
+                        <MudSelectItem Value="5">@Localizer["rejected"]</MudSelectItem>
+                        <MudSelectItem Value="6">@Localizer["finished"]</MudSelectItem>
+                    </MudSelect>
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Warning">@Localizer["programmed"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.PlayCircle" IconColor="Color.Warning">@Localizer["planned"]</MudMenuItem>
+                            @*<MudMenuItem Icon="@Icons.Material.Filled.Block" IconColor="Color.Info">@Localizer["plannedWithSSVCoaching"]</MudMenuItem>*@
+                            <MudMenuItem Icon="@Icons.Material.Filled.StopCircle" IconColor="Color.Info">@Localizer["inProgress"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.RemoveCircle" IconColor="Color.Error">@Localizer["late"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.IncompleteCircle" IconColor="Color.Info">@Localizer["underReview"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error">@Localizer["rejected"]</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">@Localizer["finished"]</MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </MudItem>
             </MudItem>
             @*FixedHeader=true Style="height:70vh" *@
             <MudSimpleTable Striped=true Bordered=true Elevation="6" Class="calendar-table scroll1" Dense FixedHeader=true Style="height: 85vh">
@@ -608,11 +620,11 @@
                                                 var time2 = jobobs.EndDate?.ToString("HH:mm");
 
                                                 var operationDescription = jobobs.Operation?.Description;
-                                                var opDescription = operationDescription.Length <= 20 ? operationDescription : operationDescription.Substring(0, 17) + "...";
+                                                var opDescription = operationDescription.Length < 18 ? operationDescription : operationDescription.Substring(0, 15) + "...";
 
                                                 
                                                 var distributionDescription = jobobs.Distribution?.Description;
-                                                var distDescription = distributionDescription.Length <= 20 ? distributionDescription : distributionDescription.Substring(0, 17) + "...";
+                                                var distDescription = distributionDescription.Length < 18 ? distributionDescription : distributionDescription.Substring(0, 15) + "...";
 
                                                 if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
                                                 {
@@ -630,7 +642,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; color:black;">  @distDescription</span>
                                                                         </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -640,7 +652,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Info" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.StopCircle"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">@distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh; color:black;">@distDescription</span>
                                                                         </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -651,7 +663,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Error" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh; color:black;">  @distDescription</span>
                                                                     </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -662,7 +674,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Info" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.IncompleteCircle"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh; color:black;">  @distDescription</span>
                                                                         </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -673,7 +685,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Error" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh; color:black;">  @distDescription</span>
                                                                         </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -685,7 +697,7 @@
                                                                     <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                         <MudChip Variant="Variant.Text" Color="Color.Success" Label>
                                                                             <MudIconButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success" Icon="@Icons.Material.Filled.Circle"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh; color:black;">  @distDescription</span>
                                                                         </MudChip>
                                                                     </MudTooltip>
                                                                 }
@@ -701,7 +713,7 @@
 
                                                                             <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
 
@@ -714,7 +726,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
                                                                             <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -726,7 +738,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
                                                                             <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -737,7 +749,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info">
                                                                             <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -748,7 +760,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Cancel" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -759,7 +771,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -780,7 +792,7 @@
                                                                         <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 //In Progress
@@ -790,7 +802,7 @@
                                                                         <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 //late job observations
@@ -800,7 +812,7 @@
                                                                         <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 //Under Review job observations
@@ -810,7 +822,7 @@
                                                                         <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 //Rejected job observations
@@ -820,7 +832,7 @@
                                                                         <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Cancel" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 //Finalized
@@ -830,7 +842,7 @@
                                                                         <MudButton Color="Color.Success" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
 
@@ -842,7 +854,7 @@
                                                                         <MudButton Color="Color.Warning" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -853,7 +865,7 @@
                                                                         <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -864,7 +876,7 @@
                                                                         <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -875,7 +887,7 @@
                                                                         <MudButton Color="Color.Info" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -886,7 +898,7 @@
                                                                         <MudButton Color="Color.Error" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Cancel" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -897,7 +909,7 @@
                                                                         <MudButton Color="Color.Success" @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Variant="Variant.Outlined">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                                 break;
@@ -927,7 +939,7 @@
                                                                             <MudButton @onclick="(() => OpenDialog3(jobobs.JobObservationId))" Color="Color.Success" FullWidth>
                                                                              <MudIcon Icon="@Icons.Material.Filled.Info" />
                                                                          </MudButton>
-                                                                             <span style="font-weight: bold; font-size: 13px; cursor:pointer">@opDescription</span>
+                                                                        <span style="font-weight: bold; font-size: 13px; cursor:pointer; width: 14vh;">@opDescription</span>
                                                                      </MudTooltip>
                                                                     }
                                                                     else if (jobobs.StartDate == DateTime.Now)
@@ -937,7 +949,7 @@
                                                                             <MudButton @onclick="(() => OpenDialog3(jobobs.JobObservationId))" Color="Color.Warning" FullWidth>
                                                                              <MudIcon Icon="@Icons.Material.Filled.Info" />
                                                                          </MudButton>
-                                                                             <span style="font-weight: bold; font-size: 13px; cursor:pointer">@opDescription</span>
+                                                                             <span style="font-weight: bold; font-size: 13px; cursor:pointer; width: 14vh;">@opDescription</span>
                                                                      </MudTooltip>
                                                                     }
                                                                     else
@@ -945,7 +957,7 @@
                                                                         <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2(jobobs.JobObservationId))">
                                                                             <MudChip Variant="Variant.Text" Color="Color.Error" Label>
                                                                                 <MudIconButton @onclick="(() => OpenDialog3(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info"></MudIconButton>
-                                                                            <span style="font-size: 11px; cursor:pointer; color:black;">@opDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; color:black; width: 14vh;">@opDescription</span>
                                                                             </MudChip>
                                                                         </MudTooltip>
 
@@ -958,7 +970,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                             }
@@ -978,7 +990,7 @@
 
                                                                                 <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                             </MudButton>
-                                                                            <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                         </MudTooltip>
                                                                     }
                                                                     else if (jobobs.StartDate == DateTime.Now)
@@ -989,7 +1001,7 @@
     
                                                                                 <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                             </MudButton>
-                                                                            <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                         </MudTooltip>
                                                                     }
                                                                     else
@@ -1000,7 +1012,7 @@
 
                                                                                 <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                             </MudButton>
-                                                                            <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                            <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                         </MudTooltip>
                                                                     }
 
@@ -1014,7 +1026,7 @@
                                                                         <MudButton @onclick="(() => OpenDialog2(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Circle" />
                                                                         </MudButton>
-                                                                        <span style="font-size: 11px; cursor:pointer">  @distDescription</span>
+                                                                        <span style="font-size: 10px; cursor:pointer; width: 14vh;">  @distDescription</span>
                                                                     </MudTooltip>
                                                                 }
                                                             }
