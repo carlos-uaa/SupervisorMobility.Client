@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["jobObservationSchedule"], href: "", disabled: true)
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             if (!await HasPropertyAsync())
             {
                 Snackbar.Clear();
