@@ -1,13 +1,15 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Pages.JobObservationPage.Categories.Category1Page;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class JobObservationIndex
     {
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         public DateTime? date = DateTime.Today;
 
         public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
@@ -16,6 +18,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         protected async override Task OnInitializedAsync()
         {
             _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         public int category = 1;

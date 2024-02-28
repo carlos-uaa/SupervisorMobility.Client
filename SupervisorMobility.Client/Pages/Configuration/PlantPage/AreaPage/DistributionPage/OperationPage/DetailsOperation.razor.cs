@@ -1,8 +1,8 @@
-﻿using MudBlazor;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
 {
-    public partial class UpdateOperation
+    public partial class DetailsOperation
     {
         // Parameters
         [Parameter]
@@ -27,20 +27,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public Operation _operation { get; set; } = new();
 
         // Initialization
-        protected async override Task OnInitializedAsync()
-        {
-            _links = new List<BreadcrumbItem>
-            {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
-            };
-            BreadcrumbService.UpdateBreadcrumbs(_links);
-        }
+        // protected async override Task OnInitializedAsync()
+        // {
+        //     _links = new List<BreadcrumbItem>
+        //         {
+        //             new BreadcrumbItem(text: Localizer["home"], href: "/"),
+        //             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+        //             new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+        //             new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+        //             new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
+        //             new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
+        //             new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
+        //         };
+        // }
 
         protected override async Task OnParametersSetAsync()
         {
@@ -48,6 +47,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _area = await AreaService.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: _plant.Description, href: $"plants/{PlantId}"),
+                new BreadcrumbItem(text: _area.Description, href: $"plants/{PlantId}/areas/{AreaId}"),
+                new BreadcrumbItem(text: _distribution.Description, href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"),
+                new BreadcrumbItem(text: Localizer["operationDetails"] +  " / "  + _operation.Description, href: "", disabled: true)
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Links
@@ -78,10 +88,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             }
         }
 
+        void UpdateOperationRedirect(int operationId)
+        {
+            NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/updateoperation/{operationId}");
+        }
+
         // Cancel submit form
         void CancelCreateOrUpdate()
         {
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
+
     }
 }

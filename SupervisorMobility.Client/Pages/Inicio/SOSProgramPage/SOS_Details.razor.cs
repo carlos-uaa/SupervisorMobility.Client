@@ -25,6 +25,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -35,7 +36,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public int sosId { get; set; }
 
         [Inject] private IDialogService DialogService { get; set; }
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         private List<BreadcrumbItem> _links;
         private List<Distribution> _distributions = new();
         private List<Distribution> _distributionsSuggest = new();
@@ -262,7 +264,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
                 new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
             if (!logged)
             {

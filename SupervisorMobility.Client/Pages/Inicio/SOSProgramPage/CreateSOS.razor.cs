@@ -26,7 +26,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public User user = new();
         public bool logged = false;
 
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -37,7 +38,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             new BreadcrumbItem(text: Localizer["createSOS"], href: "", disabled: true)
         };
 
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
             if (!logged)
             {

@@ -10,7 +10,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         [Parameter]
         public int PlantId { get; set; }
 
-
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
@@ -19,16 +18,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         private List<Area> _areas = new();
 
         // Initialization
-        protected async override Task OnInitializedAsync()
-        {
-            _links = new List<BreadcrumbItem>
-            {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: Localizer["plantDetails"], href: "", disabled: true)
-            };
-        }
+        //protected async override Task OnInitializedAsync()
+        //{
+        //    _links = new List<BreadcrumbItem>
+        //    {
+        //        new BreadcrumbItem(text: Localizer["home"], href: "/"),
+        //        new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+        //        new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+        //        new BreadcrumbItem(text: Localizer["plantDetails"], href: "", disabled: true)
+        //    }; 
+        //}
 
 
 
@@ -36,6 +35,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _areas = await AreaService.GetAreas(PlantId);
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                new BreadcrumbItem(text: _plant.Description, href: $"plants/{PlantId}", disabled: true)
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Area details

@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 {
@@ -10,7 +11,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
-
         // Objects
         Plant _plant = new();
         Area _area = new();
@@ -26,6 +26,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
                 new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
                 new BreadcrumbItem(text: Localizer["newArea"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         protected override async Task OnParametersSetAsync()

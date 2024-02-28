@@ -40,6 +40,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"),
                 new BreadcrumbItem(text: Localizer["createDistributionToProduct"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             showui = true;
 
         }

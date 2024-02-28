@@ -34,6 +34,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
                 new BreadcrumbItem(text: Localizer["updateDistribution"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         protected override async Task OnParametersSetAsync()

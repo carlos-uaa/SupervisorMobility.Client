@@ -18,12 +18,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
         protected override async Task OnParametersSetAsync()
         {
             _links = new List<BreadcrumbItem>
-        {
-           new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-            new BreadcrumbItem(text: Localizer["ProductsTitle"],  href: "/products", disabled: false),
-            new BreadcrumbItem(text: Localizer["ProductsDetailsTitle"], href: "", disabled: true),
-        };
+            {
+               new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["ProductsTitle"],  href: "/products", disabled: false),
+                new BreadcrumbItem(text: Localizer["ProductsDetailsTitle"], href: "", disabled: true),
+            };
             _product = await ProductService.GetProductAndCollection(ProductId);
         }
 

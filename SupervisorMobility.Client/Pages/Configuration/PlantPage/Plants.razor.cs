@@ -10,9 +10,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
 
         //Breadcrumb links
         private List<BreadcrumbItem> _links;
-
-
-
         //variables to table
         private bool dense = false;
         private bool hover = true;
@@ -33,7 +30,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "", disabled: true)
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             _plants = await PlantService.GetPlants();
         }
 

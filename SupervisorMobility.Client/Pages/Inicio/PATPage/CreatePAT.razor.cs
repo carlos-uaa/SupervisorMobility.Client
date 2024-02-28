@@ -30,7 +30,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         public User user = new();
         public bool logged = false;
 
-
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -40,7 +39,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             new BreadcrumbItem("PAT", href: "/PAT"),
             new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
         };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
             logged = await HasPropertyAsync();
             if (!logged)

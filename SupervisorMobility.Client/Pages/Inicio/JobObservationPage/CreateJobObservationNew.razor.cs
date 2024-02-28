@@ -16,7 +16,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class CreateJobObservationNew
     {
-
+        
         [Parameter]
         public string date { get; set; }
         public string hour1 { get; set; }
@@ -165,7 +165,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
                 new BreadcrumbItem(text: Localizer["create"] + " " +  Localizer["jobObservation"], href: "", disabled: true)
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             _jobObservation.Supervisor = new();
 
 

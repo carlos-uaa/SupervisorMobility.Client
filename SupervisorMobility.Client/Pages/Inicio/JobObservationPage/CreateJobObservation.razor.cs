@@ -13,6 +13,7 @@ using System.Timers;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using SupervisorMobility.Client.Services.AssyChartService;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
@@ -126,8 +127,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
-
-
+      
         //Checklist Categories and questions
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
@@ -156,7 +156,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation"),
                 new BreadcrumbItem(text: Localizer["create"] + " " +  Localizer["jobObservation"], href: "", disabled: true)
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             _jobObservation.Supervisor = new();
 
 
