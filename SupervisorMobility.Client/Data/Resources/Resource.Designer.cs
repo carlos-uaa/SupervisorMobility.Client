@@ -3112,7 +3112,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Show all Symbols.
+        ///   Busca una cadena traducida similar a Symbols.
         /// </summary>
         public static string showAllSymbols {
             get {
