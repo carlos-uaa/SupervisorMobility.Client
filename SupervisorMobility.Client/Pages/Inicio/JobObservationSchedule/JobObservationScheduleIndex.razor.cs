@@ -885,6 +885,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             visible5 = true;
         }
         void Close5() => visible5 = false;
+
+
+
+        //Schedule filters modal
+        private bool visibleScheduleFiltersModal = false;
+
+        private void OpenDialogScheduleFilter()
+        {
+            visibleScheduleFiltersModal = true;
+        }
+        void CloseScheduleFilter() => visibleScheduleFiltersModal = false;
+
+        private DialogOptions scheduleFiltersDialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
     }
 
 
