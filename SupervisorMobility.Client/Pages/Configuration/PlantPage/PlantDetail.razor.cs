@@ -40,7 +40,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: _plant.Description, href: $"plants/{PlantId}", disabled: true)
+                new BreadcrumbItem(text: _plant.Code, href: $"plants/{PlantId}", disabled: true)
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
         }

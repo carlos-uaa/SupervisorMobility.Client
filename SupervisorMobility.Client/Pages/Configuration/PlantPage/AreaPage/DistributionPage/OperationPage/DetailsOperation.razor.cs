@@ -25,6 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         Area _area = new();
         Distribution _distribution = new();
         public Operation _operation { get; set; } = new();
+        private bool showui = false;
 
         // Initialization
         // protected async override Task OnInitializedAsync()
@@ -52,12 +53,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: _plant.Description, href: $"plants/{PlantId}"),
-                new BreadcrumbItem(text: _area.Description, href: $"plants/{PlantId}/areas/{AreaId}"),
+                new BreadcrumbItem(text: _plant.Code, href: $"plants/{PlantId}"),
+                new BreadcrumbItem(text: _area.Code, href: $"plants/{PlantId}/areas/{AreaId}"),
                 new BreadcrumbItem(text: _distribution.Description, href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"),
                 new BreadcrumbItem(text: Localizer["operationDetails"] +  " / "  + _operation.Description, href: "", disabled: true)
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
+            showui = true;
+
         }
 
         // Links

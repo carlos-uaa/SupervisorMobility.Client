@@ -45,8 +45,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
                   new BreadcrumbItem(text: Localizer["home"], href: "/"),
                   new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                   new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                  new BreadcrumbItem(text: _plant.Description, href: $"plants/{PlantId}"),
-                  new BreadcrumbItem(text: _area.Description, href: $"plants/{PlantId}/areas/{AreaId}", disabled: true)
+                  new BreadcrumbItem(text: _plant.Code, href: $"plants/{PlantId}"),
+                  new BreadcrumbItem(text: _area.Code, href: $"plants/{PlantId}/areas/{AreaId}", disabled: true)
               };
               BreadcrumbService.UpdateBreadcrumbs(_links);
         }

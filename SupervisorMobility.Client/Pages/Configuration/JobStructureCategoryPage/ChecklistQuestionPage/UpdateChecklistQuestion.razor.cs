@@ -14,14 +14,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public List<Pillar> _pillars { get; set; } = new();
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job Structure Categorys", href: "/checklistcategories"),
-            new BreadcrumbItem("CategoryDetail", href: ""),
-            new BreadcrumbItem("UpdateQuestion", href: "", disabled: true),
-        };
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
         JobCategoryStructure _checklistCategory = new();
@@ -41,13 +34,27 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _question = dbQuestion;
             _pillars = await PillarsService.GetPillars();
+
+            _links = new List<BreadcrumbItem>
+                     {
+                        new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                        new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                        new BreadcrumbItem(text: Localizer["jobstructure"], href: $"/checklistcategories"),
+                        new BreadcrumbItem(text: _checklistCategory.Description, href: $"/checklistcategories/category/{_checklistCategory.JobCategoryStructureId}"),
+                        new BreadcrumbItem("UpdateQuestion", href: "", disabled: true),
+                     };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Update question
-        void UpdateQuestionAsync()
+        async void UpdateQuestionAsync()
         {
-            JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
+            var result = await JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
+
+            if(result != null)
+            {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
+            }
         }
 
         // Cancel submit form

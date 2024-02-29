@@ -1861,6 +1861,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Job Structure Categories.
+        /// </summary>
+        public static string jobstructure {
+            get {
+                return ResourceManager.GetString("jobstructure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Jobs x day:.
         /// </summary>
         public static string jobsXDay {
@@ -3697,7 +3706,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a UpdatePlant.
+        ///   Busca una cadena traducida similar a Update Plant.
         /// </summary>
         public static string updatePlant {
             get {

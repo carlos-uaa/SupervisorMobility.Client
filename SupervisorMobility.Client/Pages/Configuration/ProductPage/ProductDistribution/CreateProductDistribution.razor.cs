@@ -18,22 +18,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage.ProductDistr
         public List<Area> _areas { get; set; } = new List<Area>();
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Products", href: "/products"),
-        };
-
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         protected override async Task OnParametersSetAsync()
         {
             _product = await ProductServices.GetProductAndCollection(ProductId);
             _plants = await PlantServices.GetPlants();
-
+            _links.Add(new BreadcrumbItem(text: Localizer["home"], href: "/"));
+            _links.Add(new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"));
+            _links.Add(new BreadcrumbItem(text: Localizer["products"], href: "/configuration"));
             _links.Add(new BreadcrumbItem($"{_product.Description}", href: $"/products/{ProductId}"));
             _links.Add(new BreadcrumbItem("Create New Distribution", href: "", disabled: true));
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
 

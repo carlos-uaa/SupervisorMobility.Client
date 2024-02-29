@@ -11,7 +11,7 @@
         public int CategorySequence { get; set; }
         public string Container { get; set; } = "QuestionContainer";
         public bool? IsActive { get; set; } = false;
-        public int ChecklistCategoryId { get; set; }
+        public int JobCategoryStructureId { get; set; }
         public bool show { get; set; } = false;
         public ICollection<FileUpload>? Evidences { get; set; } = new List<FileUpload>();
 

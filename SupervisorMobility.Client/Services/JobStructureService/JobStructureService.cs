@@ -145,9 +145,16 @@ namespace SupervisorMobility.Client.Services.JobStructureService
         }
 
         // Update checklist question 
-        public async Task UpdateQuestion(int categoryId, ChecklistQuestion question)
+        public async Task<ChecklistQuestion> UpdateQuestion(int categoryId, ChecklistQuestion question)
         {
             var response = await _http.PutAsJsonAsync($"checklistcategories/{categoryId}/checklistquestions/{question.QuestionID}", question);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+        
+            return new ChecklistQuestion();
         }
 
         // Get all checklist questions by category Id

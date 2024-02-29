@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
@@ -9,14 +10,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public int categoryId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job Structure Category", href: "/checklistcategories"),
-            new BreadcrumbItem("CategoryDetail", href: ""),
-            new BreadcrumbItem("New question", href: "", disabled: true),
-        };
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
         JobCategoryStructure _checklistCategory = new();
@@ -30,6 +24,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _questionTypes = await QuestionTypeService.GetQuestionTypes();
             _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _pillars = await PillarsService.GetPillars();
+
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["jobstructure"], href: $"/checklistcategories"),
+                new BreadcrumbItem(text: _checklistCategory.Description, href: $"/checklistcategories/category/{_checklistCategory.JobCategoryStructureId}"),
+                new BreadcrumbItem("New question", href: "", disabled: true),
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Create question

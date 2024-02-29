@@ -16,8 +16,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.ProductPage
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["ProductsTitle"],  href: "/products", disabled: false),
-                new BreadcrumbItem(text: Localizer["ProductsNew"],  href: "", disabled: true)
+                new BreadcrumbItem(text: Localizer1["ProductsTitle"],  href: "/products", disabled: false),
+                new BreadcrumbItem(text: Localizer1["ProductsNew"],  href: "", disabled: true)
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
         }

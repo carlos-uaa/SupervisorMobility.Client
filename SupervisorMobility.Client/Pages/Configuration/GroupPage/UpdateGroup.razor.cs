@@ -20,12 +20,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
             Group dbGroup = await GroupService.GetGroupById(GroupId);
             _group = dbGroup;
             _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-            new BreadcrumbItem(text: Localizer["GroupTitle"], href: "/groups"),
-            new BreadcrumbItem(text: Localizer["GroupUpdate"], href: "", disabled: true)
-        };
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["GroupTitle"], href: "/groups"),
+                new BreadcrumbItem(text: Localizer0["update"] + " " +  _group.Description, href: "", disabled: true)
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
         }
 

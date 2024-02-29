@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
@@ -10,21 +11,26 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public int CategoryId { get; set; }
 
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Checklist categories", href: "/checklistcategories"),
-            new BreadcrumbItem("CategoryDetail", href: "", disabled: true),
-        };
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
         JobCategoryStructure _checklistCategory = new();
         public List<ChecklistQuestion> _checklistQuestions { get; set; } = new();
+        string currentLanguage = "es-ES";
 
         // Initialization
         protected override async Task OnParametersSetAsync()
         {
+            
+            try
+            {
+                currentLanguage = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
+                Console.WriteLine($" Current:'{currentLanguage}'");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Load Language: {ex.Message}");
+            }
             _checklistCategory = await JobStructureCategoriesService.GetCategoryIncludingQuestions(CategoryId);
 
             if(_checklistCategory.Type != StructureType.Checklist)
@@ -34,6 +40,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             }
 
             _checklistQuestions = await JobStructureCategoriesService.GetChecklistQuestionsByCategoryId(CategoryId);
+
+            _links = new List<BreadcrumbItem>
+                     {
+                         new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                         new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                         new BreadcrumbItem(text: Localizer["jobstructure"], href: $"/checklistcategories"),
+                         new BreadcrumbItem(text: _checklistCategory.Description, href: $"/checklistcategories/category/{_checklistCategory.JobCategoryStructureId}"),
+                     };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Create question
@@ -77,9 +92,37 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 return true;
             if (element.CategorySequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if ($"{element.ChecklistCategoryId} {element.Prompt} {element.NotGood} {element.CategorySequence}".Contains(searchString))
+            if ($"{element.JobCategoryStructureId} {element.Prompt} {element.NotGood} {element.CategorySequence}".Contains(searchString))
                 return true;
             return false;
+        }
+
+        private int selectedRowNumber = -1;
+        private MudTable<ChecklistQuestion> SelectTableEvent;
+
+        private void RowClickEvent(TableRowClickEventArgs<ChecklistQuestion> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(ChecklistQuestion element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+               
+                NavigationManager.NavigateTo($"checklistcategories/category/{CategoryId}/updatequestion/{element.QuestionID}");
+
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

@@ -3,12 +3,13 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @_checklistCategory.Description</PageTitle>
 
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
+@* <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
         @if (item.Text == "CategoryDetail")
         {
@@ -19,10 +20,10 @@
             <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
         }
     </ItemTemplate>
-</MudBreadcrumbs>
+</MudBreadcrumbs> *@
 
 @*Dashboard grid*@
-<MudGrid>
+    <MudGrid class="mt-10">
     @*Plant info*@
     <MudItem xs="12" sm="6" md="3">
         <MudCard>
@@ -51,7 +52,9 @@
             <MudTabPanel Icon="@Icons.Material.Filled.Checklist" Text="Questions">
                 @if (_checklistQuestions.Count() > 0)
                 {
-                    <MudTable Items="_checklistQuestions" Hover="true" T="ChecklistQuestion" Class="styled-table table-striped" FixedHeader=true Filter="new Func<ChecklistQuestion,bool>(FilterFunc)">
+                    <MudTable Items="_checklistQuestions" Hover="true" T="ChecklistQuestion" Class="styled-table table-striped"
+                              Height="80vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+                    FixedHeader=true Filter="new Func<ChecklistQuestion,bool>(FilterFunc)">
                         <ToolBarContent>
                             <MudSpacer />
                             <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable></MudTextField>
@@ -115,10 +118,10 @@
                                 }
                             </MudTd>
                             <MudTd DataLabel="Prompt">
-                                <MudText Align="Align.Center">@context.Prompt</MudText>
+                                <MudText Align="Align.Center">@(currentLanguage == "es-ES" ? context.Prompt : context.PromptEN)</MudText>
                             </MudTd>
                             <MudTd DataLabel="Not Good">
-                                <MudText Align="Align.Center">@context.NotGood</MudText>
+                                <MudText Align="Align.Center">@(currentLanguage == "es-ES" ? context.NotGood : context.NotGoodEN)</MudText>
                             </MudTd>
                             <MudTd DataLabel="Sequence">
                                 <MudText Align="Align.Center">@context.CategorySequence</MudText>
