@@ -2068,6 +2068,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Month .
+        /// </summary>
+        public static string month {
+            get {
+                return ResourceManager.GetString("month", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Monthly.
         /// </summary>
         public static string monthly {
