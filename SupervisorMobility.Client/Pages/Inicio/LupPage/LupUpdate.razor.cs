@@ -108,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
             _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
 
@@ -148,7 +148,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
             if (_lup.Justification == null || _lup.Justification.Length == 0)
             {
@@ -202,7 +202,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
 
             _lup.EndDate = DateTime.Now;

@@ -3337,7 +3337,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Was the standard modified (yes/no)?.
+        ///   Busca una cadena traducida similar a Standard modified?.
         /// </summary>
         public static string StdChange {
             get {
@@ -3346,7 +3346,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Is the standard updated (yes/no)?.
+        ///   Busca una cadena traducida similar a Standard updated?.
         /// </summary>
         public static string StdUpdate {
             get {
