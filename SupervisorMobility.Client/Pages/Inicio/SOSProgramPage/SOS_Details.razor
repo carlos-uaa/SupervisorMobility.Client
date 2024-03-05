@@ -167,7 +167,7 @@
                                 }
                             }
                         </MudTooltip>
-                        <MudDatePicker Style="width: 150px;" Label=@Localizer["month"] OpenTo="OpenTo.Month" MinDate="@date" MaxDate="@LastdayYear" FixDay="1" DateFormat="MMMM" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+                        <MudDatePicker Style="width: 150px; margin-top: -8px" OpenTo="OpenTo.Month" MinDate="@date" MaxDate="@LastdayYear" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
                         <MudTooltip Text=@Localizer["nextMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                             @if (_yearMonth.Value.Month <= 11)
                             {
@@ -821,7 +821,7 @@
                                              <MudText Class="ml-2">@Localizer["distribution"]</MudText>
                                             </MudItem>
                                         </th>
-                                        <th rowspan="2">
+                                        <th rowspan="2" class="fixed-column dynamic-left">
                                             No. HOE
                                         </th>
                                         <th rowspan="2">
@@ -829,44 +829,39 @@
                                     </th>
                                     @if (user.UserType == 1)
                                     {
-                                        <th rowspan="2" Style="min-width: 350px">
+                                        <th rowspan="2" Style="min-width: 350px" class="fixed-column dynamic-left">
                                             @Localizer["whoReviews"]
                                         </th>
                                     }
                                     <th rowspan="2">
                                         @Localizer["directories"]
                                     </th>
-                                    <th rowspan="2" class="vertical-text">
-
-                                        <div class="vertical-content">
+                                    <th rowspan="2" >
+                                        <span style="font-size: 10px">
                                             @Localizer["scheduling"]
-                                        </div>
+                                        </span>
                                     </th>
-
-                                    <th colspan="@totalDiasLaburables">
-                                        @showMonth @year
-                                    </th>
-                                    <th colspan="3" rowspan="2">
-                                        @Localizer["notes"]
-                                    </th>
-
-                                </tr>
-
-                                <tr>
                                     @for (var i = 1; i <= daysInMonth; i++)
                                     {
                                         DateTime fechaActual = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, i);
-                                        string nombreDia = fechaActual.ToString("dddd");
+                                        string nombreDia = fechaActual.ToString("dddd").ToUpper(); ;
                                         // Verificar si el día actual no es sábado ni domingo
                                         if (fechaActual.DayOfWeek != DayOfWeek.Saturday && fechaActual.DayOfWeek != DayOfWeek.Sunday)
                                         {
-                                            <th style="text-align: center;">
+                                            <th style="text-align: center;" rowspan="2">
                                                 <div style="position: sticky; top: 0; z-index: 1;">
-                                                    @nombreDia @i
+                                                    @nombreDia[0] @i
                                                 </div>
                                             </th>
                                         }
                                     }
+@*                                    <th colspan="@totalDiasLaburables">
+                                        @showMonth @year
+                                    </th>*@
+                                    <th colspan="3" rowspan="2">
+                                        @Localizer["notes"]
+                                    </th>
+
                                 </tr>
 
                             </thead>
@@ -874,14 +869,82 @@
                                 @foreach (Distribution Distribution_Item in _distributions)
                                 {
                                     var rowTotal = Distribution_Item.Operations.Count() != 0 ? Distribution_Item.Operations.Count() * 2 + 1 : 2;
+                                    var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out SosJobCount opInDist);
+                                     @if(Distribution_Item.ShowDetails){
+                                                <MudTr Class="fixed-row">
+                                                    <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        @if (opInDist != null)
+                                                        {
+                                                            <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                    @Distribution_Item.Description
+                                                                </MudButton>
+                                                                @if (opInDist != null)
+                                                                {
+                                                                    @if (@opInDist.sosfinished == @opInDist.TotalJobs)
+                                                                    {
+                                                                        <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                                    }
+                                                                }
+                                                                <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() => OpenGraphicDonnut(@opInDist))">
+                                                                </MudButton>
+                                                            </MudButton>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                    @Distribution_Item.Description
+                                                                </MudButton>
+                                                            </MudButton>
+                                                        }
+                                                    </MudTd>
+                                                </MudTr>
+                                            }else{
+                                                <MudTr>
+                                                <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() => ShowBtnPress(Distribution_Item.DistributionId))"> 
+                                                 @if (opInDist != null)
+                                                {
+                                                    <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small"  OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                            @Distribution_Item.Description
+                                                        </MudButton>
+                                                        @if (opInDist != null)
+                                                        {
+                                                            @if (@opInDist.sosfinished == @opInDist.TotalJobs)
+                                                            {
+                                                                <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                            }
+                                                            else
+                                                            {
+                                                                <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                            }
+                                                        }
+                                                            <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() => OpenGraphicDonnut(@opInDist))">
+                                                            </MudButton>
+                                                    </MudButton>
+                                                }else{
+                                                     <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small"  OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                            @Distribution_Item.Description
+                                                    </MudButton>
+                                                    </MudButton>
+                                                }
+                                                </MudTd>
+                                            </MudTr>
+                                            }
 
-                                    <MudTr>
+@*                                    <MudTr>
                                         <MudTd colspan="@totalColumnas" DataLabel="Distribution">
                                             <MudButton Style=" display: -webkit-box;" FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
                                                 @((Distribution_Item.ShowDetails == true) ? "Hide" : "Show") Details of: @Distribution_Item.Description
                                             </MudButton>
                                         </MudTd>
-                                    </MudTr>
+                                    </MudTr>*@
                                     @if (Distribution_Item.ShowDetails)
                                     {
                                         <tr>
@@ -899,7 +962,7 @@
                                                             <td rowspan="2">@op.Description</td>
 
 
-                                                            <td rowspan="2" Style="min-width: 350px">
+                                                            <td rowspan="2" Style="min-width: 350px"  class="fixed-column dynamic-left">
                                                                 @if (context.Exist)
                                                             {
                                                                 if (context.StateUpdate)
@@ -986,7 +1049,7 @@
                                                                                 var RoutesCode = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(op.Code.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
                                                                                 <MudMenu Dense=true AnchorOrigin="Origin.BottomCenter" Style="display: flex" TransformOrigin="Origin.TopCenter">
                                                                                     <ActivatorContent>
-                                                                                        <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["directories"]</MudButton>
+                                                                                        <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Folder" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                                                                         </ActivatorContent>
                                                                                         <ChildContent>
                                                                                             <MudExpansionPanels Elevation="0">
@@ -1160,7 +1223,7 @@
                                                                 </MudAlert>
                                                             }
                                                         </MudTd>
-                                                        <MudTd>@Localizer["programmed"]</MudTd>
+                                                        <MudTd Style="text-align: center;">@Localizer["P"]</MudTd>
                                                             @for (var i = 1; i <= daysInMonth; i++)
                                                         {
                                                             var date = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, i);
@@ -1230,7 +1293,7 @@
 
                                                     <MudTr>
 
-                                                        <MudTd>Real</MudTd>
+                                                        <MudTd Style="text-align: center;">@Localizer["R"]</MudTd>
 
                                                         @for (var i = 1; i <= daysInMonth; i++)
                                                         {
