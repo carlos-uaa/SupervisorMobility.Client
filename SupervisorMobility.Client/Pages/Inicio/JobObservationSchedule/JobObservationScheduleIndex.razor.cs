@@ -881,7 +881,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         {
             searchString = "";
             var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _DayJobObservations = _jobObservations.Where(j => Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date && j.Status != 7).ToList();
+            _DayJobObservations = _jobObservations.Where(j => (Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date &&
+                                            Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date) || Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date == Convert.ToDateTime(compare.ToShortDateString()).Date &&j.Status == 7).ToList();
             visible5 = true;
         }
         void Close5() => visible5 = false;
@@ -898,6 +899,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         void CloseScheduleFilter() => visibleScheduleFiltersModal = false;
 
         private DialogOptions scheduleFiltersDialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+
     }
 
 
