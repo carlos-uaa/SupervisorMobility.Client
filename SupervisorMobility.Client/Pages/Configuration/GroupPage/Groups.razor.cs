@@ -22,6 +22,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
             new BreadcrumbItem(text: Localizer["GroupTitle"], href: "", disabled: true)
         };
+
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Create group
@@ -73,7 +75,33 @@ namespace SupervisorMobility.Client.Pages.Configuration.GroupPage
         void CloseDeleteModal() => visibleDelete = false;
         
         DialogOptions dialogDeleteOptions =  new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+        private int selectedRowNumber = -1;
+        private MudTable<Group> SelectTableEvent;
 
+        private void RowClickEvent(TableRowClickEventArgs<Group> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(Group element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+
+                NavigationManager.NavigateTo($"groups/updategroup/{element.GroupId}");
+
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
 
     }
 }

@@ -6,11 +6,13 @@
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
+@inject IBreadcrumbService BreadcrumbService
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["updateOperation"]</PageTitle>
 
 @*Breadcrumb links*@
-<MudBreadcrumbs Class="mb-10" Items="_links">
+@* <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
         @if (item.Text == Localizer["plantDetails"])
         {
@@ -33,130 +35,133 @@
             <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
         }
     </ItemTemplate>
-</MudBreadcrumbs>
-@*Form*@
+</MudBreadcrumbs>  *@
 
-<EditForm Model="_operation" OnValidSubmit="UpdateOperationAsync">
-    <DataAnnotationsValidator />
-    <MudGrid>
-        <MudItem xs="12">
+
+
+@if (showui)
+{
+    <MudGrid Class="mt-10">
+
+        <MudItem xs="3" lg="3" md="3" sm="3">
             <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">@Localizer["operationDetails"]</MudText>
-                    </CardHeaderContent>
-                    <CardHeaderActions>
-                            <MudButton EndIcon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateOperationRedirect(OperationId))" @ontouchstart="(() => UpdateOperationRedirect(OperationId))">@Localizer["editOperation"] </MudButton>
-                    </CardHeaderActions>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudTextField ReadOnly Label="@Localizer["description"]"
-                    @bind-Value="_operation.Description" For="@(() => _operation.Description)" />
-                    <MudTextField ReadOnly Label="@Localizer["code"]" Class="mt-3"
-                    @bind-Value="_operation.Code" For="@(() => _operation.Code)" />
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_plant.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_plant.Description</MudText>
+                    @if (_plant.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+            <MudText Typo="Typo.h4" Style="text-align:center">
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowDown"></MudIcon>
+            </MudText>
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_area.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_area.Description</MudText>
+                    @if (_area.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+            <MudText Typo="Typo.h4" Style="text-align:center">
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowDown"></MudIcon>
+            </MudText>
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_distribution.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                    @if (_distribution.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="9" lg="9" md="9" sm="9">
+            @*Form*@
+            <EditForm Model="_operation" class="mt-10" OnValidSubmit="UpdateOperationAsync">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">@Localizer["operationDetails"]</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudButton EndIcon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateOperationRedirect(OperationId))" @ontouchstart="(() => UpdateOperationRedirect(OperationId))">@Localizer["editOperation"] </MudButton>
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudTextField ReadOnly Label="@Localizer["description"]"
+                                               @bind-Value="_operation.Description" For="@(() => _operation.Description)" />
+                                 <MudTextField ReadOnly Label="@Localizer["code"]" Class="mt-3"
+                                               @bind-Value="_operation.Code" For="@(() => _operation.Code)" />
 
-                    <MudSelect ReadOnly T="int" Label="@Localizer1["ACCriticalLabel"]" Placeholder="@Localizer1["ACPHCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_operation.CriticalType" For="@(() => _operation.CriticalType)">
-                        <MudSelectItem Disabled="true" Value="0">@Localizer1["ACPHCritical"]</MudSelectItem>
+                                 <MudSelect ReadOnly T="int" Label="@Localizer1["ACCriticalLabel"]" Placeholder="@Localizer1["ACPHCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_operation.CriticalType" For="@(() => _operation.CriticalType)">
+                                     <MudSelectItem Disabled="true" Value="0">@Localizer1["ACPHCritical"]</MudSelectItem>
 
-                        <MudSelectItem Value="1">@($"A")</MudSelectItem>
-                            <MudSelectItem Value="2">@($"B")</MudSelectItem>
-                            <MudSelectItem Value="3">@($"C")</MudSelectItem>
-                            <MudSelectItem Value="5">@($"{Localizer["OPCritical"]}")</MudSelectItem>
+                                        <MudSelectItem Value="1">@($"A")</MudSelectItem>
+                                        <MudSelectItem Value="2">@($"B")</MudSelectItem>
+                                        <MudSelectItem Value="3">@($"C")</MudSelectItem>
+                                        <MudSelectItem Value="5">@($"{Localizer["OPCritical"]}")</MudSelectItem>
 
-                        </MudSelect>
-                        @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["close"]</MudButton>
-                    </MudCardActions>
-                </MudCard>
+                                    </MudSelect>
+                                    @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["close"]</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
             </MudItem>
-        </MudGrid>
-    </EditForm>
-
-    @code {
-    // Parameters
-    [Parameter]
-    public int PlantId { get; set; }
-
-    [Parameter]
-    public int AreaId { get; set; }
-
-    [Parameter]
-    public int DistributionId { get; set; }
-
-    [Parameter]
-    public int OperationId { get; set; }
-
-    // Breadcrumb links
-    private List<BreadcrumbItem> _links;
-
-    // Objects
-    Plant _plant = new();
-    Area _area = new();
-    Distribution _distribution = new();
-    public Operation _operation { get; set; } = new();
-
-    // Initialization
-    protected async override Task OnInitializedAsync()
-    {
-        _links = new List<BreadcrumbItem>
-            {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
-            };
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _plant = await PlantService.GetPlantById(PlantId);
-        _area = await AreaService.GetAreaById(PlantId, AreaId);
-        _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
-        _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
-    }
-
-    // Links
-    void GoToPlant()
-    {
-        NavigationManager.NavigateTo($"plants/{PlantId}");
-    }
-
-    void GoToArea()
-    {
-        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}");
-    }
-
-    void GoToDistribution()
-    {
-        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
-    }
-
-    // Update operation
-    async void UpdateOperationAsync()
-    {
-        _operation.IsActive = true;
-        var result = await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
-
-        if (result)
-        {
-            NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
-        }
-    }
-
-    void UpdateOperationRedirect(int operationId)
-    {
-        NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/updateoperation/{operationId}");
-    }
-
-    // Cancel submit form
-    void CancelCreateOrUpdate()
-    {
-        NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
-    }
-
+    </MudGrid>
 }
+else
+{
+
+
+    <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+        <MudItem class="d-flex justify-center align-self-center pa-3 ma-2 ">
+            <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["loadingData"]</MudText>
+        </MudItem>
+        <MudPaper Class="flex d-flex-row pa-3 ma-2" Elevation="0">
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        </MudPaper>
+    </MudItem>
+}
+
+

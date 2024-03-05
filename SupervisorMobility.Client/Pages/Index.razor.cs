@@ -5,16 +5,19 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.ProductPage;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using SupervisorMobility.Client.Services.UserService;
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages
 {
     public partial class Index
     {
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         private List<BreadcrumbItem> _links;
 
         private List<BreadcrumbItem> _login;
@@ -61,6 +64,8 @@ namespace SupervisorMobility.Client.Pages
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/", disabled: true)
             };
+
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
             logged = await HasPropertyAsync();
             if (logged)

@@ -1,17 +1,13 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 {
     public partial class JobStructureCategoryIndex
     {
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job Structure categories", href: "", disabled: true),
-        };
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
         public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
@@ -24,6 +20,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+
+
             _checklistCategories = await JobStructureCategoriesService.GetChecklistCategories();
 
             await GetUserAsync();
@@ -35,6 +33,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
             }
+
+            _links = new List<BreadcrumbItem>
+             {
+                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                            new BreadcrumbItem(text: Localizer["jobstructure"], href: "", disabled: true)
+                        };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
         }
 
@@ -114,7 +120,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             if (selectedRowNumber == rowNumber)
             {
                 selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element) && element.Type == StructureType.Checklist )
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element) && element.Type == StructureType.Checklist)
                 {
                     NavigationManager.NavigateTo($"checklistcategories/category/{element.JobCategoryStructureId}");
                 }
@@ -140,7 +146,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 case StructureType.Checklist:
                     return "Checklist Section";
                 case StructureType.Timer:
-                    return "Cicle Timer's"; 
+                    return "Cicle Timer's";
                 case StructureType.LUP:
                     return "LUP";
                 case StructureType.Signature:

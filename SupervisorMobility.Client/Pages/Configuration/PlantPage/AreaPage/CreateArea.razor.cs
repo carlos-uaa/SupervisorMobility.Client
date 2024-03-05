@@ -1,4 +1,6 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 {
@@ -10,27 +12,37 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
-
         // Objects
         Plant _plant = new();
         Area _area = new();
 
         // Initialization
-        protected async override Task OnInitializedAsync()
-        {
-            _links = new List<BreadcrumbItem>
-            {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
-                new BreadcrumbItem(text: Localizer["newArea"], href: "", disabled: true)
-            };
-        }
+        //protected async override Task OnInitializedAsync()
+        //{
+        //    _links = new List<BreadcrumbItem>
+        //    {
+        //        new BreadcrumbItem(text: Localizer["home"], href: "/"),
+        //        new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+        //        new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+        //        new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
+        //        new BreadcrumbItem(text: Localizer["newArea"], href: "", disabled: true)
+        //    };
+        //    BreadcrumbService.UpdateBreadcrumbs(_links);
+        //}
 
         protected override async Task OnParametersSetAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
+            _links = new List<BreadcrumbItem>
+                    {
+                        new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                        new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                        new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
+                        new BreadcrumbItem(text: _plant.Code, href: $"plants/{PlantId}"),
+                        new BreadcrumbItem(text: Localizer["newArea"], href: "", disabled: true)
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
+
         }
 
         // Cancel form submit

@@ -34,7 +34,7 @@
         Task<ChecklistQuestion> CreateQuestion(int categoryId, ChecklistQuestion question);
 
         // Update checklist question
-        Task UpdateQuestion(int categoryId, ChecklistQuestion question);
+        Task<ChecklistQuestion> UpdateQuestion(int categoryId, ChecklistQuestion question);
 
         // Delete checklist question
         Task DeleteQuestion(int categoryId, int questionId);

@@ -37,6 +37,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 new BreadcrumbItem(text: Localizer["newOperation"], href: "", disabled: true)
 
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         protected override async Task OnParametersSetAsync()

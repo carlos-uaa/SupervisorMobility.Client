@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -20,7 +21,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         [Parameter]
         public int JobObservationId { get; set; }
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         public JobObservation _jobObservation { get; set; } = new();
         public Lup lup { get; set; } = new();
         public JobObservation _lupJobObservations { get; set; } = new();
@@ -170,7 +172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new BreadcrumbItem(text: Localizer["update"] + " " + Localizer["jobObservation"], href: "", disabled: true)
             };
 
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -680,7 +682,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Add($"Operator Signature is missing", Severity.Error);
                     return;
                 }
-                else
+                else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
                 {
                     await GenerateOperatorSignatureImage();
                 }
@@ -865,7 +867,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
             }
-            else
+            else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
             {
                 await GenerateOperatorSignatureImage();
             }
@@ -1056,7 +1058,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
             }
-            else
+            else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
             {
                 await GenerateOperatorSignatureImage();
             }
@@ -1235,7 +1237,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
             }
-            else
+            else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
             {
                 await GenerateOperatorSignatureImage();
             }

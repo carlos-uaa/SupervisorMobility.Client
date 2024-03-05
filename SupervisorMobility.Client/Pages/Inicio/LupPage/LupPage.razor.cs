@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using SupervisorMobility.Client.Services.LupService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.LupPage
@@ -10,7 +11,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
     {
 
         public List<JobObservation> jobObservationList { get; set; }
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         public List<LupWithDistribution> _lups { get; set; } = new();
         public List<LupWithDistribution> _filterlups { get; set; } = new();
 
@@ -83,7 +85,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem("LUP", href: "/lup", disabled: true),
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
             if (!logged)
             {

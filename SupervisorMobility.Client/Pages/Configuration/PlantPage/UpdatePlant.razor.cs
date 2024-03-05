@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
 {
@@ -7,7 +8,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Parameters
         [Parameter]
         public int PlantId { get; set; }
-
+       
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
@@ -24,6 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
                 new BreadcrumbItem(text: Localizer["updatePlant"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
 

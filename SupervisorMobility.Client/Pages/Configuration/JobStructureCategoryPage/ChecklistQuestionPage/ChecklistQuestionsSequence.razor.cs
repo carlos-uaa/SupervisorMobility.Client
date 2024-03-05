@@ -1,5 +1,6 @@
 ﻿using MudBlazor;
 using MudBlazor.Utilities;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
@@ -10,15 +11,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         [Parameter]
         public int categoryId { get; set; }
         // Breadcrumb links
-        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem("Home", href: "/"),
-            new BreadcrumbItem("Configuration", href: "/configuration"),
-            new BreadcrumbItem("Job Structure Category", href: "/checklistcategories"),
-            new BreadcrumbItem("CategoryDetail", href: ""),
-            new BreadcrumbItem("Sequence", href: "", disabled: true),
-        };
-
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
         // Objects
         public JobCategoryStructure _checklistCategoryAndQuestions { get; set; } = new();
         public ChecklistQuestion _checklistQuestion { get; set; } = new();
@@ -29,6 +22,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             _checklistCategoryAndQuestions = await JobStructureCategoriesService.GetCategoryIncludingQuestions(categoryId);
             Console.WriteLine(_checklistCategoryAndQuestions);
+          
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                new BreadcrumbItem(text: Localizer["jobstructure"], href: $"/checklistcategories"),
+                new BreadcrumbItem(text: _checklistCategoryAndQuestions.Description, href: $"/checklistcategories/category/{_checklistCategoryAndQuestions.JobCategoryStructureId}"),
+                new BreadcrumbItem("Sequence", href: "", disabled: true),
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
         // Drag and drop category

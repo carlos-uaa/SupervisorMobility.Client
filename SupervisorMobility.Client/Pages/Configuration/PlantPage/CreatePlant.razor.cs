@@ -7,7 +7,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
-        // Objects
         Plant _plant = new();
         protected async override Task OnInitializedAsync()
         {
@@ -18,6 +17,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
                 new BreadcrumbItem(text: Localizer["newPlant"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
         }
 

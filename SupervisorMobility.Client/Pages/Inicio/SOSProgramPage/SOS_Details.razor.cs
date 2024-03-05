@@ -25,6 +25,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -35,7 +36,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public int sosId { get; set; }
 
         [Inject] private IDialogService DialogService { get; set; }
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         private List<BreadcrumbItem> _links;
         private List<Distribution> _distributions = new();
         private List<Distribution> _distributionsSuggest = new();
@@ -43,7 +45,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private int selected_distId = 0;
         public List<Operation> _All_Operations { get; set; } = new();
         private List<AssyChart> _assyCharts = new();
-        private SOSReviewProgram SOS_Review = new();
+        private SOSReviewProgram _sos_plan = new();
         private JobObservation _NewJobObservation = new();
         private SOSRegisterJobObservation _NewRegister = new();
 
@@ -138,10 +140,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         int StartMonth = 1;
         int JobsPorDia = 2;
 
-
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+        SosJobCount opInDistDialog = new();
+        bool ShowGraphicDonnut = false;
 
         //Calendario
         public DateTime? date;
@@ -256,13 +259,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             labels = labelaux.ToArray();
 
-            _links = new List<BreadcrumbItem>
-            {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
-                new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
-            };
-
+           
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -274,47 +271,47 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             else
             {
                 await GetUserAsync();
-                SOS_Review = await SOSServices.GetSOSById(sosId, true);
-                _distributions = await DistributionServices.GetDistributionsWithCollections((int)SOS_Review.PlantId, (int)SOS_Review.AreaId);
+                _sos_plan = await SOSServices.GetSOSById(sosId, true);
+                _distributions = await DistributionServices.GetDistributionsWithCollections((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
 
-                if (SOS_Review != null && SOS_Review.Suggestions != null)
+                if (_sos_plan != null && _sos_plan.Suggestions != null)
                 {
-                    _distributionsSuggest = _distributions.Where(d => SOS_Review.Suggestions.Any(s => s.DistributionId == d.DistributionId && s.SuggestionApplied == false)).ToList();
+                    _distributionsSuggest = _distributions.Where(d => _sos_plan.Suggestions.Any(s => s.DistributionId == d.DistributionId && s.SuggestionApplied == false)).ToList();
                 }
 
                 foreach (var item in _distributions)
                 {
                     _All_Operations.AddRange(item.Operations);
                 }
-                _Users = await UsersServices.GetUsersByUserTypeInPlantAndArea(SOS_Review.PlantId, SOS_Review.AreaId, 3, true, false);
+                _Users = await UsersServices.GetUsersByUserTypeInPlantAndArea(_sos_plan.PlantId, _sos_plan.AreaId, 3, true, false);
                 _UsersSV_Copy = ObjectCloner.ObjectCloner.DeepClone(_Users);
-                _assyCharts = await AssyChartsServices.GetAssyChartsByArea((int)SOS_Review.PlantId, (int)SOS_Review.AreaId);
+                _assyCharts = await AssyChartsServices.GetAssyChartsByArea((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
                 await PrepareDataTable();
                 StateHasChanged();
             }
 
-            if ((int)SOS_Review.AplicationYear > DateTime.Now.Year)
+            if ((int)_sos_plan.AplicationYear > DateTime.Now.Year)
             {
-                LastdayYear = new DateTime((int)SOS_Review.AplicationYear, 12, 31);
-                _yearMonth = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
-                FirstdayYear = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
-                date = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
+                LastdayYear = new DateTime((int)_sos_plan.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
+                FirstdayYear = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
+                date = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
             }
             else
             {
 
-                LastdayYear = new DateTime((int)SOS_Review.AplicationYear, 12, 31);
-                _yearMonth = new DateTime((int)SOS_Review.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
-                FirstdayYear = new DateTime((int)SOS_Review.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
-                date = new DateTime((int)SOS_Review.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
+                LastdayYear = new DateTime((int)_sos_plan.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                FirstdayYear = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                date = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
             }
 
 
 
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
 
-            startDate = new DateTime((int)SOS_Review.AplicationYear, 1, 1);
-            endDate = new DateTime((int)SOS_Review.AplicationYear, 1, 1).AddMonths(1).AddDays(-1);
+            startDate = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
+            endDate = new DateTime((int)_sos_plan.AplicationYear, 1, 1).AddMonths(1).AddDays(-1);
 
             monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
             GenerateCalendarHead();
@@ -337,8 +334,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 jobCategoryStructureIds = jobCategoryStructureIds.TrimEnd('|');
             }
+
+            _links = new List<BreadcrumbItem>
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
+                new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
+                new BreadcrumbItem(text: $"SOS Anual Plan {_sos_plan.AplicationYear}", href: $"sosDetails/{_sos_plan.SOSid}"),
+            };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+           
+                await JS.InvokeVoidAsync("blazorUtilsSOS.setDynamicLeftSOS");
+                await JS.InvokeVoidAsync("blazorUtilsTOPSOS.setDynamicTOP");
+            
+        }
         private void GenerateCalendarHead()
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
@@ -519,8 +532,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             OperationsInDistributionCount?.Clear();
 
             //Actualizacion local y evitar peticiones... cuando quede chida la pagina
-            _SosRegisters = await SOSServices.GetSOSRegisters(SOS_Review.SOSid);
-            _AnotherJobs = _mapper.Map<List<JobObservationNulls>>(await JobObsServices.GetAllJobObservations(year: (int)SOS_Review.AplicationYear, SOSAnualId: SOS_Review.SOSid));
+            _SosRegisters = await SOSServices.GetSOSRegisters(_sos_plan.SOSid);
+            _AnotherJobs = _mapper.Map<List<JobObservationNulls>>(await JobObsServices.GetAllJobObservations(year: (int)_sos_plan.AplicationYear, SOSAnualId: _sos_plan.SOSid));
 
 
             foreach (var OpItem in _All_Operations)
@@ -529,7 +542,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 {
                     int currentindex = i;
                     var matchingRegisters = _SosRegisters?
-                       .Where(r => r.OperationId == OpItem.OperationId && r.Year <= SOS_Review.AplicationYear && r.Month == currentindex)
+                       .Where(r => r.OperationId == OpItem.OperationId && r.Year <= _sos_plan.AplicationYear && r.Month == currentindex)
                        .ToList();
 
                     SOS_Registers_Matrix.Add((OpItem.OperationId, currentindex), matchingRegisters);
@@ -544,7 +557,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (SOS_Registers_UserOperationRelationship?.Count == 0)
             {
                 Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
-                _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(SOS_Review.SOSid);
+                _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
 
                 foreach (var item in _SosRegistersrUserOperation)
                 {
@@ -734,10 +747,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             }
 
-            //_Subordinates = await UsersServices.GetSubordinates(SOS_Review.Supervisor.UserId);
+            //_Subordinates = await UsersServices.GetSubordinates(_sos_plan.Supervisor.UserId);
 
             ShowTable = true;
             StateHasChanged();
+
         }
 
         private async Task<bool> TryGetAsync()
@@ -772,8 +786,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 if (context.Exist)
                 {
 
-                    _NewJobObservation.PlantId = (int)SOS_Review.PlantId;
-                    _NewJobObservation.AreaId = (int)SOS_Review.AreaId;
+                    _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
+                    _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
                     _NewJobObservation.OperationId = OperationId;
                     _NewJobObservation.DistributionId = DistributionId;
 
@@ -785,14 +799,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     _NewJobObservation.IsActive = true;
 
 
-                    DateTime parsedDate = new DateTime((int)SOS_Review.AplicationYear, month, 1);
+                    DateTime parsedDate = new DateTime((int)_sos_plan.AplicationYear, month, 1);
                     parsedDate = await FindNextAvailableDate(parsedDate, false);
                     _NewJobObservation.StartDate = parsedDate;
 
 
 
 
-                    var result = await SOSServices.CreateSOSRegister(SOS_Review.SOSid, month, (int)SOS_Review.AplicationYear, _NewJobObservation);
+                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         disableBtnCreateSos = false;
@@ -1015,7 +1029,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
 
         void Close2() => visible2 = false;
-
+        void CloseGraphicDonnut()
+        {
+            opInDistDialog.isActive = false;
+            ShowGraphicDonnut = false;
+        }
+        private void OpenGraphicDonnut(SosJobCount item)
+        {
+            opInDistDialog = item;
+            opInDistDialog.isActive = true;
+            ShowGraphicDonnut = true;
+        }
         private async Task HandleVisibleChanged(bool newValue)
         {
             await PrepareDataTable();
@@ -1361,10 +1385,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
         }
         //
-        private void ShowBtnPress(int nr)
+        private async void YearlyTab()
+        {
+            SuggestionMode = MonthlyView = false;
+            StateHasChanged();
+        }
+            
+        private async void ShowBtnPress(int nr)
         {
             Distribution tmpPerson = _distributions.First(f => f.DistributionId == nr);
             tmpPerson.ShowDetails = !tmpPerson.ShowDetails;
+            StateHasChanged();
         }
 
         private async Task BtnSupervisorsEdit(int op)
@@ -1379,7 +1410,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     {
                         //Validar verificaion
 
-                        var result = await SOSServices.CreateSOSRegUserOperation(SOS_Review.SOSid, context.Register.Supervisor.UserId, op);
+                        var result = await SOSServices.CreateSOSRegUserOperation(_sos_plan.SOSid, context.Register.Supervisor.UserId, op);
                         if (result != null)
                         {
                             ShowTable = false;
@@ -1507,7 +1538,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                     SOS_Registers_UserOperationRelationship.Clear();
                                     OperationsInDistributionCount.Clear();
                                     Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
-                                    _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(SOS_Review.SOSid);
+                                    _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
 
                                     foreach (var item in _SosRegistersrUserOperation)
                                     {
@@ -1738,7 +1769,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                                 SOSRegUserOperationRelationship regAux = new();
                                 regAux.Register = new();
-                                regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
+                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
                                 regAux.Register.OperationId = op.OperationId;
                                 regAux.Register.SupervisorId = supervisorId;
                                 regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
@@ -1750,10 +1781,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                                 ////
 
-                                _newSuggestion.PlantId = (int)SOS_Review.PlantId;
-                                _newSuggestion.Plant = SOS_Review.Plant;
-                                _newSuggestion.AreaId = (int)SOS_Review.AreaId;
-                                _newSuggestion.Area = SOS_Review.Area;
+                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+                                _newSuggestion.Plant = _sos_plan.Plant;
+                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+                                _newSuggestion.Area = _sos_plan.Area;
 
                                 //_newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
                                 //_newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
@@ -1872,7 +1903,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                             SOSRegUserOperationRelationship regAux = new();
                             regAux.Register = new();
-                            regAux.Register.SOSReviewProgramid = SOS_Review.SOSid;
+                            regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
                             regAux.Register.OperationId = op.OperationId;
                             regAux.Register.SupervisorId = supervisorId;
                             regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
@@ -1884,10 +1915,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                            _newSuggestion.PlantId = (int)SOS_Review.PlantId;
-                            _newSuggestion.Plant = SOS_Review.Plant;
-                            _newSuggestion.AreaId = (int)SOS_Review.AreaId;
-                            _newSuggestion.Area = SOS_Review.Area;
+                            _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+                            _newSuggestion.Plant = _sos_plan.Plant;
+                            _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+                            _newSuggestion.Area = _sos_plan.Area;
 
                             _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
                             _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
@@ -2049,7 +2080,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             base.StateHasChanged();
             StateHasChanged();
 
-            var result = await SOSServices.ApplyMassiveSuggest(SOS_Review.SOSid, _All_Suggested_SOSJobobservation, selected_distId);
+            var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, _All_Suggested_SOSJobobservation, selected_distId);
             if (result)
             {
                 StateHasChanged();
@@ -2058,7 +2089,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Massive Creation Suggest Sucesfull", Severity.Info);
 
-                SOS_Review.SuggestionApplied = true;
+                _sos_plan.SuggestionApplied = true;
 
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
                 StateHasChanged();

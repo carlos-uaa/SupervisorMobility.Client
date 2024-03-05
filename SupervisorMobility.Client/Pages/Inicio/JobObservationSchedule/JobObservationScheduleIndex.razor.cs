@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["jobObservationSchedule"], href: "", disabled: true)
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             if (!await HasPropertyAsync())
             {
                 Snackbar.Clear();
@@ -881,10 +881,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         {
             searchString = "";
             var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
-            _DayJobObservations = _jobObservations.Where(j => Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date && j.Status != 7).ToList();
+            _DayJobObservations = _jobObservations.Where(j => (Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date &&
+                                            Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(j.EndDate?.ToShortDateString()).Date) || Convert.ToDateTime(j.StartDate?.ToShortDateString()).Date == Convert.ToDateTime(compare.ToShortDateString()).Date &&j.Status == 7).ToList();
             visible5 = true;
         }
         void Close5() => visible5 = false;
+
+
+
+        //Schedule filters modal
+        private bool visibleScheduleFiltersModal = false;
+
+        private void OpenDialogScheduleFilter()
+        {
+            visibleScheduleFiltersModal = true;
+        }
+        void CloseScheduleFilter() => visibleScheduleFiltersModal = false;
+
+        private DialogOptions scheduleFiltersDialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+
     }
 
 

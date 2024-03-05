@@ -20,6 +20,8 @@ namespace SupervisorMobility.Client.Pages.Configuration
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "", disabled: true)
             };
+
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             await GetUserAsync();
             logged = await HasPropertyAsync();
             if (!logged)

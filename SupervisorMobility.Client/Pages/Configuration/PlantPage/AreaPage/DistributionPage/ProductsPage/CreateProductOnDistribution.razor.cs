@@ -35,13 +35,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-                new BreadcrumbItem($"{_plant.Description}", href: $"plants/{PlantId}"),
-                new BreadcrumbItem($"{_area.Description}", href: $"plants/{PlantId}/areas/{AreaId}"),
+                new BreadcrumbItem($"{_plant.Code}", href: $"plants/{PlantId}"),
+                new BreadcrumbItem($"{_area.Code}", href: $"plants/{PlantId}/areas/{AreaId}"),
                 new BreadcrumbItem($"{_distribution.Description}", href: $"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}"),
                 new BreadcrumbItem(text: Localizer["createDistributionToProduct"], href: "", disabled: true)
             };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             showui = true;
-
         }
 
 

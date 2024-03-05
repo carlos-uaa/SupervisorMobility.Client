@@ -12,6 +12,7 @@
 @using System.Text.Json
 @using System.Diagnostics;
 @using System.Globalization;
+@using SupervisorMobility.Client.Services.BreadcrumsService
 
 @inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
@@ -33,6 +34,30 @@
     <MudAppBar Elevation="0" Color="Color.Info" Dense>
 
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudBreadcrumbs Items="_links" Style="flex-wrap: nowrap">
+            <ItemTemplate Context="item">
+                @if(_links.Count > 4)
+                {
+                    @if (item.Text.Length > 20)
+                    {
+                        <div class="marquee-container">
+                            <MudButton Href="@item.Href" Variant="Variant.Text" Style="color:white" Disabled="item.Disabled">
+                                <span id="marqueeText" class="marquee">@item.Text</span>
+                            </MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudButton Href="@item.Href" Variant="Variant.Text" Style="color:white" Disabled="item.Disabled">@item.Text</MudButton>
+                    }
+                }
+                else
+                {
+                    <MudButton Href="@item.Href" Variant="Variant.Text" Style="color:white" Disabled="item.Disabled">@item.Text</MudButton>
+                }
+               
+            </ItemTemplate>
+        </MudBreadcrumbs>
         <MudSpacer />
         <MudTooltip Text="@Localizer["guides"]" Color="Color.Primary" Arrow="true">
             <MudButton Href="/Help/guides">
@@ -163,7 +188,8 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent Class="main">
-        <MudContainer Class="mt-2 px-8 content" MaxWidth="MaxWidth.False" @onmouseover="@OnMouseOut">
+        <MudContainer Class="mt-2 px-8 content" MaxWidth="MaxWidth.False">
+
             @Body
         </MudContainer>
         @*<footer class="footerContainer" id="footer" style="min-width:5vw">
@@ -220,8 +246,8 @@
                     </MudCardHeader>
                     <MudCardContent>
                         <MudText>@Localizer1["youDontHaveAnyNoficationsYet"]</MudText>
-                    </MudCardContent>
-                </MudCard>
+                        </MudCardContent>
+                    </MudCard>
             }
             else
             {
@@ -229,159 +255,159 @@
 
                     <MudTabPanel Text="@Localizer1["notifyNew"]" BadgeData="@NewNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailUnread">
                         <MudItem Class="ma-1 small-scroll" Style="max-height: 70vh; overflow-y: scroll; width: 800px; overflow-x: scroll;">
-                        @if (NewNotifications.Count > 0)
-                        {
-                            @foreach (var notification in NewNotifications)
+                            @if (NewNotifications.Count > 0)
                             {
-                                <MudCard Elevation="3" Class="ma-1 pl-2" >
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                        <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
-                                        <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
+                                @foreach (var notification in NewNotifications)
+                                {
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
+                                                <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
                             }
-                        }
-                        else
-                        {
-                            <MudCard Elevation="3" Class="ma-1">
-                                <MudCardHeader>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudItem Style="display:flex; justify-content:center">
-                                        <MudText>@Localizer1["youDontHaveAnyNoficationsYet"]</MudText>
-                                        <MudIcon Icon="@Icons.Material.Filled.EmojiEmotions"></MudIcon>
-                                    </MudItem>
-                                </MudCardContent>
-                            </MudCard>
-                        }
+                            else
+                            {
+                                <MudCard Elevation="3" Class="ma-1">
+                                    <MudCardHeader>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudItem Style="display:flex; justify-content:center">
+                                            <MudText>@Localizer1["youDontHaveAnyNoficationsYet"]</MudText>
+                                                <MudIcon Icon="@Icons.Material.Filled.EmojiEmotions"></MudIcon>
+                                            </MudItem>
+                                        </MudCardContent>
+                                    </MudCard>
+                            }
 
                         </MudItem>
 
                     </MudTabPanel>
                     <MudTabPanel Text="@Localizer1["notifyReadTitle"]" BadgeData="@ReadNotifications.Count" Icon="@Icons.Material.Filled.MarkEmailRead">
                         <MudItem Class="ma-1 small-scroll" Style="max-height: 70vh; overflow-y: scroll; width: 800px; overflow-x: scroll;">
-                        @if (ReadNotifications.Count > 0)
-                        {
-                            @foreach (var notification in ReadNotifications)
+                            @if (ReadNotifications.Count > 0)
                             {
-                                <MudCard Elevation="3" Class="ma-1 pl-2">
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                        @*<MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>*@
-                                        <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
+                                @foreach (var notification in ReadNotifications)
+                                {
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                @*<MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>*@
+                                                <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
                             }
-                        }
-                        else
-                        {
-                            <MudCard Elevation="3" Class="ma-1">
-                                <MudCardHeader>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudItem Style="display:flex; justify-content:center">
-                                        <MudText>@Localizer1["youDontHaveAnyNoficationsYet"]</MudText>
-                                        <MudIcon Icon="@Icons.Material.Filled.EmojiEmotions"></MudIcon>
-                                    </MudItem>
-                                </MudCardContent>
-                            </MudCard>
-                        }
+                            else
+                            {
+                                <MudCard Elevation="3" Class="ma-1">
+                                    <MudCardHeader>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudItem Style="display:flex; justify-content:center">
+                                            <MudText>@Localizer1["youDontHaveAnyNoficationsYet"]</MudText>
+                                                <MudIcon Icon="@Icons.Material.Filled.EmojiEmotions"></MudIcon>
+                                            </MudItem>
+                                        </MudCardContent>
+                                    </MudCard>
+                            }
                         </MudItem>
 
                     </MudTabPanel>
                     <MudTabPanel Text="@Localizer1["notifyAll"]" BadgeData="@AllNotifications.Count" Icon="@Icons.Material.Filled.MarkunreadMailbox">
                         <MudItem Class="ma-1 small-scroll" Style="max-height: 70vh; overflow-y: scroll; width: 800px; overflow-x: scroll;">
-                        @foreach (var notification in AllNotifications)
-                        {
-                            @if (notification.IsAccepted && notification.IsActive)
+                            @foreach (var notification in AllNotifications)
                             {
-                                // accepted=true active=true
-                                <MudCard Elevation="3" Class="ma-1 pl-2" >
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                        <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
-                                        <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            }
-                            else if (!notification.IsAccepted && notification.IsActive)
-                            {
-                                // accepted=false active=true
-                                <MudCard Elevation="3" Class="ma-1 pl-2" >
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                        @*<MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>*@
-                                        <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            }
-                            else if (notification.IsActive && !notification.IsAccepted)
-                            {
-                                // accepted=true active=false
-                                <MudCard Elevation="3" Class="ma-1 pl-2" >
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                        <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
-                                        @*<MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>*@
-                                    </MudCardActions>
-                                </MudCard>
-                            }
-                            else
-                            {
-                                // accepted=false active=false
-                                <MudCard Elevation="3" Class="ma-1 pl-2" >
-                                    <MudCardContent>
-                                        <MudItem Style="display:flex; justify-content: space-between;">
-                                            <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
-                                            <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
-                                        </MudItem>
-                                        <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
-                                        <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions>
-                                     @*   <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
-                                        <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>*@
-                                    </MudCardActions>
-                                </MudCard>
-                            }
+                                @if (notification.IsAccepted && notification.IsActive)
+                                {
+                                    // accepted=true active=true
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
+                                                <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
+                                else if (!notification.IsAccepted && notification.IsActive)
+                                {
+                                    // accepted=false active=true
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                @*<MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>*@
+                                                <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
+                                else if (notification.IsActive && !notification.IsAccepted)
+                                {
+                                    // accepted=true active=false
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
+                                                @*<MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>*@
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
+                                else
+                                {
+                                    // accepted=false active=false
+                                    <MudCard Elevation="3" Class="ma-1 pl-2">
+                                        <MudCardContent>
+                                            <MudItem Style="display:flex; justify-content: space-between;">
+                                                <MudText Typo="Typo.h6" Class="mb-3">@notification.NotificationType</MudText>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Notifications"></MudIcon>
+                                                </MudItem>
+                                                <MudText Typo="Typo.body1">@notification.NotificationText</MudText>
+                                                <MudText Typo="Typo.caption">@notification.MadeBy ~ @notification.EntryDate.ToString("dd/MM/yy")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                @*   <MudButton Style="border-radius: 20px" Class="mr-4" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Check" Color="Color.Primary" @onclick="@(() => updateStatus(notification))">@Localizer1["notifyRead"]</MudButton>
+                                <MudButton Style="border-radius: 20px" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => Delete(notification))">@Localizer1["notifyDelete"]</MudButton>*@
+                                            </MudCardActions>
+                                        </MudCard>
+                                }
 
-                        }
+                            }
                         </MudItem>
                     </MudTabPanel>
 
@@ -393,13 +419,13 @@
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="Ok" Class="mt-4">@Localizer1["closeLanguage"]</MudButton>
-    </DialogActions>
-</MudDialog>
+        </DialogActions>
+    </MudDialog>
 
-<MudMessageBox @ref="mbox" Title="@Localizer1["warningLanguage"]" CancelText="Cancel">
-    <MessageContent>
+    <MudMessageBox @ref="mbox" Title="@Localizer1["warningLanguage"]" CancelText="Cancel">
+        <MessageContent>
 
-        @if (currentLanguage == "en-US")
+            @if (currentLanguage == "en-US")
         {
             <MudText Typo="Typo.h5">
                 <b><i>@Localizer1["question1Language"] Español <MudIcon Icon="@MX"></MudIcon> ?</i></b>
@@ -435,35 +461,35 @@
     </MessageContent>
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircle">@Localizer1["confirmLanguage"]</MudButton>
-    </YesButton>
-</MudMessageBox>
+        </YesButton>
+    </MudMessageBox>
 
 
-<MudDialog DisableSidePadding="false" IsVisible="DisplayDialogErrorAPI" Options="dialogErrorNetworkOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
-            <MudItem Class="mud-width-full d-flex flex-column flex-column justify-center" style="height:100%">
+    <MudDialog DisableSidePadding="false" IsVisible="DisplayDialogErrorAPI" Options="dialogErrorNetworkOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                <MudItem Class="mud-width-full d-flex flex-column flex-column justify-center" style="height:100%">
 
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.h3">¡Conexión Perdida!</MudText>
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
-                    <strong>Estado del Servidor:</strong> La conexión al servidor se ha perdido. 😱<br>
-                    Estamos trabajando duro para restablecerla y tenerlo de nuevo en línea pronto. 💼💻
-                </MudText>
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.h3">¡Conexión Perdida!</MudText>
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
+                        <strong>Estado del Servidor:</strong> La conexión al servidor se ha perdido. 😱<br>
+                        Estamos trabajando duro para restablecerla y tenerlo de nuevo en línea pronto. 💼💻
+                    </MudText>
 
-                <MudItem class="d-flex flex-column justify-center align-self-center mt-3">
-                    <div class="hourglass"></div>
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
-                </MudItem>
+                    <MudItem class="d-flex flex-column justify-center align-self-center mt-3">
+                        <div class="hourglass"></div>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                    </MudItem>
 
 
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
-                    <strong>Recomendaciones para ti:</strong><br>
-                    - Verifica tu conexión a Internet. 🌐<br>
-                    - Asegúrate de que los cables estén conectados y que tu Wi-Fi esté encendido. 🔌📶<br>
-                    - Intenta refrescar la página o volver a iniciar la aplicación en unos momentos. 🔄
-                </MudText>
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
+                        <strong>Recomendaciones para ti:</strong><br>
+                        - Verifica tu conexión a Internet. 🌐<br>
+                        - Asegúrate de que los cables estén conectados y que tu Wi-Fi esté encendido. 🔌📶<br>
+                        - Intenta refrescar la página o volver a iniciar la aplicación en unos momentos. 🔄
+                    </MudText>
 
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.subtitle1"><p>Próximo intento de reconexión en <strong> @timeLeft segundos. </strong></p></MudText>
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.subtitle1"><p>Próximo intento de reconexión en <strong> @timeLeft segundos. </strong></p></MudText>
             </MudItem>
 
         </MudContainer>
@@ -474,6 +500,10 @@
     //idk how this works but im add ~ Mika
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
+    [Inject]
+    private IBreadcrumbService BreadcrumbService { get; set; }
+
+    private List<BreadcrumbItem> _links;
     //User
     public List<User> users;
     public User user = new();
@@ -521,40 +551,13 @@
     private bool _isDarkMode = true;
     private MudThemeProvider _mudThemeProvider;
 
-    private readonly MudTheme _currentTheme = new()
-        {
-            Palette = new PaletteLight
-            {
-                Primary = "#0A7BCF",
-                Info = "#20a8e1",
-                Error = "#FF0000",
-                AppbarBackground = "#20a8e1",
-            },
-            PaletteDark = new PaletteDark
-            {
-                Primary = "#6585e0",
-                Info = "#a4c2dd",
-                Error = "#fc6161",
-                AppbarBackground = "#121212",
-
-            }
-        };
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
-            StateHasChanged();
-        }
-    }
-
-    void DrawerToggle() => _drawerOpen = !_drawerOpen;
-    void ThemeToggle() => _isDarkMode = !_isDarkMode;
-
 
     protected async override Task OnInitializedAsync()
     {
+        _links = BreadcrumbService.Breadcrumbs;
+        BreadcrumbService.BreadcrumbsChanged += UpdateLinks;
+
+
         countdownTimer = new System.Timers.Timer(1000); // Un segundo en milisegundos
         countdownTimer.Elapsed += (sender, e) =>
         {
@@ -673,10 +676,41 @@
 
 
 
-
-
         StateHasChanged();
     }
+
+
+    private readonly MudTheme _currentTheme = new()
+        {
+            Palette = new PaletteLight
+            {
+                Primary = "#0A7BCF",
+                Info = "#20a8e1",
+                Error = "#FF0000",
+                AppbarBackground = "#20a8e1",
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary = "#6585e0",
+                Info = "#a4c2dd",
+                Error = "#fc6161",
+                AppbarBackground = "#121212",
+
+            }
+        };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
+    void ThemeToggle() => _isDarkMode = !_isDarkMode;
+
 
 
     private async void LanguageSwitch(bool languageoption)
@@ -982,6 +1016,10 @@
         StateHasChanged();
     }
 
-
+    private void UpdateLinks(List<BreadcrumbItem> newBreadcrumbs)
+    {
+        _links = newBreadcrumbs;
+        StateHasChanged();
+    }
 
 }

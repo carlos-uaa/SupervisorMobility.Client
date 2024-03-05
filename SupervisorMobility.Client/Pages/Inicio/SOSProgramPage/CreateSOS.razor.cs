@@ -26,10 +26,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public User user = new();
         public bool logged = false;
 
+        public bool cantCreate = true;
 
+        bool ShowLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+            ShowLoading = false;
+
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+
             _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -37,7 +61,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             new BreadcrumbItem(text: Localizer["createSOS"], href: "", disabled: true)
         };
 
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -64,15 +88,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         _allSupervisors = await UsersService.GetUsersByType(3, true, false);
 
                     }
-                    else if(user.UserType == 3)
+                    else if(user.UserType == 2)
                     {
                         _sosReview.PlantId = (int)user.PlantId;
 
-                        _areas = await AreaServices.GetAreas(_sosReview.PlantId);
+                        _areas = user.Areas.ToList();
+                        if (_Supervisors == null)
+                        {
+                            _Supervisors = new List<User>();
+                        }
+                        _Supervisors?.ToList().AddRange(user.Subordinates);
+
+                    } else if(user.UserType == 3)
+                    {
+                        _sosReview.PlantId = (int)user.PlantId;
+
+                        _areas.Add(user.Area);
 
                         _sosReview.AreaId = (int)user.AreaId;
-
+                        if (_sosReview.Supervisors == null)
+                        {
+                            _sosReview.Supervisors = new List<User>();
+                        }
                         _sosReview.Supervisors?.Add(user);
+                        cantCreate = _sosReview.Supervisors.Count == 0;
 
                     }
                 }
@@ -138,6 +177,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 selectedSupervisorOfList = null;
                 ActiveAddSubordinated = true;
             }
+
+            cantCreate = _sosReview.Supervisors.Count == 0;
+
             StateHasChanged();
         }
 
@@ -160,58 +202,69 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void ShowAreas()
         {
-            _Supervisors.Clear();
-
-            foreach (User sv in _allSupervisors)
-            {
-                if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
-                {
-                    _Supervisors.Add(sv);
-                }
-            }
 
             supervisorId = 0;
             _sosReview.AreaId = 0;
 
-            _Supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_sosReview.PlantId,_sosReview.AreaId,3, true, false);
+            if(user.UserType == 1)
+                _areas = await AreaServices.GetAreas(_sosReview.PlantId);
 
-            _sosReview.Supervisors?.ToList().AddRange(_Supervisors);
 
-            _areas = await AreaServices.GetAreas(_sosReview.PlantId);
 
             StateHasChanged();
         }
 
         private async void ShowSupervisors()
         {
-
-            _Supervisors.Clear();
-            supervisorId = 0;
-
-            foreach (User sv in _allSupervisors)
+            if(_sosReview.Supervisors == null)
             {
-                if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
+                _sosReview.Supervisors = new List<User>();
+            }
+            _sosReview.Supervisors?.Clear();
+            cantCreate = true;
+
+            if (user.UserType == 1)
+            {
+                foreach (User sv in _allSupervisors)
                 {
-                    _Supervisors.Add(sv);
+                    if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
+                    {
+                        _Supervisors.Add(sv);
+                    }
+                }
+            }
+            else if (user.UserType == 2)
+            {
+                foreach (User sv in user.Subordinates)
+                {
+                    if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId && sv.UserType == 3)
+                    {
+                        _sosReview.Supervisors.Add(sv);
+                    }
                 }
             }
 
-            _Supervisors.Remove(user);
+
+                cantCreate = _sosReview.Supervisors.Count == 0;
+
             StateHasChanged();
+            base.StateHasChanged();
         }
 
         private void DeleteSupervisorList(User selection)
         {
             _sosReview.Supervisors?.Remove(selection);
             _Supervisors.Add(selection);
+            cantCreate = _sosReview.Supervisors.Count == 0;
             StateHasChanged();
+
         }
 
         // Create Sos
         async void CreateSOSReviewAsync()
         {
-           
-
+            cantCreate = true;
+            ShowLoading = true;
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
 
@@ -220,11 +273,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _sosReview.Supervisors = new List<User>();
             }
 
-
-            if (selectedSupervisorOfList != null)
+            switch(user.UserType)
             {
-                if(user.UserType == 3)
+                case 2:
+                    _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
+                    break;
+                case 3:
                 _sosReview.Supervisors.Add(user);
+                    break;
             }
 
 

@@ -1861,6 +1861,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Job Structure Categories.
+        /// </summary>
+        public static string jobstructure {
+            get {
+                return ResourceManager.GetString("jobstructure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Jobs x day:.
         /// </summary>
         public static string jobsXDay {
@@ -2055,6 +2064,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string model {
             get {
                 return ResourceManager.GetString("model", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Month .
+        /// </summary>
+        public static string month {
+            get {
+                return ResourceManager.GetString("month", resourceCulture);
             }
         }
         
@@ -3112,7 +3130,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Show all Symbols.
+        ///   Busca una cadena traducida similar a Symbols.
         /// </summary>
         public static string showAllSymbols {
             get {
@@ -3319,7 +3337,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Was the standard modified (yes/no)?.
+        ///   Busca una cadena traducida similar a Standard modified?.
         /// </summary>
         public static string StdChange {
             get {
@@ -3328,7 +3346,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Is the standard updated (yes/no)?.
+        ///   Busca una cadena traducida similar a Standard updated?.
         /// </summary>
         public static string StdUpdate {
             get {
@@ -3697,7 +3715,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a UpdatePlant.
+        ///   Busca una cadena traducida similar a Update Plant.
         /// </summary>
         public static string updatePlant {
             get {

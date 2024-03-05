@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
@@ -18,7 +19,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         public int LupId { get; set; }
 
         private List<BreadcrumbItem> _links;
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         public Lup _lup { get; set; } = new();
         public JobObservation jobObservation { get; set; } = new();
 
@@ -60,7 +62,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 new BreadcrumbItem("LUP", href: "/lup"),
                 new BreadcrumbItem(text: Localizer["update"] + " LUP", href: "/", disabled: true),
             };
-
+            BreadcrumbService.UpdateBreadcrumbs(_links);
             _lup = await LupServices.GetLupByIdWhitFile(LupId);
 
 
@@ -106,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
             _lup.DepartmentId = departmentID != 0 ? departmentID : _lup.DepartmentId;
 
@@ -146,7 +148,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
             if (_lup.Justification == null || _lup.Justification.Length == 0)
             {
@@ -200,7 +202,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                     break;
             }
             _lup.StdChange = auxStChange;
-            _lup.StdChange = auxStUpdate;
+            _lup.StdUpdate = auxStUpdate;
 
 
             _lup.EndDate = DateTime.Now;

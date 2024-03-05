@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using SupervisorMobility.Client.Services.PATService;
 using System;
 using static MudBlazor.CategoryTypes;
@@ -23,7 +24,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
-
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -43,6 +45,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 new BreadcrumbItem(text: Localizer["sosProgram"], href: "/", disabled: true),
             };
 
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
 
             try

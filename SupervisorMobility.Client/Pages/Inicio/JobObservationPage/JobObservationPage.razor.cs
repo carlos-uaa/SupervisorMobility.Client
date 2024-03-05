@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -14,6 +15,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
+        [Inject]
+        private IBreadcrumbService BreadcrumbService { get; set; }
         //Objects
         private bool dense = false;
         private bool hover = true;
@@ -78,6 +81,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     new BreadcrumbItem(text: Localizer["home"], href: "/"),
                     new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation", disabled: true),
             };
+
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
             logged = await HasPropertyAsync();
             if (!logged)
