@@ -140,10 +140,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         int StartMonth = 1;
         int JobsPorDia = 2;
 
-
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+        SosJobCount opInDistDialog = new();
+        bool ShowGraphicDonnut = false;
 
         //Calendario
         public DateTime? date;
@@ -348,6 +349,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
            
                 await JS.InvokeVoidAsync("blazorUtilsSOS.setDynamicLeftSOS");
+                await JS.InvokeVoidAsync("blazorUtilsTOPSOS.setDynamicTOP");
             
         }
         private void GenerateCalendarHead()
@@ -1027,7 +1029,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
 
         void Close2() => visible2 = false;
-
+        void CloseGraphicDonnut()
+        {
+            opInDistDialog.isActive = false;
+            ShowGraphicDonnut = false;
+        }
+        private void OpenGraphicDonnut(SosJobCount item)
+        {
+            opInDistDialog = item;
+            opInDistDialog.isActive = true;
+            ShowGraphicDonnut = true;
+        }
         private async Task HandleVisibleChanged(bool newValue)
         {
             await PrepareDataTable();

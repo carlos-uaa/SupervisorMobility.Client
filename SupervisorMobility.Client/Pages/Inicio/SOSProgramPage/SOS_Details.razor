@@ -39,7 +39,14 @@
         word-wrap: break-word;
         max-width: 100%;
     }
+   
 
+    .mud-simple-table.mud-table-sticky-header * table thead * th {
+    background-color: var(--mud-palette-surface);
+    position: sticky;
+    z-index: 2;
+    top: 0;
+}
 
     .scroll1::-webkit-scrollbar {
         width: 4px;
@@ -96,6 +103,11 @@
         text-overflow: ellipsis;
     }
 
+    .fixed-row {
+    position: sticky;
+    top: 0; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+    z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+}
 </style>
 
 
@@ -218,9 +230,50 @@
                                         {
                                             var rowTotal = Distribution_Item.Operations.Count() != 0 ? Distribution_Item.Operations.Count() * 2 + 1 : 2;
                                             var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out SosJobCount opInDist);
-                                            <MudTr>
-                                                <MudTd colspan="19" DataLabel="Distribution">
-                                                    <MudButton Style=" display: -webkit-box;" FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+
+                                            @if(Distribution_Item.ShowDetails){
+                                                <MudTr Class="fixed-row">
+                                                    <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        @if (opInDist != null)
+                                                        {
+                                                            <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                    @Distribution_Item.Description
+                                                                </MudButton>
+                                                                @if (opInDist != null)
+                                                                {
+                                                                    @if (@opInDist.sosfinished == @opInDist.TotalJobs)
+                                                                    {
+                                                                        <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                                                    }
+                                                                }
+                                                                <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() => OpenGraphicDonnut(@opInDist))">
+                                                                </MudButton>
+                                                            </MudButton>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                                    @Distribution_Item.Description
+                                                                </MudButton>
+                                                            </MudButton>
+                                                        }
+                                                    </MudTd>
+                                                </MudTr>
+                                            }else{
+                                                <MudTr>
+                                                <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() => ShowBtnPress(Distribution_Item.DistributionId))"> 
+                                                 @if (opInDist != null)
+                                                {
+                                                    <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small"  OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                            @Distribution_Item.Description
+                                                        </MudButton>
                                                         @if (opInDist != null)
                                                         {
                                                             @if (@opInDist.sosfinished == @opInDist.TotalJobs)
@@ -232,83 +285,28 @@
                                                                 <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
                                                             }
                                                         }
-                                                        @Distribution_Item.Description
+                                                            <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() => OpenGraphicDonnut(@opInDist))">
+                                                            </MudButton>
                                                     </MudButton>
-
+                                                }else{
+                                                     <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small"  OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">
+                                                            @Distribution_Item.Description
+                                                    </MudButton>
+                                                    </MudButton>
+                                                }
                                                 </MudTd>
                                             </MudTr>
+                                            }
+                                            
                                             @if (Distribution_Item.ShowDetails)
                                             {
-                                                @if (opInDist != null)
-                                                {
-                                                    <MudTr>
-                                                        <MudTd colspan="19" DataLabel="Operation Resume">
-                                                            <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.BarChart" EndIcon="@(opInDist.isActive ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => opInDist.isActive = !opInDist.isActive)">
-                                                                Operations In Distribution
-                                                            </MudButton>
-                                                        </MudTd>
-                                                    </MudTr>
 
-                                                    @if (opInDist.isActive)
-                                                    {
-                                                        double[] Sosdata = { opInDist.sosplanned, opInDist.sosinProgress, opInDist.soslate, opInDist.sosunderReview, opInDist.sosrejected, opInDist.sosfinished, opInDist.sosprogramed };
-                                                        double[] AnotherData = { opInDist.planned, opInDist.inProgress, opInDist.late, opInDist.underReview, opInDist.rejected, opInDist.finished, opInDist.programed };
-
-                                                        <MudTr>
-                                                            <MudTd></MudTd>
-                                                            <MudTd colspan="7" DataLabel="Distribution">
-                                                                <MudSimpleTable Class="table-striped">
-                                                                    <tr>
-                                                                        <th colspan="19">
-                                                                            <MudText Class="ml-2" Typo="Typo.h5">Operations resume</MudText>
-                                                                        </th>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td colspan="10" rowspan="1">
-                                                                            Total SOS Anual Jobs @opInDist.TotalSosJobs
-                                                                        </td>
-                                                                        <td colspan="9" rowspan="1">
-                                                                            Total Another Jobs @opInDist.TotalOutSosJobs
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-
-                                                                        <td colspan="10" rowspan="4">
-                                                                            <MudItem style="display: flex">
-
-                                                                                <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="300px" Height="300px"
-                                                                                          InputData="@Sosdata" InputLabels="@labels" XAxisLabels="@labels">
-                                                                                    <CustomGraphics>
-                                                                                        <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total SOS</text>
-                                                                                        <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@Sosdata.Sum().ToString()</text>
-                                                                                    </CustomGraphics>
-                                                                                </MudChart>
-                                                                            </MudItem>
-                                                                        </td>
-                                                                        <td colspan="9" rowspan="4">
-                                                                            <MudItem style="display: flex">
-
-                                                                                <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="300px" Height="300px"
-                                                                                          InputData="@AnotherData" InputLabels="@labels" XAxisLabels="@labels">
-                                                                                    <CustomGraphics>
-                                                                                        <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total Another</text>
-                                                                                        <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@AnotherData.Sum().ToString()</text>
-                                                                                    </CustomGraphics>
-                                                                                </MudChart>
-                                                                            </MudItem>
-                                                                        </td>
-
-
-                                                                    </tr>
-                                                                </MudSimpleTable>
-                                                            </MudTd>
-                                                        </MudTr>
-                                                    }
-                                                }
-                                                <tr>
-                                                    <td rowspan="@rowTotal" ><MudButton Style="height: 100%" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowUp" FullWidth=true OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">@((Distribution_Item.ShowDetails == true) ? "Hide" : "Show")  @Distribution_Item.Description </MudButton></td>
-                                                    </tr>
-                                                @foreach (var op in Distribution_Item.Operations)
+                                               @if(Distribution_Item.Operations.Count > 0){
+                                                    <tr>
+                                                        <td rowspan="@rowTotal"><MudButton Style="height: 100%" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowUp" FullWidth=true OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">@((Distribution_Item.ShowDetails == true) ? "Hide" : "Show")  @Distribution_Item.Description </MudButton></td>
+                                                        </tr>
+                                                    @foreach (var op in Distribution_Item.Operations)
                                                 {
                                                     <tr>
                                                         <td rowspan="2" class="fixed-column dynamic-left">@op.Code</td>
@@ -763,38 +761,41 @@
                                                                                                 <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["finished"]</span>.</span>
                                                                                         </MudTooltip>
                                                                                     }
-
-
-
                                                                                 }
                                                                             }
                                                                         }
                                                                     </div>
-
-
-
                                                                 }
                                                             </MudTd>
-
-
-
-
                                                         }
-
-
                                                     </MudTr>
-
-
                                                 }
-                                               
+                                               }else{
+                                                   <tr>
+                                                    <td rowspan="3" ><MudButton Style="height: 100%" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowUp" FullWidth=true OnClick="@(() => ShowBtnPress(Distribution_Item.DistributionId))">@((Distribution_Item.ShowDetails == true) ? "Hide" : "Show")  @Distribution_Item.Description </MudButton></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td rowspan="2" class="fixed-column dynamic-left"></td>
+                                                        <td rowspan="2"></td>
+                                                        <td rowspan="2" Style="min-width: 350px" class="fixed-column dynamic-left"></td>
+                                                        <MudTd rowspan="2"></MudTd>
+                                                        <MudTd>@Localizer["programmed"]</MudTd>
+                                                            @for (int i = 1; i < 13; i++)
+                                                        {
+                                                            <MudTd style="text-align: center; width:160px; max-height:160px "></MudTd>
+                                                        }
+                                                        <MudTd rowspan="2">@Localizer["notes"]</MudTd>
+                                                        </tr>
+                                                    <MudTr>
+                                                        <MudTd>Real</MudTd>
+                                                        @for (var i = 1; i < 13; i++)
+                                                        {
+                                                            <MudTd style="text-align: center; width:160px; max-height:160px "></MudTd>
+                                                        }
+                                                    </MudTr>
+                                               }
                                             }
-
-
-
-
-
                                         }
-
                                     </tbody>
                                 </MudSimpleTable>
                             </div>
@@ -2542,6 +2543,68 @@ else
         </DialogContent>
         <DialogActions>
             <MudButton Color="Color.Info" OnClick="Close2">@Localizer["close"]</MudButton>
+        </DialogActions>
+    </MudDialog>
+     
+    <MudDialog DisableSidePadding="false" @bind-IsVisible="ShowGraphicDonnut" Options="dialogOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                @if (opInDistDialog.isActive)
+            {
+                double[] Sosdata = { opInDistDialog.sosplanned, opInDistDialog.sosinProgress, opInDistDialog.soslate, opInDistDialog.sosunderReview, opInDistDialog.sosrejected, opInDistDialog.sosfinished, opInDistDialog.sosprogramed };
+                double[] AnotherData = { opInDistDialog.planned, opInDistDialog.inProgress, opInDistDialog.late, opInDistDialog.underReview, opInDistDialog.rejected, opInDistDialog.finished, opInDistDialog.programed };
+
+               
+                        <MudSimpleTable Class="table-striped">
+                            <tr>
+                                <th colspan="19">
+                                    <MudText Class="ml-2" Typo="Typo.h5">Operations resume </MudText>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td colspan="10" rowspan="1">
+                                    Total SOS Anual Jobs @opInDistDialog.TotalSosJobs
+                                </td>
+                                <td colspan="9" rowspan="1">
+                                    Total Another @opInDistDialog.TotalOutSosJobs
+                                </td>
+                            </tr>
+                            <tr>
+
+                                <td colspan="10" rowspan="4">
+                                    <MudItem style="display: flex">
+
+                                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="300px" Height="300px"
+                                                  InputData="@Sosdata" InputLabels="@labels" XAxisLabels="@labels">
+                                            <CustomGraphics>
+                                                <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total SOS</text>
+                                                <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@Sosdata.Sum().ToString()</text>
+                                            </CustomGraphics>
+                                        </MudChart>
+                                    </MudItem>
+                                </td>
+                                <td colspan="9" rowspan="4">
+                                    <MudItem style="display: flex">
+
+                                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="300px" Height="300px"
+                                                  InputData="@AnotherData" InputLabels="@labels" XAxisLabels="@labels">
+                                            <CustomGraphics>
+                                                <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total Another</text>
+                                                <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@AnotherData.Sum().ToString()</text>
+                                            </CustomGraphics>
+                                        </MudChart>
+                                    </MudItem>
+                                </td>
+
+
+                            </tr>
+                        </MudSimpleTable>
+                   
+            }
+        </MudContainer>
+        </DialogContent>
+        <DialogActions>
+        <MudButton Color="Color.Info" OnClick="CloseGraphicDonnut">@Localizer["close"]</MudButton>
         </DialogActions>
     </MudDialog>
 
