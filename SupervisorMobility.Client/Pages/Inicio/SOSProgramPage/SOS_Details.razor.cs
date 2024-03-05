@@ -796,6 +796,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     _NewJobObservation.Option = 2;
                     _NewJobObservation.Type = 3;
                     _NewJobObservation.Status = 7;
+                    _NewJobObservation.SectionIds = jobCategoryStructureIds;
                     _NewJobObservation.IsActive = true;
 
 
