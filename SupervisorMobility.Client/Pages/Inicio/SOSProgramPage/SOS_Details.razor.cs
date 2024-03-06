@@ -795,7 +795,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                     _NewJobObservation.Option = 2;
                     _NewJobObservation.Type = 3;
-                    _NewJobObservation.Status = 1;
+                    _NewJobObservation.Status = 7;
                     _NewJobObservation.SectionIds = jobCategoryStructureIds;
                     _NewJobObservation.IsActive = true;
 
@@ -1796,7 +1796,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                 _newSuggestion.OperationId = op.OperationId;
                                 _newSuggestion.Option = 2;
                                 _newSuggestion.Type = 3;
-                                _newSuggestion.Status = 1;
+                                _newSuggestion.Status = 7;
                                 _newSuggestion.SectionIds = jobCategoryStructureIds;
 
                                 _newSuggestion.IsActive = true;
@@ -1930,7 +1930,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                             _newSuggestion.Option = 2;
                             _newSuggestion.Type = 3;
-                            _newSuggestion.Status = 1;
+                            _newSuggestion.Status = 7;
                             _newSuggestion.SectionIds = jobCategoryStructureIds;
                             _newSuggestion.IsActive = true;
 
