@@ -41,6 +41,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private List<BreadcrumbItem> _links;
         private List<Distribution> _distributions = new();
         private List<Distribution> _distributionsSuggest = new();
+
+        public class DistSelect
+        {
+          public Distribution distribution { get; set; } 
+          public bool isSelected { get; set; } = false;
+        }
+        public List<DistSelect> Dist_Manager { get; set; } = new List<DistSelect>();
+
         private Distribution selected_distribution = new();
         private int selected_distId = 0;
         public List<Operation> _All_Operations { get; set; } = new();
@@ -54,6 +62,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         MudTabPanel panel02;
 
         private List<User> SV_Manager = new();
+   
+
         private List<Operation> _Operations = new();
 
         //register jobs processed
@@ -277,6 +287,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 if (_sos_plan != null && _sos_plan.Suggestions != null)
                 {
                     _distributionsSuggest = _distributions.Where(d => _sos_plan.Suggestions.Any(s => s.DistributionId == d.DistributionId && s.SuggestionApplied == false)).ToList();
+                    foreach(var dist in _distributionsSuggest)
+                    {
+                        DistSelect item = new DistSelect();
+                        item.distribution = new Distribution();
+                        item.distribution = dist;
+                        Dist_Manager.Add(item);
+                    }
                 }
 
                 foreach (var item in _distributions)
@@ -1704,7 +1721,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
 
-            if (selected_distId <= 0)
+            if (!Dist_Manager.Any(i => i.isSelected))
             {
                 bool? resultDist = await DialogService.ShowMessageBox(
                 "Warning",
@@ -1722,7 +1739,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
 
-            if (selected_distId > 0 && SV_Manager.Count() != 0)
+            if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0)
             {
 
                 enableCreateSuggestion = true;
@@ -1748,70 +1765,79 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                     if (_All_Suggested_SOSJobobservation.Count == 0)
                     {
-
-                        //var OperationsInDist = _All_Operations.Where(o => o.id)
-
-                        foreach (var op in selected_distribution.Operations)
+                        foreach (var item in Dist_Manager)
                         {
-                            //check if exist
-                            if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
+                            
+                            if (item.isSelected)
                             {
+                                foreach (var op in item.distribution.Operations)
+                                {
+                                    //check if exist
+                                    if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
+                                    {
 
-                                JobObservationNulls _newSuggestion = new();
+                                        JobObservationNulls _newSuggestion = new();
 
-                                int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                                // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                                int supervisorId = SV_Manager[supervisorIndex].UserId;
+                                        // Obtener el SupervisorId de SV_Manager usando el índice calculado
+                                        int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                                // Asignar el SupervisorId a _newSuggestion
-                                _newSuggestion.SupervisorId = supervisorId;
-
-
-                                SOSRegUserOperationRelationship regAux = new();
-                                regAux.Register = new();
-                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                regAux.Register.OperationId = op.OperationId;
-                                regAux.Register.SupervisorId = supervisorId;
-                                regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+                                        // Asignar el SupervisorId a _newSuggestion
+                                        _newSuggestion.SupervisorId = supervisorId;
 
 
-                                regAux.Exist = false;
-                                regAux.StateUpdate = true;
-                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-
-                                ////
-
-                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                _newSuggestion.Plant = _sos_plan.Plant;
-                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                _newSuggestion.Area = _sos_plan.Area;
-
-                                //_newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                //_newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-                                _newSuggestion.Distribution = selected_distribution;
-                                _newSuggestion.DistributionId = selected_distId;
-
-                                _newSuggestion.Operation = op;
-                                _newSuggestion.OperationId = op.OperationId;
-                                _newSuggestion.Option = 2;
-                                _newSuggestion.Type = 3;
-                                _newSuggestion.Status = 7;
-                                _newSuggestion.SectionIds = jobCategoryStructureIds;
-
-                                _newSuggestion.IsActive = true;
-
-                                DateTime parsedDate = Startday;
-                                parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                _newSuggestion.StartDate = parsedDate;
-                                _newSuggestion.PlannedStartDate = parsedDate;
+                                        SOSRegUserOperationRelationship regAux = new();
+                                        regAux.Register = new();
+                                        regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
+                                        regAux.Register.OperationId = op.OperationId;
+                                        regAux.Register.SupervisorId = supervisorId;
+                                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
 
-                                _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                                        regAux.Exist = false;
+                                        regAux.StateUpdate = true;
+                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+
+                                        ////
+
+                                        _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+                                        _newSuggestion.Plant = _sos_plan.Plant;
+                                        _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+                                        _newSuggestion.Area = _sos_plan.Area;
+
+                                        //_newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                        //_newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+                                        _newSuggestion.Distribution = selected_distribution;
+                                        _newSuggestion.DistributionId = selected_distId;
+
+                                        _newSuggestion.Operation = op;
+                                        _newSuggestion.OperationId = op.OperationId;
+                                        _newSuggestion.Option = 2;
+                                        _newSuggestion.Type = 3;
+                                        _newSuggestion.Status = 7;
+                                        _newSuggestion.SectionIds = jobCategoryStructureIds;
+
+                                        _newSuggestion.IsActive = true;
+
+                                        DateTime parsedDate = Startday;
+                                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+                                        _newSuggestion.StartDate = parsedDate;
+                                        _newSuggestion.PlannedStartDate = parsedDate;
+
+
+                                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                                    }
+
+                                }
+
                             }
 
                         }
+                        //var OperationsInDist = _All_Operations.Where(o => o.id)
+
+                        
                     }
 
                 }
@@ -2114,6 +2140,33 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             selected_distribution = _distributions?.Find(d => d.DistributionId == selected_distId);
         }
+
+        public void UpdateMultiDistribution(DistSelect CheckItem)
+        {
+            CheckItem.isSelected = !CheckItem.isSelected;
+            Console.Write(CheckItem.distribution.Code);
+            StateHasChanged();
+        }  
+        
+        public void SelectUnselect()
+        {
+            if (Dist_Manager.Any(i => i.isSelected))
+            {
+                foreach (var item in Dist_Manager)
+                {
+                    item.isSelected = false;
+                }
+            }
+            else{
+                foreach (var item in Dist_Manager)
+                {
+                    item.isSelected = true;
+                }
+
+            }
+                StateHasChanged();
+        }
+
 
     }//end sos clas
 
