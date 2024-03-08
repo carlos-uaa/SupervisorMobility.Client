@@ -2552,11 +2552,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        private void UpdateComment()
-        {
-        }
-
-
         private void UpdateListEntry(int pillarId, string notGood, int section, int order, string currentComment)
         {
 
