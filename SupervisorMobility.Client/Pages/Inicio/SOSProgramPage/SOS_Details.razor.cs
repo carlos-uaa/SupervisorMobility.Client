@@ -151,6 +151,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         int JobsPorDia = 1;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false,  DisableBackdropClick = true, CloseButton = false };
 
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
         SosJobCount opInDistDialog = new();
@@ -240,6 +241,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private bool isButtonDisabled = false;
         private bool SVSinCharge = false;
 
+        //sv panel
+        private bool visibleSVDialog = false;
+        private int selectedSVPanel = 0;
+        private int selectedSOPPanel = 0;
+      
 
         protected async override Task OnInitializedAsync()
         {
@@ -1418,6 +1424,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task BtnSupervisorsEdit(int op)
         {
+            CloseSVPanelDialog();
+
             if (SOS_Registers_UserOperationRelationship.TryGetValue(op, out var context))
             {
                 context.StateUpdate = !context.StateUpdate;
@@ -1607,7 +1615,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                     }
                 }
-
 
             }
             //Distribution tmpPerson = _distributions.First(f => f.DistributionId == nr);
@@ -2209,8 +2216,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 StateHasChanged();
         }
 
+        SOSRegUserOperationRelationship RegSelect = new();
+        private void OpenSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
+        {
+            if(panelid != 2)
+                selectedSVPanel = panelid;
+          
+            RegSelect = itemselect;
+            selectedSOPPanel = op;
 
-    }//end sos clas
+            if (panelid == 1)
+            {
+                RegSelect.StateUpdate = true;
+            }
+            visibleSVDialog = true;
+        }
+
+        void CloseSVPanelDialog() => visibleSVDialog = false;
+
+
+    }//end sos class
 
 
 }
