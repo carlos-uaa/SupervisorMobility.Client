@@ -243,6 +243,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         //sv panel
         private bool visibleSVDialog = false;
+        private bool visibleSuggestSVDialog = false;
         private int selectedSVPanel = 0;
         private int selectedSOPPanel = 0;
       
@@ -2232,7 +2233,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             visibleSVDialog = true;
         }
 
-        void CloseSVPanelDialog() => visibleSVDialog = false;
+        void CloseSVPanelDialog() => visibleSVDialog = false;  
+        
+        private void OpenSuggestSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
+        {
+            if(panelid != 2)
+                selectedSVPanel = panelid;
+          
+            RegSelect = itemselect;
+            selectedSOPPanel = op;
+
+            if (panelid == 1)
+            {
+                RegSelect.StateUpdate = true;
+            }
+            visibleSuggestSVDialog = true;
+        }
+
+        void CloseSuggestSVPanelDialog() => visibleSuggestSVDialog = false;
 
 
     }//end sos class
