@@ -2881,34 +2881,38 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item)
+        private void AddLupOpportunity(ChecklistQuestion question, ChecklistAnswer item)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            switch (pillarId)
+            var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+            foreach (var pillar in question.Pillars)
             {
-                case 1:
-                    areaS = notGood;
-                    Snackbar.Add(Localizer["LupAddSE"], Severity.Warning);
-                    break;
-                case 2:
-                    areaQ = notGood;
-                    Snackbar.Add(Localizer["LupAddQP"], Severity.Warning);
-                    break;
-                case 3:
-                    areaD = notGood;
-                    Snackbar.Add(Localizer["LUPAddDP"], Severity.Warning);
-                    break;
-                case 4:
-                    areaC = notGood;
-                    Snackbar.Add(Localizer["LUPAddCP"], Severity.Warning);
-                    break;
-                case 5:
-                    areaOther = notGood;
-                    Snackbar.Add(Localizer["LUPAddOP"], Severity.Warning);
-                    break;
+                switch (pillar)
+                {
+                    case 1:
+                        areaS = notGood;
+                        Snackbar.Add(Localizer["LupAddSE"], Severity.Warning);
+                        break;
+                    case 2:
+                        areaQ = notGood;
+                        Snackbar.Add(Localizer["LupAddQP"], Severity.Warning);
+                        break;
+                    case 3:
+                        areaD = notGood;
+                        Snackbar.Add(Localizer["LUPAddDP"], Severity.Warning);
+                        break;
+                    case 4:
+                        areaC = notGood;
+                        Snackbar.Add(Localizer["LUPAddCP"], Severity.Warning);
+                        break;
+                    case 5:
+                        areaOther = notGood;
+                        Snackbar.Add(Localizer["LUPAddOP"], Severity.Warning);
+                        break;
 
+                }
             }
 
             item.Show = true;

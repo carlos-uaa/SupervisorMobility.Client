@@ -34,6 +34,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 new BreadcrumbItem("New question", href: "", disabled: true),
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
+
+            _question.Pillars = new List<int> { 0 };
         }
 
         // Create question
@@ -48,6 +50,20 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         void CancelCreateOrUpdate()
         {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
+        }
+
+        //Add pillar to list
+        void AddPillar()
+        {
+            _question.Pillars.Add(0);
+        }
+
+        // Remove pillar from list
+        void RemovePillar(int index)
+        {
+            _question.Pillars.RemoveAt(index);
+            if (!_question.Pillars.Any())
+                _question.Pillars.Add(0);
         }
     }
 }

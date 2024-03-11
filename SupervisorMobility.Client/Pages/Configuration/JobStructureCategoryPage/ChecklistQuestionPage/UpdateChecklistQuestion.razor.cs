@@ -62,5 +62,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
+
+        //Add pillar to list
+        void AddPillar()
+        {
+            _question.Pillars.Add(0);
+        }
+
+        // Remove pillar from list
+        void RemovePillar(int index)
+        {
+            _question.Pillars.RemoveAt(index);
+            if (!_question.Pillars.Any())
+                _question.Pillars.Add(0);
+        }
     }
 }
