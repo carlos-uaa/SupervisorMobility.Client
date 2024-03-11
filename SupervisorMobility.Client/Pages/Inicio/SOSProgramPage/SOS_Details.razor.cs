@@ -796,7 +796,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-
         private async void CreateJobObservation(int month, int DistributionId, int OperationId)
         {
             disableBtnCreateSos = true;
@@ -832,6 +831,88 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
                     var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                    if (result != null)
+                    {
+                        disableBtnCreateSos = false;
+
+                        ShowTable = false;
+                        StateHasChanged();
+
+
+                        await PrepareDataTable();
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"SOS Review Job Observation Created", Severity.Info);
+                        StateHasChanged();
+                    }
+                }
+                else
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                    "Atencion",
+                    (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
+                    yesText: "Entendio!");
+
+                    Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+
+                    //msg de crear Supervisor
+                }
+
+            }
+            else
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                "Atencion",
+                (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
+                yesText: "Entendio!");
+
+                Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+
+                //msg de crear Supervisor
+            }
+
+
+
+            disableBtnCreateSos = false;
+            StateHasChanged();
+        }
+
+        private async void CreateJobObservationInMonth(int day, int DistributionId, int OperationId)
+        {
+            disableBtnCreateSos = true;
+            StateHasChanged();
+
+
+            bool existeClave = SOS_Registers_UserOperationRelationship.ContainsKey(OperationId);
+
+            if (SOS_Registers_UserOperationRelationship.TryGetValue(OperationId, out var context))
+            {
+                if (context.Exist)
+                {
+
+                    _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
+                    _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
+                    _NewJobObservation.OperationId = OperationId;
+                    _NewJobObservation.DistributionId = DistributionId;
+
+                    _NewJobObservation.SupervisorId = (int)context.Register.SupervisorId;
+
+                    _NewJobObservation.Option = 2;
+                    _NewJobObservation.Type = 3;
+                    _NewJobObservation.Status = 7;
+                    _NewJobObservation.SectionIds = jobCategoryStructureIds;
+                    _NewJobObservation.IsActive = true;
+
+
+                    DateTime parsedDate = new DateTime((int)_sos_plan.AplicationYear, _yearMonth.Value.Month, day);
+                    parsedDate = await FindNextAvailableDate(parsedDate, false);
+                    _NewJobObservation.StartDate = parsedDate;
+
+
+
+
+                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month ,(int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         disableBtnCreateSos = false;
@@ -1807,17 +1888,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         regAux.StateUpdate = true;
                                         Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
 
-                                        ////
 
                                         _newSuggestion.PlantId = (int)_sos_plan.PlantId;
                                         _newSuggestion.Plant = _sos_plan.Plant;
                                         _newSuggestion.AreaId = (int)_sos_plan.AreaId;
                                         _newSuggestion.Area = _sos_plan.Area;
 
-                                        //_newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                        //_newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-                                        _newSuggestion.Distribution = selected_distribution;
-                                        _newSuggestion.DistributionId = selected_distId;
+                                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
 
                                         _newSuggestion.Operation = op;
                                         _newSuggestion.OperationId = op.OperationId;
@@ -2157,6 +2235,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             base.StateHasChanged();
             StateHasChanged();
 
+           
             var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, _All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
             if (result)
             {
