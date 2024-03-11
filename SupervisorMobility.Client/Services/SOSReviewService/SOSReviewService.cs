@@ -1,6 +1,8 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise.Utilities;
+using Microsoft.JSInterop;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage;
 using System.Net.Http.Json;
+using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 
 namespace SupervisorMobility.Client.Services.SOSReviewService
 {
@@ -199,11 +201,14 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs, int dist_id)
+        public async Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs, List<DistSelect> distribuciones)
         {
-            
 
-            var response = await _http.PostAsJsonAsync($"SOSReview/Registers/{SOS_Id}/ApplySuggest/{dist_id}", Jobs);
+            RequestMassiveDistributionSos requestMassiveDistributionSos = new RequestMassiveDistributionSos();
+            requestMassiveDistributionSos.distributions = distribuciones;
+            requestMassiveDistributionSos.Jobs = Jobs;
+
+            var response = await _http.PostAsJsonAsync($"SOSReview/Registers/{SOS_Id}/ApplySuggest", requestMassiveDistributionSos);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;

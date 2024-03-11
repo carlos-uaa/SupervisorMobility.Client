@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.SOSReviewService
+﻿using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
+
+namespace SupervisorMobility.Client.Services.SOSReviewService
 {
     public interface ISOSReviewService
     {
@@ -15,7 +17,7 @@
         Task<SOSRegisterJobObservation> CreateSOSRegister(int SOSid, int month, int year, JobObservation JobEntity);
         Task<List<SOSRegisterJobObservation>> GetSOSRegisters(int sosid);
 
-        Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs, int dist_id);
+        Task<bool> ApplyMassiveSuggest(int SOS_Id, List<JobObservationNulls> Jobs, List<DistSelect> distribuciones);
 
        Task<SOSRegUserOperation> CreateSOSRegUserOperation(int SOSid, int SupervisorId, int OperationId);
         Task<List<SOSRegUserOperation>> GetSOSRegUserOperation(int sosid);

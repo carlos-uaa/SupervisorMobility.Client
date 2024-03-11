@@ -95,8 +95,73 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
 
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
+        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
+        private CDMS_GOS_Archives? AuxGosFilesInFolder;
+        //Error Display Rutes Select ONLY
+        private bool folderCCPError = false;
+        private bool folderHOEError = false;
+        private bool folderGOSError = false;
+        //Display Files Errors
+        private bool folderErrorGOS = false;
+        private bool folderErrorCCP = false;
+        private bool folderErrorHOE = false;
+        private string HOErute = "";
+        private string CCPrute = "";
+        private string GOSrute = "";
+        //CommonDirection
+        private bool folderErrorGOSCD = false;
+        private bool folderErrorCCPCD = false;
+        private bool folderErrorHOECD = false;
+        private string HOEruteCD = "";
+        private string CCPruteCD = "";
+        private string GOSruteCD = "";
+        //CommonDirection Files
+        private CDMS_CCP_Archives? CcpFilesInFolderCD;
+        private CDMS_HOE_Archives? HoeFilesInFolderCD;
+        private CDMS_GOS_Archives? GosFilesInFolderCD;
+        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
+        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
+        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
+
+
+        private bool if_pick_Plant = false;
+        private bool if_pick_Area = false;
+        private bool if_pick_Distribution = false;
+        private int productId = 0;
+        public int idFilter;
+
+        MudTabs FilesViewer;
+        MudTabPanel HOE;
+        MudTabPanel HOECD;
+        MudTabPanel CCP;
+        MudTabPanel CCPCD;
+        MudTabPanel GOS;
+        MudTabPanel GOSCD;
+
+        public bool CodePathModalDisplay { get; set; } = false;
+        private string searchCodeString = "";
+        bool ShowLoading = true;
+
+        SOSCodePath CodePathDialogDisplay { get; set; }
+
+
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
 
             if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
             {
@@ -123,6 +188,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
 
 
+           
+
+            if (ProgrammedStartDate != "" && ProgrammedStartDate != null)
+            {
+                _jobObservation.StartDate = AuxProgrammedDate;
+                _jobObservation.EndDate = AuxProgrammedDate;
+                LastdayYear = new DateTime(_jobObservation.StartDate.Value.Year, 12, 31);
+            }
+            else
+            {
+                startHour = _jobObservation.StartDate?.TimeOfDay;
+                endHour = _jobObservation.EndDate?.TimeOfDay;
+
+            }
+
+            AssyFolders();
+            ShowLoading = false;
+        }
+
+        private async Task AssyFolders() {
+
             try
             {
                 CCPFolders = await CDMSServices.GetFoldersCCP();
@@ -143,20 +229,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 folderCCPError = true;
             }
-
-            if (ProgrammedStartDate != "" && ProgrammedStartDate != null)
-            {
-                _jobObservation.StartDate = AuxProgrammedDate;
-                _jobObservation.EndDate = AuxProgrammedDate;
-                LastdayYear = new DateTime(_jobObservation.StartDate.Value.Year, 12, 31);
-            }
-            else
-            {
-                startHour = _jobObservation.StartDate?.TimeOfDay;
-                endHour = _jobObservation.EndDate?.TimeOfDay;
-
-            }
-
 
             if (_jobObservation.PlantId != 0)
             {
@@ -211,9 +283,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
-
         }
-
 
         private void OnStartDateChanged(DateTime dt)
         {
@@ -382,58 +452,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
         }
 
-        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
-        private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
-        //CommonDirection Files
-        private CDMS_CCP_Archives? CcpFilesInFolderCD;
-        private CDMS_HOE_Archives? HoeFilesInFolderCD;
-        private CDMS_GOS_Archives? GosFilesInFolderCD;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
-        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
-
-
-        private bool if_pick_Plant = false;
-        private bool if_pick_Area = false;
-        private bool if_pick_Distribution = false;
-        private int productId = 0;
-        public int idFilter;
-
-        MudTabs FilesViewer;
-        MudTabPanel HOE;
-        MudTabPanel HOECD;
-        MudTabPanel CCP;
-        MudTabPanel CCPCD;
-        MudTabPanel GOS;
-        MudTabPanel GOSCD;
-
-        public bool CodePathModalDisplay { get; set; } = false;
-        private string searchCodeString = "";
-        bool ShowLoading = true;
-        private IList<string> _sourceMsgLoading = new List<string>();
-        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
-
-        SOSCodePath CodePathDialogDisplay { get; set; }
-
+       
 
         private async void CloseModalFiles()
         {
