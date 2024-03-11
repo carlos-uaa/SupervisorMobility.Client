@@ -2556,54 +2556,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        private void UpdateListEntry(int pillarId, string notGood, int section, int order, string currentComment)
+        private void UpdateListEntry(ChecklistQuestion question, int secNum, string currentComment)
         {
-
-            string searchString = $"{section}.{order}- {notGood}";
-            string fullEntry = $"{section}.{order}- {notGood}";
+            var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+            string searchString = $"{secNum}.{question.CategorySequence}- {notGood}";
+            string fullEntry = $"{secNum}.{question.CategorySequence}- {notGood}";
 
             if (!string.IsNullOrEmpty(currentComment))
             {
                 fullEntry += $", comentario: {currentComment}";
             }
-
-            switch (pillarId)
+            foreach (var pillarId in question.Pillars)
             {
-                case 1:
-                    int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListS != null && index1 != -1)
-                    {
-                        area_ListS[index1] = fullEntry;
-                    }
-                    break;
-                case 2:
-                    int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListQ != null && index2 != -1)
-                    {
-                        area_ListQ[index2] = fullEntry;
-                    }
-                    break;
-                case 3:
-                    int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListD != null && index3 != -1)
-                    {
-                        area_ListD[index3] = fullEntry;
-                    }
-                    break;
-                case 4:
-                    int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListC != null && index4 != -1)
-                    {
-                        area_ListC[index4] = fullEntry;
-                    }
-                    break;
-                case 5:
-                    int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListOther != null && index5 != -1)
-                    {
-                        area_ListOther[index5] = fullEntry;
-                    }
-                    break;
+                switch (pillarId)
+                {
+                    case 1:
+                        int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListS != null && index1 != -1)
+                        {
+                            area_ListS[index1] = fullEntry;
+                        }
+                        break;
+                    case 2:
+                        int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListQ != null && index2 != -1)
+                        {
+                            area_ListQ[index2] = fullEntry;
+                        }
+                        break;
+                    case 3:
+                        int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListD != null && index3 != -1)
+                        {
+                            area_ListD[index3] = fullEntry;
+                        }
+                        break;
+                    case 4:
+                        int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListC != null && index4 != -1)
+                        {
+                            area_ListC[index4] = fullEntry;
+                        }
+                        break;
+                    case 5:
+                        int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListOther != null && index5 != -1)
+                        {
+                            area_ListOther[index5] = fullEntry;
+                        }
+                        break;
+                }
             }
         }
 
