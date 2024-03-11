@@ -220,6 +220,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 _sosReview.Supervisors = new List<User>();
             }
+            _Supervisors = new();
             _sosReview.Supervisors?.Clear();
             cantCreate = true;
 
