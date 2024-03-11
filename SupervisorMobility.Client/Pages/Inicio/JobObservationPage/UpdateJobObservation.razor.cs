@@ -153,6 +153,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string currentImage = "";
 
         bool NoData { get; set; } = false;
+        //Lup list
+        public List<string> area_ListS = new List<string>();
+        public List<string> area_ListQ = new List<string>();
+        public List<string> area_ListD = new List<string>();
+        public List<string> area_ListC = new List<string>();
+        public List<string> area_ListOther = new List<string>();
+        List<Lup> _tempLup { get; set; } = new();
 
         protected async override Task OnInitializedAsync()
         {
@@ -3253,6 +3260,272 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             return new AsyncVoidMethodBuilder();
+        }
+
+        //LUP
+        public void AddTempLup(int pillar)
+        {
+            if (_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"First select a Supervisor", Severity.Error);
+                return;
+            }
+
+            List<Lup> lupsToAdd = new List<Lup>();
+
+            switch (pillar)
+            {
+                case 1:
+                    if (area_ListS != null && area_ListS.Count > 0)
+                    {
+                        foreach (string str in area_ListS)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListS.Clear();
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 2:
+                    if (area_ListQ != null && area_ListQ.Count > 0)
+                    {
+                        foreach (string str in area_ListQ)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListQ.Clear();
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 3:
+                    if (area_ListD != null && area_ListD.Count > 0)
+                    {
+                        foreach (string str in area_ListD)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListD.Clear();
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 4:
+                    if (area_ListC != null && area_ListC.Count > 0)
+                    {
+                        foreach (string str in area_ListC)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListC.Clear();
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+                case 5:
+                    if (area_ListOther != null && area_ListOther.Count > 0)
+                    {
+                        foreach (string str in area_ListOther)
+                        {
+                            Lup newLup = new Lup();
+                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
+                            lupsToAdd?.Add(newLup);
+                        }
+                        area_ListOther.Clear();
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+                        return;
+                    }
+                    break;
+
+            }
+
+
+            User svAux = _jobObservation.Supervisor;
+
+            foreach (Lup LupItem in lupsToAdd)
+            {
+                LupItem.Observer = svAux.Name;
+
+                LupItem.JobObservationId = 0;
+                LupItem.Pillar = pillar;
+                LupItem.Status = 1;
+                LupItem.CreatedDate = DateTime.Now;
+                LupItem.IsActive = true;
+
+                _tempLup.Add(LupItem);
+            }
+            lup = new();
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Lup item added", Severity.Info);
+
+        }
+
+        private void RemoveFromList(int pilarId, int indexRemove)
+        {
+            switch (pilarId)
+            {
+                case 1:
+                    area_ListS?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 2:
+                    area_ListQ?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 3:
+                    area_ListD?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Delivery Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 4:
+                    area_ListC?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    area_ListOther?.RemoveAt(indexRemove);
+                    Snackbar.Add("LUP remove in Other Pillar SECTION 3", Severity.Warning);
+                    break;
+            }
+
+            base.StateHasChanged();
+        }
+
+        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item, int secction, int order)
+        {
+
+            Snackbar.Configuration.MaxDisplayedSnackbars = 5;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            switch (pillarId)
+            {
+                case 1:
+                    areaS = notGood;
+                    area_ListS?.Add($"{secction}.{order}- " + notGood);
+                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 2:
+                    areaQ = notGood;
+                    area_ListQ?.Add($"{secction}.{order}- " + notGood);
+                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 3:
+                    areaD = notGood;
+                    area_ListD?.Add($"{secction}.{order}- " + notGood);
+                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 4:
+                    areaC = notGood;
+                    area_ListC?.Add($"{secction}.{order}- " + notGood);
+                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                    break;
+                case 5:
+                    areaOther = notGood;
+                    area_ListOther?.Add($"{secction}.{order}- " + notGood);
+                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
+                    break;
+
+            }
+
+            item.Show = true;
+            item.Edited = true;
+
+            //foreach (var kvp in questionResponses)
+            //{
+            //    int questionId = kvp.Key;
+            //    string answer = kvp.Value;
+            //    Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
+
+            //}
+
+            StateHasChanged();
+            base.StateHasChanged();
+        }
+
+        private void UpdateListEntry(int pillarId, string notGood, int section, int order, string currentComment)
+        {
+
+            string searchString = $"{section}.{order}- {notGood}";
+            string fullEntry = $"{section}.{order}- {notGood}";
+
+            if (!string.IsNullOrEmpty(currentComment))
+            {
+                fullEntry += $", comentario: {currentComment}";
+            }
+
+            switch (pillarId)
+            {
+                case 1:
+                    int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
+                    if (area_ListS != null && index1 != -1)
+                    {
+                        area_ListS[index1] = fullEntry;
+                    }
+                    break;
+                case 2:
+                    int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
+                    if (area_ListQ != null && index2 != -1)
+                    {
+                        area_ListQ[index2] = fullEntry;
+                    }
+                    break;
+                case 3:
+                    int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
+                    if (area_ListD != null && index3 != -1)
+                    {
+                        area_ListD[index3] = fullEntry;
+                    }
+                    break;
+                case 4:
+                    int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
+                    if (area_ListC != null && index4 != -1)
+                    {
+                        area_ListC[index4] = fullEntry;
+                    }
+                    break;
+                case 5:
+                    int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
+                    if (area_ListOther != null && index5 != -1)
+                    {
+                        area_ListOther[index5] = fullEntry;
+                    }
+                    break;
+            }
         }
 
     }//end class
