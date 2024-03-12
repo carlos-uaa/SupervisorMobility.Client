@@ -3355,6 +3355,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 fullEntry += $", comentario: {currentComment}";
             }
 
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+
             foreach (var pillarId in question.Pillars)
             {
                 switch (pillarId)
@@ -3364,6 +3368,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (area_ListS != null && index1 != -1)
                         {
                             area_ListS[index1] = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                     case 2:
@@ -3371,6 +3376,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (area_ListQ != null && index2 != -1)
                         {
                             area_ListQ[index2] = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                     case 3:
@@ -3378,6 +3384,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (area_ListD != null && index3 != -1)
                         {
                             area_ListD[index3] = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                     case 4:
@@ -3385,6 +3392,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (area_ListC != null && index4 != -1)
                         {
                             area_ListC[index4] = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                     case 5:
@@ -3392,6 +3400,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (area_ListOther != null && index5 != -1)
                         {
                             area_ListOther[index5] = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                 }
