@@ -2334,39 +2334,43 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             base.StateHasChanged();
         }
-        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item, int secction, int order)
+        private void AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            switch (pillarId)
+            var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+            foreach (var pillar in question.Pillars)
             {
-                case 1:
-                    areaS = notGood;
-                    area_ListS?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 2:
-                    areaQ = notGood;
-                    area_ListQ?.Add($"{secction}.{order}- "+notGood);
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 3:
-                    areaD = notGood;
-                    area_ListD?.Add($"{secction}.{order}- "+notGood);
-                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 4:
-                    areaC = notGood;
-                    area_ListC?.Add($"{secction}.{order}- " +notGood);
-                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 5:
-                    areaOther = notGood;
-                    area_ListOther?.Add($"{secction}.{order}- "+notGood);
-                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
-                    break;
+                switch (pillar)
+                {
+                    case 1:
+                        areaS = notGood;
+                        area_ListS?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 2:
+                        areaQ = notGood;
+                        area_ListQ?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 3:
+                        areaD = notGood;
+                        area_ListD?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 4:
+                        areaC = notGood;
+                        area_ListC?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 5:
+                        areaOther = notGood;
+                        area_ListOther?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
+                        break;
 
+                }
             }
 
             item.Show = true;

@@ -2502,39 +2502,43 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private void AddLupOpportunity(int pillarId, string notGood, ChecklistAnswer item, int secction, int order)
+        private void AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            switch (pillarId)
+            var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+            foreach (var pillar in question.Pillars)
             {
-                case 1:
-                    areaS = notGood;
-                    area_ListS?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 2:
-                    areaQ = notGood;
-                    area_ListQ?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 3:
-                    areaD = notGood;
-                    area_ListD?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 4:
-                    areaC = notGood;
-                    area_ListC?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
-                    break;
-                case 5:
-                    areaOther = notGood;
-                    area_ListOther?.Add($"{secction}.{order}- " + notGood);
-                    Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
-                    break;
+                switch (pillar)
+                {
+                    case 1:
+                        areaS = notGood;
+                        area_ListS?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 2:
+                        areaQ = notGood;
+                        area_ListQ?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 3:
+                        areaD = notGood;
+                        area_ListD?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 4:
+                        areaC = notGood;
+                        area_ListC?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                        break;
+                    case 5:
+                        areaOther = notGood;
+                        area_ListOther?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                        Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
+                        break;
 
+                }
             }
 
             item.Show = true;
@@ -2552,54 +2556,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        private void UpdateListEntry(int pillarId, string notGood, int section, int order, string currentComment)
+        private void UpdateListEntry(ChecklistQuestion question, int secNum, string currentComment)
         {
-
-            string searchString = $"{section}.{order}- {notGood}";
-            string fullEntry = $"{section}.{order}- {notGood}";
+            var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+            string searchString = $"{secNum}.{question.CategorySequence}- {notGood}";
+            string fullEntry = $"{secNum}.{question.CategorySequence}- {notGood}";
 
             if (!string.IsNullOrEmpty(currentComment))
             {
                 fullEntry += $", comentario: {currentComment}";
             }
-
-            switch (pillarId)
+            foreach (var pillarId in question.Pillars)
             {
-                case 1:
-                    int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListS != null && index1 != -1)
-                    {
-                        area_ListS[index1] = fullEntry;
-                    }
-                    break;
-                case 2:
-                    int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListQ != null && index2 != -1)
-                    {
-                        area_ListQ[index2] = fullEntry;
-                    }
-                    break;
-                case 3:
-                    int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListD != null && index3 != -1)
-                    {
-                        area_ListD[index3] = fullEntry;
-                    }
-                    break;
-                case 4:
-                    int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListC != null && index4 != -1)
-                    {
-                        area_ListC[index4] = fullEntry;
-                    }
-                    break;
-                case 5:
-                    int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
-                    if (area_ListOther != null && index5 != -1)
-                    {
-                        area_ListOther[index5] = fullEntry;
-                    }
-                    break;
+                switch (pillarId)
+                {
+                    case 1:
+                        int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListS != null && index1 != -1)
+                        {
+                            area_ListS[index1] = fullEntry;
+                        }
+                        break;
+                    case 2:
+                        int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListQ != null && index2 != -1)
+                        {
+                            area_ListQ[index2] = fullEntry;
+                        }
+                        break;
+                    case 3:
+                        int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListD != null && index3 != -1)
+                        {
+                            area_ListD[index3] = fullEntry;
+                        }
+                        break;
+                    case 4:
+                        int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListC != null && index4 != -1)
+                        {
+                            area_ListC[index4] = fullEntry;
+                        }
+                        break;
+                    case 5:
+                        int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
+                        if (area_ListOther != null && index5 != -1)
+                        {
+                            area_ListOther[index5] = fullEntry;
+                        }
+                        break;
+                }
             }
         }
 
