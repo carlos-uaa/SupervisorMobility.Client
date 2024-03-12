@@ -363,7 +363,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
-                new BreadcrumbItem(text: Localizer["sosDetails"], href: "", disabled: true),
+                new BreadcrumbItem(text: Localizer["sosDetails"],  href: $"sosDetails/{_sos_plan.SOSid}"),
                 new BreadcrumbItem(text: $"SOS Anual Plan {_sos_plan.AplicationYear}", href: $"sosDetails/{_sos_plan.SOSid}"),
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
@@ -371,10 +371,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-           
+            if (!ShowLoading)
+            {
                 await JS.InvokeVoidAsync("blazorUtilsSOS.setDynamicLeftSOS");
                 await JS.InvokeVoidAsync("blazorUtilsTOPSOS.setDynamicTOP");
-            
+            }
+
+                //await JS.InvokeVoidAsync("blazorUtils.truncateText");
+
         }
         private void GenerateCalendarHead()
         {
@@ -1828,7 +1832,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
 
-            if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0)
+            if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
 
                 enableCreateSuggestion = true;
@@ -1980,7 +1984,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
 
-            if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0)
+            if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
 
                 isButtonDisabled = true;

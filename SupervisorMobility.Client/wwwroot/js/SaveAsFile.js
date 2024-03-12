@@ -60,18 +60,3 @@ window.downloadFile = async (fileName, url) => {
         console.log(`Error en la descarga del archivo: ${error}`);
     }
 }
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    var marqueeText = document.getElementById("marqueeText");
-    var textLength = marqueeText.textContent.length;
-
-    if (textLength > 30) {
-        setTimeout(function () {
-            marqueeText.textContent = marqueeText.textContent.substr(0, 30) + "...";
-            marqueeText.style.animation = "none"; // Detiene la animación inicial
-        }, 3000); // Espera 3 segundos antes de truncar el texto
-
-        marqueeText.style.animation = "marquee 5s linear infinite"; // Reanuda la animación con el texto truncado
-    }
-});
