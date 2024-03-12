@@ -1690,138 +1690,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        //Lup
-        public async void AddLup(int pillar)
-        {
-
-            switch (pillar)
-            {
-                case 1:
-                    if (areaS != null && areaS.Length > 0)
-                    {
-                        lup.Oportunity = areaS;
-                        areaS = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["ErrorSArea"], Severity.Error);
-                        return;
-                    }
-                    break;
-                case 2:
-                    if (areaQ != null && areaQ.Length > 0)
-                    {
-                        lup.Oportunity = areaQ;
-                        areaQ = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["ErrorQArea"], Severity.Error);
-                        return;
-                    }
-                    break;
-                case 3:
-                    if (areaD != null && areaD.Length > 0)
-                    {
-                        lup.Oportunity = areaD;
-                        areaD = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["ErrorDArea"], Severity.Error);
-                        return;
-                    }
-                    break;
-                case 4:
-                    if (areaC != null && areaC.Length > 0)
-                    {
-                        lup.Oportunity = areaC;
-                        areaC = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["ErrorCArea"], Severity.Error);
-                        return;
-                    }
-                    break;
-                case 5:
-                    if (areaOther != null && areaOther.Length > 0)
-                    {
-                        lup.Oportunity = areaOther;
-                        areaOther = "";
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["ErrorOtherArea"], Severity.Error);
-                        return;
-                    }
-                    break;
-
-            }
-
-            lup.Observer = _jobObservation.Supervisor.Name;
-            lup.JobObservationId = _jobObservation.JobObservationId;
-            lup.Pillar = pillar;
-            lup.Status = 1;
-            lup.CreatedDate = DateTime.Now;
-            lup.IsActive = true;
-
-
-            var result = await LupService.CreateLup(lup);
-            if (result != null)
-            {
-                _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
-
-                await GetUserAsync();
-
-                pastjobObservations = new();
-                pastLup = new();
-                if (user != null)
-                {
-                    pastJobs = await JobObservationService.GetAllJobObservations();
-
-                    foreach (var job in pastJobs)
-                    {
-                        if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
-                        {
-
-                            pastjobObservations.Add(job);
-
-                            pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
-                            foreach (var lups in pastJob.Lup)
-                            {
-                                pastLup.Add(lups);
-                            }
-                        }
-
-                    }
-
-                }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
-                StateHasChanged();
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Lup Created", Severity.Info);
-            }
-            else
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error in Lup", Severity.Error);
-            }
-        }
 
 
         //Past Job Observations Modal
@@ -3214,8 +3082,59 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             return new AsyncVoidMethodBuilder();
         }
 
+        //Lup
+        public async Task AddLup(Lup lup)
+        {
+
+            var result = await LupService.CreateLup(lup);
+            if (result != null)
+            {
+                _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
+
+                await GetUserAsync();
+
+                pastjobObservations = new();
+                pastLup = new();
+                if (user != null)
+                {
+                    pastJobs = await JobObservationService.GetAllJobObservations();
+
+                    foreach (var job in pastJobs)
+                    {
+                        if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                        {
+
+                            pastjobObservations.Add(job);
+
+                            pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
+                            foreach (var lups in pastJob.Lup)
+                            {
+                                pastLup.Add(lups);
+                            }
+                        }
+
+                    }
+
+                }
+                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
+                StateHasChanged();
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Lup Created", Severity.Info);
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Lup", Severity.Error);
+            }
+        }
+
+
         //LUP
-        public void AddTempLup(int pillar)
+        public async void AddTempLup(int pillar)
         {
             if (_jobObservation.SupervisorId == 0)
             {
@@ -3328,19 +3247,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            User svAux = _jobObservation.Supervisor;
-
             foreach (Lup LupItem in lupsToAdd)
             {
-                LupItem.Observer = svAux.Name;
+                LupItem.Observer = _jobObservation.Supervisor.Name;
 
-                LupItem.JobObservationId = 0;
+                LupItem.JobObservationId = _jobObservation.JobObservationId;
                 LupItem.Pillar = pillar;
                 LupItem.Status = 1;
                 LupItem.CreatedDate = DateTime.Now;
                 LupItem.IsActive = true;
 
-                _tempLup.Add(LupItem);
+                await AddLup(LupItem);
             }
             lup = new();
 
