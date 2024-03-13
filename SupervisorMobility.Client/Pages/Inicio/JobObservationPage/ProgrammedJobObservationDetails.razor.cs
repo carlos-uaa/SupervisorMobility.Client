@@ -163,12 +163,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
 
-            if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
-            {
-                Console.WriteLine($"Primera Conversion Exitosa");
-                AuxProgrammedDate = AuxDate;
-                // La conversión fue exitosa, ahora puedes usar 'date'
-            }
+            //if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
+            //{
+            //    Console.WriteLine($"Primera Conversion Exitosa" + AuxDate);
+            //    AuxProgrammedDate = AuxDate;
+            //    // La conversión fue exitosa, ahora puedes usar 'date'
+            //}
+
+            ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
+            AuxProgrammedDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
 
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
@@ -371,7 +374,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.Status = 1;
 
-                Console.WriteLine(LoggedUser.Name);
 
                 var result = await JobObservationService.UpdateJobObservation(_jobObservation, LoggedUser.ObjectId);
 
