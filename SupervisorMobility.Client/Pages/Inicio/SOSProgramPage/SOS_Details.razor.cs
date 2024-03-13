@@ -44,8 +44,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         public class DistSelect
         {
-          public Distribution distribution { get; set; } 
-          public bool isSelected { get; set; } = false;
+            public Distribution distribution { get; set; }
+            public bool isSelected { get; set; } = false;
         }
         public List<DistSelect> Dist_Manager { get; set; } = new List<DistSelect>();
 
@@ -62,7 +62,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         MudTabPanel panel02;
 
         private List<User> SV_Manager = new();
-   
+
 
         private List<Operation> _Operations = new();
 
@@ -151,7 +151,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         int JobsPorDia = 1;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-        private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false,  DisableBackdropClick = true, CloseButton = false };
+        private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
 
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
         SosJobCount opInDistDialog = new();
@@ -246,7 +246,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private bool visibleSuggestSVDialog = false;
         private int selectedSVPanel = 0;
         private int selectedSOPPanel = 0;
-      
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -276,7 +276,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             labels = labelaux.ToArray();
 
-           
+
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -294,7 +294,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 if (_sos_plan != null && _sos_plan.Suggestions != null)
                 {
                     _distributionsSuggest = _distributions.Where(d => _sos_plan.Suggestions.Any(s => s.DistributionId == d.DistributionId && s.SuggestionApplied == false)).ToList();
-                    foreach(var dist in _distributionsSuggest)
+                    foreach (var dist in _distributionsSuggest)
                     {
                         DistSelect item = new DistSelect();
                         item.distribution = new Distribution();
@@ -377,7 +377,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 await JS.InvokeVoidAsync("blazorUtilsTOPSOS.setDynamicTOP");
             }
 
-                //await JS.InvokeVoidAsync("blazorUtils.truncateText");
+            //await JS.InvokeVoidAsync("blazorUtils.truncateText");
 
         }
         private void GenerateCalendarHead()
@@ -478,6 +478,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         public async Task LastMonth()
         {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
             ShowLoading = true;
             StateHasChanged();
 
@@ -496,11 +509,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             GenerateCalendarBody();
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             ShowLoading = false;
+
+            if (tmpdist != null)
+            {
+                tmpdist.ShowDetails = true;
+            }
+            if (tmpSuggdist != null)
+            {
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
             StateHasChanged();
         }
 
         public async Task NextMonth()
         {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+
             ShowLoading = true;
             StateHasChanged();
             _yearMonth = _yearMonth?.AddMonths(1);
@@ -519,6 +556,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
             ShowLoading = false;
+
+            if (tmpdist != null)
+            {
+                tmpdist.ShowDetails = true;
+            }
+            if (tmpSuggdist != null)
+            {
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
             StateHasChanged();
         }
 
@@ -916,7 +962,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month ,(int)_sos_plan.AplicationYear, _NewJobObservation);
+                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         disableBtnCreateSos = false;
@@ -1497,14 +1543,85 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         //
         private async void YearlyTab()
         {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
             SuggestionMode = MonthlyView = false;
+
+            if (tmpdist != null)
+            {
+                tmpdist.ShowDetails = true;
+            }
+            if (tmpSuggdist != null)
+            {
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+
             StateHasChanged();
         }
-            
-        private async void ShowBtnPress(int nr)
+
+        private async void MontlyTab()
         {
-            Distribution tmpPerson = _distributions.First(f => f.DistributionId == nr);
-            tmpPerson.ShowDetails = !tmpPerson.ShowDetails;
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+            MonthlyView = true;
+            SuggestionMode = false;
+
+            if (tmpdist != null)
+            {
+                tmpdist.ShowDetails = true;
+            }
+            if (tmpSuggdist != null)
+            {
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+
+            StateHasChanged();
+        }
+        private void ShowBtnPress(int nr)
+        {
+            Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == nr);
+
+            if (tmpdist != null)
+            {
+                if (tmpdist.ShowDetails)
+                {
+                    tmpdist.ShowDetails = false;
+                }
+                else
+                {
+                    Distribution? opendist = _distributions.FirstOrDefault(f => f.ShowDetails == true);
+                    if( opendist != null)
+                        opendist.ShowDetails = false;
+                    //_distributions.ForEach(d => d.ShowDetails = false);
+                    tmpdist.ShowDetails = true;
+                }
+            }
+
+            // Actualizar el estado
             StateHasChanged();
         }
 
@@ -1860,7 +1977,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     {
                         foreach (var item in Dist_Manager)
                         {
-                            
+
                             if (item.isSelected)
                             {
                                 foreach (var op in item.distribution.Operations)
@@ -1927,7 +2044,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         }
                         //var OperationsInDist = _All_Operations.Where(o => o.id)
 
-                        
+
                     }
 
                 }
@@ -2234,12 +2351,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task<AsyncVoidMethodBuilder> ApplySuggest()
         {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+            DistSelect? tmpSuggdist = null;
+
+            if (tmpdist == null)
+            {
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+
             isButtonDisabled = true;
             ShowLoading = true;
             base.StateHasChanged();
             StateHasChanged();
 
-           
+
             var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, _All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
             if (result)
             {
@@ -2279,8 +2408,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             CheckItem.isSelected = !CheckItem.isSelected;
             Console.Write(CheckItem.distribution.Code);
             StateHasChanged();
-        }  
-        
+        }
+
         public void SelectUnselect()
         {
             if (Dist_Manager.Any(i => i.isSelected))
@@ -2290,22 +2419,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     item.isSelected = false;
                 }
             }
-            else{
+            else
+            {
                 foreach (var item in Dist_Manager)
                 {
                     item.isSelected = true;
                 }
 
             }
-                StateHasChanged();
+            StateHasChanged();
         }
 
         SOSRegUserOperationRelationship RegSelect = new();
         private void OpenSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
         {
-            if(panelid != 2)
+            if (panelid != 2)
                 selectedSVPanel = panelid;
-          
+
             RegSelect = itemselect;
             selectedSOPPanel = op;
 
@@ -2316,13 +2446,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             visibleSVDialog = true;
         }
 
-        void CloseSVPanelDialog() => visibleSVDialog = false;  
-        
+        void CloseSVPanelDialog() => visibleSVDialog = false;
+
         private void OpenSuggestSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
         {
-            if(panelid != 2)
+            if (panelid != 2)
                 selectedSVPanel = panelid;
-          
+
             RegSelect = itemselect;
             selectedSOPPanel = op;
 
