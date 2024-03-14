@@ -33,6 +33,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             ChecklistQuestion dbQuestion = await JobStructureCategoriesService.GetQuestionById(categoryId, questionId);
             _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _question = dbQuestion;
+            _question.Pillars = _question.Pillars ?? new List<int?>();
             _pillars = await PillarsService.GetPillars();
 
             _links = new List<BreadcrumbItem>
@@ -51,6 +52,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             var result = await JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
 
+            _question.Pillars.RemoveAll(p => p == null || p == 0);
+
             if(result != null)
             {
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
@@ -66,7 +69,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         //Add pillar to list
         void AddPillar()
         {
-            _question.Pillars.Add(0);
+            _question.Pillars.Add(null);
         }
 
         // Remove pillar from list
@@ -74,7 +77,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             _question.Pillars.RemoveAt(index);
             if (!_question.Pillars.Any())
-                _question.Pillars.Add(0);
+                _question.Pillars.Add(null);
         }
     }
 }

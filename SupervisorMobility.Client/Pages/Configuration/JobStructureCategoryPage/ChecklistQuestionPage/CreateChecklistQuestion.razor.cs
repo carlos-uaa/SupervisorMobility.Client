@@ -12,6 +12,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
+        private bool _checked = false;
+
         // Objects
         JobCategoryStructure _checklistCategory = new();
         ChecklistQuestion _question = new();
@@ -35,13 +37,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
-            _question.Pillars = new List<int> { 0 };
+            _question.Pillars = new List<int?> { null };
         }
 
         // Create question
         async void CreateQuestionAsync()
         {
+            _checked = true;
             _question.IsActive = true;
+            foreach (var pillar in _question.Pillars)
+            {
+                if(pillar == null)
+                {
+                    return;
+                }
+            }
             var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
@@ -55,7 +65,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         //Add pillar to list
         void AddPillar()
         {
-            _question.Pillars.Add(0);
+            _question.Pillars.Add(null);
         }
 
         // Remove pillar from list
@@ -63,7 +73,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             _question.Pillars.RemoveAt(index);
             if (!_question.Pillars.Any())
-                _question.Pillars.Add(0);
+                _question.Pillars.Add(null);
         }
     }
 }

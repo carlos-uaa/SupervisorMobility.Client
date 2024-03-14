@@ -51,18 +51,23 @@
                     <!--    ///     -->
                     <MudText> @Localizer["pillar"] </MudText>
                     <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" aria-label="add" OnClick="()=>AddPillar()"></MudIconButton>
-                    @foreach (var item in _question.Pillars.Select((id, index) => new { index, id }))
+                    @if (_question.Pillars != null)
                     {
-                        <MudPaper>
-                            <MudSelect T="int" Label=@Localizer["pillar"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_question.Pillars[item.index]" For="@(() => _question.Pillars[item.index])">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPillar"]</MudSelectItem>
-                                @foreach (var type in _pillars)
-                                {
-                                    <MudSelectItem Value="type.PillarId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                }
-                            </MudSelect>
-                            <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" aria-label="remove" OnClick="()=>RemovePillar(item.index)"></MudIconButton>
-                        </MudPaper>
+                        @foreach (var item in _question.Pillars.Select((id, index) => new { index, id }))
+                        {
+                            <MudPaper>
+                                <MudSelect T="int?" Label=@Localizer["pillar"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_question.Pillars[item.index]">
+                                    <MudSelectItem T="int?" Disabled="true" Value="null">@Localizer["selectAPillar"]</MudSelectItem>
+                                    @foreach (var type in _pillars)
+                                    {
+                                        <MudSelectItem T="int?" Value="type.PillarId">@(
+                                $"{type.Code} - {type.Description}"
+                                )</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" aria-label="remove" OnClick="()=>RemovePillar(item.index)"></MudIconButton>
+                            </MudPaper>
+                        }
                     }
                     <!--    ///     -->
                     <MudTextField Label="Question Not Good" Class="mt-3"
