@@ -48,9 +48,9 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
         public async Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false, 
             bool includeHistory = false, bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false,
-            int year = 0, int SOSAnualId = 0, int idUser = 0)
+            int year = 0, int month = 0, int SOSAnualId = 0, int idUser = 0)
         {
-            var response = await _http.GetAsync($"jobobservations?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}&idPlant={idPlant}&idArea={idArea}&ForSosProgram={ForSosProgram}&year={year}&SOSAnualId={SOSAnualId}&idUser={idUser}");
+            var response = await _http.GetAsync($"jobobservations?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}&idPlant={idPlant}&idArea={idArea}&ForSosProgram={ForSosProgram}&year={year}&month={month}&SOSAnualId={SOSAnualId}&idUser={idUser}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

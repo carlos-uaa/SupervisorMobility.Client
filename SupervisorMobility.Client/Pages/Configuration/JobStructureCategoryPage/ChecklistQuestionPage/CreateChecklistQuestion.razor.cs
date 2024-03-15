@@ -48,12 +48,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _question.IsActive = true;
             _question.Pillars = SelectedPillarIds;
 
-            Console.WriteLine("aaa");
-            foreach(var pilar in _question.Pillars)
-            {
-                Console.WriteLine(pilar);
 
-            }
             var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
