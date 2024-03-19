@@ -200,7 +200,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (CCPFolders != null)
                 {
                     folderCCPError = false;
-                    rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+                    rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
                 }
                 else
                 {
@@ -767,161 +767,161 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             HoeFilesInFolder = new CDMS_HOE_Archives();
             StateHasChanged();
 
-            try
-            {
-                CodePathDialogDisplay = itemselected;
+            //try
+            //{
+            //    CodePathDialogDisplay = itemselected;
 
-                HOErute = itemselected.HOE;
-                if (itemselected.HOE != "")
-                {
-                    Console.WriteLine($"hoe {itemselected.HOE}");
-                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-                    if (HoeFilesInFolder == null)
-                        folderErrorHOE = true;
-                    else
-                    {
-                        AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
+            //    HOErute = itemselected.HOE;
+            //    if (itemselected.HOE != "")
+            //    {
+            //        Console.WriteLine($"hoe {itemselected.HOE}");
+            //        HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
+            //        if (HoeFilesInFolder == null)
+            //            folderErrorHOE = true;
+            //        else
+            //        {
+            //            AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
 
-                        folderErrorHOE = false;
-                    }
-                }
+            //            folderErrorHOE = false;
+            //        }
+            //    }
 
-                folderErrorGOS = true;
-                GOSrute = itemselected.GOS;
+            //    folderErrorGOS = true;
+            //    GOSrute = itemselected.GOS;
 
-                if (itemselected.GOS != "")
-                {
+            //    if (itemselected.GOS != "")
+            //    {
 
-                    Console.WriteLine($"gos {GOSrute}");
-
-
-                    GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-                    if (GosFilesInFolder == null)
-                    {
-                        folderErrorGOS = true;
-                    }
-                    else
-                    {
-                        folderErrorGOS = false;
-                        AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
-                    }
-
-                }
-
-                folderErrorCCP = true;
-                CCPrute = itemselected.CCP;
-                if (itemselected.CCP != "")
-                {
-
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-
-                    nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
-
-                    if (nodoEncontrado != null)
-                    {
-                        // El nodo fue encontrado, puedes trabajar con él aquí
-                        // Por ejemplo, imprimir su nombre
-                        Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
-                    }
-                    else
-                    {
-                        // El nodo no fue encontrado
-                        Console.WriteLine("La ruta no se encontró en el árbol.");
-                    }
-                }
+            //        Console.WriteLine($"gos {GOSrute}");
 
 
+            //        GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
+            //        if (GosFilesInFolder == null)
+            //        {
+            //            folderErrorGOS = true;
+            //        }
+            //        else
+            //        {
+            //            folderErrorGOS = false;
+            //            AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
+            //        }
 
+            //    }
 
-                //Common Directions
-                folderErrorGOSCD = true;
-                if (itemselected.CommonDirectionGOS != "")
-                {
+            //    folderErrorCCP = true;
+            //    CCPrute = itemselected.CCP;
+            //    if (itemselected.CCP != "")
+            //    {
 
-                    GOSruteCD = itemselected.CommonDirectionGOS;
+            //        Console.WriteLine($"CCP {CCPrute}");
 
-                    Console.WriteLine($"gos cd {GOSruteCD}");
+            //        CcpFilesInFolder = new CDMS_CCP_Archives();
+            //        CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
+            //        if (CcpFilesInFolder == null)
+            //            folderErrorCCP = true;
+            //        else
+            //        {
+            //            AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
+            //            folderErrorCCP = false;
 
-                    GosFilesInFolderCD = new CDMS_GOS_Archives();
+            //        }
 
-                    GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-                    if (GosFilesInFolderCD == null)
-                    {
-                        folderErrorGOSCD = true;
-                    }
-                    else
-                    {
-                        folderErrorGOSCD = false;
-                        AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
-                    }
+            //        nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
 
-                }
-
-                folderErrorCCPCD = true;
-                if (itemselected.CommonDirectionCCP != "")
-                {
-                    CCPruteCD = itemselected.CommonDirectionCCP;
-                    Console.WriteLine($"Ccp cd {CCPruteCD}");
-
-                    CcpFilesInFolderCD = new CDMS_CCP_Archives();
-                    CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-                    if (CcpFilesInFolderCD == null)
-                        folderErrorCCPCD = true;
-                    else
-                    {
-                        folderErrorCCPCD = false;
-                        AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
-                    }
-
-                }
-
-                if (itemselected.CommonDirectionHOE != "")
-                {
-
-
-                    folderErrorHOECD = true;
-
-                    HOEruteCD = itemselected.CommonDirectionHOE;
-                    Console.WriteLine($"hoe cd {HOEruteCD}");
-                    HoeFilesInFolderCD = new CDMS_HOE_Archives();
-                    HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-                    if (HoeFilesInFolderCD == null)
-                        folderErrorHOECD = true;
-                    else
-                    {
-                        AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
-
-                        folderErrorHOECD = false;
-                    }
-                }
-
-                //EndCommon Directions
+            //        if (nodoEncontrado != null)
+            //        {
+            //            // El nodo fue encontrado, puedes trabajar con él aquí
+            //            // Por ejemplo, imprimir su nombre
+            //            Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
+            //        }
+            //        else
+            //        {
+            //            // El nodo no fue encontrado
+            //            Console.WriteLine("La ruta no se encontró en el árbol.");
+            //        }
+            //    }
 
 
 
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
-            }
-            finally
-            {
-                await SearchFunction();
-                ShowLoading = false;
-                StateHasChanged();
-            }
+            //    //Common Directions
+            //    folderErrorGOSCD = true;
+            //    if (itemselected.CommonDirectionGOS != "")
+            //    {
+
+            //        GOSruteCD = itemselected.CommonDirectionGOS;
+
+            //        Console.WriteLine($"gos cd {GOSruteCD}");
+
+            //        GosFilesInFolderCD = new CDMS_GOS_Archives();
+
+            //        GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
+            //        if (GosFilesInFolderCD == null)
+            //        {
+            //            folderErrorGOSCD = true;
+            //        }
+            //        else
+            //        {
+            //            folderErrorGOSCD = false;
+            //            AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
+            //        }
+
+            //    }
+
+            //    folderErrorCCPCD = true;
+            //    if (itemselected.CommonDirectionCCP != "")
+            //    {
+            //        CCPruteCD = itemselected.CommonDirectionCCP;
+            //        Console.WriteLine($"Ccp cd {CCPruteCD}");
+
+            //        CcpFilesInFolderCD = new CDMS_CCP_Archives();
+            //        CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
+            //        if (CcpFilesInFolderCD == null)
+            //            folderErrorCCPCD = true;
+            //        else
+            //        {
+            //            folderErrorCCPCD = false;
+            //            AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
+            //        }
+
+            //    }
+
+            //    if (itemselected.CommonDirectionHOE != "")
+            //    {
+
+
+            //        folderErrorHOECD = true;
+
+            //        HOEruteCD = itemselected.CommonDirectionHOE;
+            //        Console.WriteLine($"hoe cd {HOEruteCD}");
+            //        HoeFilesInFolderCD = new CDMS_HOE_Archives();
+            //        HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
+            //        if (HoeFilesInFolderCD == null)
+            //            folderErrorHOECD = true;
+            //        else
+            //        {
+            //            AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
+
+            //            folderErrorHOECD = false;
+            //        }
+            //    }
+
+            //    //EndCommon Directions
+
+
+
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
+            //}
+            //finally
+            //{
+            //    await SearchFunction();
+            //    ShowLoading = false;
+            //    StateHasChanged();
+            //}
 
             return new AsyncVoidMethodBuilder();
         }

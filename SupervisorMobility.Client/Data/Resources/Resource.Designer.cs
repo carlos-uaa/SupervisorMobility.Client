@@ -1465,7 +1465,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Generate suggestion.
+        ///   Busca una cadena traducida similar a Apply new settings to suggestion.
         /// </summary>
         public static string generateSuggestion {
             get {

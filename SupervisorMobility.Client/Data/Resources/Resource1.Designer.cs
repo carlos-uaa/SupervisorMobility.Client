@@ -313,7 +313,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Download All Assy Charts.
+        ///   Busca una cadena traducida similar a Download All Job Allocation.
         /// </summary>
         public static string ACDownloadAll {
             get {
@@ -853,7 +853,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Assy Char.
+        ///   Busca una cadena traducida similar a Job Allocation.
         /// </summary>
         public static string ACTitle {
             get {

@@ -226,7 +226,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (CCPFolders != null)
             {
                 folderCCPError = false;
-                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+                rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
             }
             else
             {

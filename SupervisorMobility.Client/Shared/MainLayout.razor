@@ -1,11 +1,17 @@
 ﻿@inherits LayoutComponentBase
-
-@inject IUserService UsersService
-@inject IJSRuntime js
 @inject NavigationManager NavigationManager
+@inject GlobalDataService GlobalData;
+@inject SignOutSessionStateManager SignOutManager
+
+@inject IJSRuntime js
+@inject ITreeService TreeCDMSServices
+@inject IUserService UsersService
 @inject INotificationService NotifyServices
 @inject IAttendanceService AttendanceServices
-@inject GlobalDataService GlobalData;
+@inject IBreadcrumbService BreadcrumbService
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar _SnackbarService
+@inject IStringLocalizer<Resource1> Localizer1
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -14,10 +20,6 @@
 @using System.Globalization;
 @using SupervisorMobility.Client.Services.BreadcrumsService
 
-@inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
-@inject IStringLocalizer<Resource> Localizer
-@inject IStringLocalizer<Resource1> Localizer1
 
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="_currentTheme" />
 <MudDialogProvider />
@@ -508,9 +510,6 @@
     //idk how this works but im add ~ Mika
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Inject]
-    private IBreadcrumbService BreadcrumbService { get; set; }
-
     private List<BreadcrumbItem> _links;
     //User
     public List<User> users;
@@ -562,6 +561,34 @@
 
     protected async override Task OnInitializedAsync()
     {
+        _SnackbarService.Add(
+                @<div>
+                    <h3>Establishing connection</h3>
+                    <ul>
+            <li> with <strong> JobAllocation ! ! ! </strong></li>
+                    <li>  Documents server</li>
+                    </ul>
+                </div>,
+                Severity.Info,
+                (options) =>
+                {
+                    options.CloseAfterNavigation = true;
+                });
+        await TreeCDMSServices.InitializeTreeData();
+
+        _SnackbarService.Dispose();
+        _SnackbarService.Add
+         (
+                @<div>
+                    <h3><strong>JobAllocation </strong> Working</h3>
+                    <ul>
+                        <li> Successful connection to Job Allocation Documents</li>
+                    </ul>
+                </div>,
+                Severity.Success
+            );
+
+
         _links = BreadcrumbService.Breadcrumbs;
         BreadcrumbService.BreadcrumbsChanged += UpdateLinks;
 
@@ -580,7 +607,6 @@
 
         try
         {
-
             currentLanguage = await js.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
             Console.WriteLine($" Current:'{currentLanguage}'");
 
@@ -614,6 +640,7 @@
                 break;
 
         }
+        
 
         CultureInfo currentCulture = Thread.CurrentThread.CurrentCulture;
         currentCulture.NumberFormat.NumberDecimalSeparator = ".";
@@ -632,6 +659,7 @@
                 }
 
                 isApiConnected = true;
+               
             }
             catch (Exception ex)
             {
@@ -889,7 +917,7 @@
     {
         await LogOut();
         await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("/", true);
+        NavigationManager.NavigateTo("/", true);
     }
 
     //Local storage user

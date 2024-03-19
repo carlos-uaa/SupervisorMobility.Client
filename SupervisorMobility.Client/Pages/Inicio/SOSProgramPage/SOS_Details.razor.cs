@@ -144,7 +144,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         bool visibleMassiveUpload = false;
         int diasSeparate = 1;
         int OptionRandom = 0;
-        DateTime Startday = DateTime.Now.AddDays(-1);
+        DateTime Startday = new();
         DateTime FirstdayYear = DateTime.Now;
         DateTime LastdayYear = DateTime.Now;
         int StartMonth = 1;
@@ -275,7 +275,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             labelaux.Add($"{Localizer["programmed"]}");
 
             labels = labelaux.ToArray();
-
+          
 
             logged = await HasPropertyAsync();
             if (!logged)
@@ -312,6 +312,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _assyCharts = await AssyChartsServices.GetAssyChartsByArea((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
                 await PrepareDataTable();
                 StateHasChanged();
+            }
+
+            if (_sos_plan.AplicationYear > DateTime.Now.Year)
+            {
+                Startday = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
+            }
+            else
+            {
+                Startday = DateTime.Now;
             }
 
             if ((int)_sos_plan.AplicationYear > DateTime.Now.Year)
@@ -367,6 +376,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 new BreadcrumbItem(text: $"SOS Anual Plan {_sos_plan.AplicationYear}", href: $"sosDetails/{_sos_plan.SOSid}"),
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
+
+            
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1921,7 +1932,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async Task CreateSuggestion()
         {
             //notificacion de es necesaria la distribucion 
-            if (Startday.Date == DateTime.Now.AddDays(-1).Date)
+            if (Startday.Date == DateTime.Now.AddDays(-1).Date && Startday.Year < _sos_plan.AplicationYear)
             {
                 bool? resultDay = await DialogService.ShowMessageBox(
                 "Warning",
@@ -2236,6 +2247,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 }
 
                 Console.WriteLine($" Final New Sugg Generation");
+                bool? resultDay = await DialogService.ShowMessageBox(
+               "Info!",
+               "New suggestion created!",
+               yesText: "OK!");
+                StateHasChanged();
             }
             ShowLoading = false;
             ShowTable = true;
@@ -2394,7 +2410,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
             ShowLoading = false;
-
+            SuggestionMode = false;
             return new AsyncVoidMethodBuilder();
         }
 
