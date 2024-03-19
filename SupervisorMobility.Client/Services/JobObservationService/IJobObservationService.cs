@@ -7,8 +7,8 @@
         Task<JobObservationHistoryVersion> GetOneHistoryJobObservation(int jobObservationId, int HistoryId);
 
         Task<List<JobObservation>> GetAllJobObservations(bool includeTree = false, bool includePeople = false,
-            bool includeLup = false, bool includeHistory = false, 
-            bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false, int year = 0, 
+            bool includeLup = false, bool includeHistory = false,
+            bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false, int year = 0, int month = 0,
             int SOSAnualId = 0, int idUser = 0);
 
         // Get job observation by Id

@@ -44,6 +44,7 @@
 @inject IFileUploadAndDownloadService FilesServices
 @inject SignatureImageService _signatureImageService
 @inject IBreadcrumbService BreadcrumbService
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
 
 
 <style>
@@ -1043,6 +1044,10 @@
                                                                                 </MudItem>
                                                                             </MudItem>
                                                                         </MudItem>
+                                                                        @{
+                                                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || answer.Answer != "NG";
+
+                                                                        }
                                                                         <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
                                                                                 <MudTextField Disabled="@(user.UserType > 3)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
                                                                                 <MudButton  
@@ -1050,7 +1055,7 @@
                                                                                         Variant="Variant.Filled"
                                                                                         Color="Color.Primary"
                                                                                         EndIcon="@Icons.Material.Filled.Send"
-                                                                                        Disabled="@string.IsNullOrEmpty(answer.CommentarySV)"
+                                                                                        Disabled="@isDisabled"
                                                                                         @onclick="(() => UpdateListEntry(question, secNum, answer.CommentarySV))"
                                                                                     >
                                                                                     Enviar al Lup
@@ -1881,7 +1886,7 @@
                                                     </MudChip>
                                                     }
                                                 <MudText Style="text-align:center; font-weight:bold;">
-                                                        @Localizer["operatorsSignature"]
+                                                        @Localizer["operatorPayroll"]
                                                 </MudText>
                                                 <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="_jobObservation.OperatorId == 0" />
                                             </td>

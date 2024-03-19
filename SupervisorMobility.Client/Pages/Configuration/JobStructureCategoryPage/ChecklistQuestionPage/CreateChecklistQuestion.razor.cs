@@ -12,11 +12,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
+        private bool _checked = false;
+
         // Objects
         JobCategoryStructure _checklistCategory = new();
         ChecklistQuestion _question = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
         public List<Pillar> _pillars { get; set; } = new();
+        public List<int?> SelectedPillarIds { get; set; } = new List<int?>();
+
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -35,13 +39,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
-            _question.Pillars = new List<int> { 0 };
+            _question.Pillars = new List<int?> { null };
         }
 
-        // Create question
         async void CreateQuestionAsync()
         {
+            _checked = true;
             _question.IsActive = true;
+            _question.Pillars = SelectedPillarIds;
+
+
             var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
@@ -52,18 +59,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 
-        //Add pillar to list
-        void AddPillar()
+
+        private void HandlePillarCheckedChanged(bool isChecked, int pillarId)
         {
-            _question.Pillars.Add(0);
+            if (isChecked)
+            {
+                if (!SelectedPillarIds.Contains(pillarId))
+                {
+                    SelectedPillarIds.Add(pillarId);
+                }
+            }
+            else
+            {
+                SelectedPillarIds.Remove(pillarId);
+            }
         }
 
-        // Remove pillar from list
-        void RemovePillar(int index)
-        {
-            _question.Pillars.RemoveAt(index);
-            if (!_question.Pillars.Any())
-                _question.Pillars.Add(0);
-        }
     }
 }
