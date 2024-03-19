@@ -495,6 +495,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         void Close() => visible = false;
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
+        private void OnStartDateChanged(DateTime dt)
+        {
+            _jobObservation.StartDate = dt;
+            _jobObservation.EndDate = dt;
+        }
+
         public async Task ChangeDate()
         {
             if (_jobObservation.Justification == null || _jobObservation.Justification == "")
