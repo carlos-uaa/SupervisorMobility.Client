@@ -151,6 +151,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         string[] ids { get; set; }
         string currentLanguage = "es-ES";
         private string currentImage = "";
+        bool operatorSignatureSigned = false;
 
         bool NoData { get; set; } = false;
         //Lup list
@@ -160,6 +161,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<string> area_ListC = new List<string>();
         public List<string> area_ListOther = new List<string>();
         List<Lup> _tempLup { get; set; } = new();
+        
 
         protected async override Task OnInitializedAsync()
         {
@@ -336,6 +338,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
                     currentImage = imageUrl;
+                    operatorSignatureSigned = true;
                 }
 
                 StateHasChanged();
@@ -498,8 +501,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void OnStartDateChanged(DateTime dt)
         {
             _jobObservation.StartDate = dt;
-            _jobObservation.EndDate = dt;
+            if (_jobObservation.EndDate == null || _jobObservation.EndDate < dt)
+            {
+                _jobObservation.EndDate = dt;
+            }
         }
+
 
         public async Task ChangeDate()
         {

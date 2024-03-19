@@ -2500,6 +2500,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Operator&apos;s Payroll.
+        /// </summary>
+        public static string operatorPayroll {
+            get {
+                return ResourceManager.GetString("operatorPayroll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Operators By Operation.
         /// </summary>
         public static string operatorsByOperation {
