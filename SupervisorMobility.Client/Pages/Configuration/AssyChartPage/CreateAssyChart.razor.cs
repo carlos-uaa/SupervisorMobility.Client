@@ -105,7 +105,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             if (GOSFolders != null)
             {
                 folderGOSError = false;
-                rootNodeGOS = TreeServices.ConstruirArbolGOS(GOSFolders.operation);
+                rootNodeGOS = TreeServices.Make_Tree_GOS(GOSFolders.operation);
             }
             else
             {
@@ -126,7 +126,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             if (CCPFolders != null)
             {
                 folderCCPError = false;
-                rootNodeCCP = TreeServices.ConstruirArbolCCP(CCPFolders.operation);
+                rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
             }
             else
             {
@@ -145,7 +145,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             if (HOEFolders != null)
             {
                 folderHOEError = false;
-                rootNodeHOE = TreeServices.ConstruirArbolHOE(HOEFolders.operation);
+                rootNodeHOE = TreeServices.Make_Tree_HOE(HOEFolders.operation);
 
 
             }

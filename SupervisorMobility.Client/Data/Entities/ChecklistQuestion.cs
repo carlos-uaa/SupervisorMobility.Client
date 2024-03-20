@@ -7,7 +7,7 @@
         public string NotGood { get; set; }
         public string PromptEN { get; set; }
         public string NotGoodEN { get; set; }
-        public List<int> Pillars { get; set; }
+        public List<int?>? Pillars { get; set; }
         public int CategorySequence { get; set; }
         public string Container { get; set; } = "QuestionContainer";
         public bool? IsActive { get; set; } = false;

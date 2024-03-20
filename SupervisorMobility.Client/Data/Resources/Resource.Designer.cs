@@ -1465,7 +1465,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Generate suggestion.
+        ///   Busca una cadena traducida similar a Apply new settings to suggestion.
         /// </summary>
         public static string generateSuggestion {
             get {
@@ -2496,6 +2496,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string operatorName {
             get {
                 return ResourceManager.GetString("operatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operator&apos;s Payroll.
+        /// </summary>
+        public static string operatorPayroll {
+            get {
+                return ResourceManager.GetString("operatorPayroll", resourceCulture);
             }
         }
         
