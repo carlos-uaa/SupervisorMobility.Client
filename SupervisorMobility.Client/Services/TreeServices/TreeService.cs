@@ -471,39 +471,39 @@ namespace SupervisorMobility.Client.Services.TreeServices
         {
             return await Task.Run(() => _CodePaths.FirstOrDefault(c => c.SOSCodePathId == id));
         }
-        public TreeItemData getRootCCP()
+        public async Task<TreeItemData> getRootCCP()
         {
             return this.Root_CCP;
         }
-        public TreeItemData getRootGOS()
+        public async Task<TreeItemData> getRootGOS()
         {
             return this.Root_GOS;
         }
-        public TreeItemData getRootHOE()
+        public async Task<TreeItemData> getRootHOE()
         {
             return this.Root_HOE;
         }
-        public TreeItemData getNodeCCP()
+        public async Task<TreeItemData> getNodeCCP()
         {
             return this.Node_CCP;
         }
-        public TreeItemData getNodeGOS()
+        public async Task<TreeItemData> getNodeGOS()
         {
             return this.Node_GOS;
         }
-        public TreeItemData getNodeHOE()
+        public async Task<TreeItemData> getNodeHOE()
         {
             return this.Node_HOE;
         } 
-        public TreeItemData getNodeCCP_CD()
+        public async Task<TreeItemData> getNodeCCP_CD()
         {
             return this.Node_CCP_CD;
         }
-        public TreeItemData getNodeGOS_CD()
+        public async Task<TreeItemData> getNodeGOS_CD()
         {
             return this.Node_GOS_CD;
         }
-        public TreeItemData getNodeHOE_CD()
+        public async Task<TreeItemData> getNodeHOE_CD()
         {
             return this.Node_HOE_CD;
         }

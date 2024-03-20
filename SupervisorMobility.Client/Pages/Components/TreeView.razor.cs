@@ -1,6 +1,8 @@
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using MudBlazor;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace SupervisorMobility.Client.Pages.Components
 {
@@ -10,12 +12,17 @@ namespace SupervisorMobility.Client.Pages.Components
         public int Path_Id { get; set; }
         [Parameter]
         public string? panel { get; set; }
+        public string? searchCodeString { get; set; }
 
         private SOSCodePath Path_Item { get; set; }
-        private int selectPanel { get; set; } = 0;
+        private MudTabs selectPanel { get; set; }
+        MudTabPanel panel_HOE;
+        MudTabPanel panel_CCP;
+        MudTabPanel panel_GOS;
+        MudTabPanel panel_HOE_CD;
+        MudTabPanel panel_CCP_CD;
+        MudTabPanel panel_GOS_CD;
         private bool ShowLoading = true;
-        private bool ShowLoadingFiles = true;
-        private bool Files_In_CCP = true;
         //CCP
         private TreeItemData Node_CCP { get; set; } = new();
         private TreeItemData Node_CCP_CD { get; set; } = new();
@@ -32,7 +39,7 @@ namespace SupervisorMobility.Client.Pages.Components
 
         protected async override Task OnInitializedAsync()
         {
-
+            ShowLoading = true;
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -45,19 +52,31 @@ namespace SupervisorMobility.Client.Pages.Components
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
+            StateHasChanged();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            ShowLoading = true;
+
             try
             {
                 Path_Item = await TreeServices.getCodePath(Path_Id);
-
+                searchCodeString = Path_Item.Code;
                 await TreeServices.setNodesByPath(Path_Item);
 
 
-                Node_CCP = TreeServices.getNodeCCP();
-                Node_GOS = TreeServices.getNodeGOS();
-                Node_HOE = TreeServices.getNodeHOE();
-                Node_CCP_CD = TreeServices.getNodeCCP_CD();
-                Node_GOS_CD = TreeServices.getNodeGOS_CD();
-                Node_HOE_CD = TreeServices.getNodeHOE_CD();
+                Node_CCP = await TreeServices.getNodeCCP();
+                Node_GOS = await TreeServices.getNodeGOS();
+                Node_HOE = await TreeServices.getNodeHOE();
+                Node_CCP_CD = await TreeServices.getNodeCCP_CD();
+                Node_GOS_CD = await TreeServices.getNodeGOS_CD();
+                Node_HOE_CD = await TreeServices.getNodeHOE_CD();
 
 
                 if (Node_CCP != null)
@@ -120,13 +139,48 @@ namespace SupervisorMobility.Client.Pages.Components
             finally
             {
                 ShowLoading = false;
+                switch (panel)
+                {
+                    case "HOE":
+                        if(Node_HOE != null)
+                        {
+                            selectPanel.ActivatePanel(panel_HOE);
+                        }
+                        break;
+                    case "CCP":
+                        if (Node_CCP != null)
+                        {
+                            selectPanel.ActivatePanel(panel_CCP);
+                        }
+                        break;
+
+                    case "GOS":
+                        if (Node_GOS != null)
+                        {
+                            selectPanel.ActivatePanel(panel_GOS);
+                        }
+                        break;
+                    case "HOE_CD":
+                        if (Node_HOE_CD != null)
+                        {
+                            selectPanel.ActivatePanel(panel_HOE_CD);
+                        }
+                        break;
+                    case "CCP_CD":
+                        if (Node_CCP_CD != null)
+                        {
+                            selectPanel.ActivatePanel(panel_CCP_CD);
+                        }
+                        break;
+
+                    case "GOS_CD":
+                        if (Node_GOS_CD != null)
+                        {
+                            selectPanel.ActivatePanel(panel_GOS_CD);
+                        }
+                        break;
+                }
             }
-            StateHasChanged();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-
         }
 
         private async Task GetHOETab(TreeItemData item)
@@ -216,6 +270,91 @@ namespace SupervisorMobility.Client.Pages.Components
 
         }//end download file gos
 
-        //end fragment code
+        private async Task<AsyncVoidMethodBuilder> SearchFunction()
+        {
+                try
+                {
+                    if(Node_CCP != null && Node_GOS != null && Node_HOE != null)
+                        ShowLoading = true;
+                    
+                StateHasChanged();
+
+                    //if (string.IsNullOrEmpty(searchCodeString))
+                    //{
+                    //    if (Path_Item.HOE != "")
+                    //        HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
+
+                    //    if (Path_Item.GOS != "")
+                    //        GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
+
+                    //    if (Path_Item.CCP != "")
+                    //        CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
+
+                    //    if (Path_Item.CommonDirectionHOE != "")
+                    //        HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
+
+                    //    if (Path_Item.CommonDirectionGOS != "")
+                    //        GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
+
+                    //    if (Path_Item.CommonDirectionCCP != "")
+                    //        CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
+                    //}
+                    //else
+                    //{
+                    //    if (Path_Item.HOE != "")
+                    //    {
+                    //        HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
+                    //        HoeFilesInFolder.operation = HoeFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //    if (Path_Item.GOS != "")
+                    //    {
+                    //        GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
+                    //        GosFilesInFolder.operation = AuxGosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //    if (Path_Item.CCP != "")
+                    //    {
+                    //        CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
+                    //        CcpFilesInFolder.operation = CcpFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //    if (Path_Item.CommonDirectionHOE != "")
+                    //    {
+                    //        HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
+                    //        HoeFilesInFolderCD.operation = HoeFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //    if (Path_Item.CommonDirectionGOS != "")
+                    //    {
+                    //        GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
+                    //        GosFilesInFolderCD.operation = GosFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //    if (Path_Item.CommonDirectionCCP != "")
+                    //    {
+                    //        CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
+                    //        CcpFilesInFolderCD.operation = CcpFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    //    }
+
+                    //}
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error Filter: {ex.Message}");
+                }
+                finally
+                {
+                if (Node_CCP != null && Node_GOS != null && Node_HOE != null)
+                    ShowLoading = false;
+
+                StateHasChanged();
+                }
+           
+
+        return new AsyncVoidMethodBuilder();
+        }//end searchsring
     }
+        //end fragment code
 }

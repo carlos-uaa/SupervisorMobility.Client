@@ -25,14 +25,14 @@ namespace SupervisorMobility.Client.Services.TreeServices
         Task<AsyncVoidMethodBuilder> GetFilesInNodeGOS(TreeItemData node);
         Task<AsyncVoidMethodBuilder> GetFilesInNodeHOE(TreeItemData node);
 
-        TreeItemData getRootCCP();
-        TreeItemData getRootGOS();
-        TreeItemData getRootHOE();
-         TreeItemData getNodeCCP();
-         TreeItemData getNodeGOS();
-         TreeItemData getNodeHOE();
-        TreeItemData getNodeCCP_CD();
-         TreeItemData getNodeGOS_CD();
-         TreeItemData getNodeHOE_CD();
+        Task<TreeItemData> getRootCCP();
+        Task<TreeItemData> getRootGOS();
+        Task<TreeItemData> getRootHOE();
+        Task<TreeItemData> getNodeCCP();
+        Task<TreeItemData> getNodeGOS();
+        Task<TreeItemData> getNodeHOE();
+        Task<TreeItemData> getNodeCCP_CD();
+        Task<TreeItemData> getNodeGOS_CD();
+        Task<TreeItemData> getNodeHOE_CD();
     }
 }
