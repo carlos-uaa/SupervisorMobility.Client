@@ -243,9 +243,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
 
             var parameters = new Dictionary<string, string>
-        {
-            { "route", route }
-        };
+            {
+                { "route", route }
+            };
 
           
             var json = JsonConvert.SerializeObject(parameters);
@@ -384,6 +384,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             var json = JsonConvert.SerializeObject(parameters);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
+
             try
             {
                 var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);

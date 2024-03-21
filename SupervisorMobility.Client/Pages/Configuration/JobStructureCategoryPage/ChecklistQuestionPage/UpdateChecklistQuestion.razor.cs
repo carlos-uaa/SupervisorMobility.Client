@@ -21,6 +21,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public ChecklistQuestion _question { get; set; } = new();
         public List<QuestionType> _questionTypes { get; set; } = new();
 
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -36,6 +37,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _question.Pillars = _question.Pillars ?? new List<int?>();
             _pillars = await PillarsService.GetPillars();
 
+
             _links = new List<BreadcrumbItem>
                      {
                         new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -50,9 +52,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         // Update question
         async void UpdateQuestionAsync()
         {
+
+            Console.WriteLine("aaa");
+            foreach (var pilar in _question.Pillars)
+            {
+                Console.WriteLine(pilar);
+
+            }
             var result = await JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
 
-            _question.Pillars.RemoveAll(p => p == null || p == 0);
 
             if(result != null)
             {
@@ -66,18 +74,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
         }
 
-        //Add pillar to list
-        void AddPillar()
+        private void HandlePillarCheckedChanged(bool isChecked, int pillarId)
         {
-            _question.Pillars.Add(null);
-        }
-
-        // Remove pillar from list
-        void RemovePillar(int index)
-        {
-            _question.Pillars.RemoveAt(index);
-            if (!_question.Pillars.Any())
-                _question.Pillars.Add(null);
+            if (isChecked)
+            {
+                if (!_question.Pillars.Contains(pillarId))
+                {
+                    _question.Pillars.Add(pillarId);
+                }
+            }
+            else
+            {
+                _question.Pillars.Remove(pillarId);
+            }
         }
     }
 }

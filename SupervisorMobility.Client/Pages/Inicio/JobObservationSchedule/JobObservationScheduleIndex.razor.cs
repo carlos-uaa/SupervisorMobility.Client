@@ -84,6 +84,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
+        public bool loadingData = true;
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -122,21 +123,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
                 GenerateCalendarHead();
                 GenerateCalendarBody();
-
                 if (user != null)
                 {
-                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId);
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
 
 
                     _plants = await PlantServices.GetPlants();
                     _plants = _plants.OrderBy(p => p.Description).ToList();
-                    
+
                     _groups = await GroupService.GetGroups();
                     _groups = _groups.OrderBy(g => g.Description).ToList();
 
                     if (user.UserType == 1 || user.UserType == 6)
                     {
-                        
+
 
                         plantId = 0;
                         areaId = 0;
@@ -150,7 +150,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
                         totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
-                    else if(user.UserType == 2)
+                    else if (user.UserType == 2)
                     {
 
                         plantId = (int)user.PlantId;
@@ -162,9 +162,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                         _allSupervisors = user.Subordinates?.ToList();
 
-                        foreach(var jobobs in _allJobObservations)
+                        foreach (var jobobs in _allJobObservations)
                         {
-                            if(jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+                            if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
                             {
                                 _jobObservations.Add(jobobs);
                             }
@@ -173,7 +173,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
                         totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
                     }
-                    else if(user.UserType == 3)
+                    else if (user.UserType == 3)
                     {
 
                         plantId = (int)user.PlantId;
@@ -198,7 +198,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
                     }
-                    else if(user.UserType == 5)
+                    else if (user.UserType == 5)
                     {
                         plantId = (int)user.PlantId;
                         areaId = 0;
@@ -234,10 +234,83 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                 }
-                    StateHasChanged();
+                loadingData = true;
+                StateHasChanged();
             }
 
             loadingToolbar = false;
+        }
+
+        private async Task LoadJobObservations()
+        {
+            loadingData = true;
+            if (user != null)
+            {
+                _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+
+
+                if (user.UserType == 1 || user.UserType == 6)
+                {
+                    _jobObservations = _allJobObservations;
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+                }
+                else if (user.UserType == 2)
+                {
+
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 ).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+                }
+                else if (user.UserType == 3)
+                {
+
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+
+                }
+                else if (user.UserType == 5)
+                {
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (plantId == jobobs.PlantId)
+                        {
+                            foreach (User usr in user.Subordinates)
+                            {
+                                if (jobobs.Supervisor.SuperiorId == usr.UserId)
+                                {
+                                    if (jobobs.Status != 7)
+                                    {
+                                        _jobObservations.Add(jobobs);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+                    //_allSupervisors = await UsersService.GetUserByType(3, true, false);
+                }
+            }
+            loadingData = false;
+            StateHasChanged();
         }
 
         //Local storage user
@@ -300,7 +373,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             supervisorId = 0;
 
             areaId = 0;
-            _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId);
+            _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
 
 
             if (user.UserType == 1 || user.UserType == 6)
@@ -421,8 +494,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
-            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
-            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
+            await LoadJobObservations();
 
             StateHasChanged();
         }
@@ -441,8 +514,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
-            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
-            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
+            await LoadJobObservations();
 
             StateHasChanged();
         }
@@ -577,8 +650,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
 
-            _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
-            totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
 
         }
@@ -788,7 +859,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             StateHasChanged();
         }
 
-        private void OnDateChanged(DateTime? value)
+        private async Task OnDateChangedAsync(DateTime? value)
         {
             _yearMonth = value;
             month = $"{_yearMonth?.ToString("MMMM")}";
@@ -801,6 +872,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             showMonth = month.ToUpper();
             GenerateCalendarHead();
             GenerateCalendarBody();
+
+            await LoadJobObservations();
             _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
             totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
