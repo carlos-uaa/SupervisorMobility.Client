@@ -45,6 +45,9 @@
 @inject SignatureImageService _signatureImageService
 @inject IBreadcrumbService BreadcrumbService
 @inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject Blazored.SessionStorage.ISyncSessionStorageService SyncSessionStorage
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject Blazored.LocalStorage.ISyncLocalStorageService SyncLocalStorage
 
 
 <style>
@@ -452,7 +455,7 @@
     </div>
 
     @* Job Observation Form*@
-    <EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
+<EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
         <DataAnnotationsValidator />
 
         <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
@@ -650,8 +653,8 @@
                                                         {
                                                             _jobObservation.EndDate = _jobObservation.StartDate;
                                                         }
-                                                        <MudDatePicker @bind-Date="_jobObservation.StartDate" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
-                                                        <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["endDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                                                        <MudDatePicker Date="_jobObservation.StartDate" DateChanged="OnStartDateChanged" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
+                                                        <MudDatePicker Date="_jobObservation.EndDate" DateChanged="OnEndDateChanged" Label=@Localizer["endDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -704,7 +707,7 @@
                                                         @if (jobProductId != 0)
                                                         {
                                                             <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="InitializeCycleTimes">
-                                                                <MudSelectItem Disabled="true" Value="@("0")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
                                                                     @foreach (var type in _specifications)
                                                                 {
                                                                     <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
@@ -717,7 +720,7 @@
                                                                  <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAProduct"]</MudSelectItem>
                                                                 </MudSelect>
                                                         }
-                                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID">
+                                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="JobObservationContext_OnFieldChanged">
                                                             <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
                                                             <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
                                                             <MudSelectItem Value="2">@($"Q")</MudSelectItem>
@@ -865,7 +868,7 @@
                                                             @if (operatorUsers.Count > 0)
                                                             {
                                                                 @*Mud select for Operator *@
-                                                                <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                                                <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)" SelectedValuesChanged="JobObservationContext_OnFieldChanged">
                                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
                                                                         @foreach (var type in operatorUsers)
                                                                     {
@@ -892,7 +895,7 @@
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2" style="text-align: center;">
-                                                        <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" Style="width:100%;">
+                                                        <MudRadioGroup T="int" SelectedOption="_jobObservation.Option" Style="width:100%;" SelectedOptionChanged="ChangeOption">
                                                             <MudRadio Option="1" Color="Color.Info" Size="Size.Small">@Localizer["verifyTraining"]</MudRadio>
                                                                 <MudRadio Option="2" Color="Color.Info" Size="Size.Small">@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
                                                                 <MudRadio Option="3" Color="Color.Info" Size="Size.Small">
@@ -913,7 +916,7 @@
                                                             </MudRadio>
                                                             @if (_jobObservation.Option == 3)
                                                             {
-                                                                <MudTextField T="string" @bind-Value="_jobObservation.Anomaly" Label=@Localizer["writeTheAnomaly"] Placeholder=@Localizer["anomaly"] Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                                <MudTextField T="string" @bind-Value="_jobObservation.Anomaly" Label=@Localizer["writeTheAnomaly"] Placeholder=@Localizer["anomaly"] Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" TextChanged="JobObservationContext_OnFieldChanged"/>
                                                             }
                                                         </MudRadioGroup>
 
@@ -961,7 +964,7 @@
                                                             </td>
                                                             <td width="25%">
                                                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                    <MudRadioGroup @bind-SelectedOption="answer.Answer" Disabled="@(_jobObservation.Status == 6)">
+                                                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption(an, question.QuestionID)" Disabled="@(_jobObservation.Status == 6)">
                                                                         <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => questionAnswers[question.QuestionID].Show = true)">Yes</MudRadio>
                                                                         <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity(questionAnswers[question.QuestionID], secNum, question))">NG</MudRadio>
                                                                         <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => questionAnswers[question.QuestionID].Show = true)">N/A</MudRadio>
@@ -1012,7 +1015,7 @@
 
                                                                                 <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
 
-                                                                                    @foreach (var (file, index) in answer.capturedImagesFiles.Select((file, index) => (file, index)))
+                                                                                    @foreach (var (file, index) in answer.MediaUris.Select((file, index) => (file, index)))
                                                                                     {
                                                                                         <MudItem Class=" mr-8 mb-4">
                                                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
@@ -1021,7 +1024,7 @@
                                                                                                 </MudTooltip>
                                                                                             </MudItem>
                                                                                             <MudListItem Icon="@Icons.Material.Filled.PictureInPicture" @key="@file">
-                                                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src="@answer.MediaUris.ElementAt(index)" Elevation="25" Class="rounded-lg" />
+                                                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src="@file" Elevation="25" Class="rounded-lg" />
                                                                                             </MudListItem>
                                                                                         </MudItem>
                                                                                     }
@@ -1045,7 +1048,7 @@
                                                                             </MudItem>
                                                                         </MudItem>
                                                                         <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
-                                                                                <MudTextField Disabled="@(user.UserType > 3)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
+                                                                                <MudTextField Disabled="@(user.UserType > 3)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" TextChanged="AnswerComentaryUpdate"/>
                                                                                 <MudButton  
                                                                                         Class="my-2"
                                                                                         Variant="Variant.Filled"
@@ -1056,7 +1059,7 @@
                                                                                     >
                                                                                     Enviar al Lup
                                                                                 </MudButton>
-                                                                                <MudTextField Disabled="@(user.UserType > 2)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
+                                                                            <MudTextField Disabled="@(user.UserType > 2)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" TextChanged="AnswerComentaryUpdate" />
                                                                             </MudItem>
                                                                     </MudItem>
                                                                 </td>
@@ -1071,7 +1074,7 @@
                                 break;
                             case StructureType.Timer:
                                 <MudExpansionPanel Text="Section 2" IsInitiallyExpanded=true Style="min-width: 100%">
-                                    <MudTextField T="double" @bind-Value="taktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" Style="max-width: 10vw" />
+                                    <MudTextField T="double" Value="taktTime" ValueChanged="ChangeTaktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" Style="max-width: 10vw"/>
                                     <MudItem Style="text-align:center">
                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
                                         {
@@ -1119,7 +1122,7 @@
 
                                      </MudSimpleTable>
 
-                                     @if (productSpecification != "0")
+                                     @if (!string.IsNullOrEmpty(productSpecification))
                                     {
                                         <MudSimpleTable Hover="true" Dense="true" Elevation="0">
                                             <thead>
@@ -1232,57 +1235,57 @@
                                                 <tr>
                                                     <td colspan="2">StepsNumber</td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="StepsNumber[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="StepsNumber[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,0)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="StepsNumber[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="StepsNumber[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,1)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="StepsNumber[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="StepsNumber[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,2)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="StepsNumber[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="StepsNumber[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,3)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="StepsNumber[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="StepsNumber[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,4)" />
                                                     </td>
                                                 </tr>
 
                                                 <tr>
                                                     <td colspan="2">DoubleManagment</td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="DoubleManagment[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="DoubleManagment[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,0)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="DoubleManagment[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="DoubleManagment[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,1)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="DoubleManagment[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="DoubleManagment[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,2)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="DoubleManagment[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="DoubleManagment[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,3)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="DoubleManagment[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="DoubleManagment[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,4)"/>
                                                     </td>
                                                 </tr>
 
                                                 <tr>
                                                     <td colspan="2">Waiting</td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="Waiting[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="Waiting[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,0)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="Waiting[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="Waiting[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,1)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="Waiting[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="Waiting[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,2)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="Waiting[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="Waiting[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,3)"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" @bind-Value="Waiting[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                                        <MudTextField T="int" Value="Waiting[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,4)"/>
                                                     </td>
                                                 </tr>
 
@@ -1366,7 +1369,7 @@
                                                         <MudItem>
                                                             @foreach (var (find, index) in area_ListS.Select((find, index) => (find, index)))
                                                             {
-                                                                <MudTextField T="string" @bind-Value="area_ListS[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(1, index))" />
+                                                                <MudTextField T="string" @bind-Value="area_ListS[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(1, index))" TextChanged="@(()=>UpdateAreaLists(1))"/>
                                                             }
                                                         </MudItem>
                                                     }
@@ -1401,7 +1404,7 @@
                                                         <MudItem>
                                                             @foreach (var (find, index) in area_ListQ.Select((find, index) => (find, index)))
                                                             {
-                                                                <MudTextField T="string" @bind-Value="area_ListQ[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(2, index))" />
+                                                                <MudTextField T="string" @bind-Value="area_ListQ[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(2, index))" TextChanged="@(()=>UpdateAreaLists(2))" />
                                                             }
                                                         </MudItem>
                                                     }
@@ -1436,7 +1439,7 @@
                                                         <MudItem>
                                                             @foreach (var (find, index) in area_ListD.Select((find, index) => (find, index)))
                                                             {
-                                                                <MudTextField T="string" @bind-Value="area_ListD[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(3, index))" />
+                                                                <MudTextField T="string" @bind-Value="area_ListD[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(3, index))" TextChanged="@(()=>UpdateAreaLists(3))"/>
                                                             }
                                                         </MudItem>
                                                     }
@@ -1471,7 +1474,7 @@
                                                         <MudItem>
                                                             @foreach (var (find, index) in area_ListC.Select((find, index) => (find, index)))
                                                             {
-                                                                <MudTextField T="string" @bind-Value="area_ListC[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(4, index))" />
+                                                                <MudTextField T="string" @bind-Value="area_ListC[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(4, index))" TextChanged="@(()=>UpdateAreaLists(4))"/>
                                                             }
                                                         </MudItem>
                                                     }
@@ -1506,7 +1509,7 @@
                                                         <MudItem>
                                                             @foreach (var (find, index) in area_ListOther.Select((find, index) => (find, index)))
                                                             {
-                                                                <MudTextField T="string" @bind-Value="area_ListOther[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(5, index))" />
+                                                                <MudTextField T="string" @bind-Value="area_ListOther[index]" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList(5, index))" TextChanged="@(()=>UpdateAreaLists(5))"/>
                                                             }
                                                         </MudItem>
                                                     }
@@ -1830,7 +1833,7 @@
                                             </tr>
                                             <tr>
                                                 <td colspan="2">
-                                                    <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                                                    <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" TextChanged="JobObservationContext_OnFieldChanged"/>
                                                 </td>
                                             </tr>
                                         <th>
@@ -1859,7 +1862,7 @@
                                         </th>
                                         <tr>
                                             <td>
-                                                <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
+                                                <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" TextChanged="JobObservationContext_OnFieldChanged"/>
                                             </td>
                                             <td>
                                                     @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
@@ -1884,7 +1887,7 @@
                                                 <MudText Style="text-align:center; font-weight:bold;">
                                                         @Localizer["operatorsSignature"]
                                                 </MudText>
-                                                <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="_jobObservation.OperatorId == 0" />
+                                                <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="_jobObservation.OperatorId == 0" TextChanged="JobObservationContext_OnFieldChanged"/>
                                             </td>
                                         </tr>
                                         </tbody>
@@ -1897,7 +1900,7 @@
             }
             @if(!string.IsNullOrEmpty(_jobObservation.OperatorSignature)){
                  <MudItem Style="text-align:center; display: flex; justify-content: center;">
-                    <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature OnSignatureSaved="HandleSignatureSaved"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature>
+                    <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature OnSignatureSaved="HandleSignatureSaved" Image="@currentImage" ClearSignature="HandleClearSignature"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature>
                 </MudItem>
             }
 @*            <div class="container drawing-container pa-8">
