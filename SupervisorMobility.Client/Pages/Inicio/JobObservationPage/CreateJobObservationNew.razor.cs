@@ -603,6 +603,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     operatorUsers.Add(operatorUser);
                 }
             }
+            await JobObservationContext_OnFieldChanged();
             StateHasChanged();
         }
 
@@ -2023,6 +2024,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation = result;
                 _ = await GenerateChecklistAnswers();
                 _ = await GenerateOperatorSignatureImage();
+                ClearJOStorage();
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -2218,6 +2220,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation = result;
                 _ = await GenerateChecklistAnswers();
                 _ = await GenerateOperatorSignatureImage();
+                ClearJOStorage();
                 NavigationManager.NavigateTo("/jobobservation");
             }
             else
@@ -2995,6 +2998,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             SetAsCurrentJobObservation();
+        }
+
+        private async Task OnKPIChange()
+        {
+            _jobObservation.KpiId = kpiID;
+            await JobObservationContext_OnFieldChanged(); 
         }
 
         private async Task OnStartDateChanged(DateTime? newDate)
