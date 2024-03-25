@@ -7,9 +7,16 @@
     <div class="row justify-content-center">
         <div class="col-md-12 text-center position-relative mt-4">
             <h3>@Localizer["operatorsSignature"]</h3>
-            <canvas class="canvas-container" id="myCanvas" width="500" height="200"
-            @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
-            @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
+            @if (!string.IsNullOrEmpty(Image))
+            {
+                <MudImage ObjectFit="ObjectFit.Cover" Height="200" Width="500" Src="@Image" Elevation="25" Class="rounded-lg" />
+            }
+            else
+            {
+                <canvas class="canvas-container" id="myCanvas" width="500" height="200"
+                @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
+                @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
+            }
         </div>
     </div>
     <div class="row justify-content-center">
@@ -30,6 +37,11 @@
 @code {
     [Parameter]
     public EventCallback OnSignatureSaved { get; set; }
+
+    [Parameter] public EventCallback ClearSignature { get; set; }
+
+    [Parameter]
+    public string? Image { get; set; } = null;
 
     private bool isDrawing = false;
     private double prevX;
@@ -99,9 +111,11 @@
 
     private async Task ClearCanvas()
     {
+        Image = null;
         await JS.InvokeVoidAsync("clearCanvas", "myCanvas");
         hasDrawing = false;
-        signatureSaved = false; 
+        signatureSaved = false;
+        await ClearSignature.InvokeAsync();
     }
 
 

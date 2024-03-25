@@ -43,6 +43,7 @@ using MudBlazor.Services;
 using SupervisorMobility.Client;
 using DocumentFormat.OpenXml.Spreadsheet;
 using AutoMapper;
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
@@ -54,6 +55,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Services
 builder.Services.AddLocalization();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
