@@ -1357,6 +1357,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First complete the form above.
+        /// </summary>
+        public static string firstCompleteTheformAbove {
+            get {
+                return ResourceManager.GetString("firstCompleteTheformAbove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a First select a distribution.
         /// </summary>
         public static string firstSelectADistribution {

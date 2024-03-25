@@ -244,6 +244,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         jobProductId = _jobObservation.ProductId??0;
                         productSpecification = _jobObservation.ModelsSpecification;
+                        kpiID = _jobObservation.KpiId ??0;
 
                         bool skipQA = !questionAnswers.Any();
                         bool skipIFF = !imagesFromFile.Any();
