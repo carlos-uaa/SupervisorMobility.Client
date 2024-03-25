@@ -57,9 +57,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private JobObservation _NewJobObservation = new();
         private SOSRegisterJobObservation _NewRegister = new();
 
-        MudTabs tabs;
-        MudTabPanel panel01;
-        MudTabPanel panel02;
+       
+        int SOSCodePathId { get; set; } = 0;
+        string SosPanelOpen { get; set; } = "";
 
         private List<User> SV_Manager = new();
 
@@ -141,13 +141,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         bool disableBtnCreateSos = false;
         bool AddOperator = false;
         bool MonthlyView = false;
-        bool visibleMassiveUpload = false;
         int diasSeparate = 1;
         int OptionRandom = 0;
         DateTime Startday = new();
         DateTime FirstdayYear = DateTime.Now;
         DateTime LastdayYear = DateTime.Now;
-        int StartMonth = 1;
         int JobsPorDia = 1;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
@@ -162,68 +160,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         DateTime? _yearMonth;
         int daysInMonth;
         private string month;
-        private string showMonth;
         private string year;
 
-        List<string> monthNames = new List<string>();
-        List<string> days = new List<string>();
-        List<Week> weeks = new List<Week>();
-
-        //calendario
-        DateTime startDate;
-        DateTime endDate;
+ 
         public int optionStatus { get; set; } = 0;
 
 
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         string jobCategoryStructureIds = "";
 
-
-        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
-        private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
-        //CommonDirection Files
-        private CDMS_CCP_Archives? CcpFilesInFolderCD;
-        private CDMS_HOE_Archives? HoeFilesInFolderCD;
-        private CDMS_GOS_Archives? GosFilesInFolderCD;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
-        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
-
-
-
-        private int plantId = 0;
-        private bool if_pick_Plant = false;
-        private int areaId = 0;
-        private bool if_pick_Area = false;
-        private int distributionId = 0;
-        private bool if_pick_Distribution = false;
-        private int productId = 0;
         public int idFilter;
         public int totalProgrammed;
-
-        MudTabs FilesViewer;
-        MudTabPanel HOE;
-        MudTabPanel HOECD;
-        MudTabPanel CCP;
-        MudTabPanel CCPCD;
-        MudTabPanel GOS;
-        MudTabPanel GOSCD;
+             
 
         public bool CodePathModalDisplay { get; set; } = false;
         private string searchCodeString = "";
@@ -231,9 +179,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
-        SOSCodePath CodePathDialogDisplay { get; set; }
+      
 
-        private List<SOSCodePath> listFilter = new();
         private List<User> _Users = new();
         private List<User> _UsersSV_Copy = new();
         bool FilterOperation = false;
@@ -343,17 +290,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
 
-            startDate = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
-            endDate = new DateTime((int)_sos_plan.AplicationYear, 1, 1).AddMonths(1).AddDays(-1);
-
-            monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
-
             month = $"{_yearMonth?.ToString("MMMM")}";
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
-            showMonth = month.ToUpper();
 
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
 
@@ -391,68 +330,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             //await JS.InvokeVoidAsync("blazorUtils.truncateText");
 
         }
-        private void GenerateCalendarHead()
-        {
-            if (startDate.DayOfWeek == DayOfWeek.Monday)
-            {
-                startDate = startDate.AddDays(-1);
-            }
-            switch (startDate.DayOfWeek)
-            {
-                case DayOfWeek.Monday: startDate = startDate.AddDays(-1); break;
-                case DayOfWeek.Tuesday: startDate = startDate.AddDays(-2); break;
-                case DayOfWeek.Wednesday: startDate = startDate.AddDays(-3); break;
-                case DayOfWeek.Thursday: startDate = startDate.AddDays(-4); break;
-                case DayOfWeek.Friday: startDate = startDate.AddDays(-5); break;
-                case DayOfWeek.Saturday: startDate = startDate.AddDays(-6); break;
-
-
-            }
-
-            var day1 = new List<string>();
-            for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
-            {
-                day1.Add(dt.ToString("dddd"));
-            }
-            days = day1.Distinct().ToList();
-        }
-        private void GenerateCalendarBody()
-        {
-            weeks = new List<Week>();
-            int flag = 0;
-            Week week = new Week();
-            List<DayEvent> dates = new List<DayEvent>();
-
-            var totalDays = (int)(endDate - startDate).TotalDays;
-            int countdays = 0;
-
-            for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
-            {
-                flag = flag + 1;
-                dates.Add(new DayEvent()
-                {
-                    DateValue = dt.ToString("d/M/yyyy"),
-                    DayName = dt.ToString("dd")
-                });
-
-                if (flag == 7)
-                {
-                    week = new Week();
-                    week.Dates = dates;
-                    weeks.Add(week);
-                    dates = new List<DayEvent>();
-                    flag = 0;
-                }
-                if (countdays == totalDays)
-                {
-                    week = new Week();
-                    week.Dates = dates;
-                    weeks.Add(week);
-                    break;
-                }
-                countdays++;
-            }
-        }
 
         private void OnFirstDateChanged(DateTime? dt)
         {
@@ -475,12 +352,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-            startDate = new DateTime(yearIndex, monthIndex, 1);
-            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-            showMonth = month.ToUpper();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
+        
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
             ShowLoading = false;
@@ -495,11 +367,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (tmpdist == null)
             {
                 tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+                if (tmpSuggdist != null)
+                {
+                    tmpSuggdist.distribution.ShowDetails = true;
+                }
             }
             else
             {
-                _distributions.ForEach(d => d.ShowDetails = false);
+                tmpdist.ShowDetails = false;
             }
             StateHasChanged();
             ShowLoading = true;
@@ -512,12 +387,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-            startDate = new DateTime(yearIndex, monthIndex, 1);
-            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-            showMonth = month.ToUpper();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
+           
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             ShowLoading = false;
 
@@ -540,11 +410,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (tmpdist == null)
             {
                 tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+                if (tmpSuggdist != null)
+                {
+                    tmpSuggdist.distribution.ShowDetails = true;
+                }
             }
             else
             {
-                _distributions.ForEach(d => d.ShowDetails = false);
+                    tmpdist.ShowDetails = false;
             }
             StateHasChanged();
 
@@ -558,12 +431,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-            startDate = new DateTime(yearIndex, monthIndex, 1);
-            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-            showMonth = month.ToUpper();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
+           
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
             ShowLoading = false;
@@ -1274,256 +1142,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
+        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
-            searchCodeString = itemselected.Code;
-            ShowLoading = true;
+
+            SOSCodePathId = itemselected.SOSCodePathId;
+            switch (panelSelect)
+            {
+                case 1:
+                    SosPanelOpen = "HOE";
+                    break;
+
+                case 2:
+                    SosPanelOpen = "CCP";
+                    break;
+
+                case 3:
+                    SosPanelOpen = "GOS";
+                    break;
+
+                case 4:
+                    SosPanelOpen = "HOE_CD";
+                    break;
+
+                case 5:
+                    SosPanelOpen = "CCP_CD";
+                    break;
+
+                case 6:
+                    SosPanelOpen = "GOS_CD";
+                    break;
+
+
+            }
+
             CodePathModalDisplay = true;
-            HoeFilesInFolder = new CDMS_HOE_Archives();
             StateHasChanged();
 
-            try
-            {
-                CodePathDialogDisplay = itemselected;
-
-                HOErute = itemselected.HOE;
-                if (itemselected.HOE != "")
-                {
-                    Console.WriteLine($"hoe {itemselected.HOE}");
-                    HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-                    if (HoeFilesInFolder == null)
-                        folderErrorHOE = true;
-                    else
-                    {
-                        AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
-
-                        folderErrorHOE = false;
-                    }
-                }
-
-                folderErrorGOS = true;
-                GOSrute = itemselected.GOS;
-
-                if (itemselected.GOS != "")
-                {
-
-                    Console.WriteLine($"gos {GOSrute}");
-
-
-                    GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-                    if (GosFilesInFolder == null)
-                    {
-                        folderErrorGOS = true;
-                    }
-                    else
-                    {
-                        folderErrorGOS = false;
-                        AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
-                    }
-
-                }
-
-                folderErrorCCP = true;
-                CCPrute = itemselected.CCP;
-                if (itemselected.CCP != "")
-                {
-
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-                //Common Directions
-                folderErrorGOSCD = true;
-                if (itemselected.CommonDirectionGOS != "")
-                {
-
-                    GOSruteCD = itemselected.CommonDirectionGOS;
-
-                    Console.WriteLine($"gos cd {GOSruteCD}");
-
-                    GosFilesInFolderCD = new CDMS_GOS_Archives();
-
-                    GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-                    if (GosFilesInFolderCD == null)
-                    {
-                        folderErrorGOSCD = true;
-                    }
-                    else
-                    {
-                        folderErrorGOSCD = false;
-                        AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
-                    }
-
-                }
-
-                folderErrorCCPCD = true;
-                if (itemselected.CommonDirectionCCP != "")
-                {
-                    CCPruteCD = itemselected.CommonDirectionCCP;
-                    Console.WriteLine($"Ccp cd {CCPruteCD}");
-
-                    CcpFilesInFolderCD = new CDMS_CCP_Archives();
-                    CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-                    if (CcpFilesInFolderCD == null)
-                        folderErrorCCPCD = true;
-                    else
-                    {
-                        folderErrorCCPCD = false;
-                        AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
-                    }
-
-                }
-
-                if (itemselected.CommonDirectionHOE != "")
-                {
-
-
-                    folderErrorHOECD = true;
-
-                    HOEruteCD = itemselected.CommonDirectionHOE;
-                    Console.WriteLine($"hoe cd {HOEruteCD}");
-                    HoeFilesInFolderCD = new CDMS_HOE_Archives();
-                    HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-                    if (HoeFilesInFolderCD == null)
-                        folderErrorHOECD = true;
-                    else
-                    {
-                        AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
-
-                        folderErrorHOECD = false;
-                    }
-                }
-
-                //EndCommon Directions
-
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
-            }
-            finally
-            {
-                await SearchFunction();
-                ShowLoading = false;
-                StateHasChanged();
-            }
-
             return new AsyncVoidMethodBuilder();
         }
 
-        private async Task<AsyncVoidMethodBuilder> SearchFunction()
-        {
-
-            if (CodePathDialogDisplay != null)
-            {
-                try
-                {
-                    ShowLoading = true;
-                    StateHasChanged();
-
-                    if (string.IsNullOrEmpty(searchCodeString))
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-
-                        if (CodePathDialogDisplay.GOS != "")
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-
-                        if (CodePathDialogDisplay.CCP != "")
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                    }
-                    else
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                        {
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-                            HoeFilesInFolder.operation = HoeFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.GOS != "")
-                        {
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-                            GosFilesInFolder.operation = AuxGosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CCP != "")
-                        {
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-                            CcpFilesInFolder.operation = CcpFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                        {
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-                            HoeFilesInFolderCD.operation = HoeFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                        {
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-                            GosFilesInFolderCD.operation = GosFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                        {
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                            CcpFilesInFolderCD.operation = CcpFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                    }
-
-
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error Filter: {ex.Message}");
-                }
-                finally
-                {
-                    ShowLoading = false;
-                    StateHasChanged();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error Filter es nullo");
-            }
-
-            Console.WriteLine($"SearchFunction - End {DateTime.Now}");
-            Console.WriteLine($"State End {ShowLoading}");
-            //// if text is null or empty, show complete list
-            //if (string.IsNullOrEmpty(searchString))
-            //    return GosFilesInFolder.operation;
-
-            //return GosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-            return new AsyncVoidMethodBuilder();
-        }
-
-
+    
 
 
         private bool visible5 = false;
@@ -1618,22 +1276,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (tmpdist != null)
             {
-                if (tmpdist.ShowDetails)
-                {
-                    tmpdist.ShowDetails = false;
-                }
-                else
-                {
-                    Distribution? opendist = _distributions.FirstOrDefault(f => f.ShowDetails == true);
-                    if( opendist != null)
-                        opendist.ShowDetails = false;
-                    //_distributions.ForEach(d => d.ShowDetails = false);
-                    tmpdist.ShowDetails = true;
-                }
-            }
+                Distribution? openDist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != nr);
 
-            // Actualizar el estado
-            StateHasChanged();
+                if(openDist != null)
+                {
+                    openDist.ShowDetails = false;
+                }
+
+                tmpdist.ShowDetails = !tmpdist.ShowDetails;
+
+                // Actualizar el estado
+                StateHasChanged();
+            }
         }
 
         private async Task BtnSupervisorsEdit(int op)

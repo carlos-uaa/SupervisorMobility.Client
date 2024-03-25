@@ -158,6 +158,194 @@
             <table>
                 <thead>
                     <tr>
+                        <th colspan="3" class="fixed-column">@Localizer["operatorsByOperation"]</th>
+                        <th colspan="2" rowspan="4" class="fixed-column dynamic-left">@Localizer["operatorName"]</th>
+                        <Virtualize Context="usr" Items="_UserOfArea">
+                            @if (User_Knolowed[usr.UserId])
+                            {
+                                <th rowspan="4" colspan="2" class="fixed-column dynamic-left">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" @ontouchstart="(() => OpenHistoryILU(usr.UserId))">
+                                                @Localizer["historyILU"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
+                            }
+                            else
+                            {
+                                <th style="background-color: #f9dad8; color: #f44336;" rowspan="4" colspan="2" class="fixed-column dynamic-left">
+                                    @usr.Name
+                                </th>
+                            }
+                        </Virtualize>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="fixed-column">___ % @Localizer["in"] 1 x ___ </th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="fixed-column">@Localizer["operatorsByOperation"]</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="fixed-column">___ % @Localizer["in"] 2 x ___ </th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    <tr>
+                        <th colspan="3" class="fixed-column"></th>
+                        <th colspan="2" class="fixed-column dynamic-left">@Localizer["payroll"]</th>
+                        <Virtualize Context="usr" Items="_UserOfArea">
+                            @if (User_Knolowed[usr.UserId])
+                            {
+                                <th colspan="2" class="fixed-column dynamic-left">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Payroll.ToString()" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" @ontouchstart="(() => OpenHistoryILU(usr.UserId))">
+                                                @Localizer["historyILU"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
+                            }
+                            else
+                            {
+                                <th style="background-color: #f9dad8; color: #f44336;" colspan="2" class="fixed-column dynamic-left">
+                                    @usr.Payroll
+                                </th>
+                            }
+                        </Virtualize>
+                      
+                    </tr>
+                    <tr>
+                        <th colspan="2" class="fixed-column"  style="max-width:60px;width:50px"> @Localizer["no"]</th>
+                        <th colspan="3" class="fixed-column dynamic-left" > @Localizer["operationName"]</th>
+                        <Virtualize Items="_UserOfArea">
+                            <th>Nivel</th>
+                            <th>Fecha</th>
+                        </Virtualize>
+                    </tr>
+                        <Virtualize Items="_operations" Context="op">
+                            <tr>
+                                <td style="max-width:120px;width:100px" colspan="2"  class="fixed-column">@op.Code</td>
+                                @if (Operations_Knolowed[op.OperationId])
+                                {
+                                    <th colspan="2">
+                                        <div style="text-align: end;">
+                                            <MudMenu AnchorOrigin="Origin.BottomCenter">
+                                                <ActivatorContent>
+                                                    @op.Description &nbsp;
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
+                                                </ActivatorContent>
+                                                <ChildContent>
+                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.OperationId))" @ontouchstart="(() => OpenHistoryILU_Operation(op.OperationId))">
+                                                        @Localizer["historyILU"]
+                                                    </MudMenuItem>
+                                                </ChildContent>
+                                            </MudMenu>
+                                        </div>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th colspan="2" style="background-color:#fbe8ce;color:#ff9800">
+                                        @op.Description &nbsp;
+                                    </th>
+                                }
+                                <td style="max-width:60px;width:50px"  class="fixed-column">
+                                @switch (op.CriticalType)
+                                {
+                                    case 1:
+                                        <MudItem>
+                                            <img src="Images/A.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    case 2:
+                                        <MudItem>
+                                            <img src="Images/B.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    case 3:
+                                        <MudItem>
+                                            <img src="Images/C.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                </td>
+                                
+                                <Virtualize Context="usr" Items="_UserOfArea">
+                                    <td style="text-align: end;" colspan="2">
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.OperationId, usr.UserId))" @ontouchstart="(() => CreateJobObservation(op.OperationId, usr.UserId))">
+                                                @Localizer["createJobObservation"]
+                                            </MudMenuItem>
+                                            <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))" @ontouchstart="( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
+                                                <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
+                                            </MudMenuItem>
+                                        </MudMenu>
+
+                                    }
+
+                                    @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
+                                    {
+                                        <table style="border: none">
+                                            <tbody>
+                                                @{
+                                                    var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                    char ILULevelNumber = '§';
+                                                    @if (latestContext != null)
+                                                    {
+                                                        ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                    }
+                                                }
+
+                                                @if (context.Count > 0 && latestContext != null)
+                                                {
+                                                    <tr style="border: none; display: flex; justify-content: space-around;">
+                                                        @if (ILULevelNumber != '§')
+                                                        {
+                                                            <td style="border: none">
+                                                                <MudText Typo="Typo.subtitle1"> <b>  @ILULevelNumber </b> </MudText>
+                                                            </td>
+                                                        }
+                                                        <td style="border: none">@latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </td>
+                                </Virtualize>
+                            </tr>
+                        </Virtualize>
+                   
+                    <tr>
+                        <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                        </td>
+                        <td colspan="2" class="fixed-column dynamic-left">
+                        </td>
+                        <td colspan="1" class="fixed-column dynamic-left" style="text-align: center;">
+                            1 x _
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+    <div class="table-container mb-10">
+        <div class="scrollable-columns">
+
+            <table>
+                <thead>
+                    <tr>
                         <th colspan="3" class="fixed-column dynamic-left">@Localizer["operatorsByOperation"]</th>
                         <th colspan="2" rowspan="4" class="fixed-column dynamic-left">@Localizer["operationName"]</th>
 
@@ -232,10 +420,6 @@
                                     }
                                 </th>
                             }
-
-
-
-
                         }
                     </tr>
                     <tr>
@@ -315,8 +499,8 @@
                                             </MudMenuItem>
                                             <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))" @ontouchstart="( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
                                                 <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                            </MudMenuItem>
-                                        </MudMenu>
+                                                </MudMenuItem>
+                                            </MudMenu>
 
                                     }
 
@@ -759,7 +943,7 @@ else
 
         ShowTable = true;
         StateHasChanged();
-        await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
+        // await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
 
     }
 
