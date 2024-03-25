@@ -699,12 +699,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     currentOperationIndex = 0;
                     currentCycle++;
                     SyncLocalStorage.SetItem("CC",currentCycle);
+                    SyncLocalStorage.SetItem("OpTimes", OperationTimes);
                     Console.WriteLine("Total cycle time: " + cronometerTime);
                     PauseTimer();
                     cronometerTime = "0.00";
                 }
 
-                SyncLocalStorage.SetItem("OpTimes", OperationTimes);
                 SetAsCurrentJobObservation();
                 StateHasChanged();
             }
