@@ -417,8 +417,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _jobObservation.PlantId = 0;
                         _jobObservation.AreaId = 0;
                         _jobObservation.SupervisorId = 0;
-                        _allSupervisors = await UsersService.GetUsersByType(3, true, false);
-                        _allSupervisors = _allSupervisors.OrderBy(s => s.Name).ToList();
 
                         return;
                     }
@@ -554,13 +552,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _assychart = null;
             if (user.UserType == 1)
             {
-                foreach (User sv in _allSupervisors)
-                {
-                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
-                    {
-                        _supervisors.Add(sv);
-                    }
-                }
+                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
             }
             else if (user.UserType == 2)
