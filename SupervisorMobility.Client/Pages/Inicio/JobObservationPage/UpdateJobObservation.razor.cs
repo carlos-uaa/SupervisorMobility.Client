@@ -1449,6 +1449,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.OperationId = 0;
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
+            productSpecification = "0";
+            jobProductId = 0;
             _assychart = null;
 
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
@@ -1477,6 +1479,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
+            productSpecification = "0";
+            jobProductId = 0;
 
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
@@ -1555,7 +1559,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowOperations()
         {
 
-
+            productSpecification = "0";
+            jobProductId = 0;
             _jobObservation.OperationId = 0;
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
