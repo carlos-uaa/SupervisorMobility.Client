@@ -84,6 +84,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
+        public bool loadingData = true;
 
         // Initialization
         protected async override Task OnInitializedAsync()
@@ -233,6 +234,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                         //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                     }
                 }
+                loadingData = true;
                 StateHasChanged();
             }
 
@@ -241,6 +243,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
         private async Task LoadJobObservations()
         {
+            loadingData = true;
             if (user != null)
             {
                 _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
@@ -306,6 +309,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     //_allSupervisors = await UsersService.GetUserByType(3, true, false);
                 }
             }
+            loadingData = false;
             StateHasChanged();
         }
 

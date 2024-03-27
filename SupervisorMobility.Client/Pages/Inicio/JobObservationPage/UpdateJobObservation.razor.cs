@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Services.BreadcrumsService;
 using System.Globalization;
@@ -45,6 +46,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Distribution> _distributions = new();
         List<Operation> _operations = new();
         List<Product> _products { get; set; } = new();
+        List<User> _supervisors { get; set; } = new();
+
         private AssyChart _assychart { get; set; } = new AssyChart();
         private string messageErrorFolders;
         private bool searchAssychart = false;
@@ -101,7 +104,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobObservation> pastjobObservations = new();
         public List<Lup> pastLup = new();
         public JobObservation pastJob = new();
-
+        public Operation operation = new();
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
@@ -161,7 +164,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<string> area_ListC = new List<string>();
         public List<string> area_ListOther = new List<string>();
         List<Lup> _tempLup { get; set; } = new();
-        
+
+        public bool flag = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -182,6 +186,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
+            await GetUserAsync();
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -341,7 +346,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     operatorSignatureSigned = true;
                 }
 
-                StateHasChanged();
+                if (user.UserType == 1)
+                {
+                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
+                    _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+                        Console.WriteLine("aa");
+                        Console.WriteLine(_supervisors.Count);
+
+                }
+                        Console.WriteLine("bb");
+                        Console.WriteLine(user.UserType);
+
+                    StateHasChanged();
                 await GetUserAsync();
 
                     if (user != null)
@@ -1431,17 +1447,120 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.AreaId = 0;
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
+            _jobObservation.OperatorId = 0;
+            _jobObservation.SupervisorId = 0;
+            productSpecification = "0";
+            jobProductId = 0;
+            _assychart = null;
+
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
         }
 
         private async void ShowDistributions()
         {
+            _jobObservation.SupervisorId = 0;
+            _supervisors.Clear();
+            _assychart = null;
+            if (user.UserType == 1)
+            {
+                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
+            }
+            else if (user.UserType == 2)
+            {
+                _supervisors = new();
+                _supervisors = await UsersService.GetSubordinates(user.UserId, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
+            }
+
+            _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
             _jobObservation.OperationId = 0;
-            _distributions = await DistributionService.GetDistributions(_jobObservation.PlantId, _jobObservation.AreaId);
+            productSpecification = "0";
+            jobProductId = 0;
+
+            _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+            _distributions = _distributions.OrderBy(d => d.Description).ToList();
+
+            StateHasChanged();
         }
+
+        private async void ShowOperators()
+        {
+            if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
+                ShowPastJobObservations();
+
+            if (user.UserType == 1 || user.UserType == 2)
+            {
+                _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
+                _operators = _operators.OrderBy(o => o.Name).ToList();
+            }
+            operatorUsers = new();
+            _jobObservation.OperatorId = 0;
+            //operator User
+            foreach (var operatorUser in _operators)
+            {
+                if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
+                {
+                    operatorUsers.Add(operatorUser);
+                }
+            }
+            StateHasChanged();
+        }
+
+
+        private async void ShowPastJobObservations()
+        {
+            flag = true;
+
+            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+
+            pastjobObservations = new();
+            pastLup = new();
+            if (user != null)
+            {
+                pastJobs = await JobObservationService.GetAllJobObservations();
+
+                foreach (var job in pastJobs)
+                {
+                    if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
+                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                    {
+
+                        pastjobObservations.Add(job);
+
+                        pastJob = await JobObservationService.GetJobObservationById(job.JobObservationId, true, true, true, false, false);
+                        foreach (var lups in pastJob.Lup)
+                        {
+                            pastLup.Add(lups);
+                        }
+                    }
+
+                }
+
+
+            }
+            pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
+
+            if (_assychart != null && _assychart.RoutesProductsAssyChart?.Count > 0)
+            {
+                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+                FilterOperation = true;
+            }
+
+
+            StateHasChanged();
+        }
+
+
         private async void ShowOperations()
         {
+
+            productSpecification = "0";
+            jobProductId = 0;
             _jobObservation.OperationId = 0;
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
@@ -1708,8 +1827,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Past Job Observations Modal
         private void OpenDialogPastJobObservations()
         {
+            if (!flag)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["selectADistributionAndAnOperation"], Severity.Warning);
+                return;
+            }
+            if (_jobObservation.SupervisorId == 0)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["firstSelectASupervisor"], Severity.Warning);
+                return;
+            }
+
             visiblePast = true;
         }
+
         void CloseOverdue() => visiblePast = false;
 
 
@@ -2224,170 +2359,49 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
 
         }
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
+
+        int SOSCodePathId { get; set; } = 0;
+        string SosPanelOpen { get; set; } = "";
+        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
-            searchCodeString = itemselected.Code;
+
             ShowLoading = true;
+            SOSCodePathId = itemselected.SOSCodePathId;
+            switch (panelSelect)
+            {
+                case 1:
+                    SosPanelOpen = "HOE";
+                    break;
+
+                case 2:
+                    SosPanelOpen = "CCP";
+                    break;
+
+                case 3:
+                    SosPanelOpen = "GOS";
+                    break;
+
+                case 4:
+                    SosPanelOpen = "HOE_CD";
+                    break;
+
+                case 5:
+                    SosPanelOpen = "CCP_CD";
+                    break;
+
+                case 6:
+                    SosPanelOpen = "GOS_CD";
+                    break;
+
+
+            }
+
             CodePathModalDisplay = true;
-            HoeFilesInFolder = new CDMS_HOE_Archives();
             StateHasChanged();
-
-            //try
-            //{
-            //    CodePathDialogDisplay = itemselected;
-
-            //    HOErute = itemselected.HOE;
-            //    if (itemselected.HOE != "")
-            //    {
-            //        Console.WriteLine($"hoe {itemselected.HOE}");
-            //        HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-            //        if (HoeFilesInFolder == null)
-            //            folderErrorHOE = true;
-            //        else
-            //        {
-            //            AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
-
-            //            folderErrorHOE = false;
-            //        }
-            //    }
-
-            //    folderErrorGOS = true;
-            //    GOSrute = itemselected.GOS;
-
-            //    if (itemselected.GOS != "")
-            //    {
-
-            //        Console.WriteLine($"gos {GOSrute}");
-
-
-            //        GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-            //        if (GosFilesInFolder == null)
-            //        {
-            //            folderErrorGOS = true;
-            //        }
-            //        else
-            //        {
-            //            folderErrorGOS = false;
-            //            AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
-            //        }
-
-            //    }
-
-            //    folderErrorCCP = true;
-            //    CCPrute = itemselected.CCP;
-            //    if (itemselected.CCP != "")
-            //    {
-
-            //        Console.WriteLine($"CCP {CCPrute}");
-
-            //        CcpFilesInFolder = new CDMS_CCP_Archives();
-            //        CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-            //        if (CcpFilesInFolder == null)
-            //            folderErrorCCP = true;
-            //        else
-            //        {
-            //            AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-            //            folderErrorCCP = false;
-
-            //        }
-
-            //        nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
-
-            //        if (nodoEncontrado != null)
-            //        {
-            //            // El nodo fue encontrado, puedes trabajar con él aquí
-            //            // Por ejemplo, imprimir su nombre
-            //            Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
-            //        }
-            //        else
-            //        {
-            //            // El nodo no fue encontrado
-            //            Console.WriteLine("La ruta no se encontró en el árbol.");
-            //        }
-            //    }
-
-
-            //    //Common Directions
-            //    folderErrorGOSCD = true;
-            //    if (itemselected.CommonDirectionGOS != "")
-            //    {
-
-            //        GOSruteCD = itemselected.CommonDirectionGOS;
-
-            //        Console.WriteLine($"gos cd {GOSruteCD}");
-
-            //        GosFilesInFolderCD = new CDMS_GOS_Archives();
-
-            //        GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-            //        if (GosFilesInFolderCD == null)
-            //        {
-            //            folderErrorGOSCD = true;
-            //        }
-            //        else
-            //        {
-            //            folderErrorGOSCD = false;
-            //            AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
-            //        }
-
-            //    }
-
-            //    folderErrorCCPCD = true;
-            //    if (itemselected.CommonDirectionCCP != "")
-            //    {
-            //        CCPruteCD = itemselected.CommonDirectionCCP;
-            //        Console.WriteLine($"Ccp cd {CCPruteCD}");
-
-            //        CcpFilesInFolderCD = new CDMS_CCP_Archives();
-            //        CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-            //        if (CcpFilesInFolderCD == null)
-            //            folderErrorCCPCD = true;
-            //        else
-            //        {
-            //            folderErrorCCPCD = false;
-            //            AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
-            //        }
-
-            //    }
-
-            //    if (itemselected.CommonDirectionHOE != "")
-            //    {
-
-
-            //        folderErrorHOECD = true;
-
-            //        HOEruteCD = itemselected.CommonDirectionHOE;
-            //        Console.WriteLine($"hoe cd {HOEruteCD}");
-            //        HoeFilesInFolderCD = new CDMS_HOE_Archives();
-            //        HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-            //        if (HoeFilesInFolderCD == null)
-            //            folderErrorHOECD = true;
-            //        else
-            //        {
-            //            AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
-
-            //            folderErrorHOECD = false;
-            //        }
-            //    }
-
-            //    //EndCommon Directions
-
-
-
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
-            //}
-            //finally
-            //{
-            //    await SearchFunction();
-            //    ShowLoading = false;
-            //    StateHasChanged();
-            //}
-
             return new AsyncVoidMethodBuilder();
         }
+
+
         private async Task<AsyncVoidMethodBuilder> SearchFunction()
         {
             Console.WriteLine($"SearchFunction - Start {DateTime.Now}");

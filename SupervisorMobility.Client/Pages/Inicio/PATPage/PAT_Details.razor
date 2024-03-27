@@ -13,6 +13,7 @@
 @inject IILUService ILUServices
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["PATDetails"]</PageTitle>
@@ -23,62 +24,77 @@
     </ItemTemplate>
 </MudBreadcrumbs>*@
 
+    <style>
 
-<style>
-    .merged-cell {
-        vertical-align: middle;
-    }
-
-    .table-container {
-        box-shadow: var(--mud-elevation-1);
-        overflow-x: auto;
-        border-radius: var(--mud-default-borderradius);
-    }
-
-        .table-container:hover {
-            box-shadow: var(--mud-elevation-2);
+        .vertical-text {
+            vertical-align: middle;
         }
 
-    table {
-        border-collapse: collapse;
-        width: auto;
-        min-width: 100%;
-        table-layout: fixed;
-        border-radius: var(--mud-default-borderradius);
-    }
+        .vertical-content {
+            writing-mode: vertical-lr;
+            white-space: nowrap;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
 
-    th,
-    td {
-        padding: 8px;
-        border: 1px solid #DEDEDF;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 
-    .fixed-column {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background-color: #f0f0f0;
-    }
+        .mud-simple-table.mud-table-sticky-header * table thead * th {
+            background-color: var(--mud-palette-surface);
+            position: sticky;
+            z-index: 2;
+            top: 0;
+        }
 
-    .dynamic-left {
+        .scroll1::-webkit-scrollbar {
+            width: 4px;
+            touch-action: pan-y;
+        }
+
+     
+
+        .table-container {
+            box-shadow: var(--mud-elevation-1);
+            overflow-x: auto;
+            border-radius: var(--mud-default-borderradius);
+        }
+
+            .table-container:hover {
+                box-shadow: var(--mud-elevation-2);
+            }
+
+
+        .fixed-column {
             position: sticky;
             left: 0;
-            z-index: 1;
-    }
+            z-index: 2;
+            background-color: #f0f0f0;
+        }
 
-    .mud-typography.mud-typography-body1 {
-        overflow: hidden;
-    }
-</style>
+        .dynamic-left {
+            left: 0;
+        }
+/* 
+        table {
+            border-collapse: collapse;
+            min-width: 100%;
+            border-radius: var(--mud-default-borderradius);
+        } */
+
+        th,
+        td {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .fixed-row {
+            position: sticky;
+            top: 0; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+            z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+        }
+    </style>
 
 @if (ShowTable)
 {
-
-    
-
     <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
         <MudText Typo="Typo.h6">@Localizer["PATDetails"] </MudText>
         <MudItem Style="justify-content: end" Class="ml-auto">
@@ -152,6 +168,187 @@
         </tr>
     </tbody>
 </MudSimpleTable>
+    <div class="table-container mb-10" >
+        <div class="scrollable-columns">
+            <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh">
+                 <thead >
+                    <tr>
+                        <th colspan="3">@Localizer["operatorsByOperation"]</th>
+                        <th colspan="2" rowspan="3" class="fixed-column dynamic-left thead">@Localizer["operatorName"]</th>
+                        <Virtualize Context="usr" Items="_UserOfArea">
+                            @if (User_Knolowed[usr.UserId])
+                            {
+                                <th rowspan="3" colspan="2" style="background-color: #f9dad8; color: #f9dad8;">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" @ontouchstart="(() => OpenHistoryILU(usr.UserId))">
+                                                @Localizer["historyILU"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
+                            }
+                            else
+                            {
+                                <th style="background-color: #f9dad8; color: #f44336;" rowspan="3" colspan="2" class="thead">
+                                    @usr.Name
+                                </th>
+                            }
+                        </Virtualize>
+                    </tr>
+                    <tr>
+                        <th colspan="3" >___ % @Localizer["in"] 1 x ___ </th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" >@Localizer["operatorsByOperation"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th colspan="3" >___ % @Localizer["in"] 2 x ___ </th>
+                        <th colspan="2" class="fixed-column dynamic-left">@Localizer["payroll"]</th>
+                        <Virtualize Context="usr" Items="_UserOfArea">
+                            @if (User_Knolowed[usr.UserId])
+                            {
+                                <th colspan="2">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Payroll.ToString()" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" @ontouchstart="(() => OpenHistoryILU(usr.UserId))">
+                                                @Localizer["historyILU"]
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
+                            }
+                            else
+                            {
+                                <th style="background-color: #f9dad8; color: #f44336;" colspan="2">
+                                    @usr.Payroll
+                                </th>
+                            }
+                        </Virtualize>
+                    </tr>
+                   <tr class="fixed-row">
+                        <th colspan="2" class="fixed-column dynamic-left"   style="max-width:60px;width:50px"> @Localizer["no"]</th>
+                        <th colspan="3" class="fixed-column dynamic-left" > @Localizer["operationName"]</th>
+                        <Virtualize Items="_UserOfArea">
+                            <th>Nivel</th>
+                            <th>Fecha</th>
+                        </Virtualize>
+                    </tr>
+                    @foreach(var op in _operations){
+
+                            <tr>
+                            <td style="max-width:120px;width:100px" colspan="2" class="fixed-column dynamic-left">@op.Code</td>
+                                @if (Operations_Knolowed[op.OperationId])
+                                {
+                                    <th colspan="2" class="fixed-column dynamic-left" >
+                                        <div style="text-align: end;">
+                                            <MudMenu AnchorOrigin="Origin.BottomCenter">
+                                                <ActivatorContent>
+                                                    @op.Description &nbsp;
+                                                    <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
+                                                </ActivatorContent>
+                                                <ChildContent>
+                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.OperationId))" @ontouchstart="(() => OpenHistoryILU_Operation(op.OperationId))">
+                                                        @Localizer["historyILU"]
+                                                    </MudMenuItem>
+                                                </ChildContent>
+                                            </MudMenu>
+                                        </div>
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th class="fixed-column dynamic-left"  colspan="2" style="background-color:#fbe8ce;color:#ff9800">
+                                        @op.Description &nbsp;
+                                    </th>
+                                }
+                                <td style="max-width:60px;width:50px">
+                                @switch (op.CriticalType)
+                                {
+                                    case 1:
+                                        <MudItem>
+                                            <img src="Images/A.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    case 2:
+                                        <MudItem>
+                                            <img src="Images/B.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    case 3:
+                                        <MudItem>
+                                            <img src="Images/C.png" Height="30" Width="30" />
+                                        </MudItem>
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                </td>
+                                
+                                <Virtualize Context="usr" Items="_UserOfArea">
+                                    <td style="text-align: end;" colspan="2">
+                                    @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                                    {
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.OperationId, usr.UserId))" @ontouchstart="(() => CreateJobObservation(op.OperationId, usr.UserId))">
+                                                @Localizer["createJobObservation"]
+                                            </MudMenuItem>
+                                            <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))" @ontouchstart="( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
+                                                <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
+                                            </MudMenuItem>
+                                        </MudMenu>
+
+                                    }
+
+                                    @if (ILU_Matrix.TryGetValue((op.OperationId, usr.UserId), out var context))
+                                    {
+                                        <table style="border: none">
+                                            <tbody>
+                                                @{
+                                                    var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                    char ILULevelNumber = '§';
+                                                    @if (latestContext != null)
+                                                    {
+                                                        ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                    }
+                                                }
+
+                                                @if (context.Count > 0 && latestContext != null)
+                                                {
+                                                    <tr style="border: none; display: flex; justify-content: space-around;">
+                                                        @if (ILULevelNumber != '§')
+                                                        {
+                                                            <td style="border: none">
+                                                                <MudText Typo="Typo.subtitle1"> <b>  @ILULevelNumber </b> </MudText>
+                                                            </td>
+                                                        }
+                                                        <td style="border: none">@latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </td>
+                                </Virtualize>
+                            </tr>
+                   }
+                    <tr>
+                        <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                        </td>
+                        <td colspan="2" class="fixed-column dynamic-left">
+                        </td>
+                        <td colspan="1" class="fixed-column dynamic-left" style="text-align: center;">
+                            1 x _
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+        </div>
+    </div>
+
+
     <div class="table-container mb-10">
         <div class="scrollable-columns">
 
@@ -232,10 +429,6 @@
                                     }
                                 </th>
                             }
-
-
-
-
                         }
                     </tr>
                     <tr>
@@ -315,8 +508,8 @@
                                             </MudMenuItem>
                                             <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.OperationId, usr.UserId))" @ontouchstart="( () => OpenDialogAddILU(op.OperationId, usr.UserId))">
                                                 <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                            </MudMenuItem>
-                                        </MudMenu>
+                                                </MudMenuItem>
+                                            </MudMenu>
 
                                     }
 
@@ -371,10 +564,17 @@
 }
 else
 {
-    <MudItem Style="text-align:center;">
-        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
-        <MudText Typo="Typo.h6">@Localizer["loadingPATDetails"]...</MudText>
-    </MudItem>
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
 }
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="AddILUVisibleDialog" Options="dialogOptions">
@@ -581,334 +781,4 @@ else
 </MudDialog>
 
 
-@code {
-    [Parameter]
-    public int patID { get; set; }
 
-    private PAT? _pat { get; set; } = new();
-    private List<Operation> _operations { get; set; } = new();
-    private List<User> _UserOfArea { get; set; } = new();
-    private List<ILULevel> _LevelsILU { get; set; } = new();
-    //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
-    private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
-    private Dictionary<int, bool> Operations_Knolowed { get; set; } = new Dictionary<int, bool>();
-    private Dictionary<int, bool> User_Knolowed { get; set; } = new Dictionary<int, bool>();
-
-    bool ShowTable = false;
-
-
-
-    //dialog
-    bool AddILUVisibleDialog = false;
-    bool ILUHistoryDialog = false;
-    bool ILUHistoryOperationDialog = false;
-    private ILURegister _newIlu { get; set; } = new();
-    private List<ILURegister> AllRegistersOfPat { get; set; } = new();
-    private int auxILU_Level = 0;
-    private int auxILU_UseId = 0;
-    private int auxILU_OpId = 0;
-
-    private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
-    private List<ILURegister> AllRegistersUsersInOperation { get; set; } = new();
-
-    private TableGroupDefinition<ILURegister> UserInOperations = new()
-        {
-            GroupName = "User",
-            Indentation = false,
-            Expandable = false,
-            Selector = (e) => e.OperatorId
-        };
-
-    private TableGroupDefinition<ILURegister> OperationsInUser = new()
-        {
-            GroupName = "Operation",
-            Indentation = false,
-            Expandable = false,
-            Selector = (e) => e.OperationId
-        };
-
-    private List<BreadcrumbItem> _links;
-
-    [Inject]
-    private IBreadcrumbService BreadcrumbService { get; set; }
-    //User
-    private string json = string.Empty;
-    public User user = new();
-    public bool logged = false;
-
-    protected async override Task OnInitializedAsync()
-    {
-
-        _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem("PAT", href: "/PAT"),
-            new BreadcrumbItem(text: Localizer["PATDetails"], href: "", disabled: true),
-        };
-
-        BreadcrumbService.UpdateBreadcrumbs(_links);
-        logged = await HasPropertyAsync();
-
-        if (!logged)
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"Error You have to log in", Severity.Error);
-            NavigationManager.NavigateTo($"/");
-        }
-        else
-        {
-            await GetUserAsync();
-
-            _pat = await PATsServices.getPat(patID);
-
-            await PrepareDataTable();
-            StateHasChanged();
-        }
-
-
-    }
-
-
-    //Local storage user
-    private async Task GetUserAsync()
-    {
-        if (!await TryGetAsync())
-        {
-            user = new();
-        }
-    }
-
-    private async Task<bool> TryGetAsync()
-    {
-        bool hasProperty = await HasPropertyAsync();
-        if (hasProperty)
-        {
-            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-            user = JsonSerializer.Deserialize<User>(json) ?? new();
-
-        }
-        return hasProperty;
-    }
-
-    private async Task<bool> HasPropertyAsync()
-        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
-
-
-
-
-    private async Task PrepareDataTable()
-    {
-        AllRegistersOfPat?.Clear();
-        ILU_Matrix?.Clear();
-        Operations_Knolowed?.Clear();
-        User_Knolowed?.Clear();
-        _LevelsILU?.Clear();
-        _operations?.Clear();
-        _UserOfArea?.Clear();
-
-
-        _LevelsILU = await ILUServices.GetLevelsILU();
-        _operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
-        _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-        //_UserOfArea = await UsersServices.GetUsersWhitCollections();
-
-
-        foreach (var op in _operations)
-        {
-            foreach (var usr in _UserOfArea)
-            {
-                // Obtener los registros correspondientes a la operación y usuario actual
-                var matchingRegisters = usr.ILURegisers?
-                    .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
-                    .OrderByDescending(r => r.AcquisitionDate)
-                    .ToList();
-
-                AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
-                ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
-                // Almacenar los registros en la
-                //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
-            }
-        }
-
-        foreach (var op in _operations)
-        {
-            if (AllRegistersOfPat.FindIndex(r => r.OperationId == op.OperationId) != -1)
-            {
-                Operations_Knolowed.Add(op.OperationId, true);
-            }
-            else
-            {
-                Operations_Knolowed.Add(op.OperationId, false);
-
-            }
-        }
-
-        foreach (var usr in _UserOfArea)
-        {
-            if (AllRegistersOfPat.FindIndex(r => r.OperatorId == usr.UserId) != -1)
-            {
-                User_Knolowed.Add(usr.UserId, true);
-            }
-            else
-            {
-                User_Knolowed.Add(usr.UserId, false);
-
-            }
-        }
-
-        ShowTable = true;
-        StateHasChanged();
-        await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
-
-    }
-
-    private void updateILULevel()
-    {
-        _newIlu.ILULevelId = auxILU_Level;
-    }
-
-    private async void OpenHistoryILU(int ID_User)
-    {
-        auxILU_UseId = ID_User;
-
-        AllRegistersOperationsInUser?.Clear();
-        @foreach (var op in _operations)
-        {
-            @if (ILU_Matrix.TryGetValue((op.OperationId, auxILU_UseId), out var context))
-            {
-                var latestContext = context.OrderByDescending(c => c.AcquisitionDate);
-
-                if (latestContext?.Count() > 0)
-                {
-                    AllRegistersOperationsInUser.AddRange(latestContext);
-                }
-            }
-        }
-        ILUHistoryDialog = true;
-        StateHasChanged();
-    }
-    private async void OpenHistoryILU_Operation(int Op_User)
-    {
-        auxILU_OpId = Op_User;
-
-        AllRegistersUsersInOperation?.Clear();
-        @foreach (var usr in _UserOfArea)
-        {
-            @if (ILU_Matrix.TryGetValue((auxILU_OpId, usr.UserId), out var context))
-            {
-                var latestContext = context.OrderByDescending(c => c.AcquisitionDate);
-
-                if (latestContext?.Count() > 0)
-                {
-                    AllRegistersUsersInOperation.AddRange(latestContext);
-                }
-            }
-        }
-        ILUHistoryOperationDialog = true;
-        StateHasChanged();
-    }
-
-    private async void CloseHistoryILU()
-    {
-        ILUHistoryDialog = false;
-        StateHasChanged();
-    }
-    private async void CloseHistory_OperationILU()
-    {
-        ILUHistoryOperationDialog = false;
-        StateHasChanged();
-    }
-
-    private async void OpenDialogAddILU(int ID_Operation, int ID_User)
-    {
-        _newIlu.OperationId = ID_Operation;
-        _newIlu.OperatorId = ID_User;
-        _newIlu.isActive = true;
-        auxILU_Level = 0;
-        AddILUVisibleDialog = true;
-        StateHasChanged();
-    }
-
-    private async void AddILUClose()
-    {
-        ShowTable = false;
-        AddILUVisibleDialog = false;
-
-        _newIlu.AcquisitionDate = DateTime.Now;
-        var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
-        if (result != null)
-        {
-            await PrepareDataTable();
-
-            Console.WriteLine("Se añadio");
-            //aqui un mensaje bonito
-        }
-
-    }
-
-    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-
-
-    void CreateJobObservation(int operationId, int operatorId)
-    {
-        if (CultureInfo.CurrentCulture.Name == "en-US")
-        {
-            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
-            var formatedDate = date;
-
-            var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
-
-            var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
-
-            var dateString = EnglishDate.Replace("/", "-");
-            // Concatenar la fecha y el query string en la URL de navegación
-            var url = $"jobobservation/createjobobservation/{dateString}?{queryString}";
-
-            NavigationManager.NavigateTo(url);
-
-        }
-        else
-        {
-            var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
-            var dateString = date.ToShortDateString().Replace("/", "-");
-
-            var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
-
-            // Concatenar la fecha y el query string en la URL de navegación
-            var url = $"jobobservation/createjobobservation/{dateString}?{queryString}";
-
-            NavigationManager.NavigateTo(url);
-
-            //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
-        }
-    }
-
-    //Finished Job observation
-    private bool visibleSign = false;
-    private void OpenSignComment()
-    {
-        visibleSign = true;
-    }
-    void CloseSign() => visibleSign = false;
-    private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-
-    public async Task ApprovePat()
-    {
-
-        _pat!.Status = 2;
-        var result = await PATsServices.UpdatePat(_pat);
-
-        if (result)
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"PAT Approved succesfully!", Severity.Info);
-            NavigationManager.NavigateTo($"PAT");
-        }
-
-        visibleSign = false;
-    }
-
-
-}
