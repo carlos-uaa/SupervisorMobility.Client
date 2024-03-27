@@ -1084,7 +1084,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
-            _jobObservation.OperationId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -1529,7 +1529,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             startHour = DateTime.Now.TimeOfDay;
 
 
-            _jobObservation.OperationId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -1717,7 +1717,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            _jobObservation.OperationId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -1906,7 +1906,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            _jobObservation.OperationId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -2095,7 +2095,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
 
-            _jobObservation.OperationId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -2990,6 +2990,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task JobObservationContext_OnFieldChanged()
         {
+            await LocalStorage.SetItemAsync("JobObs", _jobObservation);
+            SetAsCurrentJobObservation();
+        }
+
+        private async Task UpdateOperator()
+        {
+            _jobObservation.Operator = operatorUsers.FirstOrDefault(p=>p.UserId == _jobObservation.OperatorId);
+            await LocalStorage.SetItemAsync("JobObs", _jobObservation);
+            SetAsCurrentJobObservation();
+        }
+
+        private async Task UpdateOperation()
+        {
+            _jobObservation.Operation = _operations.FirstOrDefault(p=>p.OperationId == _jobObservation.OperationId);
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             SetAsCurrentJobObservation();
         }
