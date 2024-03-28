@@ -917,9 +917,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             flag = true;
             _specifications = new();
-            HoeTimes = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
-            modelsSpecification = new string[5] { "0", "0", "0", "0", "0" };
-            jobProductId = 0;
             specificationTimes = new();
 
             operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
