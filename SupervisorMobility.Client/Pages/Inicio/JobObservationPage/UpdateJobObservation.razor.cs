@@ -136,6 +136,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string[] questions = new string[5];
 
         public double taktTime { get; set; }
+        public double hoeStandardTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
@@ -288,6 +289,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                     }
 
+                    if (_jobObservation.HOEStandardTimes == null)
+                    {
+                        hoeStandardTime = 0.0;
+                    }
+                    else
+                    {
+                        hoeStandardTime = double.Parse(_jobObservation.HOEStandardTimes, CultureInfo.InvariantCulture);
+                    }
 
                     _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                     _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -733,6 +742,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -914,6 +924,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1106,6 +1117,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1286,6 +1298,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
