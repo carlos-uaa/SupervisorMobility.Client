@@ -11,12 +11,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         public int patID { get; set; }
 
         private PAT? _pat { get; set; } = new();
-        private List<Operation> _operations { get; set; } = new();
+        private List<Distribution> _distributions { get; set; } = new();
         private List<User> _UserOfArea { get; set; } = new();
         private List<ILULevel> _LevelsILU { get; set; } = new();
         //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
         private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
-        private Dictionary<int, bool> Operations_Knolowed { get; set; } = new Dictionary<int, bool>();
+        private Dictionary<int, bool> Distributions_Knolowed { get; set; } = new Dictionary<int, bool>();
         private Dictionary<int, bool> User_Knolowed { get; set; } = new Dictionary<int, bool>();
 
         bool ShowTable = false;
@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             GroupName = "Operation",
             Indentation = false,
             Expandable = false,
-            Selector = (e) => e.OperationId
+            Selector = (e) => e.DistributionId
         };
 
         private List<BreadcrumbItem> _links;
@@ -111,13 +111,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (ShowTable)
-            {
-                await JSRuntime.InvokeVoidAsync("blazorUtilsSOS.setDynamicLeftSOS");
-                await JSRuntime.InvokeVoidAsync("blazorUtilsTOPSOS.setDynamicTOP");
-                Console.WriteLine("Invoke");
-            }
-
+           
             //await JS.InvokeVoidAsync("blazorUtils.truncateText");
 
         }
@@ -153,45 +147,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             AllRegistersOfPat?.Clear();
             ILU_Matrix?.Clear();
-            Operations_Knolowed?.Clear();
+            Distributions_Knolowed?.Clear();
             User_Knolowed?.Clear();
             _LevelsILU?.Clear();
-            _operations?.Clear();
+            _distributions?.Clear();
             _UserOfArea?.Clear();
 
 
             _LevelsILU = await ILUServices.GetLevelsILU();
-            _operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
+            _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
+            //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
 
-            foreach (var op in _operations)
+            foreach (var op in _distributions)
             {
                 foreach (var usr in _UserOfArea)
                 {
                     // Obtener los registros correspondientes a la operación y usuario actual
                     var matchingRegisters = usr.ILURegisers?
-                        .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
+                        .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
                         .ToList();
 
                     AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
-                    ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
+                    ILU_Matrix.Add((op.DistributionId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
                     //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
                 }
             }
 
-            foreach (var op in _operations)
+            foreach (var op in _distributions)
             {
-                if (AllRegistersOfPat.FindIndex(r => r.OperationId == op.OperationId) != -1)
+                if (AllRegistersOfPat.FindIndex(r => r.DistributionId == op.DistributionId) != -1)
                 {
-                    Operations_Knolowed.Add(op.OperationId, true);
+                    Distributions_Knolowed.Add(op.DistributionId, true);
                 }
                 else
                 {
-                    Operations_Knolowed.Add(op.OperationId, false);
+                    Distributions_Knolowed.Add(op.DistributionId, false);
 
                 }
             }
@@ -211,7 +206,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             ShowTable = true;
             StateHasChanged();
-            // await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
+            await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
 
         }
 
@@ -225,9 +220,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             auxILU_UseId = ID_User;
 
             AllRegistersOperationsInUser?.Clear();
-            foreach(var op in _operations)
+            foreach(var op in _distributions)
             {
-                if(ILU_Matrix.TryGetValue((op.OperationId, auxILU_UseId), out var context))
+                if(ILU_Matrix.TryGetValue((op.DistributionId, auxILU_UseId), out var context))
             {
                     var latestContext = context.OrderByDescending(c => c.AcquisitionDate);
 
@@ -274,7 +269,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void OpenDialogAddILU(int ID_Operation, int ID_User)
         {
-            _newIlu.OperationId = ID_Operation;
+            _newIlu.DistributionId = ID_Operation;
             _newIlu.OperatorId = ID_User;
             _newIlu.isActive = true;
             auxILU_Level = 0;
@@ -311,7 +306,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
 
-                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
+                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
 
                 var dateString = EnglishDate.Replace("/", "-");
                 // Concatenar la fecha y el query string en la URL de navegación
@@ -325,7 +320,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
                 var dateString = date.ToShortDateString().Replace("/", "-");
 
-                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&DistributionId={_pat?.DistributionId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
+                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
 
                 // Concatenar la fecha y el query string en la URL de navegación
                 var url = $"jobobservation/createjobobservation/{dateString}?{queryString}";
