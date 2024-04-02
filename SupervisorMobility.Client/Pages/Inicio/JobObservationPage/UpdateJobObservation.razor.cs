@@ -1985,7 +1985,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     currentOperationIndex = 0;
                     currentCycle++;
-                    Console.WriteLine("Total cycle time: " + cronometerTime);
+                    currentCycle = currentCycle == 6 ? 1 : currentCycle;
                     PauseTimer();
                     cronometerTime = "0.00";
                 }
