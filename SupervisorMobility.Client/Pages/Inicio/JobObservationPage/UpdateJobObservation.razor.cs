@@ -286,6 +286,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
+                        _jobObservation.TaktTime = _jobObservation.TaktTime.Replace(",", ".");
                         taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                     }
 
@@ -295,6 +296,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
+                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
                         hoeStandardTime = double.Parse(_jobObservation.HOEStandardTimes, CultureInfo.InvariantCulture);
                     }
 

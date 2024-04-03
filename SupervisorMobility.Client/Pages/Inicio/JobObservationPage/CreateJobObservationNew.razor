@@ -1004,7 +1004,7 @@
                                         </MudSimpleTable>
                                     </ChildContent>
                                 </MudExpansionPanel>
-                                @if(string.IsNullOrEmpty(productSpecification)){
+                                @if(string.IsNullOrEmpty(productSpecification) || _jobObservation.SupervisorId == 0){
                                     <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
                                     return;
                                 }
@@ -1160,7 +1160,21 @@
                                 break;
                             case StructureType.Timer:
                                 <MudExpansionPanel Text="Section 2" IsInitiallyExpanded=true Style="min-width: 100%">
-                                    <MudTextField T="double" Value="taktTime" ValueChanged="ChangeTaktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" Style="max-width: 10vw"/>
+                                    <MudSimpleTable Dense="true" Elevation="0">
+                                        <tbody>
+                                            <tr>
+                                                <td width="25%">
+                                                    <MudTextField T="double" Value="taktTime" ValueChanged="ChangeTaktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
+                                                </td>
+                                                <td width="25%">
+                                                    <MudTextField T="double" @bind-Value="hoeStandardTime" Label="Standard Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
+                                                </td>
+                                                <td width="50%"> 
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                     </MudSimpleTable>
                                     <MudItem Style="text-align:center">
                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
                                         {
@@ -1308,15 +1322,47 @@
                                                         <MudText Typo="Typo.body1">Total Cycle Time</MudText>
                                                     </td>
                                                     @for (int i = 1; i <= 5; i++)
-                                                    {
-                                                        var totalCycleTime = _filteredOperations.Sum(op => OperationTimes.ContainsKey(op.OperationId) && OperationTimes[op.OperationId].ContainsKey(i)
-                                                        ? OperationTimes[op.OperationId][i]
-                                                        : 0.0);
+                                                        {
+                                                            var totalCycleTime = _filteredOperations.Sum(op => OperationTimes.ContainsKey(op.OperationId) && OperationTimes[op.OperationId].ContainsKey(i)
+                                                            ? OperationTimes[op.OperationId][i]
+                                                            : 0.0);
 
-                                                        <td>
-                                                            <MudText Typo="Typo.body1">@Math.Round(totalCycleTime, 2)</MudText>
-                                                            </td>
-                                                    }
+                                                                var totalCycleColor = "";
+                                                                var totalStyle = "";
+                                                            if (hoeStandardTime != null && hoeStandardTime != 0.0)
+                                                            {
+                                                                var lowerBound = hoeStandardTime * 0.95;
+                                                                var upperBound = hoeStandardTime * 1.05;
+
+
+
+                                                                if (totalCycleTime == 0.0 || hoeStandardTime == 0.0)
+                                                                {
+                                                                    totalCycleColor = "";
+                                                                }
+                                                                else if (totalCycleTime > upperBound)
+                                                                {
+                                                                    totalCycleColor = "red";
+                                                                    totalStyle = "text-align: center;";
+                                                                }
+                                                                else if (totalCycleTime < lowerBound)
+                                                                {
+                                                                    totalCycleColor = "yellow";
+                                                                    totalStyle = "text-align: center;";
+
+                                                                }
+                                                                else if (totalCycleTime >= lowerBound && totalCycleTime <= upperBound)
+                                                                {
+                                                                    totalCycleColor = "green";
+                                                                    totalStyle = "text-align: center;";
+
+                                                                }
+                                                            }
+
+                                                            <td>
+                                                                <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2)</MudText>
+                                                                </td>
+                                                        }
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">StepsNumber</td>

@@ -122,6 +122,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public string[] questions = new string[5];
         public double taktTime { get; set; } = 1.46;
+        public double hoeStandardTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
         public int jobProductId = 0;
@@ -215,9 +216,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (confirm)
             {
                 session = true;
-                bool jo, ot, la, aS, aQ, aD, aC, aO, iF, iC, iS, Qa, tT, sN, dM, w, CC;
+                bool jo, ot, la, aS, aQ, aD, aC, aO, iF, iC, iS, Qa, tT, sN, dM, w, CC, hS;
 
-                jo = ot = la = aS = aQ = aD = aC = aO = iF = iC = iS = Qa = tT = sN = dM = w = CC = true;
+                jo = ot = la = aS = aQ = aD = aC = aO = iF = iC = iS = Qa = tT = sN = dM = w = CC = hS = true;
                 bool finish = false; bool fake = false;
 
                 do
@@ -241,6 +242,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (dM) { dM = false; DoubleManagment = await LocalStorage.GetItemAsync<int[]>("DblManagement") ?? new int[5]; }
                         if (w) { w = false; Waiting = await LocalStorage.GetItemAsync<int[]>("Waiting") ?? new int[5]; }
                         if (CC) { CC = false; currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; }
+                        if (hS) { hS = false; hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; }
 
                         jobProductId = _jobObservation.ProductId??0;
                         productSpecification = _jobObservation.ModelsSpecification;
@@ -852,6 +854,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            var standardTimeIndex = _specifications.FindIndex(s => s == productSpecification);
+
+            foreach (var op in _filteredOperations)
+            {
+                if(op.StandardTime != null) {
+
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
+                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
+                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
+                    Console.WriteLine(hoeStandardTime);
+                }
+            }
+            //if (_filteredOperations[0].StandardTime != null)
+            //{
+            //    hoeStandardTime = double.Parse(_filteredOperations[0].StandardTime, CultureInfo.InvariantCulture);
+            //}
+            //else
+            //{
+            //    hoeStandardTime = 0.0;
+            //}
+            Console.WriteLine(hoeStandardTime);
             foreach (var op in _filteredOperations)
             {
                 if (!OperationTimes.ContainsKey(op.OperationId))
@@ -865,6 +888,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             _jobObservation.ModelsSpecification = productSpecification;
+            SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
             SyncLocalStorage.SetItem("JobObs", _jobObservation);
             SyncLocalStorage.SetItem("OpTimes", OperationTimes);
             SetAsCurrentJobObservation();
@@ -916,96 +940,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            _specifications = new();
-            specificationTimes = new();
-
             operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
-
-            //if (operation.JsonTimeProduct != null)
-            //{
-            //    string json = operation.JsonTimeProduct;
-            //    JArray arr = JArray.Parse(json);
-            //    JObject obj = arr[0] as JObject;
-
-            //    JProperty prop = obj.Properties().First();
-            //    string productName = prop.Name;
-
-            //    string nameTime = obj[productName]["NameTime"].ToString();
-            //    string time = obj[productName]["Time"].ToString();
-            //    string aditionalTime = obj[productName]["aditionalTime"].ToString();
-            //    string standardTime = obj[productName]["standarTime"].ToString();
-
-            //    Console.WriteLine(productName);
-            //    Console.WriteLine(nameTime);
-            //    Console.WriteLine(time);
-            //    Console.WriteLine(aditionalTime);
-            //    Console.WriteLine(standardTime);
-            //    var cont = 0;
-
-            //    if (nameTime != null)
-            //    {
-            //        var names = nameTime.Replace(',', '.').Split("§");
-            //        for (int i = 0; i < 5; i++)
-            //        {
-            //            if (!string.IsNullOrEmpty(names[i]))
-            //            {
-            //                _specifications.Add(names[i]);
-            //                cont++;
-            //            }
-            //        }
-
-            //    }
-            //    if (time != null)
-            //    {
-            //        var times = time.Replace(',', '.').Split("§");
-            //        for (int i = 0; i < 5; i++)
-            //        {
-            //            if (!string.IsNullOrEmpty(times[i]))
-            //            {
-            //                if(cont == 1)
-            //                {
-            //                    for(int j = 0; j < 5; j++)
-            //                    {
-            //                        HoeTimes[j] = double.Parse(times[i], CultureInfo.InvariantCulture);
-            //                        modelsSpecification[j] = _specifications[0];
-            //                    }
-            //                    break;
-            //                }
-            //                //else
-            //                //{
-            //                //    HoeTimes[i] = double.Parse(times[i], CultureInfo.InvariantCulture);
-            //                //    modelsSpecification[i] = _specifications[i];
-            //                //}
-            //            }
-            //        }
-
-            //    }
-
-            //    var prodIndex = _products.FindIndex(x => x.Code == productName);
-            //    if (prodIndex != -1)
-            //    {
-            //        var opId = _products[prodIndex].ProductId;
-            //        jobProductId = opId;
-            //    }
-
-            //    if (!string.IsNullOrEmpty(nameTime) && !string.IsNullOrEmpty(time))
-            //    {
-
-            //        var names = nameTime.Replace(',', '.').Split("§");
-            //        var times = time.Replace(',', '.').Split("§");
-
-            //        for (int i = 0; i < 5; i++)
-            //        {
-            //            if (!string.IsNullOrEmpty(names[i]) && !string.IsNullOrEmpty(times[i]))
-            //            {
-            //                double parsedTime = double.Parse(times[i], CultureInfo.InvariantCulture);
-            //                specificationTimes.Add(names[i], parsedTime);
-            //            }
-            //        }
-            //    }
-            //}
-
-
 
             pastjobObservations = new();
             pastLup = new();
@@ -1087,7 +1022,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
-            _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.TaktTime = taktTime.ToString().Replace(",", ".");
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString().Replace(",", ".");
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1533,6 +1469,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
             //Eventual
@@ -1721,6 +1658,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1910,6 +1848,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
             //Eventual
@@ -2099,6 +2038,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
             _jobObservation.SsvSignature = "Signed";
@@ -3121,6 +3061,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 , SyncLocalStorage.ContainKey("SignatureImg")
                 , SyncLocalStorage.ContainKey("QAns")
                 , SyncLocalStorage.ContainKey("taktTime")
+                , SyncLocalStorage.ContainKey("HoeStandardTime")
                 , SyncLocalStorage.ContainKey("StepsNumber")
                 , SyncLocalStorage.ContainKey("DblManagement")
                 , SyncLocalStorage.ContainKey("Waiting")
@@ -3231,7 +3172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SyncLocalStorage.RemoveItems(new string[]{ 
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
-                "QAnsImgFC","SignatureImg","QAns","taktTime","StepsNumber"
+                "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
                 ,"DblManagement","Waiting","CC"});
         }
     }
