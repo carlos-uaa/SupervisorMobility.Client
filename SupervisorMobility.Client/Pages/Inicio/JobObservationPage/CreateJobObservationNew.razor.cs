@@ -759,15 +759,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        bool errorflag = false;
         private void StartTimer()
         {
-            isTimerRunning2 = true;
-            startTime2 = DateTime.Now;
-            timer2 = new System.Timers.Timer(1);
-            timer2.Elapsed += OnTimerTick;
-            timer2.AutoReset = true;
-            timer2.Enabled = true;
+            int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
+            if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
+            {
+                errorflag = false;
+                isTimerRunning2 = true;
+                startTime2 = DateTime.Now;
+                timer2 = new System.Timers.Timer(1);
+                timer2.Elapsed += OnTimerTick;
+                timer2.AutoReset = true;
+                timer2.Enabled = true;
+            }
+            else
+            {
+                Snackbar.Add("primero llena los campos indicados", Severity.Warning);
+                errorflag = true;
+            }
+        }
 
+        public bool checkIfError(int i, int value)
+        {
+            if (errorflag)
+            {
+                bool check = currentCycle - 1 == i;
+                bool chekV = value == 0;
+                return check && chekV;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void PauseTimer()
