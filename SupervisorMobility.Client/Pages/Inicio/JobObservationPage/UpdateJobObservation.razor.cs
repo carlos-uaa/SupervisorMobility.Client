@@ -2187,7 +2187,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
         public void InitializeCycleTimes()
         {
+            _filteredOperations = new();
+            StepsNumber = new int[5];
+            DoubleManagment = new int[5];
+            Waiting = new int[5];
 
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            var standardTimeIndex = _specifications.FindIndex(s => s == productSpecification);
+
+            foreach (var op in _filteredOperations)
+            {
+                if (op.StandardTime != null)
+                {
+
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
+                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
+                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
+                    Console.WriteLine(hoeStandardTime);
+                }
+            }
             foreach (var op in _filteredOperations)
             {
                 if (!OperationTimes.ContainsKey(op.OperationId))

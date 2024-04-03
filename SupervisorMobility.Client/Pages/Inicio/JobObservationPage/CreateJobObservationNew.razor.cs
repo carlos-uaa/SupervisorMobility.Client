@@ -890,15 +890,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine(hoeStandardTime);
                 }
             }
-            //if (_filteredOperations[0].StandardTime != null)
-            //{
-            //    hoeStandardTime = double.Parse(_filteredOperations[0].StandardTime, CultureInfo.InvariantCulture);
-            //}
-            //else
-            //{
-            //    hoeStandardTime = 0.0;
-            //}
-            Console.WriteLine(hoeStandardTime);
             foreach (var op in _filteredOperations)
             {
                 if (!OperationTimes.ContainsKey(op.OperationId))
