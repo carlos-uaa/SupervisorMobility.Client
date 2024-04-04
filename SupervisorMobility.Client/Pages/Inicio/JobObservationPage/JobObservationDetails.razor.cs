@@ -82,6 +82,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string[] questions = new string[5];
 
         public double taktTime { get; set; }
+        public double hoeStandardTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
@@ -232,7 +233,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 else
                 {
+                    _jobObservation.TaktTime = _jobObservation.TaktTime.Replace(",", ".");
                     taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
+                }
+
+                if (_jobObservation.HOEStandardTimes == null)
+                {
+                    hoeStandardTime = 0.0;
+                }
+                else
+                {
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                    hoeStandardTime = double.Parse(_jobObservation.HOEStandardTimes, CultureInfo.InvariantCulture);
                 }
 
                 if (_jobObservation.Questions != null)

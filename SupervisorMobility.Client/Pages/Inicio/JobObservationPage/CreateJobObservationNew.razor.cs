@@ -810,7 +810,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void StartOver()
         {
-            currentCycle = 1;
+            //currentCycle = 1;
             cronometerTime = "0.00";
             isTimerRunning2 = false;
             if (timer2 != null) timer2.Enabled = false;
