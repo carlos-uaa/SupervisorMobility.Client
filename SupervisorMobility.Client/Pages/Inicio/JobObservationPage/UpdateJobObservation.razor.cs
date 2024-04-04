@@ -136,6 +136,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string[] questions = new string[5];
 
         public double taktTime { get; set; }
+        public double hoeStandardTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
@@ -285,9 +286,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
+                        _jobObservation.TaktTime = _jobObservation.TaktTime.Replace(",", ".");
                         taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                     }
 
+                    if (_jobObservation.HOEStandardTimes == null)
+                    {
+                        hoeStandardTime = 0.0;
+                    }
+                    else
+                    {
+                        _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                        hoeStandardTime = double.Parse(_jobObservation.HOEStandardTimes, CultureInfo.InvariantCulture);
+                    }
 
                     _operators = await UsersService.GetSubordinates(_jobObservation.SupervisorId, false);
                     _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -733,6 +744,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -914,6 +926,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1106,6 +1119,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1286,6 +1300,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
             _jobObservation.TaktTime = taktTime.ToString();
+            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
@@ -1972,7 +1987,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     currentOperationIndex = 0;
                     currentCycle++;
-                    Console.WriteLine("Total cycle time: " + cronometerTime);
+                    currentCycle = currentCycle == 6 ? 1 : currentCycle;
                     PauseTimer();
                     cronometerTime = "0.00";
                 }
@@ -2035,15 +2050,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        bool errorflag = false;
+
         private void StartTimer()
         {
-            isTimerRunning2 = true;
-            startTime2 = DateTime.Now;
-            timer2 = new System.Timers.Timer(1);
-            timer2.Elapsed += OnTimerTick;
-            timer2.AutoReset = true;
-            timer2.Enabled = true;
+            int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
+            if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
+            {
+                errorflag = false;
+                isTimerRunning2 = true;
+                startTime2 = DateTime.Now;
+                timer2 = new System.Timers.Timer(1);
+                timer2.Elapsed += OnTimerTick;
+                timer2.AutoReset = true;
+                timer2.Enabled = true;
+            }
+            else
+            {
+                Snackbar.Add("primero llena los campos indicados", Severity.Warning);
+                errorflag = true;
+            }
+        }
 
+        public bool checkIfError(int i, int value)
+        {
+            if (errorflag)
+            {
+                bool check = currentCycle - 1 == i;
+                bool chekV = value == 0;
+                return check && chekV;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void PauseTimer()
@@ -2147,7 +2187,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
         public void InitializeCycleTimes()
         {
+            _filteredOperations = new();
+            StepsNumber = new int[5];
+            DoubleManagment = new int[5];
+            Waiting = new int[5];
 
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            var standardTimeIndex = _specifications.FindIndex(s => s == productSpecification);
+
+            foreach (var op in _filteredOperations)
+            {
+                if (op.StandardTime != null)
+                {
+
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
+                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
+                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
+                    Console.WriteLine(hoeStandardTime);
+                }
+            }
             foreach (var op in _filteredOperations)
             {
                 if (!OperationTimes.ContainsKey(op.OperationId))

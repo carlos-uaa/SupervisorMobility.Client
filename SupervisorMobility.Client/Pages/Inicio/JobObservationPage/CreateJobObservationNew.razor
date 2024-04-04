@@ -627,7 +627,7 @@
                                                             @if (user.UserType == 1)
                                                             {
                                                                 @*Mud select for Plants for Admin*@
-                                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
                                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
                                                                         @foreach (var type in _plants)
                                                                     {
@@ -638,7 +638,7 @@
                                                             else
                                                             {
                                                                 @*Mud select for Plants *@
-                                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
+                                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="ShowAreas">
                                                                     @foreach (var type in _plants)
                                                                     {
                                                                         if (type.PlantId == user.PlantId)
@@ -809,13 +809,13 @@
                                                                     @foreach(var operation in _operations)
                                                                     {
                                                                         <MudSelectItem Value="operation.OperationId">
-                                                                            <div style="display: flex;    align-items: center;    justify-content: space-between;">
+                                                                            <div style="display: flex;    align-items: center;    justify-content: space-between; margin-top: -1px">
                                                                                 @($"{operation.Code} - {operation.Description}")
                                                                                 @switch (operation.CriticalType)
                                                                                 {
                                                                                     case 1:
                                                                                         <MudItem>
-                                                                                            <img src="Images/A.png" Height="25" Width="30" />
+                                                                                            <img src="Images/A.png" Height="25" Width="25" />
                                                                                         </MudItem>
                                                                                         break;
                                                                                     case 2:
@@ -827,9 +827,6 @@
                                                                                         <MudItem>
                                                                                             <img src="Images/C.png" Height="25" Width="25" />
                                                                                         </MudItem>
-                                                                                        break;
-                                                                                    default:
-                                                                                        <MudIcon Icon="@Icons.Material.Filled.BrokenImage" Title="No Critical Type"/>
                                                                                         break;
                                                                                 }
                                                                             </div> 
@@ -920,7 +917,7 @@
                                                         <div class="d-flex">
                                                             @if (_jobObservation.DistributionId != 0)
                                                             {
-                                                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="ShowSpecifications">
+                                                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="ShowSpecifications">
                                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
                                                                         @foreach (var type in _products)
                                                                     {
@@ -930,7 +927,7 @@
                                                             }
                                                             else
                                                             {
-                                                                <MudSelect T="int" Label=@Localizer["product"] Disabled Variant="Variant.Text" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                                                <MudSelect T="int" Label=@Localizer["product"] Disabled Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
                                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
                                                                     </MudSelect>
                                                             }
@@ -1011,7 +1008,7 @@
                                         </MudSimpleTable>
                                     </ChildContent>
                                 </MudExpansionPanel>
-                                @if(string.IsNullOrEmpty(productSpecification)){
+                                @if(string.IsNullOrEmpty(productSpecification) || _jobObservation.SupervisorId == 0){
                                     <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
                                     return;
                                 }
@@ -1167,7 +1164,21 @@
                                 break;
                             case StructureType.Timer:
                                 <MudExpansionPanel Text="Section 2" IsInitiallyExpanded=true Style="min-width: 100%">
-                                    <MudTextField T="double" Value="taktTime" ValueChanged="ChangeTaktTime" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" Style="max-width: 10vw"/>
+                                    <MudSimpleTable Dense="true" Elevation="0">
+                                        <tbody>
+                                            <tr>
+                                                <td width="25%">
+                                                    <MudTextField T="string" Value="taktTime.ToString().Replace(',','.')" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                                                </td>
+                                                <td width="25%">
+                                                    <MudTextField T="string" Value="hoeStandardTime.ToString().Replace(',','.')" Label="Standard Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly/>
+                                                </td>
+                                                <td width="50%"> 
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                     </MudSimpleTable>
                                     <MudItem Style="text-align:center">
                                         @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
                                         {
@@ -1202,7 +1213,7 @@
                                                     </div>
                                                 </td>
                                                 <td style="width: 32%">
-                                                    <MudTextField T="string" Label="Time" Variant="Variant.Outlined" @bind-Value="cronometerTime" ReadOnly />
+                                                    <MudTextField T="string" Label="Time" Variant="Variant.Outlined" Value="cronometerTime.Replace(',','.')" ReadOnly />
 
                                                  </td>
                                                  <td style="width: 32%">
@@ -1296,8 +1307,8 @@
                                                                 }
 
                                                                 <td>
-                                                                    <MudTextField T="double" ReadOnly Value="@value" Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                                                   Class="@cycleColor" ValueChanged="@((double v) => UpdateValue(op.OperationId, i, v))" />
+                                                                    <MudTextField T="string" ReadOnly Value="@value.ToString().Replace(',','.')" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                                                   Class="@cycleColor"  />
                                                                  </td>
                                                             }
                                                             else
@@ -1315,70 +1326,102 @@
                                                         <MudText Typo="Typo.body1">Total Cycle Time</MudText>
                                                     </td>
                                                     @for (int i = 1; i <= 5; i++)
-                                                    {
-                                                        var totalCycleTime = _filteredOperations.Sum(op => OperationTimes.ContainsKey(op.OperationId) && OperationTimes[op.OperationId].ContainsKey(i)
-                                                        ? OperationTimes[op.OperationId][i]
-                                                        : 0.0);
+                                                        {
+                                                            var totalCycleTime = _filteredOperations.Sum(op => OperationTimes.ContainsKey(op.OperationId) && OperationTimes[op.OperationId].ContainsKey(i)
+                                                            ? OperationTimes[op.OperationId][i]
+                                                            : 0.0);
 
-                                                        <td>
-                                                            <MudText Typo="Typo.body1">@Math.Round(totalCycleTime, 2)</MudText>
-                                                            </td>
-                                                    }
+                                                                var totalCycleColor = "";
+                                                                var totalStyle = "";
+                                                            if (hoeStandardTime != null && hoeStandardTime != 0.0)
+                                                            {
+                                                                var lowerBound = hoeStandardTime * 0.95;
+                                                                var upperBound = hoeStandardTime * 1.05;
+
+
+
+                                                                if (totalCycleTime == 0.0 || hoeStandardTime == 0.0)
+                                                                {
+                                                                    totalCycleColor = "";
+                                                                }
+                                                                else if (totalCycleTime > upperBound)
+                                                                {
+                                                                    totalCycleColor = "red";
+                                                                    totalStyle = "text-align: center;";
+                                                                }
+                                                                else if (totalCycleTime < lowerBound)
+                                                                {
+                                                                    totalCycleColor = "yellow";
+                                                                    totalStyle = "text-align: center;";
+
+                                                                }
+                                                                else if (totalCycleTime >= lowerBound && totalCycleTime <= upperBound)
+                                                                {
+                                                                    totalCycleColor = "green";
+                                                                    totalStyle = "text-align: center;";
+
+                                                                }
+                                                            }
+
+                                                            <td>
+                                                            <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2).ToString().Replace(',','.')</MudText>
+                                                                </td>
+                                                        }
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">StepsNumber</td>
                                                     <td>
-                                                        <MudTextField T="int" Value="StepsNumber[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,0)"/>
+                                                        <MudTextField T="int" Value="StepsNumber[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,0)" Error="checkIfError(1, StepsNumber[0])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="StepsNumber[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,1)"/>
+                                                        <MudTextField T="int" Value="StepsNumber[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,1)" Error="checkIfError(2, StepsNumber[1])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="StepsNumber[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,2)"/>
+                                                        <MudTextField T="int" Value="StepsNumber[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,2)" Error="checkIfError(3, StepsNumber[2])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="StepsNumber[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,3)"/>
+                                                        <MudTextField T="int" Value="StepsNumber[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,3)" Error="checkIfError(4, StepsNumber[3])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="StepsNumber[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,4)" />
+                                                        <MudTextField T="int" Value="StepsNumber[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps(v,4)" Error="checkIfError(5, StepsNumber[4])"/>
                                                     </td>
                                                 </tr>
 
                                                 <tr>
                                                     <td colspan="2">DoubleManagment</td>
                                                     <td>
-                                                        <MudTextField T="int" Value="DoubleManagment[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,0)"/>
+                                                        <MudTextField T="int" Value="DoubleManagment[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,0)" Error="checkIfError(1, DoubleManagment[0])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="DoubleManagment[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,1)"/>
+                                                        <MudTextField T="int" Value="DoubleManagment[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,1)" Error="checkIfError(2, DoubleManagment[1])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="DoubleManagment[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,2)"/>
+                                                        <MudTextField T="int" Value="DoubleManagment[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,2)" Error="checkIfError(3, DoubleManagment[2])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="DoubleManagment[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,3)"/>
+                                                        <MudTextField T="int" Value="DoubleManagment[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,3)" Error="checkIfError(4, DoubleManagment[3])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="DoubleManagment[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,4)"/>
+                                                        <MudTextField T="int" Value="DoubleManagment[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement(v,4)" Error="checkIfError(5, DoubleManagment[4])"/>
                                                     </td>
                                                 </tr>
 
                                                 <tr>
                                                     <td colspan="2">Waiting</td>
                                                     <td>
-                                                        <MudTextField T="int" Value="Waiting[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,0)"/>
+                                                        <MudTextField T="int" Value="Waiting[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,0)" Error="checkIfError(1, Waiting[0])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="Waiting[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,1)"/>
+                                                        <MudTextField T="int" Value="Waiting[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,1)" Error="checkIfError(2, Waiting[1])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="Waiting[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,2)"/>
+                                                        <MudTextField T="int" Value="Waiting[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,2)" Error="checkIfError(3, Waiting[2])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="Waiting[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,3)"/>
+                                                        <MudTextField T="int" Value="Waiting[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,3)" Error="checkIfError(4, Waiting[3])"/>
                                                     </td>
                                                     <td>
-                                                        <MudTextField T="int" Value="Waiting[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,4)"/>
+                                                        <MudTextField T="int" Value="Waiting[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting(v,4)" Error="checkIfError(5, Waiting[4])"/>
                                                     </td>
                                                 </tr>
 
