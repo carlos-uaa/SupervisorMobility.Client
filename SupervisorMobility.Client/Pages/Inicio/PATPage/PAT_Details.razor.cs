@@ -54,8 +54,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private List<BreadcrumbItem> _links;
 
-        [Inject]
-        private IBreadcrumbService BreadcrumbService { get; set; }
         //User
         private string json = string.Empty;
         public User user = new();
@@ -64,6 +62,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
+        //Create Job Variables
+
+        private int distribution_id { get; set; }
+        private int operator_id { get; set; }
+        private string ProgrammedStartDate { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -296,40 +299,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
-
-        void CreateJobObservation(int operationId, int operatorId)
+        bool CreateILUJob = false;
+        void CreateJobObservation(int distributionId, int operatorId)
         {
+            distribution_id = distributionId;
+            operator_id = operatorId;
+
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
                 var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
                 var formatedDate = date;
 
                 var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
-
-                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
-
                 var dateString = EnglishDate.Replace("/", "-");
-                // Concatenar la fecha y el query string en la URL de navegación
-                var url = $"jobobservation/createjobobservation/{dateString}?{queryString}";
-
-                NavigationManager.NavigateTo(url);
-
+                ProgrammedStartDate = dateString;
+           
             }
             else
             {
                 var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
                 var dateString = date.ToShortDateString().Replace("/", "-");
-
-                var queryString = $"PlantId={_pat?.PlantId}&AreaId={_pat?.AreaId}&OperationId={operationId}&OperatorId={operatorId}&SupervisorId={_pat?.SupervisorId}";
-
-                // Concatenar la fecha y el query string en la URL de navegación
-                var url = $"jobobservation/createjobobservation/{dateString}?{queryString}";
-
-                NavigationManager.NavigateTo(url);
-
-                //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{dateString}");
+                ProgrammedStartDate = dateString;
+               
             }
+            CreateILUJob = true;
         }
+        void CloseILUJob() => CreateILUJob = false;
 
         //Finished Job observation
         private bool visibleSign = false;

@@ -15,7 +15,7 @@
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
-
+@inject IBreadcrumbService BreadcrumbService
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["PATDetails"]</PageTitle>
 @*Breadcrumb links*@
@@ -96,42 +96,7 @@
 
 @if (ShowTable)
 {
-    <MudItem Class="d-flex justify-content-between mb-5" Style="align-items: center;">
-        <MudText Typo="Typo.h6">@Localizer["PATDetails"] </MudText>
-        <MudItem Style="justify-content: end" Class="ml-auto">
-            <MudItem Class="d-flex">
-                @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status == 1)
-                {
-                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
-                        @Localizer["new"]
-                    </MudChip>
-                }
-                @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
-                {
-                    <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
-                }
-                else if (_pat?.Status == 2)
-                {
-                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
-                        @Localizer["approved"]!
-                    </MudChip>
-                }
-                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
-                    <ActivatorContent>
-                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
-                    </ActivatorContent>
-                    <ChildContent>
-                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-12">I</span>@Localizer["canDoItWithHelp"]</MudMenuItem>
-                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-11">L</span>@Localizer["canDoItYourself"]</MudMenuItem>
-                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-10">U</span> @Localizer["canInstructOthers"]</MudMenuItem>
-                        <MudMenuItem><span style="font-weight: bold" class="mr-14"></span> @Localizer["inexperiencedOperator"]</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Outlined.Circle" IconColor="Color.Dark">@Localizer["incumbentOperator"]</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
-                    </ChildContent>
-                </MudMenu>
-            </MudItem>
-        </MudItem>
-    </MudItem>
+  
     <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
     <thead>
         <tr>
@@ -141,41 +106,69 @@
                     <MudText Class="ml-2">@Localizer["area"]</MudText>
                 </MudItem>
             </th>
-            <th style="width:20vw">
-                <MudItem Class="d-flex">
-                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
-                    <MudText Class="ml-2">@Localizer["distribution"]</MudText>
-                </MudItem>
-            </th>
             <th>@Localizer["applicationYear"]</th>
             <th>Supervisor</th>
             <th>SSV</th>
             <th>@Localizer["date"]</th>
+                <th rowspan="2">
+                    </th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>
                 @_pat?.Area?.Code - @_pat?.Area?.Description
-
-            </td>
-            <td>
-                @* @_pat?.Distribution?.Code - @_pat?.Distribution?.Description *@
             </td>
             <td>@_pat?.AplicationYear</td>
             <td>@_pat?.Supervisor?.Name</td>
             <td>@_pat?.SSVresponsible?.Name</td>
             <td>@_pat?.CreationDate?.ToShortDateString()</td>
+            <td>
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                    <MudItem Class="d-flex">
+                        @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status == 1)
+                        {
+                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                @Localizer["new"]
+                            </MudChip>
+                        }
+                        @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
+                        {
+                            <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
+                        }
+                        else if (_pat?.Status == 2)
+                        {
+                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                @Localizer["approved"]!
+                            </MudChip>
+                        }
+                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
+                            <ActivatorContent>
+                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-12">I</span>@Localizer["canDoItWithHelp"]</MudMenuItem>
+                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-11">L</span>@Localizer["canDoItYourself"]</MudMenuItem>
+                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-10">U</span> @Localizer["canInstructOthers"]</MudMenuItem>
+                                    <MudMenuItem><span style="font-weight: bold" class="mr-14"></span> @Localizer["inexperiencedOperator"]</MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Outlined.Circle" IconColor="Color.Dark">@Localizer["incumbentOperator"]</MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudItem>
+                    </MudItem>
+            </td>
         </tr>
     </tbody>
 </MudSimpleTable>
-    <div class="table-container mb-10" >
+    
+<div class="table-container mb-10" >
         <div class="scrollable-columns">
             <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh">
                  <thead >
-                    <tr>
-                        <th colspan="3">@Localizer["operatorsByOperation"]</th>
-                         <th colspan="1" rowspan="3" class="fixed-column dynamic-left thead fixed-row">@Localizer["operatorName"]</th>
+                    <tr class="fixed-row">
+                        <th colspan="2">@Localizer["operatorsByOperation"]</th>
+                         <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
                         <Virtualize Context="usr" Items="_UserOfArea">
                             @if (User_Knolowed[usr.UserId])
                             {
@@ -198,16 +191,16 @@
                         </Virtualize>
                     </tr>
                     <tr>
-                        <th colspan="3" >___ % @Localizer["in"] 1 x ___ </th>
+                        <th colspan="2" >___ % @Localizer["in"] 1 x ___ </th>
                     </tr>
                     <tr>
-                        <th colspan="3" >@Localizer["operatorsByOperation"]</th>
+                        <th colspan="2" >@Localizer["operatorsByOperation"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th colspan="3" >___ % @Localizer["in"] 2 x ___ </th>
-                        <th colspan="1" class="fixed-column dynamic-left">@Localizer["payroll"]</th>
+                        <th colspan="2" >___ % @Localizer["in"] 2 x ___ </th>
+                        <th colspan="2" class="fixed-column dynamic-left">@Localizer["payroll"]</th>
                         <Virtualize Context="usr" Items="_UserOfArea">
                             @if (User_Knolowed[usr.UserId])
                             {
@@ -224,8 +217,8 @@
                         </Virtualize>
                     </tr>
                    <tr class="fixed-row">
-                        <th colspan="2" class="fixed-column dynamic-left"   style="max-width:60px;width:50px"> @Localizer["no"]</th>
-                        <th colspan="2" class="fixed-column dynamic-left" > @Localizer["operationName"]</th>
+                        <th colspan="2" class="fixed-column dynamic-left"   style="max-width:60px;width:50px"> @Localizer1["code"]</th>
+                        <th colspan="2" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
                         <Virtualize Items="_UserOfArea">
                             <th>Nivel</th>
                             <th>Fecha</th>
@@ -360,11 +353,11 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
                 <MudItem xs="12" sm="12" lg="12" md="12">
                     <MudText Typo="Typo.h6">
-                        @Localizer["operationInfo"]
+                         @Localizer["distributionInfo"]
                     </MudText>
                 </MudItem>
 
-                 <MudTextField ReadOnly Label=@Localizer["operationName"] Value="_distributions.Find(u => u.DistributionId == _newIlu.DistributionId).Description"></MudTextField>
+                <MudTextField ReadOnly Label=@Localizer["distributionName"] Value="_distributions.Find(u => u.DistributionId == _newIlu.DistributionId).Description"></MudTextField>
             </MudItem>
 
 
@@ -543,5 +536,17 @@ else
     </DialogActions>
 </MudDialog>
 
-
+  <MudDialog DisableSidePadding="false" @bind-IsVisible="CreateILUJob" Options="dialogOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+       @*          <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ProgrammedJobObservationDetails JobObservationId="jobId2" LoggedUser="user" ProgrammedStartDate="@programmedStartDate"
+                                                                                                           IsVisible="@visible2" IsVisibleChanged="HandleVisibleChanged"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ProgrammedJobObservationDetails>
+        *@
+                <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation plant_id="_pat.PlantId" area_id="_pat.AreaId" LoggedUser="user" distribution_id="distribution_id" operator_id="operator_id" supervisor_id="_pat.SupervisorId" ProgrammedStartDate="ProgrammedStartDate"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation>
+    </MudContainer>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Info" OnClick="CloseILUJob">@Localizer["close"]</MudButton>
+        </DialogActions>
+    </MudDialog>
 

@@ -108,7 +108,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string currentImage = "";
         string currentLanguage = "es-ES";
         bool NoData { get; set; } = false;
-        bool ShowLoading = true;
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
@@ -359,7 +358,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
 
-            ShowLoading = true;
+            showLoading = true;
             SOSCodePathId = itemselected.SOSCodePathId;
             switch (panelSelect)
             {
