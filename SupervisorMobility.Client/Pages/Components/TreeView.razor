@@ -11,8 +11,7 @@
 @using System.Runtime.CompilerServices
 
 <style>
-       .mud-tabs-header.mud-tabs-header-before {
-     
+    .mud-tabs-header.mud-tabs-header-before {
     }
 </style>
 
@@ -32,21 +31,24 @@
 }
 else
 {
-     <MudItem style="display: flex;    justify-content: space-evenly;   align-items: flex-end;">
-        <MudText Typo="Typo.subtitle1">@Path_Item.Code</MudText>
+    @if (Path_Item != null)
+    {
+        <MudItem style="display: flex;    justify-content: space-evenly;   align-items: flex-end;">
+            <MudText Typo="Typo.subtitle1">@Path_Item.Code</MudText>
                 <MudItem Style="min-width: 35vw;    max-width: 50vw;    align-self: center">
                     @* <MudTextField @bind-Value="searchCodeString" Placeholder="@Localizer["Search"]" TextChanged="SearchFunction" Adornment="Adornment.Start" Clearable="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
                 </MudItem>
                 <MudItem style="display: flex; align-items: center">
                     <MudChip Color="Color.Info">@Path_Item.Product?.Code</MudChip>
-                <MudText Typo="Typo.body1">@Path_Item.Product?.Description</MudText>
+                    <MudText Typo="Typo.body1">@Path_Item.Product?.Description</MudText>
                 </MudItem>
             </MudItem>
+    }
     <MudTabs @ref="selectPanel" Outlined="true" Rounded="true" Border="true" TabPanelHeaderPosition="TabHeaderPosition.Before"
              ApplyEffectsToContainer="true" PanelClass="px-6" Style="max-height: 78vh; min-height: 70vh; width: 100%;">
         @if (Path_Item.HOE != "" && Node_HOE != null)
         {
-            <MudTabPanel  @ref="panel_HOE" OnClick="@( () => GetHOETab(Node_HOE) )">
+            <MudTabPanel @ref="panel_HOE" OnClick="@( () => GetHOETab(Node_HOE) )">
                 <TabContent>
                     <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">HOE</MudChip>
                 </TabContent>
@@ -401,9 +403,39 @@ else
                 </ChildContent>
             </MudTabPanel>
         }
+        else
+        {
+            @if (Path_Item.HOE != "" && Node_HOE == null)
+            {
+
+                <MudTabPanel @ref="panel_HOE">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">HOE</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardContent Style="min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <img src="Images/path.png" Height="140" Width="140" />
+                                    </MudItem>
+
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer["NoPathFiles"]</MudText>
+                                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoPathFilesMsg"]</MudText>
+                                            </MudItem>
+                                        </MudItem>
+                                    </MudItem>
+                                </MudCardContent>
+                            </MudCard>
+                        </ChildContent>
+                    </MudTabPanel>
+            }
+        }
         @if (Path_Item.GOS != "" && Node_GOS != null)
         {
-            <MudTabPanel ID="@("GOS")" @ref="panel_GOS" OnClick="@( () => TreeServices.GetFilesInNodeGOS(Node_GOS.Is_Directory ? Node_GOS.TreeItems.First() : Node_GOS) )">
+            <MudTabPanel ID="@("GOS")" @ref="panel_GOS" OnClick="@( () => GetGOSTab(Node_GOS) )">
                 <TabContent>
                     <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">GOS</MudChip>
                 </TabContent>
@@ -653,6 +685,36 @@ else
                     </MudCard>
                 </ChildContent>
             </MudTabPanel>
+        }
+        else
+        {
+            @if (Path_Item.GOS != "")
+            {
+
+                <MudTabPanel @ref="panel_HOE">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">GOS</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardContent Style="min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <img src="Images/path.png" Height="140" Width="140" />
+                                    </MudItem>
+
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer["NoPathFiles"]</MudText>
+                                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoPathFilesMsg"]</MudText>
+                                            </MudItem>
+                                        </MudItem>
+                                    </MudItem>
+                                </MudCardContent>
+                            </MudCard>
+                        </ChildContent>
+                    </MudTabPanel>
+            }
         }
         @if (Path_Item.CCP != "" && Node_CCP != null)
         {
@@ -906,6 +968,36 @@ else
                     </MudCard>
                 </ChildContent>
             </MudTabPanel>
+        }
+        else
+        {
+            @if (Path_Item.CCP != "")
+            {
+
+                <MudTabPanel>
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Warning">CCP</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px;     overflow-x: scroll;    overflow-y: scroll;">
+                            <MudCardContent Style="min-height: 60vh;     max-height: 65vh;   display: flex;    flex-wrap: wrap;    justify-content: center; ">
+                                <MudItem Align="Align.Center" Class="d-flex align-center justify-center  mud-width-full">
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <img src="Images/path.png" Height="140" Width="140" />
+                                    </MudItem>
+
+                                    <MudItem Align="Align.Center" Class="flex d-flex-row align-center justify-center">
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Label="Name">@Localizer["NoPathFiles"]</MudText>
+                                            <MudItem Class="d-flex flex-column align-center justify-center pa-3 ma-2">
+                                                <MudText Typo="Typo.h6" Align="Align.Center" Label="Name">@Localizer["NoPathFilesMsg"]</MudText>
+                                            </MudItem>
+                                        </MudItem>
+                                    </MudItem>
+                                </MudCardContent>
+                            </MudCard>
+                        </ChildContent>
+                    </MudTabPanel>
+            }
         }
         @if (Path_Item.CommonDirectionHOE != "" && Node_HOE_CD != null)
         {
@@ -1770,7 +1862,7 @@ else
                 </ChildContent>
             </MudTabPanel>
         }
-        
+
 
     </MudTabs>
 }

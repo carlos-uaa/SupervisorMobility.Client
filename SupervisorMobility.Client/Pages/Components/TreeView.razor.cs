@@ -199,6 +199,23 @@ namespace SupervisorMobility.Client.Pages.Components
                 await TreeServices.GetFilesInNodeHOE(item);
             }
         }
+
+        private async Task GetGOSTab(TreeItemData item)
+        {
+            try
+            {
+                await TreeServices.GetFilesInNodeGOS(item.Is_Directory ? item.TreeItems.First() : item);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("HOE Final, has is directory");
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                await TreeServices.GetFilesInNodeGOS(item);
+            }
+        }
         private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
         {
             var fileName = namefile;

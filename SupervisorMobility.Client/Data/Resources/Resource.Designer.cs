@@ -1132,6 +1132,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Detail&apos;s.
+        /// </summary>
+        public static string distributionInfo {
+            get {
+                return ResourceManager.GetString("distributionInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Distribution Name.
+        /// </summary>
+        public static string distributionName {
+            get {
+                return ResourceManager.GetString("distributionName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Distributions.
         /// </summary>
         public static string distributions {
@@ -1807,6 +1825,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Job Observation ILU Training.
+        /// </summary>
+        public static string jobObservationILU {
+            get {
+                return ResourceManager.GetString("jobObservationILU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Job Observation In Progress.
         /// </summary>
         public static string jobObservationInProgress {
@@ -2316,6 +2343,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string Noo {
             get {
                 return ResourceManager.GetString("Noo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Folder/Documents not found.
+        /// </summary>
+        public static string NoPathFiles {
+            get {
+                return ResourceManager.GetString("NoPathFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Please verify that the provided path is correct and corresponds to the expected CodePath. This will ensure that the documents are located in the correct location and can be accessed without any issues..
+        /// </summary>
+        public static string NoPathFilesMsg {
+            get {
+                return ResourceManager.GetString("NoPathFilesMsg", resourceCulture);
             }
         }
         
@@ -3243,6 +3288,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string sosProgramDescription {
             get {
                 return ResourceManager.GetString("sosProgramDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Verify or Improve ILU level.
+        /// </summary>
+        public static string sosReviewILU {
+            get {
+                return ResourceManager.GetString("sosReviewILU", resourceCulture);
             }
         }
         

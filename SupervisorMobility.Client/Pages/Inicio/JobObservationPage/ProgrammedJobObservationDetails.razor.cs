@@ -211,28 +211,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private async Task AssyFolders() {
-
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
-
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
-
+                      
             if (_jobObservation.PlantId != 0)
             {
                 if (_jobObservation.AreaId != 0)
