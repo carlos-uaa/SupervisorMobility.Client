@@ -1,0 +1,122 @@
+﻿@page "/kaizen"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IUserService UsersService
+
+<PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
+<MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudExpansionPanels Elevation="5" MultiExpansion="true">
+            <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["KAIZEN"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="kaizenNameText" Label="Kaizen's Name" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                                  </td>
+                                <td>                                                        
+                                    <MudDatePicker Date="startDate" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="50%">
+                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </td>
+                                <td>Supervisor General</td>
+                            </tr>
+                            <tr>
+                                <td width="50%">
+                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text"  AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" >
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                        @foreach (var type in _areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </td>
+                                <td>Supervisor</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex" style="justify-content: space-between;">
+                                        <MudSelect T="int" Label="Pilar con impacto" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiId" >
+                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                            <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
+                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
+                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
+                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
+                                            <MudSelectItem Value="5">@($"Other")</MudSelectItem>
+                                        </MudSelect>
+                                        <span>Nombre del KPI</span>
+                                    </div>
+                                </td>
+                                <td>Propuesto por</td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Efecto / Beneficio: (Colocar información lo más detalladamente posible)"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                     <MudTextField @bind-Value="costText" Label="Cost" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3"></MudTextField>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Inversión / Gasto (Colocar información lo más detalladamente posible)"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudTextField @bind-Value="laborText" Class="mb-4" Label="Labor" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                    <MudTextField @bind-Value="materialText" Class="mb-4" Label="Material" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                    <MudTextField @bind-Value="machineText" Label="Machine / Equipment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Beneficio total anual (Beneficio - Gasto)"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="calculationFormText" Label="Calculation Form" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                </td>
+                                <td>
+                                    <MudTextField @bind-Value="totalText" Label="Total ($ pesos)" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudItem>
+</MudGrid>
