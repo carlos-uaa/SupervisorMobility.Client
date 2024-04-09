@@ -12,12 +12,16 @@
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
 <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
     <MudItem lg="10" md="12" sm="12" xs="12">
-        <MudExpansionPanels Elevation="5" MultiExpansion="true">
+        <MudExpansionPanels Elevation="5" MultiExpansion="true" Class="mt-2">
             <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
                 <TitleContent>
-                    <MudText Typo="Typo.h6" Style="text-align: center;">
-                        @Localizer["KAIZEN"]
-                    </MudText>
+                    <div class="d-flex" style="align-items: center; justify-content:center; margin-right: 12vh">
+                        <MudImage ObjectFit="ObjectFit.Cover" Height="25"  Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            @Localizer["KAIZEN"]
+                        </MudText>
+                    </div>
+                    
                 </TitleContent>
                 <ChildContent>
                     <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
@@ -40,11 +44,39 @@
                                         }
                                     </MudSelect>
                                 </td>
-                                <td>Supervisor General</td>
+                                <td>
+                                    @if (areaId != 0)
+                                    {
+                                        @if (_seniorSupervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["SSV"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" SelectedValuesChanged="ShowSupervisors" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASSV"]</MudSelectItem>
+                                                @foreach (var type in _seniorSupervisors)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">
+                                                        @type.Name
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisAreaDoesNotHaveSSV"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["SSV"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                </td>
                             </tr>
                             <tr>
                                 <td width="50%">
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text"  AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" >
+                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSeniorSupervisors">
                                         <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                                         @foreach (var type in _areas)
                                         {
@@ -52,11 +84,40 @@
                                         }
                                     </MudSelect>
                                 </td>
-                                <td>Supervisor</td>
+                                <td>                         
+                                    @if (ssvId != 0)
+                                    {
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["Supervisor"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" SelectedValuesChanged="ShowOperators" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
+                                                @foreach (var type in _supervisors)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">
+                                                        @type.Name
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisAreaDoesNotHaveSupervisors"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["Supervisor"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASSV"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                    </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div class="d-flex" style="justify-content: space-between;">
+                                        <MudTextField @bind-Value="kpiNametext" Label="Kaizen's Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-4" Lines="2"></MudTextField>
                                         <MudSelect T="int" Label="Pilar con impacto" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiId" >
                                             <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
                                             <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
@@ -65,10 +126,38 @@
                                             <MudSelectItem Value="4">@($"C")</MudSelectItem>
                                             <MudSelectItem Value="5">@($"Other")</MudSelectItem>
                                         </MudSelect>
-                                        <span>Nombre del KPI</span>
                                     </div>
                                 </td>
-                                <td>Propuesto por</td>
+                                <td>
+                                @if (supervisorId != 0)
+                                    {
+                                        @if (operatorUsers.Count > 0)
+                                        {
+                                            @*Mud select for Operator *@
+                                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" OpenIcon="@Icons.Material.Filled.Person" AdornmentColor="Color.Dark" >
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
+                                                @foreach (var type in operatorUsers)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisSupervisorDoesNotHaveOperators"]
+                                            </MudAlert>
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="operatorId" OpenIcon="@Icons.Material.Filled.Person" AdornmentColor="Color.Dark">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASupervisor"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                </td>
                             </tr>
                         </tbody>
                     </MudSimpleTable>
@@ -96,7 +185,7 @@
                     <MudTextField @bind-Value="machineText" Label="Machine / Equipment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
                 </ChildContent>
             </MudExpansionPanel>
-            <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
                 <TitleContent>
                     <MudText Typo="Typo.h6" Style="text-align: center;">
                         @Localizer["Beneficio total anual (Beneficio - Gasto)"]
@@ -114,6 +203,48 @@
                                 </td>
                             </tr>
                         </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Evidence"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Bordered>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center">
+                                    <b>Antes</b>
+                                </th>
+                                <th style="text-align: center">
+                                    <b>Después</b>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height:50vh">
+                                <td width="50%" style="vertical-align: top;">
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="Images/users.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="Images/usermanager.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4"/>
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="Images/userup.png" Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                </td>
+                                <td style="vertical-align: top;">
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="Images/userupdate.png" Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Situación actual
+                                </td>
+                                <td>
+                                    Situación propuesta
+                                </td>
+                            </tr>
+                        </tbody>
+
                     </MudSimpleTable>
                 </ChildContent>
             </MudExpansionPanel>

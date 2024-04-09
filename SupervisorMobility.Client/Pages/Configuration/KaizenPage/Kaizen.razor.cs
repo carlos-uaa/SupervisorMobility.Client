@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 {
@@ -19,6 +20,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         int areaId = 0;
         int kpiId = 0;
         DateTime startDate = DateTime.Now;
+
+        string kpiNametext = "Tiempo de reparación";
+        List<User> _seniorSupervisors { get; set; } = new();
+        List<User> _allSSVs { get; set; } = new();
+        List<User> _supervisors { get; set; } = new();
+        List<User> _operators = new();
+        public List<User> operatorUsers = new();
+        int ssvId = 0;
+        int supervisorId = 0;
+        int operatorId = 0;
+
 
         string costText = "Ahorro de $133.47 por hora por reparación de paneles con marca, se reparan 4 paneles por hora, total de paneles 900.  Total de horas = (900 / 4) = 225 horas   Total de ahorro = (225 * 133.47) = $30.030.75";
         string laborText = "Costo por modificación de troquel $133.47 por hora, se usaron 18 horas, total: $2,402.46";
@@ -75,9 +87,61 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
         private async void ShowAreas()
         {
+            supervisorId = 0;
+            ssvId = 0;
+            operatorId = 0;
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
+        }
+
+        private async void ShowOperators()
+        {
+
+            if (user.UserType == 1 || user.UserType == 2)
+            {
+                _operators = await UsersService.GetSubordinates(supervisorId, false);
+                _operators = _operators.OrderBy(o => o.Name).ToList();
+            }
+            operatorUsers = new();
+            operatorId = 0;
+            //operator User
+            foreach (var operatorUser in _operators)
+            {
+                if (operatorUser.AreaId == areaId && operatorUser.SuperiorId == supervisorId)
+                {
+                    operatorUsers.Add(operatorUser);
+                }
+            }
+            StateHasChanged();
+        }
+
+        private async void ShowSeniorSupervisors()
+        {
+            supervisorId = 0;
+            ssvId = 0;
+            operatorId = 0;
+            _seniorSupervisors = new();
+            _allSSVs = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
+            _allSSVs = _allSSVs.OrderBy(s => s.Name).ToList();
+
+            foreach (User ssv in _allSSVs)
+            {
+                if (ssv.Areas?.ToList().FindIndex(a => a.AreaId == areaId) != -1)
+                {
+                    _seniorSupervisors.Add(ssv);
+                }
+            }
+            StateHasChanged();
+        }
+
+        private async void ShowSupervisors()
+        {
+            supervisorId = 0;
+            operatorId = 0;
+            _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+            _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            StateHasChanged();
         }
     }
 }
