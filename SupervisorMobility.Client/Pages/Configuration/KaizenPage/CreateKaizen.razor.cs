@@ -5,6 +5,8 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 {
@@ -192,11 +194,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Kaizen Created", Severity.Info);
 
-                //_kaizen = result;
-                //_ = await GenerateChecklistAnswers();
-                //_ = await GenerateOperatorSignatureImage();
+                _kaizen = result;
+                _ = await UploadEvidence();
 
-                //NavigationManager.NavigateTo("/configuration");
+                NavigationManager.NavigateTo("/configuration");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
@@ -243,10 +244,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
 
         private List<string> capturedImages = new List<string>();
+        private List<string> capturedImagesThen = new List<string>();
 
         private bool visibleCamera = false;
-        private void OpenCameraDialog()
+        private int imageIndex = 0;
+
+        private void OpenCameraDialog(int index)
         {
+            imageIndex = index;
             visibleCamera = true;
 
         }
@@ -263,15 +268,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         {
             frameCount = 0;
 
-            // Check camera-access or ask user, if it's not allowed currently
             if (await CameraStreamerReference.GetCameraAccessAsync())
             {
-                // Reloading re-initializes the stream and starts the
-                // stream automatically if the Autostart parameter is set
                 await CameraStreamerReference.ReloadAsync();
 
-                // If Autostart is not set, you have to manually start the stream again
-                /* await CameraStreamerReference.StartAsync(); */
             }
         }
 
@@ -291,19 +291,124 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
             if (!string.IsNullOrEmpty(imageData))
             {
-                capturedImages.Add(imageData);
+                if(imageIndex == 1) { 
+                    capturedImages.Add(imageData);
+                }
+                else
+                {
+                    capturedImagesThen.Add(imageData);
+                }
             }
             visibleCamera = false;
             StateHasChanged();
             Stop();
         }
 
-        private void RemoveImage(int index)
+        private void RemoveImage(int index, int imgIndex)
         {
+
             if (index >= 0 && index < capturedImages.Count)
             {
-                capturedImages.RemoveAt(index);
+                if (imgIndex == 1)
+                {
+                    capturedImages.RemoveAt(index);
+                }
+                else
+                {
+                    capturedImagesThen.RemoveAt(index);
+                }
             }
         }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task UploadImages(List<string> images, int kaizenId, bool isPrevious)
+        {
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "evidence.png");
+
+
+                    var result = isPrevious
+                     ? await FilesServices.UploadEvidencesKaizenPrevious(content, kaizenId)
+                     : await FilesServices.UploadEvidencesKaizenThen(content, kaizenId);
+
+                        if (result is not null)
+                        {
+                            Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add("Image Added to Kaizen", Severity.Info);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add("Failed to upload Image to Kaizen", Severity.Error);
+                        }
+
+                }
+
+                images.Clear();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("No images to upload", Severity.Warning);
+            }
+        }
+
+        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
+        {
+            await UploadImages(capturedImages, _kaizen.KaizenId, true);
+            await UploadImages(capturedImagesThen, _kaizen.KaizenId, false);
+
+            return new AsyncVoidMethodBuilder();
+        }
+
     }
 }
