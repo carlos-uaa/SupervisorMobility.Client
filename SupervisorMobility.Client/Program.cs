@@ -16,6 +16,7 @@ global using SupervisorMobility.Client.Services.JobObservationTypeService;
 global using SupervisorMobility.Client.Services.JobObservationService;
 global using SupervisorMobility.Client.Services.LoginService;
 global using SupervisorMobility.Client.Services.LupService;
+global using SupervisorMobility.Client.Services.KaizenService;
 global using SupervisorMobility.Client.Services.ChecklistAnswerService;
 global using SupervisorMobility.Client.Services.TreeServices;
 global using SupervisorMobility.Client.Services.OperationService;
@@ -90,6 +91,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<ISOSReviewService, SOSReviewService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
+builder.Services.AddScoped<IKaizenService, KaizenService>();
 
 // Connection to API
 var env = builder.HostEnvironment;

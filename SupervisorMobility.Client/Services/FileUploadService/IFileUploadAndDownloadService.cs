@@ -13,6 +13,8 @@
         Task<FileUpload> UploadGuide(MultipartFormDataContent contentfile);
         Task<FileUpload> UploadUsers(MultipartFormDataContent contentfile);
         Task<FileUpload> UploadEvidences(MultipartFormDataContent contentfiles, int lupId);
+        Task<FileUpload> UploadEvidencesKaizenPrevious(MultipartFormDataContent contentfiles, int kaizenId);
+        Task<FileUpload> UploadEvidencesKaizenThen(MultipartFormDataContent contentfiles, int kaizenId);
         Task<FileUpload> UploadOperatorSignature(MultipartFormDataContent contentfiles, int jobObservationId);
         Task<UploadAssyChartResult> ProccedToUpdateData(FileUpload fileinfo);
 

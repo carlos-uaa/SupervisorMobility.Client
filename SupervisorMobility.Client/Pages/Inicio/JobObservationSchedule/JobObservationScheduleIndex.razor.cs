@@ -5,6 +5,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System;
+using System.Globalization;
 using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
@@ -592,7 +593,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         private void CreateJobObservation(string date)
         {
             date = date.Replace("/", "-");
-            NavigationManager.NavigateTo($"jobobservation/createjobobservation/{date}");
+            NavigationManager.NavigateTo($"jobobservation/createnewjobobservation/{date}");
         }
 
         void PlanJobObservation(string date)

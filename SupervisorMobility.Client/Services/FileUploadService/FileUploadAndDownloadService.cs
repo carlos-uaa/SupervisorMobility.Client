@@ -365,6 +365,54 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             }
         }
 
+
+
+        //UploadEvidences
+        public async Task<FileUpload> UploadEvidencesKaizenPrevious(MultipartFormDataContent? contentfiles, int kaizenId)
+        {
+            var response = await _http.PostAsync($"File/UploadPreviousEvidence?kaizenId={kaizenId}", contentfiles);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+
+        }
+
+        //UploadEvidences
+        public async Task<FileUpload> UploadEvidencesKaizenThen(MultipartFormDataContent? contentfiles, int kaizenId)
+        {
+            var response = await _http.PostAsync($"File/UploadThenEvidence?kaizenId={kaizenId}", contentfiles);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
+
+        }
+
     }
 
 

@@ -25,7 +25,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         private AssyChart _assychart { get; set; } = new AssyChart();
-
+        int SOSCodePathId { get; set; } = 0;
+        string SosPanelOpen { get; set; } = "";
         //Glosary
         private List<Glosary> glosary = new();
         private Dictionary<string, Glosary> _glosaryInfo;
@@ -55,12 +56,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         string[] cycles = new string[5];
         string[] HoeTimes = new string[5];
 
-        private bool CcpDialog = false;
-        private bool HoeDialog = false;
-        private bool GosDialog = false;
+    
         private bool searchAssychart = false;
 
-        private bool folderError = false;
         private string messageErrorFolders;
 
         private List<SOSCodePath> listFilter = new();
@@ -84,6 +82,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string[] questions = new string[5];
 
         public double taktTime { get; set; }
+        public double hoeStandardTime { get; set; }
         public int kpiID = 0;
         public int auxErgonomicsLevel = 0;
 
@@ -109,7 +108,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string currentImage = "";
         string currentLanguage = "es-ES";
         bool NoData { get; set; } = false;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
+
+        private bool if_pick_Distribution = false;
+        private int productId = 0;
+        public int idFilter;
+
+        //Show Photo
+        private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visiblePhoto = false;
+
+        private int[] ConvertStringToArray(string stringValue) => string.IsNullOrEmpty(stringValue) ? new int[5] : stringValue.Split('|').Select(int.Parse).ToArray();
+
+        bool CodePathModalDisplay = false;
+
+        private int photoIndex = 0;
+        ChecklistAnswer SelectedAnswer { get; set; }
         protected async override Task OnInitializedAsync()
         {
             try
@@ -215,7 +232,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 else
                 {
+                    _jobObservation.TaktTime = _jobObservation.TaktTime.Replace(",", ".");
                     taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
+                }
+
+                if (_jobObservation.HOEStandardTimes == null)
+                {
+                    hoeStandardTime = 0.0;
+                }
+                else
+                {
+                    _jobObservation.HOEStandardTimes = _jobObservation.HOEStandardTimes.Replace(",", ".");
+                    hoeStandardTime = double.Parse(_jobObservation.HOEStandardTimes, CultureInfo.InvariantCulture);
                 }
 
                 if (_jobObservation.Questions != null)
@@ -245,28 +273,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 StateHasChanged();
-
-                try
-                {
-                    CCPFolders = await CDMSServices.GetFoldersCCP();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error Get CCP Folder From CCP");
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.Message);
-                }
-
-                if (CCPFolders != null)
-                {
-                    folderCCPError = false;
-                    rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
-                }
-                else
-                {
-                    folderCCPError = true;
-                }
-
 
                 startHour = _jobObservation.StartDate?.TimeOfDay;
                 endHour = _jobObservation.EndDate?.TimeOfDay;
@@ -340,363 +346,54 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }//end on inizialized 
 
+        void history()
+        {
+            NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
+        }
         void Closed(MudChip chip)
         {
             // react to chip closed
         }
 
-        void history()
-        {
-            NavigationManager.NavigateTo($"jobobservation/history/{JobObservationId}");
-        }
-
-        private int[] ConvertStringToArray(string stringValue) =>
-       string.IsNullOrEmpty(stringValue)
-           ? new int[5]
-           : stringValue.Split('|').Select(int.Parse).ToArray();
-
-
-        private async Task DownloadFileFromURL(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-
-        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
+        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
 
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
-
-            if (DownloadLink is not null)
+            showLoading = true;
+            SOSCodePathId = itemselected.SOSCodePathId;
+            switch (panelSelect)
             {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
+                case 1:
+                    SosPanelOpen = "HOE";
+                    break;
 
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+                case 2:
+                    SosPanelOpen = "CCP";
+                    break;
 
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
+                case 3:
+                    SosPanelOpen = "GOS";
+                    break;
 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-        }
-        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
-        {
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
+                case 4:
+                    SosPanelOpen = "HOE_CD";
+                    break;
 
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
+                case 5:
+                    SosPanelOpen = "CCP_CD";
+                    break;
 
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+                case 6:
+                    SosPanelOpen = "GOS_CD";
+                    break;
 
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
             }
 
-        }
-
-
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
-        {
-            searchCodeString = itemselected.Code;
-            ShowLoading = true;
-            base.StateHasChanged();
             CodePathModalDisplay = true;
-            HoeFilesInFolder = new CDMS_HOE_Archives();
             StateHasChanged();
-
-            //try
-            //{
-            //    CodePathDialogDisplay = itemselected;
-
-            //    HOErute = itemselected.HOE;
-            //    if (itemselected.HOE != "")
-            //    {
-            //        Console.WriteLine($"hoe {itemselected.HOE}");
-            //        HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-            //        if (HoeFilesInFolder == null)
-            //            folderErrorHOE = true;
-            //        else
-            //        {
-            //            AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
-
-            //            folderErrorHOE = false;
-            //        }
-            //    }
-
-            //    folderErrorGOS = true;
-            //    GOSrute = itemselected.GOS;
-
-            //    if (itemselected.GOS != "")
-            //    {
-
-            //        Console.WriteLine($"gos {GOSrute}");
-
-
-            //        GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-            //        if (GosFilesInFolder == null)
-            //        {
-            //            folderErrorGOS = true;
-            //        }
-            //        else
-            //        {
-            //            folderErrorGOS = false;
-            //            AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
-            //        }
-
-            //    }
-
-            //    folderErrorCCP = true;
-            //    CCPrute = itemselected.CCP;
-            //    if (itemselected.CCP != "")
-            //    {
-
-            //        Console.WriteLine($"CCP {CCPrute}");
-
-            //        CcpFilesInFolder = new CDMS_CCP_Archives();
-            //        CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-            //        if (CcpFilesInFolder == null)
-            //            folderErrorCCP = true;
-            //        else
-            //        {
-            //            AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-            //            folderErrorCCP = false;
-
-            //        }
-
-            //        nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
-
-            //        if (nodoEncontrado != null)
-            //        {
-            //            // El nodo fue encontrado, puedes trabajar con él aquí
-            //            // Por ejemplo, imprimir su nombre
-            //            Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
-            //        }
-            //        else
-            //        {
-            //            // El nodo no fue encontrado
-            //            Console.WriteLine("La ruta no se encontró en el árbol.");
-            //        }
-            //    }
-
-
-            //    //Common Directions
-            //    folderErrorGOSCD = true;
-            //    if (itemselected.CommonDirectionGOS != "")
-            //    {
-
-            //        GOSruteCD = itemselected.CommonDirectionGOS;
-
-            //        Console.WriteLine($"gos cd {GOSruteCD}");
-
-            //        GosFilesInFolderCD = new CDMS_GOS_Archives();
-
-            //        GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-            //        if (GosFilesInFolderCD == null)
-            //        {
-            //            folderErrorGOSCD = true;
-            //        }
-            //        else
-            //        {
-            //            folderErrorGOSCD = false;
-            //            AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
-            //        }
-
-            //    }
-
-            //    folderErrorCCPCD = true;
-            //    if (itemselected.CommonDirectionCCP != "")
-            //    {
-            //        CCPruteCD = itemselected.CommonDirectionCCP;
-            //        Console.WriteLine($"Ccp cd {CCPruteCD}");
-
-            //        CcpFilesInFolderCD = new CDMS_CCP_Archives();
-            //        CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-            //        if (CcpFilesInFolderCD == null)
-            //            folderErrorCCPCD = true;
-            //        else
-            //        {
-            //            folderErrorCCPCD = false;
-            //            AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
-            //        }
-
-            //    }
-
-            //    if (itemselected.CommonDirectionHOE != "")
-            //    {
-
-
-            //        folderErrorHOECD = true;
-
-            //        HOEruteCD = itemselected.CommonDirectionHOE;
-            //        Console.WriteLine($"hoe cd {HOEruteCD}");
-            //        HoeFilesInFolderCD = new CDMS_HOE_Archives();
-            //        HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-            //        if (HoeFilesInFolderCD == null)
-            //            folderErrorHOECD = true;
-            //        else
-            //        {
-            //            AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
-
-            //            folderErrorHOECD = false;
-            //        }
-            //    }
-
-            //    //EndCommon Directions
-
-
-
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
-            //}
-            //finally
-            //{
-            //    await SearchFunction();
-            //    ShowLoading = false;
-            //    StateHasChanged();
-            //}
-
             return new AsyncVoidMethodBuilder();
         }
-        private async Task<AsyncVoidMethodBuilder> SearchFunction()
-        {
-            Console.WriteLine($"SearchFunction - Start {DateTime.Now}");
-
-            if (CodePathDialogDisplay != null)
-            {
-                try
-                {
-                    ShowLoading = true;
-                    Console.WriteLine($"State Start {ShowLoading}");
-                    StateHasChanged();
-
-                    if (string.IsNullOrEmpty(searchCodeString))
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-
-                        if (CodePathDialogDisplay.GOS != "")
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-
-                        if (CodePathDialogDisplay.CCP != "")
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                    }
-                    else
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                        {
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-                            HoeFilesInFolder.operation = HoeFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.GOS != "")
-                        {
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-                            GosFilesInFolder.operation = AuxGosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CCP != "")
-                        {
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-                            CcpFilesInFolder.operation = CcpFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                        {
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-                            HoeFilesInFolderCD.operation = HoeFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                        {
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-                            GosFilesInFolderCD.operation = GosFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                        {
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                            CcpFilesInFolderCD.operation = CcpFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                    }
-
-
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error Filter: {ex.Message}");
-                }
-                finally
-                {
-                    ShowLoading = false;
-                    StateHasChanged();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error Filter es nullo");
-            }
-
-            Console.WriteLine($"SearchFunction - End {DateTime.Now}");
-            Console.WriteLine($"State End {ShowLoading}");
-            //// if text is null or empty, show complete list
-            //if (string.IsNullOrEmpty(searchString))
-            //    return GosFilesInFolder.operation;
-
-            //return GosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-            return new AsyncVoidMethodBuilder();
-        }
+      
 
         private async void CloseModalFiles()
         {
@@ -706,126 +403,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
-        bool ShowLoading = true;
-        private IList<string> _sourceMsgLoading = new List<string>();
-        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
-
-        private string searchCodeString = "";
-
-        //Files Path
-        private CDMS_CCP_Archives? CcpFilesInFolder;
-        private CDMS_HOE_Archives? HoeFilesInFolder;
-        private CDMS_GOS_Archives? GosFilesInFolder;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
-        private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
-        //CommonDirection Files
-        private CDMS_CCP_Archives? CcpFilesInFolderCD;
-        private CDMS_HOE_Archives? HoeFilesInFolderCD;
-        private CDMS_GOS_Archives? GosFilesInFolderCD;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
-        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
-
-
-
-        private bool if_pick_Distribution = false;
-        private int productId = 0;
-        public int idFilter;
-
-        MudTabs FilesViewer;
-        MudTabPanel HOE;
-        MudTabPanel HOECD;
-        MudTabPanel CCP;
-        MudTabPanel CCPCD;
-        MudTabPanel GOS;
-        MudTabPanel GOSCD;
-
-        public bool CodePathModalDisplay { get; set; } = false;
-        SOSCodePath CodePathDialogDisplay { get; set; }
-        /// <summary>
-        /// //
-        /// </summary>
-        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
-
-        TreeItemData SelectedNodeCCP { get; set; }
-        TreeItemData nodoEncontrado { get; set; }
-        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
-        {
-
-            try
-            {
-                ShowLoading = true;
-
-                if (CCPrute != "")
-                {
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
-            }
-            finally
-            {
-                ShowLoading = false;
-                StateHasChanged();
-            }
-
-            return new AsyncVoidMethodBuilder();
-
-        }
-
-        private async Task DownloadFile(int fileId, string filename)
-        {
-            await FilesServices.DownloadFileEvidence(fileId, filename);
-        }
-        //Show Photo
-        private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-
-        private bool visiblePhoto = false;
-
-
-        private int photoIndex = 0;
-        ChecklistAnswer SelectedAnswer { get; set; }
+        
         private void OpenPhotoDialog(int index, ChecklistAnswer item)
         {
             SelectedAnswer = item;
             photoIndex = index;
             visiblePhoto = true;
+        
+        }
+        private async Task DownloadFile(int fileId, string filename)
+        {
+            await FilesServices.DownloadFileEvidence(fileId, filename);
         }
     }
 }

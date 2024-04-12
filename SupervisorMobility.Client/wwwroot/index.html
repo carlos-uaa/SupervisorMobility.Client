@@ -56,21 +56,85 @@
             setDynamicLeft: function () {
                 var fixedColumns = document.querySelectorAll('.fixed-column');
                 var dynamicLeftElements = document.querySelectorAll('.dynamic-left');
+                var mergedCellWidth = 0;
+                var leftPValues = 0;
 
-                dynamicLeftElements.forEach(function (element) {
+                dynamicLeftElements.forEach(function (element, idx) {
                     var index = element.cellIndex;
                     var left = 0;
 
-                    for (var i = 0; i < index; i++) {
-                        var previousCell = element.parentNode.cells[i];
-                        var previousCellWidth = previousCell.offsetWidth;
-                        left += previousCellWidth;
+                    // Verificar si la celda actual está en el encabezado o en el cuerpo de la tabla
+                    var isInHeader = element.closest('thead') !== null;
+
+                    if (!isInHeader && element.classList.contains('merged-cell') && idx > 0) {
+                        // Si está en el cuerpo y es una celda combinada, guardar su ancho como valor inicial
+                        mergedCellWidth = element.offsetWidth;
+                        console.log("Celda combinada tamaño:");
+                        console.log(mergedCellWidth);
+                        //continue;
                     }
 
-                    element.style.left = left + 'px';
+                    if (isInHeader) {
+                        // Si está en el encabezado, iterar sobre las celdas del encabezado
+                        for (var i = 0; i < index; i++) {
+                            var previousCell = element.parentNode.cells[i];
+                            if (previousCell.classList.contains('fixed-column') && !previousCell.classList.contains('merged-cell')) {
+                                var previousCellWidth = previousCell.offsetWidth;
+                                left += previousCellWidth;
+                            }
+                        }
+                        element.style.zIndex = 3;
+
+                    } else {
+                        // Si está en el cuerpo, iterar sobre las celdas visibles en el encabezado
+                        var headerCells = document.querySelectorAll('thead tr:first-child th');
+                        for (var i = 0; i < index; i++) {
+                            if (i < headerCells.length && headerCells[i].classList.contains('fixed-column') && !headerCells[i].classList.contains('merged-cell')) {
+                                var previousCellWidth = headerCells[i].offsetWidth;
+                                left += previousCellWidth;
+
+                            }
+                        }
+                        if (left == 0 && idx > 0) {
+                            left = mergedCellWidth;
+                        }
+
+                        element.style.zIndex = 1;
+
+                    }
+                    if (!element.classList.contains('merged-cell'))
+                        element.style.left = left + 'px';
+
+                    if (element.classList.contains('program')) {
+                        leftPValues = left; // Store left value for elements with class "p"
+                    } else if (element.classList.contains('real')) {
+                        element.style.left = leftPValues + 'px'; // Assign stored left value
+                    }
+
+                });
+
+                // Selector de las filas
+                var rows = document.querySelectorAll('.fixed-row');
+
+                // Iterar sobre cada fila
+                rows.forEach(function (row) {
+                    var cells = row.querySelectorAll('.fixed-cell'); // Selector de las celdas en la fila
+                    var rowTop = 0; // Inicializar la posición inicial de la fila
+
+                    // Iterar sobre cada celda en la fila
+                    cells.forEach(function (cell) {
+                        if (cell.previousElementSibling && cell.previousElementSibling.classList.contains('fixed-cell')) {
+                            // Si la celda anterior tiene la clase .fixed-cell, acumular la altura de la celda anterior
+                            rowTop += cell.previousElementSibling.offsetHeight;
+                        }
+
+                        // Establecer la posición superior de la fila
+                        cell.style.top = rowTop + 'px';
+                    });
                 });
             }
         };
+
 
 
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System;
@@ -508,7 +509,25 @@ namespace SupervisorMobility.Client.Services.TreeServices
             return this.Node_HOE_CD;
         }
 
+        public async Task<List<SOSCodePath>?> getAllCodesPaths()
+        {
+            return this._CodePaths;
+        }
 
+        public async Task<AsyncVoidMethodBuilder> updateCodePath(SOSCodePath item)
+        {
+            var index = this._CodePaths.FindIndex(i => i.SOSCodePathId == item.SOSCodePathId);
+            if (index != -1)
+            {
+                this._CodePaths[index] = item;
+            }
+            else
+            {
+               throw new Exception("Elemento no encontrado en la lista, no se actualiza");
+            }
+
+            return new AsyncVoidMethodBuilder();
+        }
 
     }
 }

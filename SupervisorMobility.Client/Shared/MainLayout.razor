@@ -38,7 +38,7 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudBreadcrumbs Items="_links" Style="flex-wrap: nowrap">
             <ItemTemplate Context="item">
-                @if(_links.Count > 4)
+                @if (_links.Count > 4)
                 {
                     @if (item.Text.Length > 20)
                     {
@@ -68,7 +68,7 @@
                         <MudButton Href="@item.Href" Variant="Variant.Text" Style="color:white" Disabled="item.Disabled">@item.Text</MudButton>
                     }
                 }
-               
+
             </ItemTemplate>
         </MudBreadcrumbs>
         <MudSpacer />
@@ -202,7 +202,7 @@
     </MudDrawer>
     <MudMainContent Class="main">
         <MudContainer Class="mt-2 px-8 content" MaxWidth="MaxWidth.False">
-                        @Body
+            @Body
         </MudContainer>
 
         <span id="marqueeText" class="marquee"></span>
@@ -528,6 +528,7 @@
     bool NoifyDialog = false;
     [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
+    private Timer Documentstimer;
     private Timer Notificationtimer;
     private Timer attendanceTimer;
     private Timer apiConnectionTimer;
@@ -561,32 +562,82 @@
 
     protected async override Task OnInitializedAsync()
     {
-        _SnackbarService.Add(
-                @<div>
-                    <h3>Establishing connection</h3>
-                    <ul>
-            <li> with <strong> JobAllocation ! ! ! </strong></li>
-                    <li>  Documents server</li>
-                    </ul>
-                </div>,
-                Severity.Info,
-                (options) =>
-                {
-                    options.CloseAfterNavigation = true;
-                });
-        await TreeCDMSServices.InitializeTreeData();
 
-        _SnackbarService.Dispose();
-        _SnackbarService.Add
+
+
+        Documentstimer = new Timer(async state =>
+                  {
+                      try
+                      {
+                          _SnackbarService.Add(
+    @<div>
+        <h3>Establishing connection</h3>
+        <ul>
+            <li> with <strong> JobAllocation ! ! ! </strong></li>
+            <li>  Documents server</li>
+        </ul>
+    </div>,
+                         Severity.Info,
+                         (options) =>
+                         {
+                             options.CloseAfterNavigation = true;
+                         });
+
+                          await TreeCDMSServices.InitializeTreeData();
+
+                          Documentstimer.Change(StartInterval, StartInterval);
+
+                          waitInterval = TimeSpan.FromSeconds(5);
+                          _SnackbarService.Dispose();
+                          _SnackbarService.Add
+                         (
+    @<div>
+        <h3><strong>JobAllocation </strong> Working</h3>
+        <ul>
+            <li> Successful connection to Job Allocation Documents</li>
+        </ul>
+    </div>,
+                              Severity.Success
+                          );
+                      }
+                      catch (Exception ex)
+                      {
+                          _SnackbarService.Add(
+    @<div>
+        <h3>Establishing connection</h3>
+        <ul>
+            <li> with <strong> JobAllocation ! ! ! </strong></li>
+            <li>  Documents server</li>
+        </ul>
+    </div>,
+                                                 Severity.Info,
+                                                 (options) =>
+                                                 {
+                                                 options.CloseAfterNavigation = true;
+                                             });
+
+                          await TreeCDMSServices.InitializeTreeData();
+
+                          waitInterval += TimeSpan.FromSeconds(10);
+                          Documentstimer.Change(waitInterval, waitInterval);
+                          timeLeft = (int)(waitInterval.TotalMinutes * 60) + 3;
+                          StateHasChanged();
+                          _SnackbarService.Dispose();
+                          _SnackbarService.Add
          (
-                @<div>
-                    <h3><strong>JobAllocation </strong> Working</h3>
-                    <ul>
-                        <li> Successful connection to Job Allocation Documents</li>
-                    </ul>
-                </div>,
+    @<div>
+        <h3><strong>JobAllocation </strong> Working</h3>
+        <ul>
+            <li> Successful connection to Job Allocation Documents</li>
+        </ul>
+    </div>,
                 Severity.Success
             );
+                      }
+                  }, null, TimeSpan.Zero, TimeSpan.FromMinutes(15));
+
+
+
 
 
         _links = BreadcrumbService.Breadcrumbs;
@@ -640,7 +691,7 @@
                 break;
 
         }
-        
+
 
         CultureInfo currentCulture = Thread.CurrentThread.CurrentCulture;
         currentCulture.NumberFormat.NumberDecimalSeparator = ".";
@@ -659,7 +710,7 @@
                 }
 
                 isApiConnected = true;
-               
+
             }
             catch (Exception ex)
             {

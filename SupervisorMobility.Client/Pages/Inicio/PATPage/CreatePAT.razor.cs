@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         List<Plant> _plants { get; set; } = new();
         List<Product> _products { get; set; } = new();
         List<Area> _areas = new();
-        List<Distribution> _distributions = new();
+        //List<Distribution> _distributions = new();
 
         List<User> _allSSVs = new();
         List<User> _SSVs = new();
@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         _areas = await AreaServices.GetAreas(_pat.PlantId); 
                         
                         _pat.AreaId = (int)user.AreaId;
-                        _distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
+                        //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
 
 
                         _pat.SupervisorId = user.UserId;
@@ -131,7 +131,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _SSVs.Clear();
             ssvId = 0;
             _pat.AreaId = 0;
-            _pat.DistributionId = 0;
+            //_pat.DistributionId = 0;
             _areas = await AreaServices.GetAreas(_pat.PlantId);
 
         }
@@ -144,8 +144,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _supervisors.Clear();
             _pat.SupervisorId = 0;
 
-            _pat.DistributionId = 0;
-            _distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
+            //_pat.DistributionId = 0;
+            //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
 
 
             foreach (User ssv in _allSSVs)

@@ -19,7 +19,8 @@ namespace SupervisorMobility.Client.Services.TreeServices
         bool HasHOE_Data();
 
         Task<SOSCodePath> getCodePath(int id);
-
+        Task<AsyncVoidMethodBuilder> updateCodePath(SOSCodePath item);
+        Task<List<SOSCodePath>?> getAllCodesPaths();
         Task<AsyncVoidMethodBuilder> setNodesByPath(SOSCodePath codePath);
         Task<AsyncVoidMethodBuilder> GetFilesInNodeCCP(TreeItemData node);
         Task<AsyncVoidMethodBuilder> GetFilesInNodeGOS(TreeItemData node);
