@@ -45,5 +45,10 @@
 
         public int Status { get; set; }
         public string kpiName { get; set; }
+
+        public bool IsSignedSSV { get; set; }
+        public bool IsSignedSupervisor { get; set; }
+        public int OperatorPayroll { get; set; }
+
     }
 }

@@ -36,7 +36,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         int ssvId = 0;
         int supervisorId = 0;
         int operatorId = 0;
-
+        int effectId = 0;
 
         string costText = "Ahorro de $133.47 por hora por reparación de paneles con marca, se reparan 4 paneles por hora, total de paneles 900.  Total de horas = (900 / 4) = 225 horas   Total de ahorro = (225 * 133.47) = $30.030.75";
         string laborText = "Costo por modificación de troquel $133.47 por hora, se usaron 18 horas, total: $2,402.46";
@@ -52,6 +52,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         public string hour1 { get; set; }
         TimeSpan? startHour = new TimeSpan(00, 00, 00);
         DateTime newDate1;
+        public class ItemModel
+        {
+            public int EffectId { get; set; }
+            public string Benefit { get; set; }
+        }
+
+        List<ItemModel> items = new List<ItemModel>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -61,7 +68,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
                     new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                     new BreadcrumbItem(text: Localizer["kaizen"], href: "", disabled: true)
                 };
-
+            AddItem();
             BreadcrumbService.UpdateBreadcrumbs(_links);
             await GetUserAsync();
             logged = await HasPropertyAsync();
@@ -186,6 +193,19 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
 
             FormatDate();
+
+            foreach (var item in items)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    Title = item.EffectId.ToString(), 
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = true
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
 
             var result = await KaizenServices.CreateKaizen(_kaizen);
 
@@ -395,12 +415,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
                 images.Clear();
             }
-            else
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add("No images to upload", Severity.Warning);
-            }
+
         }
 
         private async Task<AsyncVoidMethodBuilder> UploadEvidence()
@@ -436,6 +451,44 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
             }
         }
 
+        void AddItem()
+        {
+            items.Add(new ItemModel());
+        }
+
+        void RemoveItem(ItemModel item)
+        {
+            if (items.Count > 1)
+            {
+                items.Remove(item);
+            }
+        }
+
+        private bool visibleSign = false;
+        private int userTypeSign = 0;
+        private void OpenSignComment(int userType)
+        {
+            visibleSign = true;
+            userTypeSign = userType;
+        }
+        void CloseSign() => visibleSign = false;
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
+
+        public async Task SignDate()
+        {
+            if(userTypeSign == 1)
+            {
+                _kaizen.IsSignedSSV = true;
+                Console.WriteLine("SSV");
+            }
+            else
+            {
+                _kaizen.IsSignedSupervisor = true;
+                Console.WriteLine("SV");
+            }
+            userTypeSign = 0;
+            visibleSign = false;
+        }
 
     }
 }
