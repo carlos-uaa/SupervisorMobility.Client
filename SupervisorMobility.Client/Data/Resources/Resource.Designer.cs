@@ -1609,6 +1609,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Is a standard document which is established to keep track of a person&apos;s record and career since joining the Company..
+        /// </summary>
+        public static string HCIDescription {
+            get {
+                return ResourceManager.GetString("HCIDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Individual Control Sheet.
+        /// </summary>
+        public static string HCITitle {
+            get {
+                return ResourceManager.GetString("HCITitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a User information is managed and can be uploaded in bulk, as well as modifying previously uploaded information..
         /// </summary>
         public static string HeadCountDescription {
@@ -1956,6 +1974,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string justificationToUpdate {
             get {
                 return ResourceManager.GetString("justificationToUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Activity that is developed with the objective of improving SQSCM results, as well as activities that are carried out with the purpose of preventing defects, failures or accidents..
+        /// </summary>
+        public static string KaizenDescription {
+            get {
+                return ResourceManager.GetString("KaizenDescription", resourceCulture);
             }
         }
         
