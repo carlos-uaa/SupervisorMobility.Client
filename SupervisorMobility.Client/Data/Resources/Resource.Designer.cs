@@ -826,6 +826,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Create Kaizen.
+        /// </summary>
+        public static string createKaizen {
+            get {
+                return ResourceManager.GetString("createKaizen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Create a new distribution.
         /// </summary>
         public static string createNewDistribution {
@@ -1429,6 +1438,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a First select a SSV.
+        /// </summary>
+        public static string firstSelectASSV {
+            get {
+                return ResourceManager.GetString("firstSelectASSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a First select a supervisor.
         /// </summary>
         public static string firstSelectASupervisor {
@@ -1578,6 +1596,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string guidesConfigDescription {
             get {
                 return ResourceManager.GetString("guidesConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HCI.
+        /// </summary>
+        public static string HCI {
+            get {
+                return ResourceManager.GetString("HCI", resourceCulture);
             }
         }
         
@@ -3148,6 +3175,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Select a SSV.
+        /// </summary>
+        public static string selectASSV {
+            get {
+                return ResourceManager.GetString("selectASSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Select a supervisor.
         /// </summary>
         public static string selectASupervisor {
@@ -3585,6 +3621,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string thereAreStillNoAreasOfOpportunityDetectedForThisPillar {
             get {
                 return ResourceManager.GetString("thereAreStillNoAreasOfOpportunityDetectedForThisPillar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a This area does not have SSV.
+        /// </summary>
+        public static string thisAreaDoesNotHaveSSV {
+            get {
+                return ResourceManager.GetString("thisAreaDoesNotHaveSSV", resourceCulture);
             }
         }
         
