@@ -21,10 +21,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         public List<Plant> _plants { get; set; } = new();
         Plant _plant = new();
 
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-             _links = new List<BreadcrumbItem>
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+            _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),

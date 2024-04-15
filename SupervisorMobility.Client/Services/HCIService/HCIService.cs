@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Services.HCIService
             throw new NotImplementedException();
         }
 
-        public async Task<List<HCI>> GetHCIs()
+        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false)
         {
             throw new NotImplementedException();
         }

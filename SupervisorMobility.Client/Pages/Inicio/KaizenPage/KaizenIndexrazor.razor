@@ -2,6 +2,7 @@
 @inject IBreadcrumbService BreadcrumbService
 @inject IKaizenService KaizensServices
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
@@ -9,7 +10,69 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["Kaizen"]</PageTitle>
 
-        @if (_Kaizens.Count > 0)
+
+    @if (Loading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+
+    <MudSimpleTable Class="styled-table table-striped" FixedHeader=true>
+        <thead>
+            <tr>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+                <th><MudSkeleton SkeletonType="SkeletonType.Text" /></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /><MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+            <tr>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Text" /></td>
+                <td><MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />   <MudSkeleton SkeletonType="SkeletonType.Rectangle" /> <MudSpacer />  <MudSkeleton SkeletonType="SkeletonType.Rectangle" /></td>
+            </tr>
+
+        </tbody>
+    </MudSimpleTable>
+}
+else
+{
+    @if (_Kaizens.Count > 0)
     {
         <MudTable Items="_Kaizens" Hover="true" T="Kaizen" Class="styled-table table-striped" FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="Kaizen">
             <ToolBarContent>
@@ -20,23 +83,37 @@
                     </MudButton>
                 </ToolBarContent>
                 <HeaderContent>
+                    @if (user.UserType == 1)
+                {
                     <MudTh>
                         <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.KaizenId)">
                             @Localizer["kaizen"] Id
-                    </MudTableSortLabel>
-                </MudTh>
+                        </MudTableSortLabel>
+                    </MudTh>
+                }
+
                 <MudTh>
                     <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.KaizenName)">
                         @Localizer["name"]
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.kpiName)" InitialDirection="SortDirection.Ascending">
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.kpiName)">
                         @Localizer["kpi"]
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Status)" InitialDirection="SortDirection.Ascending">
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Plant?.Code)">
+                        @Localizer["plant"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Area?.Description)">
+                        @Localizer["area"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Status)">
                         @Localizer["status"]
                     </MudTableSortLabel>
                 </MudTh>
@@ -45,15 +122,26 @@
                     </MudTh>
                 </HeaderContent>
                 <RowTemplate>
+                    @if (user.UserType == 1)
+                {
                     <MudTd DataLabel="Id">
                         <MudText Align="Align.Center">@context.KaizenId</MudText>
-                    </MudTd>
-                    <MudTd DataLabel=@Localizer["code"]>
-                        <MudText Align="Align.Center">@context.KaizenName</MudText>
+                        </MudTd>
+                }
+                <MudTd DataLabel=@Localizer["name"]>
+                    <MudText Align="Align.Center">
+                        @(context.KaizenName.Length > 25 ? context.KaizenName.Substring(0,20) + "..." : context.KaizenName)
+                    </MudText>
                     </MudTd>
                     <MudTd DataLabel=@Localizer["description"]>
                         <MudText Align="Align.Center">@context.kpiName</MudText>
-                    </MudTd>  
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["plant"]>
+                        <MudText Align="Align.Center">@context.Plant?.Code</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["area"]>
+                        <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                    </MudTd>
                     <MudTd DataLabel=@Localizer["status"]>
                         <MudText Align="Align.Center">@context.Status</MudText>
                     </MudTd>
@@ -70,7 +158,7 @@
                                     <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.KaizenId))" @ontouchstart="(() => OpenDeleteDialog(context.KaizenId))">@Localizer["deleteKaizen"]</MudMenuItem>
                                 </ChildContent>
                             </MudMenu>
-                             </MudText>
+                        </MudText>
                     </MudTd>
                 </RowTemplate>
             </MudTable>
@@ -82,6 +170,7 @@
             <MudButton Color="Color.Info" @onclick="(() => Createkaizen())">@Localizer["createANewKaizen"]</MudButton>
             </MudText>
     }
+}
 
 
 @code {
@@ -89,14 +178,35 @@
     private List<BreadcrumbItem> _links;
     private List<Kaizen> _Kaizens;
 
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+
     private bool visibleDelete = false;
+    private bool Loading = true;
     public int deleteKaizenId = 0;
 
     private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
 
     protected async override Task OnInitializedAsync()
     {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
         _links = new List<BreadcrumbItem>{
             new BreadcrumbItem(text: Localizer["home"], href: "/", disabled:false),
             new BreadcrumbItem(text: Localizer["Kaizen"], href: "", disabled: true)
@@ -104,12 +214,57 @@
 
         BreadcrumbService.UpdateBreadcrumbs(_links);
 
+        logged = await TryGetAsync();
+
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add(Localizer["errorYouHaveToLogIn"], Severity.Warning);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+
+            _Kaizens = new();
+            try
+            {
+                _Kaizens = await KaizensServices.GetAllKaizen(includeNavigation: true);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                Loading = false;
+                StateHasChanged();
+
+            }
+
+        }
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+        }
+
+        return hasProperty;
     }
 
 
+    private async Task<bool> HasPropertyAsync()
+       => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
     private void Createkaizen()
     {
-        
+
     }
 
     void KaizenDetails(int KaizenId)
@@ -142,7 +297,7 @@
     }
 
     // Update Kaizen
-    void UpdateKaizen( int KaizenId)
+    void UpdateKaizen(int KaizenId)
     {
         NavigationManager.NavigateTo($"plants");
     }
