@@ -2,7 +2,7 @@
 {
     public interface IKaizenService
     {
-        Task<List<Kaizen>> GetAllKaizen();
+        Task<List<Kaizen>> GetAllKaizen(bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false);
         Task<Kaizen> GetKaizenById(int kaizenId);
         Task<Kaizen> GetKaizenByIdWhitFile(int kaizenId);
         Task<Kaizen> CreateKaizen(Kaizen kaizen);
