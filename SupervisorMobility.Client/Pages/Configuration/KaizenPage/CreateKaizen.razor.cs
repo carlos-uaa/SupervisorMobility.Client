@@ -1,6 +1,7 @@
 using BlazorCameraStreamer;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -307,7 +308,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
         private void RemoveImage(int index, int imgIndex)
         {
 
-            if (index >= 0 && index < capturedImages.Count)
+            if (index >= 0 && index < capturedImages.Count || index < capturedImagesThen.Count)
             {
                 if (imgIndex == 1)
                 {
@@ -409,6 +410,32 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
             return new AsyncVoidMethodBuilder();
         }
+
+        private async Task UploadFiles(InputFileChangeEventArgs e, int type)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        if (type == 1)
+                        {
+                            capturedImages.Add(mediaUri);
+                        }
+                        else
+                        {
+                            capturedImagesThen.Add(mediaUri);
+                        }
+                    }
+                }
+            }
+        }
+
 
     }
 }
