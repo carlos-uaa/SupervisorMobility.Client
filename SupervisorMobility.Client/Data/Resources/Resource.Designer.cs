@@ -1600,6 +1600,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a HCI.
+        /// </summary>
+        public static string HCI {
+            get {
+                return ResourceManager.GetString("HCI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a User information is managed and can be uploaded in bulk, as well as modifying previously uploaded information..
         /// </summary>
         public static string HeadCountDescription {
