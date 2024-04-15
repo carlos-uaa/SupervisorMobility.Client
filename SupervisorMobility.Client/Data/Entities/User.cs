@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace SupervisorMobility.Client.Data.Entities
@@ -20,13 +21,19 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public ICollection<User>? Subordinates { get; set; }
         public ICollection<ILURegister>? ILURegisers { get; set; }
+        public ICollection<UserCareerPath>? UserCareerPaths { get; set; }
 
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdated { get; set; }
         public DateTime? DisabledDate { get; set; }
         public bool? IsActive { get; set; } = false;
 
-        
+        public DateTime? IncomesDate { get; set; }
+        public DateTime? BirthDate { get; set; }
+        public int? ProfilePictureId { get; set; }
+        public FileUpload? ProfilePicture { get; set; }
+
+
         public int? PlantId { get; set; }
         public Plant? Plant { get; set; }
         
