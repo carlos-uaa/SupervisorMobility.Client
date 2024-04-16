@@ -21,31 +21,22 @@ using MudBlazor;
 using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 
-namespace SupervisorMobility.Client.Pages.Inicio.HCI.Components
+namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
-    public partial class Trajectory
+    public partial class Expertise
     {
         [Parameter]
-        public Dictionary<int, dicValuesTraject> TrajectoryTable { get; set; } = new Dictionary<int, dicValuesTraject>();
+        public List<ILURegister> ExpertiseTable { get; set; } = new List<ILURegister>();
 
         protected async override Task OnInitializedAsync()
         {
-            if (!TrajectoryTable.Any())
+            if (!ExpertiseTable.Any())
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    TrajectoryTable.Add(i, new());
+                    ExpertiseTable.Add( new());
                 }
             }
         }
-    }
-
-    public class dicValuesTraject
-    {
-        public int? No;
-        public DateTime? dateOchange;
-        public string dpt;
-        public string processName;
-        public string operationDesc;
     }
 }
