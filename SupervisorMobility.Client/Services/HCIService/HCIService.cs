@@ -11,7 +11,7 @@ namespace SupervisorMobility.Client.Services.HCIService
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
 
-        HCIService(HttpClient http)
+        public HCIService(HttpClient http)
         {
             _http = http;
             _options = new JsonSerializerOptions

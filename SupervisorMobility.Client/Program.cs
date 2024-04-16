@@ -49,7 +49,6 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
-using SupervisorMobility.Client.Services.HCIService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
