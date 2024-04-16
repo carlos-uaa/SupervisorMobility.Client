@@ -39,13 +39,28 @@
                             </tr>
                             <tr>
                                 <td width="50%">
-                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                    @if(user.UserType == 1){
+
+                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
                                         <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
                                         @foreach (var type in _plants)
                                         {
                                             <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                         }
                                     </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                            @foreach (var type in _plants)
+                                            {
+                                                if (type.PlantId == user.PlantId)
+                                                {
+                                                    <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    }
                                 </td>
                                 <td>
                                     @if (areaId != 0)
@@ -79,13 +94,49 @@
                             </tr>
                             <tr>
                                 <td width="50%">
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSeniorSupervisors">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
-                                        @foreach (var type in _areas)
+                                        @if (plantId != 0 && user.UserType == 1)
                                         {
-                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            @*Mud select for Areas for Admin *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in _areas)
+                                                {
+                                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
                                         }
-                                    </MudSelect>
+                                        else if (plantId != 0 && user.UserType == 2)
+                                        {
+                                            @*Mud select for Areas for SSV *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId"  SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in user.Areas)
+                                                {
+                                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else if (plantId != 0)
+                                        {
+                                            @*Mud select for Areas for SV *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in _areas)
+                                                {
+                                                    if (type.AreaId == user.AreaId)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            @*Mud select for Areas *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                            </MudSelect>
+                                        }
                                 </td>
                                 <td>                         
                                     @if (ssvId != 0)
@@ -387,8 +438,22 @@
                                     <MudTextField @bind-Value="ssvName" Label="SSV" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                 </td>
                                 <td style="vertical-align: top;">
-                                    @if(user.UserType == 1 || user.UserType == 3){
+                                    @if(user.UserType == 1 || user.UserType == 2){
+                                        if(_kaizen.IsSignedSSV){
+                                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                                                    @Localizer["signed"]
+                                            </MudChip>
+                                        }
+                                        else
+                                        {
                                         <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(ssvName))" @onclick="(()=> OpenSignComment(1))">SSV Sign Kaizen</MudButton>
+                                        }
+                                    }
+                                    else
+                                    {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                            @Localizer["unsignedOnlySSVCanSignIt"]
+                                    </MudChip>
                                     }
                                 </td>
                             </tr>
@@ -397,9 +462,23 @@
                                     <MudTextField @bind-Value="svName" Label="Supervisor" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                 </td>
                                 <td >
-                                    @if(user.UserType == 1 || user.UserType == 2){
+                                    @if(user.UserType == 1 || user.UserType == 3){
+                                        if(_kaizen.IsSignedSupervisor){
+                                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                                                    @Localizer["signed"]
+                                            </MudChip>
+                                        }
+                                        else
+                                        {
                                             <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(svName))" @onclick="(()=> OpenSignComment(2))">SV Sign Kaizen</MudButton>
-                                    }                                
+                                        }
+                                    }
+                                    else
+                                    {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                            @Localizer["unsignedOnlySVCanSignIt"]
+                                    </MudChip>
+                                    }
                                 </td>
                             </tr>
                             <tr>

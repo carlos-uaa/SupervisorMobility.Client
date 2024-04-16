@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
-namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
+namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 {
     public partial class CreateKaizen
     {
@@ -84,6 +84,44 @@ namespace SupervisorMobility.Client.Pages.Configuration.KaizenPage
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
+
+            if (user.UserType == 2)
+            {
+                plantId = (int)user.PlantId;
+                areaId = 0;
+
+                _areas = user.Areas.ToList();
+
+                ssvId = user.UserId;
+                foreach (var sv in user.Subordinates.ToList())
+                {
+                    _supervisors.Add(sv);
+                }
+
+                
+            }
+            else if(user.UserType == 3) 
+            {
+                plantId = (int)user.PlantId;
+                areaId = (int)user.AreaId;
+
+                _areas = await AreaServices.GetAreas((int)user.PlantId);
+                _areas = _areas.OrderBy(a => a.Description).ToList();
+
+                ssvId = (int)user.SuperiorId;
+                supervisorId = user.UserId;
+
+                ssvName = user.Superior.Name;
+                svName = user.Name;
+
+                _seniorSupervisors.Add(user.Superior);
+                _supervisors.Add(user);
+                foreach(var op in user.Subordinates.ToList())
+                {
+                    operatorUsers.Add(op);
+                }
+            }
+            StateHasChanged();
 
         }
 
