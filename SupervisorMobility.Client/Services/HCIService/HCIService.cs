@@ -44,5 +44,10 @@ namespace SupervisorMobility.Client.Services.HCIService
         {
             throw new NotImplementedException();
         }
+
+        public async Task<bool> DeleteHCI(int hciId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
