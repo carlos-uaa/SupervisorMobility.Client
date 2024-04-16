@@ -46,9 +46,9 @@ namespace SupervisorMobility.Client.Services.KaizenService
             return kaizen;
         }
 
-        public async Task<Kaizen> GetKaizenById(int kaizenId)
+        public async Task<Kaizen> GetKaizenById(int kaizenId, bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false)
         {
-            var response = await _http.GetAsync($"kaizen/{kaizenId}");
+            var response = await _http.GetAsync($"kaizen/{kaizenId}?includeNavigation={includeNavigation}&includePeople={includePeople}&includeEvidences={includeEvidences}&includeTransactions={includeTransactions}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

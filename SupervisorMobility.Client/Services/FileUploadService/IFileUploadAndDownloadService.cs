@@ -25,6 +25,8 @@
         Task DownloadFileGuide(int idfile, string filename);
         Task DownloadFileEvidence(int idfile, string filename);
         Task<string> ShowImageEvidence(int idfile);
+        Task<string> ShowImagePreviousEvidence(int idfile);
+        Task<string> ShowImageThenEvidence(int idfile);
         Task<string> ShowOperatorSignature(int idfile);
 
         Task DownloadAllUsersFormat();
