@@ -37,6 +37,7 @@ global using SupervisorMobility.Client.Services.SOSReviewService;
 global using SupervisorMobility.Client.Services.DepartmentService;
 global using SupervisorMobility.Client.Services.BreadcrumsService;
 global using SupervisorMobility.Client.Services.ProductsService;
+global using SupervisorMobility.Client.Services.HCIService;
 global using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -48,6 +49,7 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
+using SupervisorMobility.Client.Services.HCIService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -92,6 +94,7 @@ builder.Services.AddScoped<IBridgeCDMSService, BridgeCDMSService>();
 builder.Services.AddScoped<ISOSReviewService, SOSReviewService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
+builder.Services.AddScoped<IHCIService, HCIService>();
 
 // Connection to API
 var env = builder.HostEnvironment;

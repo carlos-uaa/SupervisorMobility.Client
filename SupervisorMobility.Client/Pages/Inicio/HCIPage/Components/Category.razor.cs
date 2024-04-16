@@ -21,29 +21,28 @@ using MudBlazor;
 using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 
-namespace SupervisorMobility.Client.Pages.Inicio.HCI.Components
+namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
-    public partial class Quialifications
+    public partial class Category
     {
-
         [Parameter]
-        public Dictionary<int, dicValuesQual> QualificationsTable { get; set; } = new Dictionary<int, dicValuesQual>();
+        public Dictionary<int, dicValuesCategory> CategoryTable { get; set; } = new Dictionary<int, dicValuesCategory>();
 
         protected async override Task OnInitializedAsync()
         {
-            if (!QualificationsTable.Any())
+            if (!CategoryTable.Any())
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    QualificationsTable.Add(i, new());
+                    CategoryTable.Add(i, new());
                 }
             }
         }
     }
 
-    public class dicValuesQual
+    public class dicValuesCategory
     {
         public DateTime? date;
-        public string topic;
+        public string category;
     }
 }
