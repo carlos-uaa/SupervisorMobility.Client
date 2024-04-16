@@ -1,4 +1,4 @@
-﻿@page "/kaizen"
+﻿@page "/kaizen/createkaizen"
 
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -166,16 +166,47 @@
                     </MudSimpleTable>
                 </ChildContent>
             </MudExpansionPanel>
-            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
-                <TitleContent>
-                    <MudText Typo="Typo.h6" Style="text-align: center;">
-                        @Localizer["Efecto / Beneficio: (Colocar información lo más detalladamente posible)"]
-                    </MudText>
-                </TitleContent>
-                <ChildContent>
-                     <MudTextField @bind-Value="costText" Label="Cost" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3"></MudTextField>
-                </ChildContent>
-            </MudExpansionPanel>
+                <MudExpansionPanel IsInitiallyExpanded="true" Style="min-width: 100%;">
+                    <TitleContent>
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            @Localizer["Efecto / Beneficio: (Colocar información lo más detalladamente posible)"]
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudSimpleTable Style="overflow-x: auto;" Dense="true" Elevation="0">
+                            <tbody>
+                                @foreach (var item in items)
+                                {
+                                    <tr>
+                                        <td width="20%">
+                                            <MudSelect T="int" Label="Effect" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@item.EffectId">
+                                                <MudSelectItem Disabled="true" Value="0">Select effect</MudSelectItem>
+                                                <MudSelectItem Value="1">@($"Quality")</MudSelectItem>
+                                                <MudSelectItem Value="2">@($"Cost")</MudSelectItem>
+                                                <MudSelectItem Value="3">@($"Delivery")</MudSelectItem>
+                                                <MudSelectItem Value="4">@($"Safety")</MudSelectItem>
+                                                <MudSelectItem Value="5">@($"Environment")</MudSelectItem>
+                                                <MudSelectItem Value="6">@($"Ergonomics")</MudSelectItem>
+                                                <MudSelectItem Value="7">@($"People")</MudSelectItem>
+                                            </MudSelect>
+                                        </td>
+                                            <td width="90%">
+                                            <MudTextField @bind-Value="@item.Benefit" Label="Benefit"  Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                                        </td>
+                                        @if (items.IndexOf(item) > 0)
+                                        {
+                                            <td width="10%">
+                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                        <MudButton OnClick="AddItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right" Class="my-4">Add Effect / benefit</MudButton>
+                    </ChildContent>
+                </MudExpansionPanel>
+
             <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
                 <TitleContent>
                     <MudText Typo="Typo.h6" Style="text-align: center;">
@@ -356,7 +387,9 @@
                                     <MudTextField @bind-Value="ssvName" Label="SSV" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                 </td>
                                 <td style="vertical-align: top;">
-                                    <MudTextField @bind-Value="materialText" Label="Inspect User" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                    @if(user.UserType == 1 || user.UserType == 3){
+                                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(ssvName))" @onclick="(()=> OpenSignComment(1))">SSV Sign Kaizen</MudButton>
+                                    }
                                 </td>
                             </tr>
                             <tr>
@@ -364,7 +397,9 @@
                                     <MudTextField @bind-Value="svName" Label="Supervisor" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                 </td>
                                 <td >
-                                    <MudTextField @bind-Value="materialText" Label="Inspect User" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                    @if(user.UserType == 1 || user.UserType == 2){
+                                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(svName))" @onclick="(()=> OpenSignComment(2))">SV Sign Kaizen</MudButton>
+                                    }                                
                                 </td>
                             </tr>
                             <tr>
@@ -372,12 +407,12 @@
                                     <MudTextField @bind-Value="operatorName" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                 </td>
                                 <td >
-                                    <MudTextField @bind-Value="materialText" Label=@Localizer["payroll"] Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                        <MudTextField @bind-Value="_kaizen.OperatorPayroll" Label=@Localizer["payroll"] Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@(string.IsNullOrEmpty(operatorName))"></MudTextField>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <MudTextField @bind-Value="_kaizen.StandardModification" Label="Modified Standard" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3"></MudTextField>
+                                    <MudTextField @bind-Value="_kaizen.StandardModification" Label="Modified Standard" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" ></MudTextField>
                                 </td>
                             </tr>
                         </tbody>
@@ -431,5 +466,25 @@
             </MudPaper>
         </MudContainer>
     </DialogContent>
+</MudDialog>
+
+
+                    
+@*Sign SSV modal*@
+<MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+        @Localizer["are you sure you want to sign this Kaizen"]
+    </MudText>
+    <MudText Class="mt-4 mb-4">
+        @Localizer["onceSignedItCannotBeModified"]
+    </MudText>
+</DialogContent>
+<DialogActions>
+    <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => SignDate())" Color="Color.Info" StartIcon="@Icons.Material.Filled.ModeEdit" Variant="Variant.Filled">@Localizer["sign"]</MudButton>
+    </DialogActions>
 </MudDialog>
 
