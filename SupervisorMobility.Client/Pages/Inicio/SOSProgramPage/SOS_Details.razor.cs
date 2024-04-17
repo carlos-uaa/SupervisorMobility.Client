@@ -143,7 +143,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         bool MonthlyView = false;
         int diasSeparate = 1;
         int OptionRandom = 0;
-        DateTime Startday = new();
+        DateTime Startday = DateTime.Now;
         DateTime FirstdayYear = DateTime.Now;
         DateTime LastdayYear = DateTime.Now;
         int JobsPorDia = 1;
@@ -1559,7 +1559,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
         {
-            int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate == dateToCheck.Date);
+            int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate.Value.Date == dateToCheck.Date);
             return count > 1;
         }
 
@@ -1567,7 +1567,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             if (id_SV != 0)
             {
-                int count = _All_Suggested_SOSJobobservation.Count(o => o.PlannedStartDate == dateToCheck.Date && o.SupervisorId == id_SV);
+                int count = _All_Suggested_SOSJobobservation.Where(o => o.PlannedStartDate.Value.Date == dateToCheck.Date && o.SupervisorId == id_SV).Count();
                 return count >= JobsPorDia;
             }
 
@@ -1585,6 +1585,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task CreateSuggestion()
         {
+            enableCreateSuggestion = true;
+            base.StateHasChanged();
+            _yearMonth = Startday;
+            //bool view dialog reorder userds
+            SVSinCharge = false;
+            isButtonDisabled = true;
+            ShowLoading = true;
             //notificacion de es necesaria la distribucion 
             if (Startday.Date == DateTime.Now.AddDays(-1).Date && Startday.Year < _sos_plan.AplicationYear)
             {
@@ -1592,6 +1599,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 "Warning",
                 "Select Day To Start!",
                 yesText: "OK!");
+                ShowLoading = false;
+                isButtonDisabled = false;
+                base.StateHasChanged();
                 StateHasChanged();
             }
 
@@ -1602,6 +1612,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 "Warning",
                 "Select Distribution First!",
                 yesText: "OK!");
+                ShowLoading = false;
+                isButtonDisabled = false;
+                base.StateHasChanged();
                 StateHasChanged();
             }
             if (SV_Manager.Count == 0)
@@ -1610,6 +1623,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                             "Warning",
                             "SV is Neccesary!",
                             yesText: "OK!");
+                ShowLoading = false;
+                isButtonDisabled = false;
+                base.StateHasChanged();
                 StateHasChanged();
             }
 
@@ -1617,17 +1633,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
 
-                enableCreateSuggestion = true;
-                base.StateHasChanged();
-                _yearMonth = Startday;
-                //bool view dialog reorder userds
-                SVSinCharge = false;
-                isButtonDisabled = true;
-                ShowLoading = true;
+            
                 StateHasChanged();
 
-                //logica del año anterior
-                //Supervisores encargados, seleccionar? usar todos/
                 //
                 Suggested_SOS_Registers_UserOperationRelationship?.Clear();
                 try
