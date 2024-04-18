@@ -30,6 +30,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         [Parameter]
         public string ProgrammedStartDate { get; set; }
 
+        [Parameter]
+        public bool IsSchedule { get; set; } = false;
+
         public DateTime? AuxProgrammedDate { get; set; }
 
         public JobObservation _jobObservation { get; set; } = new();
@@ -162,15 +165,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-
-            if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
+            if (IsSchedule)
             {
-                Console.WriteLine($"Primera Conversion Exitosa" + AuxDate);
-                AuxProgrammedDate = AuxDate;
+                ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
+                AuxProgrammedDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
+
+            }
+            else
+            {
+
+                if (DateTime.TryParse(ProgrammedStartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var AuxDate))
+                {
+                    Console.WriteLine($"Primera Conversion Exitosa" + AuxDate);
+                    AuxProgrammedDate = AuxDate;
+                }
             }
 
-            //ProgrammedStartDate = ProgrammedStartDate.Replace("-", "/");
-            //AuxProgrammedDate = DateTime.ParseExact(ProgrammedStartDate, "d/M/yyyy", null);
 
             _jobObservation.Supervisor = new();
             _jobObservation.Operator = new();
