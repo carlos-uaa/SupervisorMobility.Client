@@ -21,11 +21,22 @@ using MudBlazor;
 using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 
-namespace SupervisorMobility.Client.Pages.Inicio.HCI
+namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
-    public partial class HCI
+    public partial class Trajectory
     {
         [Parameter]
-        public int? HCIID { get; set; } 
+        public List<UserCareerPath> TrajectoryTable { get; set; } = new List<UserCareerPath>();
+
+        protected async override Task OnInitializedAsync()
+        {
+            if (!TrajectoryTable.Any())
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    TrajectoryTable.Add( new UserCareerPath { CareerPathNo = i+1 });
+                }
+            }
+        }
     }
 }

@@ -21,29 +21,33 @@ using MudBlazor;
 using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 
-namespace SupervisorMobility.Client.Pages.Inicio.HCI.Components
+namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
-    public partial class Expertise
+    public partial class Knwoledge
     {
         [Parameter]
-        public Dictionary<int, dicValuesExpertise> ExpertiseTable { get; set; } = new Dictionary<int, dicValuesExpertise>();
+        public string Title { get; set; } = "notitle";
+        [Parameter]
+        public int type { get; set; } = 1;
+
+        [Parameter]
+        public List<HCITransaction> KnowledgeTable { get; set; } = new List<HCITransaction>();
 
         protected async override Task OnInitializedAsync()
         {
-            if (!ExpertiseTable.Any())
+            if (!KnowledgeTable.Any())
             {
-                for (int i = 0; i < 5; i++)
+                for(int i = 0; i < 5; i++)
                 {
-                    ExpertiseTable.Add(i, new());
+                    KnowledgeTable.Add(new HCITransaction { Type=type });
                 }
             }
         }
-    }
 
-    public class dicValuesExpertise
-    {
-        public DateRange period;
-        public string operationDesc;
-        public string level;
+        private void DateChanged(DateRange range, int index)
+        {
+            KnowledgeTable.ElementAt(index).DateStart = range.Start;
+            KnowledgeTable.ElementAt(index).DateEnd = range.End;
+        }
     }
 }

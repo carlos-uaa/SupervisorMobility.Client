@@ -112,6 +112,16 @@ else
                         @Localizer["area"]
                     </MudTableSortLabel>
                 </MudTh>
+                 <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.SeniorSupervisor?.Name)">
+                        @Localizer["SSV"]
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Supervisor?.Name)">
+                        @Localizer["SV"]
+                    </MudTableSortLabel>
+                </MudTh>
                 <MudTh>
                     <MudTableSortLabel SortBy="new Func<Kaizen, object>(x=>x.Status)">
                         @Localizer["status"]
@@ -141,6 +151,12 @@ else
                     </MudTd>
                     <MudTd DataLabel=@Localizer["area"]>
                         <MudText Align="Align.Center">@context.Area?.Description</MudText>
+                    </MudTd>
+                     <MudTd DataLabel=@Localizer["SSV"]>
+                        <MudText Align="Align.Center">@context.SeniorSupervisor?.Name</MudText>
+                    </MudTd>
+                    <MudTd DataLabel=@Localizer["SV"]>
+                        <MudText Align="Align.Center">@context.Supervisor?.Name</MudText>
                     </MudTd>
                     <MudTd DataLabel=@Localizer["status"]>
                         <MudText Align="Align.Center">@context.Status</MudText>
@@ -229,7 +245,7 @@ else
             _Kaizens = new();
             try
             {
-                _Kaizens = await KaizensServices.GetAllKaizen(includeNavigation: true);
+                _Kaizens = await KaizensServices.GetAllKaizen(includeNavigation: true, includePeople: true);
             }
             catch (Exception ex)
             {
@@ -264,19 +280,16 @@ else
 
     private void Createkaizen()
     {
+        NavigationManager.NavigateTo($"/kaizen/createkaizen");
 
     }
 
     void KaizenDetails(int KaizenId)
     {
-        NavigationManager.NavigateTo($"plants");
+        NavigationManager.NavigateTo($"/kaizen/detailskaizen/{KaizenId}");
     }
 
-    // Create Kaizen
-    void CreateKaizen()
-    {
-        NavigationManager.NavigateTo($"plants");
-    }
+ 
 
     // Delete Kaizen
     async Task DeleteKaizen(int KaizenId)
@@ -317,7 +330,7 @@ else
             selectedRowNumber = -1;
             if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                NavigationManager.NavigateTo($"kaizen/Updatekaizen");
+                NavigationManager.NavigateTo($"kaizen/Updatekaizen/{element.KaizenId}");
             }
             return string.Empty;
         }

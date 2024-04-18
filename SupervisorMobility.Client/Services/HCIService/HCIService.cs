@@ -11,7 +11,7 @@ namespace SupervisorMobility.Client.Services.HCIService
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
 
-        HCIService(HttpClient http)
+        public HCIService(HttpClient http)
         {
             _http = http;
             _options = new JsonSerializerOptions
@@ -25,14 +25,21 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<bool> CreateHCI(HCI content)
         {
-            var response = await _http.PostAsJsonAsync($"/HCI", content);
+            var response = await _http.PostAsJsonAsync($"HCI", content);
 
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<List<HCI>> GetHCI(int id)
+        public async Task<HCI> GetHCI(int id)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"HCI/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<HCI>();
+                return content;
+            }
+
+            return null;
         }
 
         public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false)
@@ -41,6 +48,11 @@ namespace SupervisorMobility.Client.Services.HCIService
         }
 
         public async Task<bool> UpdateHCI(HCI content)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> DeleteHCI(int hciId)
         {
             throw new NotImplementedException();
         }
