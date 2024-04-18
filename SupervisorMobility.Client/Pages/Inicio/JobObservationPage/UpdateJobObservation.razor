@@ -903,6 +903,11 @@
                                             </MudSimpleTable>
                                         </ChildContent>
                                     </MudExpansionPanel>
+                                    @if (productSpecification == "0" || _jobObservation.SupervisorId == 0 || jobProductId == 0)
+                                    {
+                                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
+                                        return;
+                                    }
                                     break;
                                 case StructureType.Checklist:
                                     if (category.ChecklistQuestions.Count > 0)
@@ -1274,7 +1279,7 @@
 
                                          </MudSimpleTable>
 
-                                         @if (_jobObservation.ModelsSpecification != "0")
+                                         @if (_jobObservation.ModelsSpecification != "0" && productSpecification != "0")
                                         {
                                             <MudSimpleTable Hover="true" Dense="true" Elevation="0">
                                                 <thead>
@@ -1294,7 +1299,7 @@
                                                         var standardTime = "0.0";
                                                         <tr>
                                                             <td>@op.Code</td>
-                                                            @if ((_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0" && _jobObservation.ModelsSpecification != "0") && op.NameTime != null)
+                                                            @if ((_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0" && _jobObservation.ModelsSpecification != "0" && productSpecification != "0") && op.NameTime != null)
                                                             {
                                                                 var names = op.NameTime.Split("§");
                                                                 var standardTimeIndex = _specifications.FindIndex(s => s == _jobObservation.ModelsSpecification);
@@ -2490,22 +2495,29 @@
 
                     }
                 </MudExpansionPanels>
-                @if(!operatorSignatureSigned){
-                     <MudItem Style="text-align:center; display: flex; justify-content: center;">
-                        <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature OnSignatureSaved="HandleSignatureSaved"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature>
-                    </MudItem>
+                @if (productSpecification == "0" || _jobObservation.SupervisorId == 0 || jobProductId == 0)
+                {
                 }
                 else{
-                     <MudItem Style="text-align:center; display: flex; justify-content: center;">
-                        <div class="container drawing-container pa-8">
-                            <div class="row justify-content-center">
-                                <div class="col-md-12 text-center">
-                                    <h3>@Localizer["operatorsSignature"]</h3>
-                                    <img src="@currentImage" style="display:block" class="canvas-container"/>
+
+                    @if(!operatorSignatureSigned){
+                         <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature OnSignatureSaved="HandleSignatureSaved"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature>
+                        </MudItem>
+                    }
+                    else{
+                         <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                            <div class="container drawing-container pa-8">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-12 text-center">
+                                        <h3>@Localizer["operatorsSignature"]</h3>
+                                        <img src="@currentImage" style="display:block" class="canvas-container"/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </MudItem>
+                        </MudItem>
+                    }
+
                 }
                 <MudCardActions>
                     <MudItem Class="ml-auto mt-4">
