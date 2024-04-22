@@ -13,24 +13,23 @@
                     <th style="text-align:center">Level</th>
                 </tr>
             </thead>
-            @*
             <tbody>
-                @foreach (var item in ExpertiseTable)
+                @foreach (var item in ExpertiseTable.Select((value, index) => new { index, value }))
                 {
+                    var period = new DateRange(item.value.Start, item.value.End);
                     <tr>
-                        <td style="width:15%">
-                            <MudDateRangePicker @bind-DateRange="item.Value.period" Clearable="true" />
+                        <td style="width:25%">
+                            <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
                         </td>
                         <td>
-                            <MudTextField @bind-Value="item.Value.operationDesc" Variant="Variant.Text" FullWidth></MudTextField>
+                            <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
                         </td>
-                        <td style="width:15%">
-                            <MudTextField @bind-Value="item.Value.level" Variant="Variant.Text" FullWidth></MudTextField>
+                        <td style="width:10%">
+                            <MudTextField Value="item.value.level" ValueChanged="(string? val)=>LevelChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
                         </td>
                     </tr>
                 }
             </tbody>
-            *@
         </MudSimpleTable>
     </ChildContent>
 </MudExpansionPanel>

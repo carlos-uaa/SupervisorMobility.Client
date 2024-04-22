@@ -7,14 +7,21 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in CategoryTable)
+        @foreach (var item in CategoryTable.Select((value, index) => new { index, value }))
         {
             <tr>
                 <td>
-                    <MudTextField @bind-Value="item.Value.category" Variant="Variant.Text" FullWidth></MudTextField>
+                    @if (!details)
+                    {
+                        <MudTextField Value="item.value.Name" ValueChanged="(string? val)=>OptionChanged(val,item.index)" Variant="Variant.Text" FullWidth></MudTextField>
+                    }
+                    else
+                    {
+                        <MudTextField Value="item.value.Name" ValueChanged="(string? val)=>OptionChanged(val,item.index)" Variant="Variant.Text" FullWidth ReadOnly></MudTextField>
+                    }
                 </td>
                 <td>
-                    <MudDatePicker @bind-Date="item.Value.date" Clearable="true" />
+                    <MudDatePicker Date="item.value.Date" DateChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details"/>
                 </td>
             </tr>
         }

@@ -9,9 +9,11 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public DateTime? ChangeDate { get; set; }
 
+        public string Department { get; set; }
+        public string Process { get; set; }
 
         public string? OperationDescription { get; set; }
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; set; } = true;
 
 
     }

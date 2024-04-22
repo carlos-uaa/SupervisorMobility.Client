@@ -1,11 +1,13 @@
 ﻿@page "/HCI/Create"
-@page "/HCI/Update/{HCIID}"
-@page "/HCI/Details/{HCIID}"
+@page "/HCI/Update/{HCIID:int?}"
+@page "/HCI/Details/{HCIID:int?}"
 @using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 @inject NavigationManager NavManager
 @inject IUserService UsrsService
 @inject IHCIService HCIService
+@inject ISnackbar Snackbar
 
+@if (dataloaded) {
 <h3>HCI</h3>
 <MudExpansionPanels MultiExpansion Class="d-flex flex-column justify-center" Style="align-items: center;">
     <MudExpansionPanel Style="min-width:100%;" IsInitiallyExpanded=true>
@@ -15,7 +17,7 @@
             </div>
         </TitleContent>
         <ChildContent>
-            <GeneralInfo @bind-_hci="_hci"/>
+                <GeneralInfo _hci="_hci" image="@testimage2" />
         </ChildContent>
     </MudExpansionPanel>
     <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
@@ -26,8 +28,12 @@
         </TitleContent>
         <ChildContent>
             <!--<MudExpansionPanels>-->
-                <Knwoledge Title="Training received on the department's manuals" @bind-KnowledgeTable="manualCap" type="1"/>
-                <Knwoledge Title="Training inside and outside the company" @bind-KnowledgeTable="companyCap" type="2"/>
+                <Knwoledge Title="Training received on the department's manuals" KnowledgeTable="manualCap" type="1"
+                 Add="AddManual" Del="RemoveManual" Upd="@((args)=>ModifyManualEntry(args.Item1, args.Item2))" details="Details"
+                />
+                <Knwoledge Title="Training inside and outside the company" KnowledgeTable="companyCap" type="2"
+                Add="AddCompany" Del="RemoveCompany" Upd="@((args)=>ModifyCompanyEntry(args.Item1, args.Item2))" details="Details"
+                />
             <!--</MudExpansionPanels>-->
         </ChildContent>
     </MudExpansionPanel>
@@ -38,7 +44,9 @@
             </div>
         </TitleContent>
         <ChildContent>
-            <Quialifications @bind-QualificationsTable="titles"/>
+            <Quialifications QualificationsTable="titles" 
+                Add="AddQualif" Del="RemoveQualif" Upd="@((args)=>ModifyQualifEntry(args.Item1, args.Item2))" details="Details"
+                />
         </ChildContent>
     </MudExpansionPanel>
     <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
@@ -48,8 +56,10 @@
             </div>
         </TitleContent>
         <ChildContent>
-            <Trajectory @bind-TrajectoryTable="careers"/>
-            <Expertise @bind-ExpertiseTable="expertise"/>
+            <Trajectory TrajectoryTable="careers"
+                Add="AddCareer" Del="RemoveCareer" Upd="@((args)=>ModifyCareerEntry(args.Item1, args.Item2))" details="Details"/>
+            <Expertise ExpertiseTable="expertise"
+                Add="AddExpert" Del="RemoveExpert" Upd="@((args)=>ModifyExpertEntry(args.Item1, args.Item2))" details="Details"/>
         </ChildContent>
     </MudExpansionPanel>
     <MudExpansionPanel Style="min-width: 55%;" IsInitiallyExpanded=true>
@@ -59,7 +69,8 @@
             </div>
         </TitleContent>
         <ChildContent>
-            <Category/>
+            <Category CategoryTable="categories" 
+                Add="AddCateg" Del="RemoveCateg" Upd="@((args)=>ModifyCategEntry(args.Item1, args.Item2))" details="Details"/>
         </ChildContent>
     </MudExpansionPanel>
     <MudExpansionPanel Style="min-width: 80%;" IsInitiallyExpanded=true>
@@ -69,9 +80,29 @@
             </div>
         </TitleContent>
         <ChildContent>
-            <Notes @bind-NotesTable="comments"/>
+            <Notes NotesTable="comments"
+                Add="AddNote" Del="RemoveNote" Upd="@((args)=>ModifyNoteEntry(args.Item1, args.Item2))" details="Details"/>
         </ChildContent>
     </MudExpansionPanel>
 </MudExpansionPanels>
+@if(!Details){
+<MudCardActions>
+    <MudItem Class="ml-auto mt-4">
+            <MudButton StartIcon="@Icons.Material.Filled.StopCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Complete())">
+                @if (HCIID == null)
+                {
+                    <span>Create</span>
+                }
+                else
+                {
+                    <span>Update</span>
+                } HCI
+            </MudButton>
+            @* <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">@Localizer["underReview"]</MudButton>
+        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateJobObservation())">@Localizer["cancel"]</MudButton> *@
+    </MudItem>
+</MudCardActions>
+}
+}
 
 

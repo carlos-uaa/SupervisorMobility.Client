@@ -5,11 +5,11 @@
         </tr>
     </thead>
     <tbody>
-        @for (int i =0; i< NotesTable.Count; i++)
+        @foreach (var item in NotesTable.Select((value, index) => new { index, value }))
         {
             <tr>
                 <td>
-                    <MudTextField @bind-Value="NotesTable[i].Comment" Variant="Variant.Text" FullWidth></MudTextField>
+                    <MudTextField T="string" Value="item.value.Comment" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
                 </td>
             </tr>
         }
@@ -18,7 +18,15 @@
 
 @code {
     [Parameter]
-    public List<Commentary> NotesTable { get; set; } = new List<Commentary>();
+    public bool details { get; set; }
+    [Parameter]
+    public List<Commentary> NotesTable { get; set; }
+    [Parameter]
+    public EventCallback<Commentary> Add { get; set; }
+    [Parameter]
+    public EventCallback<int> Del { get; set; }
+    [Parameter]
+    public EventCallback<(Commentary, int)> Upd { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
@@ -29,5 +37,11 @@
                 NotesTable.Add(new Commentary { Comment = string.Empty });
             }
         }
+    }
+
+    private void TextChanged(string val, int idx)
+    {
+        NotesTable[idx].Comment = val;
+        Upd.InvokeAsync((NotesTable[idx], idx));
     }
 }
