@@ -1,0 +1,569 @@
+﻿@page "/kaizen/updatekaizen/{kaizenId:int}"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IUserService UsersService
+@inject IKaizenService KaizenServices
+@inject IFileUploadAndDownloadService FilesServices
+
+<PageTitle>Supervisor Mobility | @Localizer["update kaizen"]</PageTitle>
+<EditForm Model="_kaizen" OnValidSubmit="CreateNewKaizen">
+<MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudItem lg="10" md="12" sm="12" xs="12">
+        <MudExpansionPanels Elevation="5" MultiExpansion="true" Class="mt-2">
+            <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <div class="d-flex" style="align-items: center; justify-content:center; margin-right: 12vh">
+                        <MudImage ObjectFit="ObjectFit.Cover" Height="25"  Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            @Localizer["KAIZEN"]
+                        </MudText>
+                    </div>
+                    
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="_kaizen.KaizenName" Label="Kaizen's Name" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                                  </td>
+                                <td>                                                        
+                                    <MudDatePicker Date="@_kaizen.CreateDate" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="@minDate" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="50%">
+                                    @if(user.UserType == 1){
+
+                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                        @foreach (var type in _plants)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                            @foreach (var type in _plants)
+                                            {
+                                                if (type.PlantId == user.PlantId)
+                                                {
+                                                    <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    }
+                                </td>
+                                <td>
+                                    @if (areaId != 0)
+                                    {
+                                        @if (_seniorSupervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["SSV"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" SelectedValuesChanged="ShowSupervisors" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASSV"]</MudSelectItem>
+                                                @foreach (var type in _seniorSupervisors)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">
+                                                        @type.Name
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisAreaDoesNotHaveSSV"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["SSV"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="50%">
+                                        @if (plantId != 0 && user.UserType == 1)
+                                        {
+                                            @*Mud select for Areas for Admin *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in _areas)
+                                                {
+                                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else if (plantId != 0 && user.UserType == 2)
+                                        {
+                                            @*Mud select for Areas for SSV *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId"  SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in user.Areas)
+                                                {
+                                                    <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else if (plantId != 0)
+                                        {
+                                            @*Mud select for Areas for SV *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                @foreach (var type in _areas)
+                                                {
+                                                    if (type.AreaId == user.AreaId)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            @*Mud select for Areas *@
+                                            <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSeniorSupervisors">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                            </MudSelect>
+                                        }
+                                </td>
+                                <td>                         
+                                    @if (ssvId != 0)
+                                    {
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["Supervisor"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" SelectedValuesChanged="ShowOperators" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
+                                                @foreach (var type in _supervisors)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">
+                                                        @type.Name
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisAreaDoesNotHaveSupervisors"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["Supervisor"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@supervisorId" OpenIcon="@Icons.Material.Filled.SupervisorAccount" AdornmentColor="Color.Secondary">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASSV"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                    </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex" style="justify-content: space-between;">
+                                        <MudTextField @bind-Value="_kaizen.kpiName" Label="Nombre del KPI" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-4" Lines="2"></MudTextField>
+                                        <MudSelect T="int" Label="Pilar con impacto" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_kaizen.PillarId" >
+                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                            <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
+                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
+                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
+                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
+                                            <MudSelectItem Value="5">@($"Other")</MudSelectItem>
+                                        </MudSelect>
+                                    </div>
+                                </td>
+                                <td>
+                                @if (supervisorId != 0)
+                                    {
+                                        @if (operatorUsers.Count > 0)
+                                        {
+                                            @*Mud select for Operator *@
+                                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@operatorId" OpenIcon="@Icons.Material.Filled.Person" AdornmentColor="Color.Dark" SelectedValuesChanged="OperatorName">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
+                                                @foreach (var type in operatorUsers)
+                                                {
+                                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["thisSupervisorDoesNotHaveOperators"]
+                                            </MudAlert>
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="operatorId" OpenIcon="@Icons.Material.Filled.Person" AdornmentColor="Color.Dark">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASupervisor"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+                <MudExpansionPanel IsInitiallyExpanded="true" Style="min-width: 100%;">
+                    <TitleContent>
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            @Localizer["Efecto / Beneficio: (Colocar información lo más detalladamente posible)"]
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudSimpleTable Style="overflow-x: auto;" Dense="true" Elevation="0">
+                            <tbody>
+                                @foreach (var item in items)
+                                {
+                                    <tr>
+                                        <td width="20%">
+                                            <MudSelect T="int" Label="Effect" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@item.EffectId">
+                                                <MudSelectItem Disabled="true" Value="0">Select effect</MudSelectItem>
+                                                <MudSelectItem Value="1">@($"Quality")</MudSelectItem>
+                                                <MudSelectItem Value="2">@($"Cost")</MudSelectItem>
+                                                <MudSelectItem Value="3">@($"Delivery")</MudSelectItem>
+                                                <MudSelectItem Value="4">@($"Safety")</MudSelectItem>
+                                                <MudSelectItem Value="5">@($"Environment")</MudSelectItem>
+                                                <MudSelectItem Value="6">@($"Ergonomics")</MudSelectItem>
+                                                <MudSelectItem Value="7">@($"People")</MudSelectItem>
+                                            </MudSelect>
+                                        </td>
+                                            <td width="90%">
+                                            <MudTextField @bind-Value="@item.Benefit" Label="Benefit"  Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                                        </td>
+                                        @if (items.IndexOf(item) > 0)
+                                        {
+                                            <td width="10%">
+                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                        <MudButton OnClick="AddItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right" Class="my-4">Add Effect / benefit</MudButton>
+                    </ChildContent>
+                </MudExpansionPanel>
+
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Inversión / Gasto (Colocar información lo más detalladamente posible)"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudTextField @bind-Value="laborText" Class="mb-4" Label="Labor" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                    <MudTextField @bind-Value="materialText" Class="mb-4" Label="Material" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                    <MudTextField @bind-Value="machineText" Label="Machine / Equipment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Beneficio total anual (Beneficio - Gasto)"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="_kaizen.Calculationformula" Label="Calculation Form" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                </td>
+                                <td>
+                                    <MudTextField @bind-Value="_kaizen.Total" Label="Total ($ pesos)" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Evidence"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Bordered>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center">
+                                    <b>Antes</b>
+                                </th>
+                                <th style="text-align: center">
+                                    <b>Después</b>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height:50vh">
+                                <td width="50%" style="vertical-align: top;">
+
+                                    <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                            <InputFile id="previousEvidence" OnChange="@( (e) => UploadFiles(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+                                            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                                                       HtmlTag="label"
+                                                       Variant="Variant.Filled"
+                                                       Color="Color.Primary"
+                                                       StartIcon="@Icons.Material.Filled.Image"
+                                                       for="previousEvidence">
+                                                Load picture
+                                            </MudButton>
+                                            @if (capturedImages.Count == 0)
+                                            {
+                                                <MudItem>
+                                                    <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                                                        Open Camera
+                                                    </MudButton>
+                                                </MudItem>
+                                            }
+                                            else if(capturedImages.Count > 0){
+                                                <MudItem>
+                                                    <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                </MudItem>
+                                            }
+                                        </MudItem>
+                                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+                                            @if(capturedImages.Count > 0)
+                                            {
+                                                <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                                                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+
+                                                    @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class=" mr-8 mb-4">
+                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                                                </MudTooltip>
+                                                            </MudItem>
+                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                        </MudItem>
+                                                    }
+                                                </MudItem>
+                                                    
+                                                </div>
+                                            }
+                                        </MudItem>
+                                </td>
+                                <td style="vertical-align: top;">
+                                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                            <InputFile id="thenEvidence" OnChange="@( (e) => UploadFiles(e, 2))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+                                            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                                                       HtmlTag="label"
+                                                       Variant="Variant.Filled"
+                                                       Color="Color.Primary"
+                                                       StartIcon="@Icons.Material.Filled.Image"
+                                                       for="thenEvidence">
+                                                Load picture
+                                            </MudButton>
+                                            @if (capturedImagesThen.Count == 0)
+                                            {
+                                                <MudItem>
+                                                    <MudButton @onclick="() => OpenCameraDialog(2)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                                                        Open Camera
+                                                    </MudButton>
+                                                </MudItem>
+                                            }
+                                            else if(capturedImagesThen.Count > 0){
+                                                <MudItem>
+                                                    <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(2)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                </MudItem>
+                                            }
+                                        </MudItem>
+                                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+                                            @if (capturedImagesThen.Count > 0)
+                                            {
+                                                <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                                                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+
+                                                        @foreach (var (image, index) in capturedImagesThen.Select((image, index) => (image, index)))
+                                                        {
+                                                            <MudItem Class=" mr-8 mb-4">
+                                                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index,2)"></MudIcon>
+                                                                    </MudTooltip>
+                                                                </MudItem>
+                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                            </MudItem>
+                                                        }
+                                                    </MudItem>
+
+                                                </div>
+                                            }
+                                             </MudItem>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align: top;">
+                                    <MudTextField @bind-Value="_kaizen.PreviousJustification" Label="Situación actual:" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4"></MudTextField>
+                                </td>
+                                <td style="vertical-align: top;">
+                                    <MudTextField @bind-Value="_kaizen.ThenJustification" Label="Situación propuesta:" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4"></MudTextField>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["Participantes"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Bordered>
+                        <tbody>
+                            <tr>
+                                <td width="50%" style="vertical-align: top;">
+                                    <MudTextField @bind-Value="ssvName" Label="SSV" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
+                                </td>
+                                <td style="vertical-align: top;">
+                                    @if(user.UserType == 1 || user.UserType == 2){
+                                        if(_kaizen.IsSignedSSV){
+                                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                                                    @Localizer["signed"]
+                                            </MudChip>
+                                        }
+                                        else
+                                        {
+                                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(ssvName))" @onclick="(()=> OpenSignComment(1))">SSV Sign Kaizen</MudButton>
+                                        }
+                                    }
+                                    else
+                                    {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                            @Localizer["unsignedOnlySSVCanSignIt"]
+                                    </MudChip>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <MudTextField @bind-Value="svName" Label="Supervisor" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
+                                </td>
+                                <td >
+                                    @if(user.UserType == 1 || user.UserType == 3){
+                                        if(_kaizen.IsSignedSupervisor){
+                                            <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                                                    @Localizer["signed"]
+                                            </MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ModeEdit" Color="Color.Info" Size="Size.Small" Disabled="@(string.IsNullOrEmpty(svName))" @onclick="(()=> OpenSignComment(2))">SV Sign Kaizen</MudButton>
+                                        }
+                                    }
+                                    else
+                                    {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                            @Localizer["unsignedOnlySVCanSignIt"]
+                                    </MudChip>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <MudTextField @bind-Value="operatorName" Label=@Localizer["operator"] Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
+                                </td>
+                                <td >
+                                        <MudTextField @bind-Value="_kaizen.OperatorPayroll" Label=@Localizer["payroll"] Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@(string.IsNullOrEmpty(operatorName))"></MudTextField>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <MudTextField @bind-Value="_kaizen.StandardModification" Label="Modified Standard" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" ></MudTextField>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+        <MudCardActions>
+            <MudItem Class="ml-auto mt-4">
+                <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4">@Localizer["createKaizen"]</MudButton>
+            </MudItem>
+        </MudCardActions>
+    </MudItem>
+</MudGrid>
+</EditForm>
+
+@*Camera Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+    <TitleContent>
+        <MudItem>
+            <MudText Typo="Typo.h6" Style="text-align:center">Kaizen Evidence</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <CameraStreamer @ref=CameraStreamerReference
+                                Width=1280
+                                Height=720
+                                OnRendered=OnRenderedHandler
+                                OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                                CameraID=@cameraId
+                                    Autostart />
+                <MudItem style="text-align: center">
+                    @if (frameCount > 0)
+                {
+                    <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                        Take photo
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
+                        Take photo
+                    </MudButton>
+                }
+                </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+
+                    
+@*Sign SSV modal*@
+<MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+        @Localizer["are you sure you want to sign this Kaizen"]
+    </MudText>
+    <MudText Class="mt-4 mb-4">
+        @Localizer["onceSignedItCannotBeModified"]
+    </MudText>
+</DialogContent>
+<DialogActions>
+    <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => SignDate())" Color="Color.Info" StartIcon="@Icons.Material.Filled.ModeEdit" Variant="Variant.Filled">@Localizer["sign"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
