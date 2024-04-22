@@ -14,19 +14,17 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in KnowledgeTable)
+                @foreach (var item in KnowledgeTable.Select((value, index) => new { index, value }))
                 {
-                    int i = 0;
-                    var period = new DateRange(item.DateStart, item.DateEnd);
+                    var period = new DateRange(item.value.DateStart, item.value.DateEnd);
                     <tr>
                         <td style="width:30%">
-                            <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,i)" Clearable="true"/>
+                            <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
                         </td>
                         <td>
-                            <MudTextField @bind-Value="item.Description" Variant="Variant.Text" FullWidth></MudTextField>
+                            <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val,item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
                         </td>
                     </tr>
-                    i++;
                 }
             </tbody>
         </MudSimpleTable>

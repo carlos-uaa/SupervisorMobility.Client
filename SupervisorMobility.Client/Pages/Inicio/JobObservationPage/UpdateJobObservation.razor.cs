@@ -346,8 +346,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
                     Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
-                if (_jobObservation.ModelsSpecification != null && _jobObservation.ModelsSpecification != "0|0|0|0|0")
+                if (!string.IsNullOrEmpty(_jobObservation.ModelsSpecification) && _jobObservation.ModelsSpecification != "0|0|0|0|0")
+                {
                     productSpecification =  _jobObservation.ModelsSpecification;
+                        Console.WriteLine(productSpecification);
+                }
 
 
                 if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
@@ -361,12 +364,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
                     _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-                        Console.WriteLine("aa");
-                        Console.WriteLine(_supervisors.Count);
 
                 }
-                        Console.WriteLine("bb");
-                        Console.WriteLine(user.UserType);
 
                     StateHasChanged();
                 await GetUserAsync();
@@ -2154,7 +2153,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void ShowSpecifications()
         {
-            _specifications = new();
+             _specifications = new();
             productSpecification = "0";
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
@@ -2173,6 +2172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 }
             }
+
 
             _filteredOperations = new();
             StepsNumber = new int[5];

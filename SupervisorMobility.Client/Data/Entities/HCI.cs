@@ -6,18 +6,15 @@ namespace SupervisorMobility.Client.Data.Entities
     {
         public int HCIId { get; set; }
 
-        public string? HCIName { get; set; }
-        public string? HCISectionName { get; set; }
-        public int? HCINo { get; set; }
-
         public int? UserId { get; set; }
         public User? User { get; set; }
 
-        public ICollection<HCITransaction>? Transactions { get; set; }
-        public ICollection<HCICategory>? Categories { get; set; }
+        public List<HCITransaction>? Transactions { get; set; }
+        public List<HCICategory>? Categories { get; set; }
+        public List<HCIILU>? ILUs { get; set; }
+        public List<UserCareerPath>? CareerPaths { get; set; }
 
-
-        public ICollection<Commentary>? Comments { get; set; }
+        public List<Commentary>? Comments { get; set; }
         public bool? IsActive { get; set; }
     }
 }

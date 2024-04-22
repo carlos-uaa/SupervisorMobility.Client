@@ -26,7 +26,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
     public partial class Category
     {
         [Parameter]
-        public Dictionary<int, dicValuesCategory> CategoryTable { get; set; } = new Dictionary<int, dicValuesCategory>();
+        public bool details { get; set; }
+
+        [Parameter]
+        public List<HCICategory> CategoryTable { get; set; }
+
+        [Parameter]
+        public EventCallback<HCICategory> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(HCICategory, int)> Upd { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -34,15 +44,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    CategoryTable.Add(i, new());
+                    CategoryTable.Add( new());
                 }
             }
         }
-    }
 
-    public class dicValuesCategory
-    {
-        public DateTime? date;
-        public string category;
+        private void DateChanged(DateTime? range, int index)
+        {
+            CategoryTable.ElementAt(index).Date = range;
+            Upd.InvokeAsync((CategoryTable[index], index));
+        }
+        private void OptionChanged(string val, int idx) //Changethis for the select
+        {
+            CategoryTable[idx].Name = val;
+            Upd.InvokeAsync((CategoryTable[idx], idx));
+        }
     }
 }

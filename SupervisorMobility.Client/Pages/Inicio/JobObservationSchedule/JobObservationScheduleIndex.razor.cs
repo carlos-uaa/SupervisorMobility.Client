@@ -245,6 +245,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         private async Task LoadJobObservations()
         {
             loadingData = true;
+            _allJobObservations = new();
+            _jobObservations = new();
+            _SOSJobobservation = new();
             if (user != null)
             {
                 _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
@@ -283,7 +286,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                     _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
                     totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
-
                 }
                 else if (user.UserType == 5)
                 {
@@ -374,6 +376,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             supervisorId = 0;
 
             areaId = 0;
+            _jobObservations = new();
             _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
 
 
@@ -496,8 +499,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             GenerateCalendarHead();
             GenerateCalendarBody();
 
-            await LoadJobObservations();
-
             StateHasChanged();
         }
 
@@ -516,10 +517,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             GenerateCalendarHead();
             GenerateCalendarBody();
 
-            await LoadJobObservations();
-
             StateHasChanged();
         }
+
+
             private void GenerateCalendarHead()
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
