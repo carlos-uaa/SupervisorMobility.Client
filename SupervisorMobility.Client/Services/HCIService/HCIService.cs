@@ -32,7 +32,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<HCI> GetHCI(int id)
         {
-            var response = await _http.GetAsync($"HCI/{id}?includeNavigation=true");
+            var response = await _http.GetAsync($"HCI/{id}?includeNavigation=true&includePeople=true");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<HCI>();
@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<bool> UpdateHCI(HCI content)
         {
-            var response = await _http.PutAsJsonAsync($"HCI", content);
+            var response = await _http.PutAsJsonAsync($"HCI/{content.HCIId}", content);
 
             return response.IsSuccessStatusCode;
         }
