@@ -1,5 +1,7 @@
 ﻿
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.JSInterop;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using static System.Net.WebRequestMethods;
@@ -42,9 +44,16 @@ namespace SupervisorMobility.Client.Services.HCIService
             return null;
         }
 
-        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false)
+        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"HCI/?includeNavigation={includeNavigation}&includePeople={includePeople}&includeTransactions={includeTransactions}&includeComments={includeComments}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<HCI>>();
+                return content;
+            }
+
+            return null;
         }
 
         public async Task<bool> UpdateHCI(HCI content)

@@ -3535,6 +3535,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Not HCI Located.
+        /// </summary>
+        public static string thereAreNoHCIsCreated {
+            get {
+                return ResourceManager.GetString("thereAreNoHCIsCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a There are no history versions for the job observations..
         /// </summary>
         public static string thereAreNoHistoryVersionsForTheJobObservations {
