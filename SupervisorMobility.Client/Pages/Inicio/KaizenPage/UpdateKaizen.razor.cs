@@ -208,6 +208,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 }
             }
 
+            items = new();
+
             foreach (var transaction in _kaizen.Transactions)
             {
                 var item = new ItemModel
@@ -215,9 +217,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     EffectId = int.Parse(transaction.Title),
                     Benefit = transaction.Description
                 };
-
                 items.Add(item);
             }
+
+            Console.WriteLine(items.Count);
             StateHasChanged();
 
         }
