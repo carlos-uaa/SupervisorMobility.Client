@@ -26,6 +26,8 @@ using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Services.BreadcrumsService;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using System.Reflection.Metadata.Ecma335;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -194,7 +196,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private int selectedSVPanel = 0;
         private int selectedSOPPanel = 0;
 
+        //schedule
+        List<string> monthNames = new List<string>();
+        List<string> days = new List<string>();
+        List<Week> weeks = new List<Week>();
+        DateTime startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        DateTime endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddDays(-1);
 
+
+        public bool loadingToolbar = true;
+        public bool loadingData = true;
+        public bool loadingSchedule = true;
         protected async override Task OnInitializedAsync()
         {
             ShowLoading = false;
@@ -316,7 +328,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             };
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
-            
+            monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+        }
+
+        public async void SchedulinMode()
+        {
+            MonthlyView = true;
+          
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+
+            await LoadJobObservations();
+        }
+
+        private void OpenDialog4(string date)
+        {
+            searchString = "";
+            date = date.Replace("/", "-");
+            programmedStartDate = date;
+            visible3 = true;
+        }
+        void PlanJobObservation(string date)
+        {
+            date = date.Replace("/", "-");
+            //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{date}");
+        }
+        private void CreateJobObservation(string date)
+        {
+            date = date.Replace("/", "-");
+            //NavigationManager.NavigateTo($"jobobservation/createnewjobobservation/{date}");
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -331,6 +373,144 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
+
+        private void GenerateCalendarHead()
+        {
+            if (startDate.DayOfWeek == DayOfWeek.Monday)
+            {
+                startDate = startDate.AddDays(-1);
+            }
+            switch (startDate.DayOfWeek)
+            {
+                case DayOfWeek.Monday: startDate = startDate.AddDays(-1); break;
+                case DayOfWeek.Tuesday: startDate = startDate.AddDays(-2); break;
+                case DayOfWeek.Wednesday: startDate = startDate.AddDays(-3); break;
+                case DayOfWeek.Thursday: startDate = startDate.AddDays(-4); break;
+                case DayOfWeek.Friday: startDate = startDate.AddDays(-5); break;
+                case DayOfWeek.Saturday: startDate = startDate.AddDays(-6); break;
+
+
+            }
+
+            var day1 = new List<string>();
+            for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
+            {
+                day1.Add(dt.ToString("dddd"));
+            }
+            days = day1.Distinct().ToList();
+        }
+        private void GenerateCalendarBody()
+        {
+            weeks = new List<Week>();
+            int flag = 0;
+            Week week = new Week();
+            List<DayEvent> dates = new List<DayEvent>();
+
+            var totalDays = (int)(endDate - startDate).TotalDays;
+            int countdays = 0;
+
+            for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
+            {
+                flag = flag + 1;
+                dates.Add(new DayEvent()
+                {
+                    DateValue = dt.ToString("d/M/yyyy"),
+                    DayName = dt.ToString("dd")
+                });
+
+                if (flag == 7)
+                {
+                    week = new Week();
+                    week.Dates = dates;
+                    weeks.Add(week);
+                    dates = new List<DayEvent>();
+                    flag = 0;
+                }
+                if (countdays == totalDays)
+                {
+                    week = new Week();
+                    week.Dates = dates;
+                    weeks.Add(week);
+                    break;
+                }
+                countdays++;
+            }
+            loadingSchedule = false;
+
+        }
+
+        private async Task LoadJobObservations()
+        {
+            loadingData = true;
+            //if (user != null)
+            //{
+            //    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+
+
+            //    if (user.UserType == 1 || user.UserType == 6)
+            //    {
+            //        _jobObservations = _allJobObservations;
+            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+            //    }
+            //    else if (user.UserType == 2)
+            //    {
+
+            //        foreach (var jobobs in _allJobObservations)
+            //        {
+            //            if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+            //            {
+            //                _jobObservations.Add(jobobs);
+            //            }
+            //        }
+
+            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+            //    }
+            //    else if (user.UserType == 3)
+            //    {
+
+            //        foreach (var jobobs in _allJobObservations)
+            //        {
+            //            if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+            //            {
+            //                _jobObservations.Add(jobobs);
+            //            }
+            //        }
+
+            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+
+            //    }
+            //    else if (user.UserType == 5)
+            //    {
+            //        foreach (var jobobs in _allJobObservations)
+            //        {
+            //            if (plantId == jobobs.PlantId)
+            //            {
+            //                foreach (User usr in user.Subordinates)
+            //                {
+            //                    if (jobobs.Supervisor.SuperiorId == usr.UserId)
+            //                    {
+            //                        if (jobobs.Status != 7)
+            //                        {
+            //                            _jobObservations.Add(jobobs);
+            //                        }
+            //                    }
+
+            //                }
+            //            }
+            //        }
+
+            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
+            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
+            //        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
+            //    }
+            //}
+            loadingData = false;
+            StateHasChanged();
+        }
+
         private void OnFirstDateChanged(DateTime? dt)
         {
             if (dt.HasValue)
@@ -340,7 +520,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
-        private void OnDateChanged(DateTime? value)
+        private async void OnDateChanged(DateTime? value)
         {
             ShowLoading = true;
 
@@ -355,6 +535,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+
+            await LoadJobObservations();
             ShowLoading = false;
             StateHasChanged();
         }
@@ -398,7 +586,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (tmpSuggdist != null)
             {
                 tmpSuggdist.distribution.ShowDetails = true;
+
             }
+
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+            await LoadJobObservations();
+
+
             StateHasChanged();
         }
 
@@ -436,6 +634,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             StateHasChanged();
             ShowLoading = false;
 
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
             if (tmpdist != null)
             {
                 tmpdist.ShowDetails = true;
@@ -444,6 +645,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 tmpSuggdist.distribution.ShowDetails = true;
             }
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+            await LoadJobObservations();
+
             StateHasChanged();
         }
 
@@ -1024,12 +1232,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private bool visible2 = false;
         private int jobId2;
 
-        private void OpenDialog3(int id)
-        {
-            jobId2 = id;
-            visible2 = true;
-
-        }
 
         private void OpenDialog3(int id, DateTime date)
         {

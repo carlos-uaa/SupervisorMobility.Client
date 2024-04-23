@@ -1177,6 +1177,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Double managment.
+        /// </summary>
+        public static string doubleManagment {
+            get {
+                return ResourceManager.GetString("doubleManagment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Download.
         /// </summary>
         public static string download {
@@ -3490,6 +3499,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Steps number.
+        /// </summary>
+        public static string stepsNumber {
+            get {
+                return ResourceManager.GetString("stepsNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Suggestion.
         /// </summary>
         public static string suggestion {
@@ -3531,6 +3549,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string thereAreNoDistributionsCreatedForThisArea {
             get {
                 return ResourceManager.GetString("thereAreNoDistributionsCreatedForThisArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Not HCI Located.
+        /// </summary>
+        public static string thereAreNoHCIsCreated {
+            get {
+                return ResourceManager.GetString("thereAreNoHCIsCreated", resourceCulture);
             }
         }
         
@@ -3927,6 +3954,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string verifyTraining {
             get {
                 return ResourceManager.GetString("verifyTraining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Waiting.
+        /// </summary>
+        public static string waiting {
+            get {
+                return ResourceManager.GetString("waiting", resourceCulture);
             }
         }
         

@@ -1,5 +1,6 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -1605,13 +1606,54 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
+        public bool ChecklistQuestionsValidation()
+        {
+            foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
+            {
+                if (category.Type == StructureType.Checklist)
+                {
+                    if (category.ChecklistQuestions.Count > 0)
+                    {
+                        foreach (var question in category.ChecklistQuestions)
+                        {
+                            int secNum = section;
+                            if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                            {
+                                ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                if (string.IsNullOrEmpty(answer.Answer))
+                                {
+                                    Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                ChecklistAnswer answer = questionAnswers[question.QuestionID];
+                                if (string.IsNullOrEmpty(answer.Answer))
+                                {
+                                    Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
+            return false;
+        }
 
 
 
         //Under Review Job observation
         public async void UnderReviewJobObservation()
         {
+
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
+
             if (_jobObservation.DistributionId == new int())
             {
                 Snackbar.Clear();
@@ -1793,6 +1835,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Reject Job observation
         async void Reject()
         {
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
 
             if (_jobObservation.DistributionId == new int())
             {
@@ -1991,6 +2037,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public async Task SignDate()
         {
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
 
             if (_jobObservation.DistributionId == new int())
             {
