@@ -42,6 +42,18 @@ namespace SupervisorMobility.Client.Services.HCIService
             }
 
             return null;
+        } 
+        
+        public async Task<List<User>> GetUsersWithoutHCI()
+        {
+            var response = await _http.GetAsync($"HCI/NoHciUsers");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<User>>();
+                return content;
+            }
+
+            return null;
         }
 
         public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false)

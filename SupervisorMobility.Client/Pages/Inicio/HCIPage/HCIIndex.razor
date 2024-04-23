@@ -77,7 +77,7 @@ else
         <MudTable Items="_HCIs" Hover="true" T="Data.Entities.HCI" Class="styled-table table-striped" FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="HCI">
             <ToolBarContent>
                 <MudSpacer />
-                <MudButton @onclick="(() => Createhci())">
+                <MudButton @onclick="(() => OpenCreateHci())">
                     <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
                     </MudButton>
@@ -163,16 +163,88 @@ else
     {
         <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreNoHCIsCreated"]</MudText>
         <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-            <MudButton Color="Color.Info" @onclick="(() => Createhci())">@Localizer["createANewHCI"]</MudButton>
+            <MudButton Color="Color.Info" @onclick="(() => OpenCreateHci())">@Localizer["create"] @Localizer["hci"]</MudButton>
             </MudText>
     }
 }
+
+<MudDialog @bind-IsVisible="ShowCreateHCI" Options="dialogSVOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="text-align: center;">Create HCI</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAutocomplete Class="mt-5" Clearable T="User" Label="@Localizer1["UsersSupervisor"]" @bind-Value="_SelectUser"
+                          SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} - {e.Group?.Description}")"
+                          Variant="Variant.Outlined"
+                          ShowProgressIndicator="true" MaxItems="null" ResetValueOnEmptyText>
+            <ItemTemplate Context="e">
+                <MudItem Style="text-align: center">
+                    @switch (e.UserType)
+                    {
+                        case 3:
+                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                            break;
+                    }
+                </MudItem>
+                <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                </ItemTemplate>
+            </MudAutocomplete>
+
+        @if (_SelectUser != null)
+        {
+            <MudCard Class="mt-10">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">U</MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body1">@_SelectUser.Name</MudText>
+                      
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @_SelectUser?.UserId</div>
+                    <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @_SelectUser?.Group?.Description</div>
+                    <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_SelectUser?.Area?.Code - @_SelectUser?.Area?.Description </MudChip>
+                    </MudCardContent>
+                    <MudCardActions Style="justify-content: flex-end;">
+                    </MudCardActions>
+                </MudCard>
+        }
+        else
+        {
+            <MudChip Icon="@Icons.Material.Filled.CrisisAlert" Class="mt=10" Style="display: flex;" Color="Color.Info">Select User from list</MudChip>
+        }
+    </DialogContent>
+    <DialogActions>
+
+        @if (_SelectUser != null)
+            {
+            <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@( () =>  Createhci())" Color="Color.Default" />
+            }
+
+        
+
+
+    </DialogActions>
+</MudDialog>
 
 
 @code {
 
     private List<BreadcrumbItem> _links;
     private List<Data.Entities.HCI> _HCIs;
+    private List<User> _Users;
 
     private IList<string> _sourceMsgLoading = new List<string>();
     private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -188,6 +260,10 @@ else
     private string json = string.Empty;
     public User user = new();
     public bool logged = false;
+
+    private User _SelectUser;
+    public bool ShowCreateHCI = false;
+    private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
 
     protected async override Task OnInitializedAsync()
     {
@@ -211,6 +287,7 @@ else
         BreadcrumbService.UpdateBreadcrumbs(_links);
 
         logged = await TryGetAsync();
+        _Users = await HCIsServices.GetUsersWithoutHCI();
 
         if (!logged)
         {
@@ -240,7 +317,16 @@ else
 
         }
     }
-  
+
+    private async void GetUsersWithoutHCI()
+    {
+    }
+    
+    private async void OpenCreateHci()
+    {
+        ShowCreateHCI = true;
+    }
+
     private async Task<bool> TryGetAsync()
     {
         bool hasProperty = await HasPropertyAsync();
@@ -260,8 +346,7 @@ else
 
     private void Createhci()
     {
-        NavigationManager.NavigateTo($"/HCI/Create");
-
+        NavigationManager.NavigateTo($"/HCI/Create/?user={_SelectUser.UserId}");
     }
 
     void HCIDetails(int HCIID)
@@ -294,7 +379,7 @@ else
         visibleDelete = true;
     }
 
- 
+
 
     private int selectedRowNumber = -1;
     private MudTable<Data.Entities.HCI> SelectTableEvent;
@@ -324,4 +409,20 @@ else
             return string.Empty;
         }
     }
+
+
+    private async Task<IEnumerable<User>> SearchSV(string value)
+    {
+        // In real life use an asynchronous function for fetching data from an api.
+        // await Task.Delay(1000);
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return _Users;
+
+        return _Users.Where(x => x.Name.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
+    }
+
+   
+
 }
