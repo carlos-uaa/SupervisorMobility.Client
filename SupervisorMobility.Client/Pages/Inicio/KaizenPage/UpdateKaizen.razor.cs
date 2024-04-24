@@ -23,6 +23,7 @@ using Blazored.SessionStorage;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Net.Http.Headers;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 {
@@ -69,6 +70,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         DateTime newDate1;
         public class ItemModel
         {
+            public int kaizenId { get; set; }
             public int EffectId { get; set; }
             public string Benefit { get; set; }
         }
@@ -94,6 +96,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
             }
+            else
+            {
+               await GetKaizen();
+            }
+
+
+        }
+
+        public async Task GetKaizen()
+        {
 
             _kaizen = await KaizenServices.GetKaizenById(KaizenId, true, true, true, true);
 
@@ -148,12 +160,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             svName = _kaizen.Supervisor != null ? _kaizen.Supervisor.Name : "";
             operatorName = _kaizen.Proposed != null ? _kaizen.Proposed.Name : "";
 
-            if(plantId != 0)
+            if (plantId != 0)
             {
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
             }
-            if(areaId != 0)
+            if (areaId != 0)
             {
                 _seniorSupervisors = new();
                 _allSSVs = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
@@ -173,7 +185,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
             }
 
-            if(supervisorId != 0)
+            if (supervisorId != 0)
             {
                 if (user.UserType == 1 || user.UserType == 2)
                 {
@@ -214,15 +226,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             {
                 var item = new ItemModel
                 {
+                    kaizenId = (int)transaction.KaizenTransactionId,
                     EffectId = int.Parse(transaction.Title),
                     Benefit = transaction.Description
                 };
                 items.Add(item);
             }
 
-            Console.WriteLine(items.Count);
             StateHasChanged();
-
         }
 
         //Local storage user
@@ -318,7 +329,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         }
 
 
-        private async Task CreateNewKaizen()
+        private async Task EditKaizen()
         {
 
             _kaizen.PlantId = plantId;
@@ -332,31 +343,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
             FormatDate();
 
-            foreach (var item in items)
-            {
-                var kaizenTransaction = new KaizenTransaction
-                {
-                    Title = item.EffectId.ToString(),
-                    Description = item.Benefit,
-                    Type = 1,
-                    IsActive = true
-                };
+            //foreach (var item in items)
+            //{
+            //    var kaizenTransaction = new KaizenTransaction
+            //    {
+            //        Title = item.EffectId.ToString(),
+            //        Description = item.Benefit,
+            //        Type = 1,
+            //        IsActive = true
+            //    };
 
-                _kaizen.Transactions.Add(kaizenTransaction);
-            }
+            //    _kaizen.Transactions.Add(kaizenTransaction);
+            //}
 
-            var result = await KaizenServices.CreateKaizen(_kaizen);
+            //_ = await UploadEvidence();
+            var result = await KaizenServices.UpdateKaizen(_kaizen);
 
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
-            if (result != null)
+            if (result)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Kaizen Created", Severity.Info);
-
-                _kaizen = result;
-                _ = await UploadEvidence();
-
-                NavigationManager.NavigateTo("/configuration");
+                Snackbar.Add($"Kaizen Updated", Severity.Info);
+                NavigationManager.NavigateTo("/kaizen");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
@@ -589,6 +597,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 }
             }
         }
+
+        private async void RemoveEvidence(int fileUploadId)
+        {
+            var response = await KaizenServices.RemoveEvidence(KaizenId, fileUploadId);
+            Console.WriteLine(fileUploadId);
+            if (response)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Evidence removed", Severity.Info);
+                await GetKaizen();
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Failed to remove evidence", Severity.Error);
+            }
+        }
+
 
         void AddItem()
         {

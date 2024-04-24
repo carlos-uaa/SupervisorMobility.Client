@@ -256,7 +256,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 _kaizen = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/configuration");
+                NavigationManager.NavigateTo("/kaizen");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
