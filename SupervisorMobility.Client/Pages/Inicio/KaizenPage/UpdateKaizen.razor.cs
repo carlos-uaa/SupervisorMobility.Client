@@ -76,6 +76,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         }
 
         List<ItemModel> items = new List<ItemModel>();
+        List<ItemModel> tempItems = new List<ItemModel>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -222,6 +223,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
 
             items = new();
+            tempItems = new();
+
 
             foreach (var transaction in _kaizen.Transactions)
             {
@@ -233,7 +236,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 };
                 items.Add(item);
             }
-
+            Console.WriteLine(items.Count());
             StateHasChanged();
         }
 
@@ -343,19 +346,42 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
 
             FormatDate();
+            _kaizen.Transactions?.Clear();
+            foreach (var item in items)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    KaizenTransactionId = item.kaizenId,
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = true
+                };
 
-            //foreach (var item in items)
-            //{
-            //    var kaizenTransaction = new KaizenTransaction
-            //    {
-            //        Title = item.EffectId.ToString(),
-            //        Description = item.Benefit,
-            //        Type = 1,
-            //        IsActive = true
-            //    };
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
 
-            //    _kaizen.Transactions.Add(kaizenTransaction);
-            //}
+
+            foreach (var item in tempItems)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = true
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
+
+            foreach(var item in _kaizen.Transactions)
+            {
+                Console.WriteLine("aaa");
+                Console.WriteLine(item.Title);
+                Console.WriteLine(item.Description);
+                Console.WriteLine(item.Type);
+            }
 
             _ = await UploadEvidence();
             var result = await KaizenServices.UpdateKaizen(_kaizen);
@@ -684,14 +710,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         void AddItem()
         {
-            items.Add(new ItemModel());
+            tempItems.Add(new ItemModel());
         }
 
-        void RemoveItem(ItemModel item)
+        void RemoveItem(ItemModel item, bool isTemp)
         {
-            if (items.Count > 1)
+            if (isTemp)
             {
-                items.Remove(item);
+                tempItems.Remove(item);
+            }
+            else
+            {
+
             }
         }
 
