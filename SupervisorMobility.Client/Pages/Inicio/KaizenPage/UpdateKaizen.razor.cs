@@ -73,6 +73,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             public int kaizenId { get; set; }
             public int EffectId { get; set; }
             public string Benefit { get; set; }
+            public bool IsActive { get; set; }
         }
 
         List<ItemModel> items = new List<ItemModel>();
@@ -232,7 +233,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 {
                     kaizenId = (int)transaction.KaizenTransactionId,
                     EffectId = int.Parse(transaction.Title),
-                    Benefit = transaction.Description
+                    Benefit = transaction.Description,
+                    IsActive = (bool)transaction.IsActive
                 };
                 items.Add(item);
             }
@@ -346,42 +348,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
 
             FormatDate();
-            _kaizen.Transactions?.Clear();
-            foreach (var item in items)
-            {
-                var kaizenTransaction = new KaizenTransaction
-                {
-                    KaizenTransactionId = item.kaizenId,
-                    Title = item.EffectId.ToString(),
-                    Description = item.Benefit,
-                    Type = 1,
-                    IsActive = true
-                };
-
-                _kaizen.Transactions.Add(kaizenTransaction);
-            }
-
-
-            foreach (var item in tempItems)
-            {
-                var kaizenTransaction = new KaizenTransaction
-                {
-                    Title = item.EffectId.ToString(),
-                    Description = item.Benefit,
-                    Type = 1,
-                    IsActive = true
-                };
-
-                _kaizen.Transactions.Add(kaizenTransaction);
-            }
-
-            foreach(var item in _kaizen.Transactions)
-            {
-                Console.WriteLine("aaa");
-                Console.WriteLine(item.Title);
-                Console.WriteLine(item.Description);
-                Console.WriteLine(item.Type);
-            }
+            await GenerateKaizenTransaction();
 
             _ = await UploadEvidence();
             var result = await KaizenServices.UpdateKaizen(_kaizen);
@@ -394,6 +361,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
+        }
+
+        public async Task GenerateKaizenTransaction()
+        {
+            _kaizen.Transactions?.Clear();
+            foreach (var item in items)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    KaizenTransactionId = item.kaizenId,
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = item.IsActive
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
+
+            foreach (var item in tempItems)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    KaizenTransactionId = 0,
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = true
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
 
         }
 
@@ -611,7 +611,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                         continue;
                     }
 
-                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
 
                     if (!IsValidBase64String(base64Data))
                     {
@@ -721,7 +741,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
             else
             {
+                int index = items.IndexOf(item);
 
+                if (index != -1)
+                {
+                    items[index].IsActive = false;
+                }
             }
         }
 
