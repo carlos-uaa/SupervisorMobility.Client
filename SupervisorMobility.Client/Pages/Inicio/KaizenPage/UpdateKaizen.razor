@@ -226,7 +226,7 @@
                     <ChildContent>
                         <MudSimpleTable Style="overflow-x: auto;" Dense="true" Elevation="0">
                             <tbody>
-                                @foreach (var item in items)
+                                @foreach (var item in items.Where(i => i.IsActive))
                                 {
                                     <tr>
                                         <td width="20%">
@@ -247,7 +247,33 @@
                                         @if (items.IndexOf(item) > 0)
                                         {
                                             <td width="10%">
-                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item, false)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                                @foreach (var tempItem in tempItems)
+                                {
+                                    <tr>
+                                        <td width="20%">
+                                            <MudSelect T="int" Label="Effect" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@tempItem.EffectId">
+                                                <MudSelectItem Disabled="true" Value="0">Select effect</MudSelectItem>
+                                                <MudSelectItem Value="1">@($"Quality")</MudSelectItem>
+                                                    <MudSelectItem Value="2">@($"Cost")</MudSelectItem>
+                                                    <MudSelectItem Value="3">@($"Delivery")</MudSelectItem>
+                                                    <MudSelectItem Value="4">@($"Safety")</MudSelectItem>
+                                                    <MudSelectItem Value="5">@($"Environment")</MudSelectItem>
+                                                    <MudSelectItem Value="6">@($"Ergonomics")</MudSelectItem>
+                                                    <MudSelectItem Value="7">@($"People")</MudSelectItem>
+                                                </MudSelect>
+                                            </td>
+                                            <td width="90%">
+                                                <MudTextField @bind-Value="@tempItem.Benefit" Label="Benefit" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+                                            </td>
+                                            @if (tempItems.IndexOf(tempItem) > 0 || items.Count() > 0)
+                                        {
+                                            <td width="10%">
+                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(tempItem, true)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
                                             </td>
                                         }
                                     </tr>
@@ -324,7 +350,7 @@
                                                        for="previousEvidence">
                                                 Load picture
                                             </MudButton>
-                                            @if (capturedImages.Count == 0)
+                                            @if (capturedImages.Count == 0 && tempCapturedImages.Count == 0)
                                             {
                                                 <MudItem>
                                                     <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
@@ -332,14 +358,14 @@
                                                     </MudButton>
                                                 </MudItem>
                                             }
-                                            else if(capturedImages.Count > 0){
+                                            else if(capturedImages.Count > 0 || tempCapturedImages.Count > 0){
                                                 <MudItem>
                                                     <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
                                                 </MudItem>
                                             }
                                         </MudItem>
                                         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-                                            @if(capturedImages.Count > 0)
+                                            @if(capturedImages.Count > 0 || tempCapturedImages.Count > 0)
                                             {
                                                 <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
                                                     <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
@@ -349,7 +375,19 @@
                                                         <MudItem Class=" mr-8 mb-4">
                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                 <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1, false)"></MudIcon>
+                                                                </MudTooltip>
+                                                            </MudItem>
+                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                        </MudItem>
+                                                    }
+
+                                                    @foreach (var (image, index) in tempCapturedImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class=" mr-8 mb-4">
+                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1, true)"></MudIcon>
                                                                 </MudTooltip>
                                                             </MudItem>
                                                                 <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
@@ -373,7 +411,7 @@
                                                        for="thenEvidence">
                                                 Load picture
                                             </MudButton>
-                                            @if (capturedImagesThen.Count == 0)
+                                            @if (capturedImagesThen.Count == 0 && tempCapturedImagesThen.Count == 0)
                                             {
                                                 <MudItem>
                                                     <MudButton @onclick="() => OpenCameraDialog(2)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
@@ -381,14 +419,14 @@
                                                     </MudButton>
                                                 </MudItem>
                                             }
-                                            else if(capturedImagesThen.Count > 0){
+                                            else if(capturedImagesThen.Count > 0 || tempCapturedImagesThen.Count > 0){
                                                 <MudItem>
                                                     <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(2)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
                                                 </MudItem>
                                             }
                                         </MudItem>
                                         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-                                            @if (capturedImagesThen.Count > 0)
+                                            @if (capturedImagesThen.Count > 0 || tempCapturedImagesThen.Count > 0)
                                             {
                                                 <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
                                                     <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
@@ -398,17 +436,28 @@
                                                             <MudItem Class=" mr-8 mb-4">
                                                                 <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                     <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index,2)"></MudIcon>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index,2,false)"></MudIcon>
+                                                                    </MudTooltip>
+                                                                </MudItem>
+                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                            </MudItem>
+                                                        }
+            
+                                                        @foreach (var (image, index) in tempCapturedImagesThen.Select((image, index) => (image, index)))
+                                                        {
+                                                            <MudItem Class=" mr-8 mb-4">
+                                                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index,2,true)"></MudIcon>
                                                                     </MudTooltip>
                                                                 </MudItem>
                                                                 <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
                                                             </MudItem>
                                                         }
                                                     </MudItem>
-
                                                 </div>
                                             }
-                                             </MudItem>
+                                        </MudItem>
                                 </td>
                             </tr>
                             <tr>

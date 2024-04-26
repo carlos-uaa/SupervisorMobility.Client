@@ -73,9 +73,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             public int kaizenId { get; set; }
             public int EffectId { get; set; }
             public string Benefit { get; set; }
+            public bool IsActive { get; set; }
         }
 
         List<ItemModel> items = new List<ItemModel>();
+        List<ItemModel> tempItems = new List<ItemModel>();
 
         protected async override Task OnInitializedAsync()
         {
@@ -106,7 +108,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         public async Task GetKaizen()
         {
-
+            capturedImages = new();
+            capturedImagesThen = new();
             _kaizen = await KaizenServices.GetKaizenById(KaizenId, true, true, true, true);
 
 
@@ -221,6 +224,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
 
             items = new();
+            tempItems = new();
+
 
             foreach (var transaction in _kaizen.Transactions)
             {
@@ -228,11 +233,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 {
                     kaizenId = (int)transaction.KaizenTransactionId,
                     EffectId = int.Parse(transaction.Title),
-                    Benefit = transaction.Description
+                    Benefit = transaction.Description,
+                    IsActive = (bool)transaction.IsActive
                 };
                 items.Add(item);
             }
-
+            Console.WriteLine(items.Count());
             StateHasChanged();
         }
 
@@ -338,28 +344,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             _kaizen.SeniorSupervisorId = ssvId;
             _kaizen.SupervisorId = supervisorId;
             _kaizen.ProposedId = operatorId;
-            _kaizen.Status = 1;
+            _kaizen.Status = 2;
 
 
             FormatDate();
+            await GenerateKaizenTransaction();
 
-            //foreach (var item in items)
-            //{
-            //    var kaizenTransaction = new KaizenTransaction
-            //    {
-            //        Title = item.EffectId.ToString(),
-            //        Description = item.Benefit,
-            //        Type = 1,
-            //        IsActive = true
-            //    };
-
-            //    _kaizen.Transactions.Add(kaizenTransaction);
-            //}
-
-            //_ = await UploadEvidence();
+            _ = await UploadEvidence();
             var result = await KaizenServices.UpdateKaizen(_kaizen);
 
-            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
             if (result)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -368,6 +361,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
+        }
+
+        public async Task GenerateKaizenTransaction()
+        {
+            _kaizen.Transactions?.Clear();
+            foreach (var item in items)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    KaizenTransactionId = item.kaizenId,
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = item.IsActive
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
+
+            foreach (var item in tempItems)
+            {
+                var kaizenTransaction = new KaizenTransaction
+                {
+                    KaizenTransactionId = 0,
+                    Title = item.EffectId.ToString(),
+                    Description = item.Benefit,
+                    Type = 1,
+                    IsActive = true
+                };
+
+                _kaizen.Transactions.Add(kaizenTransaction);
+            }
 
         }
 
@@ -412,6 +438,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         private List<string> capturedImages = new List<string>();
         private List<string> capturedImagesThen = new List<string>();
+
+
+        private List<string> tempCapturedImages = new List<string>();
+        private List<string> tempCapturedImagesThen = new List<string>();
 
         private bool visibleCamera = false;
         private int imageIndex = 0;
@@ -460,11 +490,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             {
                 if (imageIndex == 1)
                 {
-                    capturedImages.Add(imageData);
+                    tempCapturedImages.Add(imageData);
                 }
                 else
                 {
-                    capturedImagesThen.Add(imageData);
+                    tempCapturedImagesThen.Add(imageData);
                 }
             }
             visibleCamera = false;
@@ -472,21 +502,81 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             Stop();
         }
 
-        private void RemoveImage(int index, int imgIndex)
+        private async Task UpdateKaizenEvidence()
         {
+            capturedImages = new();
+            capturedImagesThen = new();
+            Kaizen kaizenTemp = await KaizenServices.GetKaizenById(KaizenId, true, true, true, true);
 
-            if (index >= 0 && index < capturedImages.Count || index < capturedImagesThen.Count)
+            if (kaizenTemp.PreviousEvidences.Count > 0)
+            {
+                foreach (var evidence in kaizenTemp.PreviousEvidences)
+                {
+                    var imageUrl = await FilesServices.ShowImagePreviousEvidence(evidence.FileUploadId);
+                    capturedImages.Add(imageUrl);
+
+                }
+            }
+            if (kaizenTemp.ThenEvidences.Count > 0)
+            {
+                foreach (var evidence in kaizenTemp.ThenEvidences)
+                {
+                    var imageUrl = await FilesServices.ShowImageThenEvidence(evidence.FileUploadId);
+                    Console.WriteLine(evidence.FileUploadId);
+                    capturedImagesThen.Add(imageUrl);
+
+                }
+            }
+
+            _kaizen.PreviousEvidences = kaizenTemp.PreviousEvidences;
+            _kaizen.ThenEvidences = kaizenTemp.ThenEvidences;
+
+            StateHasChanged();
+        }
+
+
+        private async void RemoveImage(int index, int imgIndex, bool isTemp)
+        {
+            if (isTemp)
+            {
+                if (index >= 0 && index < tempCapturedImages.Count || index < tempCapturedImagesThen.Count)
+                {
+                    if (imgIndex == 1)
+                    {
+                        tempCapturedImages.RemoveAt(index);
+                    }
+                    else
+                    {
+                        tempCapturedImagesThen.RemoveAt(index);
+                    }
+                }
+            }
+            else if(index >= 0 && index < capturedImages.Count || index < capturedImagesThen.Count)
             {
                 if (imgIndex == 1)
                 {
-                    capturedImages.RemoveAt(index);
+                    var evidence = _kaizen.PreviousEvidences.ElementAtOrDefault(index);
+                    if (evidence != null)
+                    {
+                        await RemoveEvidence(evidence.FileUploadId, true);
+                        
+                    }
                 }
                 else
                 {
-                    capturedImagesThen.RemoveAt(index);
+                    var evidence = _kaizen.ThenEvidences.ElementAtOrDefault(index);
+                    if (evidence != null)
+                    {
+                        await RemoveEvidence(evidence.FileUploadId, false);
+
+                    }
                 }
             }
+
+            StateHasChanged();
         }
+
+
 
         private bool IsValidBase64String(string base64String)
         {
@@ -521,7 +611,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                         continue;
                     }
 
-                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
 
                     if (!IsValidBase64String(base64Data))
                     {
@@ -567,8 +677,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         private async Task<AsyncVoidMethodBuilder> UploadEvidence()
         {
-            await UploadImages(capturedImages, _kaizen.KaizenId, true);
-            await UploadImages(capturedImagesThen, _kaizen.KaizenId, false);
+            await UploadImages(tempCapturedImages, _kaizen.KaizenId, true);
+            await UploadImages(tempCapturedImagesThen, _kaizen.KaizenId, false);
 
             return new AsyncVoidMethodBuilder();
         }
@@ -587,27 +697,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
                         if (type == 1)
                         {
-                            capturedImages.Add(mediaUri);
+                            tempCapturedImages.Add(mediaUri);
                         }
                         else
                         {
-                            capturedImagesThen.Add(mediaUri);
+                            tempCapturedImagesThen.Add(mediaUri);
                         }
                     }
                 }
             }
         }
 
-        private async void RemoveEvidence(int fileUploadId)
+        private async Task RemoveEvidence(int fileUploadId, bool isPreviousEvidence)
         {
-            var response = await KaizenServices.RemoveEvidence(KaizenId, fileUploadId);
-            Console.WriteLine(fileUploadId);
+            var response = await KaizenServices.RemoveEvidence(KaizenId, fileUploadId, isPreviousEvidence);
             if (response)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Evidence removed", Severity.Info);
-                await GetKaizen();
+                await UpdateKaizenEvidence();
                 StateHasChanged();
             }
             else
@@ -621,14 +730,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         void AddItem()
         {
-            items.Add(new ItemModel());
+            tempItems.Add(new ItemModel());
         }
 
-        void RemoveItem(ItemModel item)
+        void RemoveItem(ItemModel item, bool isTemp)
         {
-            if (items.Count > 1)
+            if (isTemp)
             {
-                items.Remove(item);
+                tempItems.Remove(item);
+            }
+            else
+            {
+                int index = items.IndexOf(item);
+
+                if (index != -1)
+                {
+                    items[index].IsActive = false;
+                }
             }
         }
 

@@ -8,6 +8,6 @@
         Task<Kaizen> CreateKaizen(Kaizen kaizen);
         Task<bool> UpdateKaizen(Kaizen kaizen);
         Task DeleteKaizen(int kaizen);
-        Task<bool> RemoveEvidence(int kaizenId, int fileUploadId);
+        Task<bool> RemoveEvidence(int kaizenId, int fileUploadId, bool isPreviousEvidence);
     }
 }
