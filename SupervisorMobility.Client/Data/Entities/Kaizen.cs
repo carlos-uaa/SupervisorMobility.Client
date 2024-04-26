@@ -50,5 +50,9 @@
         public bool IsSignedSupervisor { get; set; }
         public int OperatorPayroll { get; set; }
 
+        public string? Labor { get; set; }
+        public string? Material { get; set; }
+        public string? Machine { get; set; }
+
     }
 }
