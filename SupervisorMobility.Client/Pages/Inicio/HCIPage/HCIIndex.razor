@@ -74,8 +74,15 @@ else
 {
     @if (_HCIs.Count > 0)
     {
-        <MudTable Items="_HCIs" Hover="true" T="Data.Entities.HCI" Class="styled-table table-striped" FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="HCI">
+        <MudTable Items="_HCIs"  T="HCI" Hover="true" Class="styled-table table-striped"
+        FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+                  SortLabel="SortBy" Filter="new Func<HCI,bool>(FilterFunc1)"
+                  RowsPerPage="15" HorizontalScrollbar="true" Virtualize="true">
             <ToolBarContent>
+                <MudText Typo="Typo.h6" Align="Align.Center">@Localizer["HCI"]</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="@searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
+                    <MudSpacer />
                 <MudSpacer />
                 <MudButton @onclick="(() => OpenCreateHci())">
                     <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
@@ -157,6 +164,9 @@ else
                         </MudText>
                     </MudTd>
                 </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 15, 25, 50, 100, int.MaxValue }" />
+                </PagerContent>
             </MudTable>
     }
     else
@@ -239,6 +249,20 @@ else
     </DialogActions>
 </MudDialog>
 
+
+
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+            <MudText Class="mt-4 mb-4">
+                @Localizer["areYouSureYouWantToDeleteThisHCI"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+            <MudButton @onclick="(() => DeleteHCI(deleteHCIId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+        </DialogActions>
+    </MudDialog>
 
 @code {
 
@@ -380,7 +404,6 @@ else
     }
 
 
-
     private int selectedRowNumber = -1;
     private MudTable<Data.Entities.HCI> SelectTableEvent;
 
@@ -423,6 +446,28 @@ else
         return _Users.Where(x => x.Name.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
     }
 
+    private string searchString = "";
+
+    private bool FilterFunc1(HCI element) => FilterFunc(element, searchString);
+    private bool FilterFunc(HCI element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.User.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.User?.Plant?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.User?.Plant?.Code?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+     
+        if (element.User?.Area?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.User?.Area?.Code?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+     
+
+        return false;
+    }
    
 
 }
