@@ -78,6 +78,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         List<ItemModel> items = new List<ItemModel>();
         List<ItemModel> tempItems = new List<ItemModel>();
+        bool showLoading = true;
 
         protected async override Task OnInitializedAsync()
         {
@@ -101,6 +102,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             else
             {
                await GetKaizen();
+                showLoading = false;
             }
 
 

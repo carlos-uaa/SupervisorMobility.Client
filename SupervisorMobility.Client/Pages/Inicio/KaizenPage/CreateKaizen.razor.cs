@@ -59,6 +59,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         }
 
         List<ItemModel> items = new List<ItemModel>();
+        bool showLoading = true;
 
         protected async override Task OnInitializedAsync()
         {
@@ -121,6 +122,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     operatorUsers.Add(op);
                 }
             }
+            showLoading = false;
             StateHasChanged();
 
         }
