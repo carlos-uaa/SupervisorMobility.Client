@@ -65,5 +65,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             KnowledgeTable[idx].Description = val;
             Upd.InvokeAsync((KnowledgeTable[idx], idx));
         }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCITransaction niu = new HCITransaction { Type = type };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
+        }
     }
 }

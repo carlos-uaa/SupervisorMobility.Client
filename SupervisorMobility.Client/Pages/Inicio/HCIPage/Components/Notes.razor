@@ -1,17 +1,27 @@
 ﻿<MudSimpleTable Elevation="0">
-    <thead>
+    @* <thead>
         <tr>
             <th style="text-align:center">Special notes</th>
         </tr>
-    </thead>
+    </thead> *@
     <tbody>
         @foreach (var item in NotesTable.Select((value, index) => new { index, value }))
         {
-            <tr>
-                <td>
-                    <MudTextField T="string" Value="item.value.Comment" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
-                </td>
-            </tr>
+            if (item.value.IsActive.Value)
+            {
+                <tr>
+                    <td>
+                        <MudTextField T="string" Value="item.value.Comment" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
+                    </td>
+                    <td style="width:15%">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
+                        @if (item.value.Equals(NotesTable.LastOrDefault(p => p.IsActive == true)))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
+                        }
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </MudSimpleTable>
@@ -43,5 +53,18 @@
     {
         NotesTable[idx].Comment = val;
         Upd.InvokeAsync((NotesTable[idx], idx));
+    }
+
+    private void Delete(int index)
+    {
+        //KnowledgeTable.RemoveAt(index);
+        Del.InvokeAsync(index);
+    }
+
+    private void AddHere()
+    {
+        Commentary niu = new Commentary();
+        //KnowledgeTable.Add(niu);
+        Add.InvokeAsync(niu);
     }
 }

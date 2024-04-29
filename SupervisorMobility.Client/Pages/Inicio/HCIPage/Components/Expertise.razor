@@ -1,33 +1,45 @@
-﻿<MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
+﻿@inject IStringLocalizer<Resource> Localizer
+<MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
     <TitleContent>
         <div Style="align-items: center; display: flex;">
-            <MudText>Experience in operations of its own process</MudText>
+            <MudText>@Localizer["ExperienceTitle"]</MudText>
         </div>
     </TitleContent>
     <ChildContent>
         <MudSimpleTable Elevation="0">
             <thead>
                 <tr>
-                    <th style="text-align:center">Time period</th>
-                    <th style="text-align:center">Operation Description</th>
-                    <th style="text-align:center">Level</th>
+                    <th style="text-align:center">@Localizer["Period"]</th>
+                    <th style="text-align:center">@Localizer["OperationDescription"]</th>
+                    <th style="text-align:center">@Localizer["level"]</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in ExpertiseTable.Select((value, index) => new { index, value }))
                 {
-                    var period = new DateRange(item.value.Start, item.value.End);
-                    <tr>
-                        <td style="width:25%">
-                            <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
-                        </td>
-                        <td>
-                            <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
-                        </td>
-                        <td style="width:10%">
-                            <MudTextField Value="item.value.level" ValueChanged="(string? val)=>LevelChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
-                        </td>
-                    </tr>
+                    if (item.value.IsActive)
+                    {
+                        var period = new DateRange(item.value.Start, item.value.End);
+                        <tr>
+                            <td style="width:25%">
+                                <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
+                            </td>
+                            <td>
+                                <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
+                            </td>
+                            <td style="width:10%">
+                                <MudTextField Value="item.value.level" ValueChanged="(string? val)=>LevelChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
+                            </td>
+                            <td style="width:10%">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
+                                @if (item.value.Equals(ExpertiseTable.LastOrDefault(p => p.IsActive == true)))
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
+                                }
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </MudSimpleTable>

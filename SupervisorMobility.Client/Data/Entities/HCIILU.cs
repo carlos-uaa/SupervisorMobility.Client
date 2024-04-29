@@ -15,5 +15,7 @@ namespace SupervisorMobility.Client.Data.Entities
         //public HCI? _HCI { get; set; }
         public int? RegisterILURegisterid { get; set; }
         public ILURegister? Register { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }

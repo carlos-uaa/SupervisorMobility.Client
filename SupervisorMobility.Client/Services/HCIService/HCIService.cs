@@ -27,6 +27,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<bool> CreateHCI(HCI content)
         {
+            content.User = null;
             var response = await _http.PostAsJsonAsync($"HCI", content);
 
             return response.IsSuccessStatusCode;
@@ -105,6 +106,17 @@ namespace SupervisorMobility.Client.Services.HCIService
         public Task DeleteCategorie(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<List<HCICategory>> GetHCICategories()
+        {
+            var response = await _http.GetAsync("HCI/Categories");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<HCICategory>>();
+                return content;
+            }
+            return null;
         }
     }
 }
