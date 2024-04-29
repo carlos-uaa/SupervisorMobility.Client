@@ -74,8 +74,14 @@ else
 {
     @if (_Kaizens.Count > 0)
     {
-        <MudTable Items="_Kaizens" Hover="true" T="Kaizen" Class="styled-table table-striped" FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="Kaizen">
+        <MudTable Items="_Kaizens" Hover="true" T="Kaizen" Class="styled-table table-striped mt-5" FixedHeader=true Height="75vh"
+        RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="Kaizen"
+                  SortLabel="SortBy" Filter="new Func<Kaizen,bool>(FilterFunc1)"
+                      RowsPerPage="15" HorizontalScrollbar="true" Virtualize="true">
             <ToolBarContent>
+                <MudText Typo="Typo.h6" Align="Align.Center">@Localizer["Kaizen"]</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="@searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
                 <MudSpacer />
                 <MudButton @onclick="(() => Createkaizen())">
                     <MudText>@Localizer["create"] @Localizer["kaizen"]</MudText>
@@ -177,6 +183,9 @@ else
                         </MudText>
                     </MudTd>
                 </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 15, 25, 50, 100, int.MaxValue }" />
+                </PagerContent>
             </MudTable>
     }
     else
@@ -344,4 +353,28 @@ else
             return string.Empty;
         }
     }
+    private string searchString = "";
+
+    private bool FilterFunc1(Kaizen element) => FilterFunc(element, searchString);
+    private bool FilterFunc(Kaizen element, string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.PlantId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        if (element.Plant?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;   
+            if (element.Plant?.Code?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.AreaId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Area?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+            if (element.Area?.Code ?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+            if (element.KaizenName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+         
+            return false;
+        }
 }

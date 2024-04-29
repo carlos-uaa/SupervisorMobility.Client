@@ -87,9 +87,9 @@ namespace SupervisorMobility.Client.Services.KaizenService
             return false;
         }
 
-        public async Task<bool> RemoveEvidence(int kaizenId, int fileUploadId)
+        public async Task<bool> RemoveEvidence(int kaizenId, int fileUploadId, bool isPreviousEvidence)
         {
-            var response = await _http.PostAsJsonAsync($"kaizen/{kaizenId}/evidence/remove", fileUploadId);
+            var response = await _http.PostAsJsonAsync($"kaizen/{kaizenId}/evidence/remove/{(isPreviousEvidence ? 1 : 0)}", fileUploadId);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -98,6 +98,7 @@ namespace SupervisorMobility.Client.Services.KaizenService
 
             return false;
         }
+
 
     }
 }

@@ -59,6 +59,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         }
 
         List<ItemModel> items = new List<ItemModel>();
+        bool showLoading = true;
 
         protected async override Task OnInitializedAsync()
         {
@@ -121,6 +122,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     operatorUsers.Add(op);
                 }
             }
+            showLoading = false;
             StateHasChanged();
 
         }
@@ -412,7 +414,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                         continue;
                     }
 
-                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
 
                     if (!IsValidBase64String(base64Data))
                     {
@@ -527,6 +549,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             userTypeSign = 0;
             visibleSign = false;
         }
+
+        //Show Photo
+        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visibleEvidence = false;
+
+        private int photoIndex = 0;
+        private int selectedEvidence = 0;
+        private void OpenEvidenceDialog(int index, int evidenceIndex)
+        {
+            photoIndex = index;
+            selectedEvidence = evidenceIndex;
+            visibleEvidence = true;
+
+        }
+
+        private void CloseChip() { }
 
     }
 }

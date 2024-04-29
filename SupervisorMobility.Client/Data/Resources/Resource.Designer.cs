@@ -475,7 +475,16 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to are you sure you want to delete this job observation?.
+        ///   Busca una cadena traducida similar a Are you sure you want to delete this HCI?.
+        /// </summary>
+        public static string areYouSureYouWantToDeleteThisHCI {
+            get {
+                return ResourceManager.GetString("areYouSureYouWantToDeleteThisHCI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a are you sure you want to delete this job observation?.
         /// </summary>
         public static string areYouSureYouWantToDeleteThisJobObservation {
             get {
@@ -2374,7 +2383,16 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New Plant.
+        ///   Busca una cadena traducida similar a Create New Pillar.
+        /// </summary>
+        public static string newpillar {
+            get {
+                return ResourceManager.GetString("newpillar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a New Plant.
         /// </summary>
         public static string newPlant {
             get {
