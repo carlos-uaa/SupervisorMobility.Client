@@ -777,5 +777,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             userTypeSign = 0;
             visibleSign = false;
         }
+
+        //Show Evidence 
+        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visibleEvidence = false;
+
+        private int photoIndex = 0;
+        private int selectedEvidence = 0;
+        private void OpenEvidenceDialog(int index, int evidenceIndex)
+        {
+            photoIndex = index;
+            selectedEvidence = evidenceIndex;
+            visibleEvidence = true;
+
+        }
     }
 }
