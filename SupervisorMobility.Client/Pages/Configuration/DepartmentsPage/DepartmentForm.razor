@@ -1,8 +1,8 @@
-﻿@page "/pillars/Create"
-@page "/pillars/Update/{pillarID:int?}"
-@page "/pillars/Details/{pillarID:int?}"
+﻿@page "/Department/Create"
+@page "/Department/Update/{DepartmentID:int?}"
+@page "/Department/Details/{DepartmentID:int?}"
 
-@inject IPillarService PillarsServices
+@inject IDepartmentService DepartmentsServices
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
 @inject NavigationManager NavigationManager
@@ -10,7 +10,7 @@
 @inject ISnackbar Snackbar
 @inject IBreadcrumbService BreadcrumbService
 
-<EditForm Model="_pillar" class="mt-10" OnValidSubmit="ExectPillarAsync">
+<EditForm Model="_Department" class="mt-10" OnValidSubmit="ExectDepartmentAsync">
     <DataAnnotationsValidator />
     <MudGrid>
         <MudItem xs="12">
@@ -30,7 +30,7 @@
                                     @Localizer["update"]
                                 break; 
                             }&nbsp;
-                            @Localizer["pillar"]</MudText>
+                            @Localizer["Department"]</MudText>
                         </CardHeaderContent>
                         <CardHeaderActions>
                             <MudChip Variant="Variant.Text" Color="Color.Info"> @switch (PageState)
@@ -45,17 +45,28 @@
                                     @Localizer["update"]
                                 break; 
                             } &nbsp;
-                            @Localizer["pillar"]</MudChip>
-                        </CardHeaderActions>
+                            @Localizer["Department"]</MudChip>
+                        </CardHeaderActions> 
+                    <CardHeaderActions>
+                          @switch (PageState)
+                            {
+                               
+                                case 2:
+                                <MudChip @onclick="()=>EditDepartment((int)DepartmentID)" @ontouchstart="()=>EditDepartment((int)DepartmentID)" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10" Icon="@Icons.Material.Filled.Edit" Color="Color.Info">@Localizer["EditDepartment"]</MudChip>
+                                break; 
+                           
+                            }
+                    </CardHeaderActions>
+                        
                     </MudCardHeader>
                     <MudCardContent>
                     <MudTextField Label=@Localizer["description"] ReadOnly="@(PageState == 2)"
-                                      @bind-Value="_pillar.Description" For="@(() => _pillar.Description)" />
+                                      @bind-Value="_Department.Description" For="@(() => _Department.Description)" />
                     <MudTextField Label=@Localizer["code"] Class="mt-3" ReadOnly="@(PageState == 2)"
-                                      @bind-Value="_pillar.Code" For="@(() => _pillar.Code)" />
+                                      @bind-Value="_Department.Code" For="@(() => _Department.Code)" />
                     @if (user.UserType == 1)
                     {
-                        <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_pillar.IsActive" ReadOnly="@(PageState == 2)" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                        <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_Department.IsActive" ReadOnly="@(PageState == 2)" Color="Color.Info" UnCheckedColor="Color.Dark" />
                     }
                     </MudCardContent>
                     <MudCardActions>
@@ -63,7 +74,7 @@
                     {
                         <MudButton ButtonType="ButtonType.Submit" Disabled="ExecBtnPress" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(PageState == 1 ? Localizer["create"] : Localizer["save"])</MudButton>
                     }
-                    <MudButton Href="/pillars" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
+                    <MudButton Href="/Department" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>

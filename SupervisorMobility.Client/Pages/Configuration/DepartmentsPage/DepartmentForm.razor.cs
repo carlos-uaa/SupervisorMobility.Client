@@ -2,12 +2,12 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 
-namespace SupervisorMobility.Client.Pages.Configuration.PillarsPage
+namespace SupervisorMobility.Client.Pages.Configuration.DepartmentsPage
 {
-    public partial class PillarForm
+    public partial class DepartmentForm
     {
         [Parameter]
-        public int? pillarID { get; set; }
+        public int? DepartmentID { get; set; }
         int PageState = 0;
 
 
@@ -15,7 +15,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PillarsPage
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
-        public Pillar _pillar { get; set; } = new();
+        public Department _Department { get; set; } = new();
 
         //User
         private string json = string.Empty;
@@ -57,22 +57,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.PillarsPage
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["pillars"], href: "pillars")
+                new BreadcrumbItem(text: Localizer["Departments"], href: "Departments")
             };
 
             switch (PageState)
             {
                 case 1:
-                    _pillar = new Pillar();
-                    _pillar.IsActive =  true;
+                    _Department = new Department();
+                    _Department.IsActive =  true;
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;
                 case 2:
-                    _pillar = await PillarsServices.GetPillarById((int)pillarID);
+                    _Department = await DepartmentsServices.GetDepartmentById((int)DepartmentID);
                     _links.Add(new BreadcrumbItem(text: Localizer["details"], href: "", disabled: true));
                     break;
                 case 3:
-                    _pillar = await PillarsServices.GetPillarById((int)pillarID);
+                    _Department = await DepartmentsServices.GetDepartmentById((int)DepartmentID);
                     _links.Add(new BreadcrumbItem(text: Localizer["update"], href: "", disabled: true));
                     break;
             }
@@ -81,6 +81,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.PillarsPage
             BreadcrumbService.UpdateBreadcrumbs(_links);
         }
 
+        private void EditDepartment(int depId)
+        {
+           NavigationManager.NavigateTo($"Department/Update/{depId}", forceLoad: true);
+        }
 
         //Local storage user
         private async Task GetUserAsync()
@@ -103,45 +107,45 @@ namespace SupervisorMobility.Client.Pages.Configuration.PillarsPage
         private async Task<bool> HasPropertyAsync()
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
-        private async void ExectPillarAsync()
+        private async void ExectDepartmentAsync()
         {
             ExecBtnPress = true;
             switch (PageState)
                             {
                                 case 1:
 
-                    var result = await PillarsServices.CreatePillar(_pillar);
+                    var result = await DepartmentsServices.CreateDepartment(_Department);
 
                     if (result != null)
                     {
-                        NavigationManager.NavigateTo($"pillars");
+                        NavigationManager.NavigateTo($"Department");
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["PillarCreateSucces"]}", Severity.Info);
+                        Snackbar.Add($"{Localizer1["DepartmentCreateSucces"]}", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["PillarCreateError"]}", Severity.Error);
+                        Snackbar.Add($"{Localizer1["DepartmentCreateError"]}", Severity.Error);
                         ExecBtnPress = false;
                     }
                     break;
                 case 3:
-                    var resultUpdate = await PillarsServices.UpdatePillar(_pillar);
+                    var resultUpdate = await DepartmentsServices.UpdateDepartment(_Department);
 
                     if (resultUpdate != null)
                     {
-                        NavigationManager.NavigateTo($"pillars");
+                        NavigationManager.NavigateTo($"Department");
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["PillarUpdateSucces"]}", Severity.Info);
+                        Snackbar.Add($"{Localizer1["DepartmentUpdateSucces"]}", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["PillarUpdateError"]}", Severity.Error);
+                        Snackbar.Add($"{Localizer1["DepartmentUpdateError"]}", Severity.Error);
                         ExecBtnPress = false;
                     }
 

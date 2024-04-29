@@ -59,7 +59,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private JobObservation _NewJobObservation = new();
         private SOSRegisterJobObservation _NewRegister = new();
 
-       
+
         int SOSCodePathId { get; set; } = 0;
         string SosPanelOpen { get; set; } = "";
 
@@ -80,6 +80,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private Dictionary<int, SOSRegUserOperationRelationship?> Suggested_SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
         private Dictionary<(int, int), List<JobObservationNulls>?> Suggested_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<JobObservationNulls>?>();
 
+
         //Register Jobs without processed
         private List<SOSRegisterJobObservation> _SosRegisters = new();
         //Relation User SV to Operation without processed
@@ -90,6 +91,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public List<JobObservationNulls> _AnotherJobs { get; set; } = new();
         public List<JobObservationNulls> _All_SOSJobobservation { get; set; } = new();
         public List<JobObservationNulls> _All_Suggested_SOSJobobservation { get; set; } = new();
+
+        public bool ProgrammSuggestion { get; set; } = false;
+        public JobObservationNulls _Selected_Suggested_SOSJobobservatio_Null { get; set; } = new();
+        public JobObservation _Selected_Suggested_SOSJobobservation { get; set; } = new();
 
         private class SOSRegUserOperationRelationship
         {
@@ -164,7 +169,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private string month;
         private string year;
 
- 
+
         public int optionStatus { get; set; } = 0;
 
 
@@ -173,7 +178,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         public int idFilter;
         public int totalProgrammed;
-             
+
 
         public bool CodePathModalDisplay { get; set; } = false;
         private string searchCodeString = "";
@@ -181,7 +186,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
-      
+
 
         private List<User> _Users = new();
         private List<User> _UsersSV_Copy = new();
@@ -207,6 +212,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public bool loadingToolbar = true;
         public bool loadingData = true;
         public bool loadingSchedule = true;
+
+        //Glosary
+        private List<Glosary> glosary = new();
+        private Dictionary<string, Glosary> _glosaryInfo;
+
         protected async override Task OnInitializedAsync()
         {
             ShowLoading = false;
@@ -234,7 +244,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             labelaux.Add($"{Localizer["programmed"]}");
 
             labels = labelaux.ToArray();
-          
+
+            glosary = await GlosaryService.GetGlosary();
+            _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             logged = await HasPropertyAsync();
             if (!logged)
@@ -336,7 +348,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public async void SchedulinMode()
         {
             MonthlyView = true;
-          
+
             GenerateCalendarHead();
             GenerateCalendarBody();
 
@@ -532,7 +544,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-        
+
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
 
             startDate = new DateTime(yearIndex, monthIndex, 1);
@@ -575,7 +587,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-           
+
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             ShowLoading = false;
 
@@ -615,7 +627,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
             else
             {
-                    tmpdist.ShowDetails = false;
+                tmpdist.ShowDetails = false;
             }
             StateHasChanged();
 
@@ -629,7 +641,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
-           
+
             totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
             StateHasChanged();
             ShowLoading = false;
@@ -1383,7 +1395,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             return new AsyncVoidMethodBuilder();
         }
 
-    
+
 
 
         private bool visible5 = false;
@@ -1480,7 +1492,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 Distribution? openDist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != nr);
 
-                if(openDist != null)
+                if (openDist != null)
                 {
                     openDist.ShowDetails = false;
                 }
@@ -1835,7 +1847,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
 
-            
+
                 StateHasChanged();
 
                 //
@@ -2341,6 +2353,41 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 RegSelect.StateUpdate = true;
             }
             visibleSuggestSVDialog = true;
+        }
+
+        private bool dense = false;
+        private bool hover = false;
+        private bool ronly = false;
+
+        private void OpenToReprogramSuggestion(JobObservationNulls context)
+        {
+            _Selected_Suggested_SOSJobobservatio_Null = context;
+
+            _mapper.Map(_Selected_Suggested_SOSJobobservatio_Null, _Selected_Suggested_SOSJobobservation);
+
+            ProgrammSuggestion = true;
+
+        }
+        private async void CloseToReprogramSuggestion()
+        {
+            ShowLoading = true;
+            _mapper.Map(_Selected_Suggested_SOSJobobservation, _Selected_Suggested_SOSJobobservatio_Null);
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+
+            await LoadJobObservations();
+            ShowLoading = false;
+            ProgrammSuggestion = false ;
+            StateHasChanged();
+        }
+
+        private void OnStartDateChanged(DateTime dt)
+        {
+            _Selected_Suggested_SOSJobobservation.StartDate = dt;
+            _Selected_Suggested_SOSJobobservation.PlannedStartDate = dt;
+            _Selected_Suggested_SOSJobobservation.EndDate = dt;
+
+
         }
 
         void CloseSuggestSVPanelDialog() => visibleSuggestSVDialog = false;

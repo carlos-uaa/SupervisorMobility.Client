@@ -77,6 +77,33 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<bool> DeleteHCI(int hciId)
         {
+            var response = await _http.DeleteAsync($"HCI/{hciId}");
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public Task<List<HCICategory>> GetCategories()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HCICategory> GetCategorieById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HCICategory> CreateCategorie(HCICategory Categorie)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateCategorie(HCICategory Categorie)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteCategorie(int id)
+        {
             throw new NotImplementedException();
         }
     }

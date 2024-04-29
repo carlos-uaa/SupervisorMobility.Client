@@ -2446,6 +2446,42 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error when creating the pillar.
+        /// </summary>
+        public static string PillarCreateError {
+            get {
+                return ResourceManager.GetString("PillarCreateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The pillar has been successfully created.
+        /// </summary>
+        public static string PillarCreateSucces {
+            get {
+                return ResourceManager.GetString("PillarCreateSucces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error when Update the pillar.
+        /// </summary>
+        public static string PillarUpdateError {
+            get {
+                return ResourceManager.GetString("PillarUpdateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Pillar has been successfully updated.
+        /// </summary>
+        public static string PillarUpdateSucces {
+            get {
+                return ResourceManager.GetString("PillarUpdateSucces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Upload.
         /// </summary>
         public static string ProcedUpload {

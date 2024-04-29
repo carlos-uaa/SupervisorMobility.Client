@@ -1096,6 +1096,42 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error when creating the Department.
+        /// </summary>
+        public static string DepartmentCreateError {
+            get {
+                return ResourceManager.GetString("DepartmentCreateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The Department has been successfully created.
+        /// </summary>
+        public static string DepartmentCreateSucces {
+            get {
+                return ResourceManager.GetString("DepartmentCreateSucces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error when Update the Department.
+        /// </summary>
+        public static string DepartmentUpdateError {
+            get {
+                return ResourceManager.GetString("DepartmentUpdateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Department has been successfully updated.
+        /// </summary>
+        public static string DepartmentUpdateSucces {
+            get {
+                return ResourceManager.GetString("DepartmentUpdateSucces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Description.
         /// </summary>
         public static string description {
@@ -1218,6 +1254,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string editArea {
             get {
                 return ResourceManager.GetString("editArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Edit Department.
+        /// </summary>
+        public static string EditDepartment {
+            get {
+                return ResourceManager.GetString("EditDepartment", resourceCulture);
             }
         }
         
@@ -2239,6 +2284,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a New Department.
+        /// </summary>
+        public static string newDepartment {
+            get {
+                return ResourceManager.GetString("newDepartment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a New Distribution.
         /// </summary>
         public static string newDistribution {
@@ -3072,6 +3126,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string saveProgress {
             get {
                 return ResourceManager.GetString("saveProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Schedule.
+        /// </summary>
+        public static string Schedulin {
+            get {
+                return ResourceManager.GetString("Schedulin", resourceCulture);
             }
         }
         
