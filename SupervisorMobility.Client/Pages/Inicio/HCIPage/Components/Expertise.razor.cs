@@ -65,5 +65,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             ExpertiseTable[idx].level = val;
             Upd.InvokeAsync((ExpertiseTable[idx], idx));
         }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCIILU niu = new HCIILU();
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
+        }
     }
 }

@@ -38,8 +38,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         [Parameter]
         public EventCallback<(HCICategory, int)> Upd { get; set; }
 
+        public List<HCICategory> ExistingCategories = new List<HCICategory>();
+
         protected async override Task OnInitializedAsync()
         {
+            ExistingCategories = await HCIService.GetHCICategories();
             if (!CategoryTable.Any())
             {
                 for (int i = 0; i < 5; i++)
@@ -58,6 +61,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             CategoryTable[idx].Name = val;
             Upd.InvokeAsync((CategoryTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCICategory niu = new HCICategory();
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 }

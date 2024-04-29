@@ -70,5 +70,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             }
             Upd.InvokeAsync((TrajectoryTable[index], index));
         }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            UserCareerPath niu = new UserCareerPath { CareerPathNo = TrajectoryTable.Count + 1 };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
+        }
     }
 }

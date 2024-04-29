@@ -10,5 +10,7 @@ namespace SupervisorMobility.Client.Services.HCIService
         Task<bool> CreateHCI(HCI content);
         Task<bool> UpdateHCI(HCI content);
         Task<bool> DeleteHCI(int hciId);
+
+        Task<List<HCICategory>> GetHCICategories();
     }
 }

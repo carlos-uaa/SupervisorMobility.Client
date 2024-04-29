@@ -44,7 +44,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    QualificationsTable.Add(new HCITransaction { Type = 3 });
+                    QualificationsTable.Add(new HCITransaction { Type = 3, IsActive = true });
                 }
             }
         }
@@ -58,6 +58,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             QualificationsTable[idx].Description = val;
             Upd.InvokeAsync((QualificationsTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCITransaction niu = new HCITransaction { Type = 3, IsActive = true };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 
