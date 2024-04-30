@@ -550,7 +550,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             visibleSign = false;
         }
 
-        //Show Photo
+        //Show Evidence 
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
         private bool visibleEvidence = false;
@@ -564,8 +564,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             visibleEvidence = true;
 
         }
-
-        private void CloseChip() { }
 
     }
 }
