@@ -47,11 +47,11 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
 
         }
 
-        public async Task<List<SOSReviewProgram>> GetAllSOSReviews(bool includeCollections)
+        public async Task<List<SOSReviewProgram>> GetAllSOSReviews(bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false)
         {
             try
             {
-                var response = await _http.GetAsync($"SOSReview?includeCollections={includeCollections}");
+                var response = await _http.GetAsync($"SOSReview?includeNavigation={includeNavigation}&includeUsers={includeUsers}&includeSuggestions={includeSuggestions}");
 
                 var content = await response.Content.ReadAsStringAsync();
 
@@ -73,9 +73,9 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             return null;
         }
 
-        public async Task<SOSReviewProgram> GetSOSById(int sosid, bool includeCollections = false)
+        public async Task<SOSReviewProgram> GetSOSById(int sosid, bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false)
         {
-            var response = await _http.GetAsync($"SOSReview/{sosid}?includeCollections={includeCollections}");
+            var response = await _http.GetAsync($"SOSReview/{sosid}?includeNavigation={includeNavigation}&includeUsers={includeUsers}&includeSuggestions={includeSuggestions}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<SOSReviewProgram>();

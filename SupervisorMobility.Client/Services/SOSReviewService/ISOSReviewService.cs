@@ -5,9 +5,9 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
     public interface ISOSReviewService
     {
 
-        Task<List<SOSReviewProgram>> GetAllSOSReviews(bool includeCollections);
+        Task<List<SOSReviewProgram>> GetAllSOSReviews( bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false);
 
-        Task<SOSReviewProgram> GetSOSById(int id, bool includeCollections = false);
+        Task<SOSReviewProgram> GetSOSById(int id, bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false);
 
         Task<SOSReviewProgram> CreateSOSReview(SOSReviewProgram product);
 

@@ -259,7 +259,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             else
             {
                 await GetUserAsync();
-                _sos_plan = await SOSServices.GetSOSById(sosId, true);
+                _sos_plan = await SOSServices.GetSOSById(sosId, false);
                 _distributions = await DistributionServices.GetDistributionsWithCollections((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
 
                 if (_sos_plan != null && _sos_plan.Suggestions != null)
@@ -454,71 +454,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async Task LoadJobObservations()
         {
             loadingData = true;
-            //if (user != null)
-            //{
-            //    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+           
 
 
-            //    if (user.UserType == 1 || user.UserType == 6)
-            //    {
-            //        _jobObservations = _allJobObservations;
-            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
-            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
-            //    }
-            //    else if (user.UserType == 2)
-            //    {
-
-            //        foreach (var jobobs in _allJobObservations)
-            //        {
-            //            if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
-            //            {
-            //                _jobObservations.Add(jobobs);
-            //            }
-            //        }
-
-            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
-            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
-            //    }
-            //    else if (user.UserType == 3)
-            //    {
-
-            //        foreach (var jobobs in _allJobObservations)
-            //        {
-            //            if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
-            //            {
-            //                _jobObservations.Add(jobobs);
-            //            }
-            //        }
-
-            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
-            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
-
-            //    }
-            //    else if (user.UserType == 5)
-            //    {
-            //        foreach (var jobobs in _allJobObservations)
-            //        {
-            //            if (plantId == jobobs.PlantId)
-            //            {
-            //                foreach (User usr in user.Subordinates)
-            //                {
-            //                    if (jobobs.Supervisor.SuperiorId == usr.UserId)
-            //                    {
-            //                        if (jobobs.Status != 7)
-            //                        {
-            //                            _jobObservations.Add(jobobs);
-            //                        }
-            //                    }
-
-            //                }
-            //            }
-            //        }
-
-            //        _SOSJobobservation = _jobObservations.Where(j => j.Status == 7).ToList();
-            //        totalProgrammed = _jobObservations.Where(j => j.Status == 7).Count();
-            //        //_allSupervisors = await UsersService.GetUserByType(3, true, false);
-            //    }
-            //}
             loadingData = false;
             StateHasChanged();
         }
