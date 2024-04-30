@@ -26,5 +26,6 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         // Delete Categorie
         Task DeleteCategorie(int id);
+        Task<List<HCICategory>> GetHCICategories();
     }
 }
