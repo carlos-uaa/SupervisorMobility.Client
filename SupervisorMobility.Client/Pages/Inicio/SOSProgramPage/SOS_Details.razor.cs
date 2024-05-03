@@ -38,9 +38,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public int sosId { get; set; }
 
         [Inject] private IDialogService DialogService { get; set; }
-        [Inject]
-        private IBreadcrumbService BreadcrumbService { get; set; }
+        [Inject] private IBreadcrumbService BreadcrumbService { get; set; }
+        [Inject] private ISOSDataService SOSDataServices { get; set; }
+
         private List<BreadcrumbItem> _links;
+
         private List<Distribution> _distributions = new();
         private List<Distribution> _distributionsSuggest = new();
 
@@ -53,7 +55,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private Distribution selected_distribution = new();
         private int selected_distId = 0;
-        public List<Operation> _All_Operations { get; set; } = new();
         private List<AssyChart> _assyCharts = new();
         private SOSReviewProgram _sos_plan = new();
         private JobObservation _NewJobObservation = new();
@@ -96,14 +97,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public JobObservationNulls _Selected_Suggested_SOSJobobservatio_Null { get; set; } = new();
         public JobObservation _Selected_Suggested_SOSJobobservation { get; set; } = new();
 
-        private class SOSRegUserOperationRelationship
+        public class SOSRegUserOperationRelationship
         {
             public bool StateUpdate { get; set; }
             public bool Exist { get; set; }
             public SOSRegUserOperation Register { get; set; }
         }
 
-        private class SosJobCount
+        public class SosJobCount
         {
             public int TotalJobs { get; set; }
 
@@ -148,6 +149,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         bool disableBtnCreateSos = false;
         bool AddOperator = false;
         bool MonthlyView = false;
+        bool ScheduleView = false;
         int diasSeparate = 1;
         int OptionRandom = 0;
         DateTime Startday = DateTime.Now;
@@ -181,7 +183,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
         public bool CodePathModalDisplay { get; set; } = false;
-        private string searchCodeString = "";
         bool ShowLoading = true;
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -190,7 +191,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private List<User> _Users = new();
         private List<User> _UsersSV_Copy = new();
-        bool FilterOperation = false;
 
         private bool isButtonDisabled = false;
         private bool SVSinCharge = false;
@@ -259,9 +259,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             else
             {
                 await GetUserAsync();
-                _sos_plan = await SOSServices.GetSOSById(sosId, false);
+                _sos_plan = await SOSServices.GetSOSById(sosId, true, true, true);
                 _distributions = await DistributionServices.GetDistributionsWithCollections((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
 
+                //Dist_Manager Son las distribuciones disponibles para crear una sugerencia
                 if (_sos_plan != null && _sos_plan.Suggestions != null)
                 {
                     _distributionsSuggest = _distributions.Where(d => _sos_plan.Suggestions.Any(s => s.DistributionId == d.DistributionId && s.SuggestionApplied == false)).ToList();
@@ -274,14 +275,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     }
                 }
 
-                foreach (var item in _distributions)
-                {
-                    _All_Operations.AddRange(item.Operations);
-                }
+               
+
                 _Users = await UsersServices.GetUsersByUserTypeInPlantAndArea(_sos_plan.PlantId, _sos_plan.AreaId, 3, true, false);
                 _UsersSV_Copy = ObjectCloner.ObjectCloner.DeepClone(_Users);
                 _assyCharts = await AssyChartsServices.GetAssyChartsByArea((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
-                await PrepareDataTable();
+                
                 StateHasChanged();
             }
 
@@ -341,18 +340,206 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
             monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthGenitiveNames.ToList();
-            GenerateCalendarHead();
-            GenerateCalendarBody();
+           
+            await SOSDataServices.SetSosJobObservation(sosId, _distributions, jobCategoryStructureIds);
+            _AnotherJobs = SOSDataServices._AnotherJobs;
+            OperationsInDistributionCount = SOSDataServices.OperationsInDistributionCount;
+
+            SchedulinMode();
         }
 
         public async void SchedulinMode()
         {
+            //Es para mostrar el control de cambio de mes
             MonthlyView = true;
+            //saber que me encuentro en el calendario
+            ScheduleView = true;
+            await LoadSchedule();
+        }
+        private async Task LoadSchedule()
+        {
+            loadingData = true;
+            //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
 
             GenerateCalendarHead();
             GenerateCalendarBody();
+            if (SuggestionMode)
+            {
+                await PrepareSuggestDataTable();
+            }
+            else
+            {
+                await PrepareDataTable();
+            }
 
-            await LoadJobObservations();
+            loadingData = false;
+            StateHasChanged();
+        }
+        private async void YearlyTab()
+        {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+            ScheduleView = MonthlyView = false;
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+            StateHasChanged();
+        }
+
+        private async void MontlyTab()
+        {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+            MonthlyView = true;
+            SuggestionMode = false;
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+            StateHasChanged();
+        }
+
+       
+        private async void SuggestYearlyTab()
+        {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+            SuggestionMode = true;
+            MonthlyView = false;
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+            StateHasChanged();
+        }
+
+        private async void SuggestMontlyTab()
+        {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            }
+            else
+            {
+                _distributions.ForEach(d => d.ShowDetails = false);
+            }
+            StateHasChanged();
+
+            MonthlyView = SuggestionMode = true;
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+            StateHasChanged();
         }
 
         private void OpenDialog4(string date)
@@ -362,16 +549,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             programmedStartDate = date;
             visible3 = true;
         }
-        void PlanJobObservation(string date)
-        {
-            date = date.Replace("/", "-");
-            //NavigationManager.NavigateTo($"jobobservation/planjobobservation/{date}");
-        }
-        private void CreateJobObservation(string date)
-        {
-            date = date.Replace("/", "-");
-            //NavigationManager.NavigateTo($"jobobservation/createnewjobobservation/{date}");
-        }
+ 
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -451,15 +629,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
-        private async Task LoadJobObservations()
-        {
-            loadingData = true;
-           
-
-
-            loadingData = false;
-            StateHasChanged();
-        }
+     
+        
+        
 
         private void OnFirstDateChanged(DateTime? dt)
         {
@@ -472,28 +644,63 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void OnDateChanged(DateTime? value)
         {
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                if (tmpSuggdist != null)
+                {
+                    tmpSuggdist.distribution.ShowDetails = false;
+                }
+            }
+            else
+            {
+                tmpdist.ShowDetails = false;
+            }
             ShowLoading = true;
+            loadingData = true;
+            StateHasChanged();
 
             _yearMonth = value;
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
-
 
             month = $"{_yearMonth?.ToString("MMMM")}";
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
-            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
-
             startDate = new DateTime(yearIndex, monthIndex, 1);
             endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
 
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
 
             GenerateCalendarHead();
             GenerateCalendarBody();
 
-            await LoadJobObservations();
+            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+
             ShowLoading = false;
+            loadingData = false;
             StateHasChanged();
         }
 
@@ -507,15 +714,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
                 if (tmpSuggdist != null)
                 {
-                    tmpSuggdist.distribution.ShowDetails = true;
+                    tmpSuggdist.distribution.ShowDetails = false;
                 }
             }
             else
             {
                 tmpdist.ShowDetails = false;
             }
-            StateHasChanged();
             ShowLoading = true;
+            loadingData = true;
             StateHasChanged();
 
             _yearMonth = _yearMonth?.AddMonths(-1);
@@ -526,27 +733,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
-            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
-            ShowLoading = false;
 
-            if (tmpdist != null)
-            {
-                tmpdist.ShowDetails = true;
-            }
-            if (tmpSuggdist != null)
-            {
-                tmpSuggdist.distribution.ShowDetails = true;
-
-            }
 
             startDate = new DateTime(yearIndex, monthIndex, 1);
             endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
 
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+
             GenerateCalendarHead();
             GenerateCalendarBody();
-            await LoadJobObservations();
 
-
+            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+            ShowLoading = false;
+            loadingData = false;
             StateHasChanged();
         }
 
@@ -560,17 +779,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
                 if (tmpSuggdist != null)
                 {
-                    tmpSuggdist.distribution.ShowDetails = true;
+                    tmpSuggdist.distribution.ShowDetails = false;
                 }
             }
             else
             {
                 tmpdist.ShowDetails = false;
             }
-            StateHasChanged();
 
-
+            loadingData = true;
             ShowLoading = true;
+
             StateHasChanged();
             _yearMonth = _yearMonth?.AddMonths(1);
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
@@ -580,28 +799,41 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
-            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
-            StateHasChanged();
-            ShowLoading = false;
 
             startDate = new DateTime(yearIndex, monthIndex, 1);
             endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+        
+            startDate = new DateTime(yearIndex, monthIndex, 1);
+            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
 
             if (tmpdist != null)
             {
+                await PrepareDataTable(tmpdist.DistributionId);
                 tmpdist.ShowDetails = true;
             }
-            if (tmpSuggdist != null)
+            else if (tmpSuggdist != null)
             {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
                 tmpSuggdist.distribution.ShowDetails = true;
             }
-            startDate = new DateTime(yearIndex, monthIndex, 1);
-            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+            else if(!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
 
             GenerateCalendarHead();
             GenerateCalendarBody();
-            await LoadJobObservations();
 
+            totalProgrammed = _All_SOSJobobservation.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+            ShowLoading = false;
+            loadingData = false;
             StateHasChanged();
         }
 
@@ -614,257 +846,69 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
         }
 
-        private async Task PrepareSuggestDataTable()
+       
+
+        private async Task PrepareDataTable(int id_distribution = 0)
+        {
+            _All_SOSJobobservation?.Clear();
+            SOS_Registers_Matrix?.Clear();
+            //OperationsInDistributionCount?.Clear();
+
+            //Get listas segun la configuracion de la pagina
+
+            //await Task.Run(() =>
+            //{
+
+                if (ScheduleView && id_distribution == 0)
+                {
+                //traer toda las cosas por mes
+                    _All_SOSJobobservation = SOSDataServices.Get_AllSos_Month(_yearMonth.Value.Month);
+                }
+                else if(MonthlyView && id_distribution != 0)
+                {
+                //Vista Mensual
+                    //_All_SOSJobobservation = SOSDataServices.Get_AllSos_Month_Dist(_yearMonth.Value.Month, id_distribution);
+                    _All_SOSJobobservation = SOSDataServices.Get_AllSos_Dist(id_distribution);
+                    SOS_Registers_Matrix = SOSDataServices.Get_Registers_Matrix_Month(_yearMonth.Value.Month);
+                    SOS_Registers_UserOperationRelationship = SOSDataServices.Get_SOS_Registers_UserOperationRelationship(id_distribution);
+                }   
+                else if(!ScheduleView && !MonthlyView && id_distribution != 0)
+                {
+                    //Vista Anual
+                    _All_SOSJobobservation = SOSDataServices.Get_AllSos_Dist(id_distribution);
+                    SOS_Registers_Matrix = SOSDataServices.Get_Registers_Matrix_Dist(id_distribution);
+                    SOS_Registers_UserOperationRelationship = SOSDataServices.Get_SOS_Registers_UserOperationRelationship(id_distribution);
+                }
+            //}
+            //);
+
+            ShowTable = true;
+            StateHasChanged();
+        }
+        private async Task PrepareSuggestDataTable(int id_distribution = 0)
         {
 
             Suggested_Registers_Matrix?.Clear();
 
-            foreach (var dist in _distributions)
-            {
-                for (int i = 1; i < 13; i++)
-                {
-                    int currentindex = i;
-                    var matchingRegisters = _All_Suggested_SOSJobobservation?
-                       .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
-                       .ToList();
 
-                    Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
-                }
+
+            if (ScheduleView && id_distribution == 0)
+            {
+                //traer toda las cosas por mes
+            }
+            else if (MonthlyView && id_distribution != 0)
+            {
+                //trae las cosas por distribucion y mes
+            }
+            else if (!ScheduleView && !MonthlyView && id_distribution != 0)
+            {
+                //tre todo de la distribucion unicamente
             }
 
-        }
-
-        private async Task PrepareDataTable()
-        {
-            _All_SOSJobobservation?.Clear();
-            SOS_Registers_Matrix?.Clear();
-            _SosRegisters?.Clear();
-            _AnotherJobs?.Clear();
-            OperationsInDistributionCount?.Clear();
-
-            //Actualizacion local y evitar peticiones... cuando quede chida la pagina
-            _SosRegisters = await SOSServices.GetSOSRegisters(_sos_plan.SOSid);
-            _AnotherJobs = _mapper.Map<List<JobObservationNulls>>(await JobObsServices.GetAllJobObservations(year: (int)_sos_plan.AplicationYear, SOSAnualId: _sos_plan.SOSid));
-
-
-            foreach (var OpItem in _All_Operations)
-            {
-                for (int i = 1; i < 13; i++)
-                {
-                    int currentindex = i;
-                    var matchingRegisters = _SosRegisters?
-                       .Where(r => r.OperationId == OpItem.OperationId && r.Year <= _sos_plan.AplicationYear && r.Month == currentindex)
-                       .ToList();
-
-                    SOS_Registers_Matrix.Add((OpItem.OperationId, currentindex), matchingRegisters);
-                }
-            }
-
-            foreach (var item in _SosRegisters)
-            {
-                _All_SOSJobobservation?.Add(item.JobObservation);
-            }
-
-            if (SOS_Registers_UserOperationRelationship?.Count == 0)
-            {
-                Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
-                _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
-
-                foreach (var item in _SosRegistersrUserOperation)
-                {
-                    SOSRegUserOperationRelationship regAux = new();
-                    regAux.Register = item;
-                    regAux.StateUpdate = false;
-                    regAux.Exist = true;
-                    SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
-                }
-
-                foreach (var op in _All_Operations)
-                {
-                    if (!SOS_Registers_UserOperationRelationship.TryGetValue(op.OperationId, out var context))
-                    {
-                        //si no existre se crea de manera artificial
-                        SOSRegUserOperationRelationship regAux = new();
-                        regAux.Register = new();
-                        regAux.Exist = false;
-                        regAux.StateUpdate = false;
-                        SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-                    }
-                }
-
-            }
-            foreach (var reg in _SosRegisters)
-            {
-                foreach (var dist in _distributions)
-                {
-                    if (dist.Operations.Any(o => o.OperationId == reg.OperationId))
-                    {
-                        if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
-                        {
-                            OperationsInDistributionCount[dist.DistributionId].TotalSosJobs++;
-                            switch (reg.JobObservation.Status)
-                            {
-                                case 1:
-                                    OperationsInDistributionCount[dist.DistributionId].sosplanned++;
-                                    break;
-                                case 2:
-                                    OperationsInDistributionCount[dist.DistributionId].sosinProgress++;
-                                    break;
-                                case 3:
-                                    OperationsInDistributionCount[dist.DistributionId].soslate++;
-                                    break;
-                                case 4:
-                                    OperationsInDistributionCount[dist.DistributionId].sosunderReview++;
-                                    break;
-                                case 5:
-                                    OperationsInDistributionCount[dist.DistributionId].sosrejected++;
-                                    break;
-                                case 6:
-                                    OperationsInDistributionCount[dist.DistributionId].sosfinished++;
-                                    break;
-                                case 7:
-                                    OperationsInDistributionCount[dist.DistributionId].sosprogramed++;
-                                    break;
-                            }
-
-                        }
-                        else
-                        {
-                            SosJobCount newReg = new SosJobCount();
-
-                            newReg.TotalJobs = dist.Operations.Count();
-
-                            newReg.TotalSosJobs++;
-                            //1 @Localizer["planned"]
-                            //2 @Localizer["inProgress"]
-                            //3 @Localizer["late"]
-                            //4 @Localizer["underReview"]
-                            //5 @Localizer["rejected"]
-                            //6 @Localizer["finished"]
-                            switch (reg.JobObservation.Status)
-                            {
-                                case 1:
-                                    newReg.sosplanned++;
-                                    break;
-                                case 2:
-                                    newReg.sosinProgress++;
-                                    break;
-                                case 3:
-                                    newReg.soslate++;
-                                    break;
-                                case 4:
-                                    newReg.sosunderReview++;
-                                    break;
-                                case 5:
-                                    newReg.sosrejected++;
-                                    break;
-                                case 6:
-                                    newReg.sosfinished++;
-                                    break;
-
-                                case 7:
-                                    newReg.sosprogramed++;
-                                    break;
-                            }
-
-                            OperationsInDistributionCount.Add(dist.DistributionId, newReg);
-                        }
-                        break;
-                    }
-                }
-
-            }
-
-            foreach (var reg in _AnotherJobs)
-            {
-                foreach (var dist in _distributions)
-                {
-                    if (dist.Operations.Any(o => o.OperationId == reg.OperationId))
-                    {
-                        if (OperationsInDistributionCount.ContainsKey(dist.DistributionId))
-                        {
-                            OperationsInDistributionCount[dist.DistributionId].TotalOutSosJobs++;
-                            switch (reg.Status)
-                            {
-                                case 1:
-                                    OperationsInDistributionCount[dist.DistributionId].planned++;
-                                    break;
-                                case 2:
-                                    OperationsInDistributionCount[dist.DistributionId].inProgress++;
-                                    break;
-                                case 3:
-                                    OperationsInDistributionCount[dist.DistributionId].late++;
-                                    break;
-                                case 4:
-                                    OperationsInDistributionCount[dist.DistributionId].underReview++;
-                                    break;
-                                case 5:
-                                    OperationsInDistributionCount[dist.DistributionId].rejected++;
-                                    break;
-                                case 6:
-                                    OperationsInDistributionCount[dist.DistributionId].finished++;
-                                    break;
-
-                                case 7:
-                                    OperationsInDistributionCount[dist.DistributionId].programed++;
-                                    break;
-                            }
-
-                        }
-                        else
-                        {
-                            SosJobCount newReg = new SosJobCount();
-
-                            newReg.TotalJobs = dist.Operations.Count();
-
-                            newReg.TotalOutSosJobs++;
-                            //1 @Localizer["planned"]
-                            //2 @Localizer["inProgress"]
-                            //3 @Localizer["late"]
-                            //4 @Localizer["underReview"]
-                            //5 @Localizer["rejected"]
-                            //6 @Localizer["finished"]
-                            switch (reg.Status)
-                            {
-                                case 1:
-                                    newReg.planned++;
-                                    break;
-                                case 2:
-                                    newReg.inProgress++;
-                                    break;
-                                case 3:
-                                    newReg.late++;
-                                    break;
-                                case 4:
-                                    newReg.underReview++;
-                                    break;
-                                case 5:
-                                    newReg.rejected++;
-                                    break;
-                                case 6:
-                                    newReg.finished++;
-                                    break;
-
-                                case 7:
-                                    newReg.programed++;
-                                    break;
-                            }
-
-                            OperationsInDistributionCount.Add(dist.DistributionId, newReg);
-                        }
-                        break;
-                    }
-                }
-
-            }
-
-            //_Subordinates = await UsersServices.GetSubordinates(_sos_plan.Supervisor.UserId);
 
             ShowTable = true;
             StateHasChanged();
-
         }
-
         private async Task<bool> TryGetAsync()
         {
             bool hasProperty = await HasPropertyAsync();
@@ -911,7 +955,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
                     DateTime parsedDate = new DateTime((int)_sos_plan.AplicationYear, month, 1);
-                    parsedDate = await FindNextAvailableDate(parsedDate, false);
+                    parsedDate = await SOSDataServices.FindNextAvailableDate(parsedDate, false);
                     _NewJobObservation.StartDate = parsedDate;
 
 
@@ -993,7 +1037,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
                     DateTime parsedDate = new DateTime((int)_sos_plan.AplicationYear, _yearMonth.Value.Month, day);
-                    parsedDate = await FindNextAvailableDate(parsedDate, false);
+                    parsedDate = await SOSDataServices.FindNextAvailableDate(parsedDate, false);
                     _NewJobObservation.StartDate = parsedDate;
 
 
@@ -1069,23 +1113,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             StateHasChanged();
         }
 
-        private bool CcpDialog = false;
-        private bool HoeDialog = false;
-        private bool GosDialog = false;
-        private bool searchAssychart = false;
-
-        private CDMS_CCP_Archives? CcpFilesInFolder;
-        private CDMS_HOE_Archives? HoeFilesInFolder;
-        private CDMS_GOS_Archives? GosFilesInFolder;
-
-        private bool folderError = false;
-        private string messageErrorFolders;
-
-
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-
+    
 
         private async Task DownloadFileFromURL(string urlroute, string namefile)
         {
@@ -1229,8 +1257,55 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         private async Task HandleVisibleChanged(bool newValue)
         {
-            await PrepareDataTable();
+
+            loadingData = true;
+            ShowLoading = true;
+
+
+            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            DistSelect? tmpSuggdist = null;
+            if (tmpdist == null)
+            {
+                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+                if (tmpSuggdist != null)
+                {
+                    tmpSuggdist.distribution.ShowDetails = false;
+                }
+            }
+            else
+            {
+                tmpdist.ShowDetails = false;
+            }
+            
+            StateHasChanged();
+
+
+
+            if (tmpdist != null)
+            {
+                await PrepareDataTable(tmpdist.DistributionId);
+                tmpdist.ShowDetails = true;
+            }
+            else if (tmpSuggdist != null)
+            {
+                await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+                tmpSuggdist.distribution.ShowDetails = true;
+            }
+            else if (!SuggestionMode)
+            {
+                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+                await PrepareDataTable();
+            }
+            else
+            {
+                await PrepareSuggestDataTable();
+            }
+
+            
             visible2 = newValue;
+            ShowLoading = false;
+            loadingData = false;
             StateHasChanged();
 
         }
@@ -1362,67 +1437,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
         }
         //
-        private async void YearlyTab()
-        {
-            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-
-            DistSelect? tmpSuggdist = null;
-            if (tmpdist == null)
-            {
-                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
-            }
-            else
-            {
-                _distributions.ForEach(d => d.ShowDetails = false);
-            }
-            StateHasChanged();
-
-            SuggestionMode = MonthlyView = false;
-
-            if (tmpdist != null)
-            {
-                tmpdist.ShowDetails = true;
-            }
-            if (tmpSuggdist != null)
-            {
-                tmpSuggdist.distribution.ShowDetails = true;
-            }
-
-            StateHasChanged();
-        }
-
-        private async void MontlyTab()
-        {
-            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-
-            DistSelect? tmpSuggdist = null;
-            if (tmpdist == null)
-            {
-                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-                Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
-            }
-            else
-            {
-                _distributions.ForEach(d => d.ShowDetails = false);
-            }
-            StateHasChanged();
-
-            MonthlyView = true;
-            SuggestionMode = false;
-
-            if (tmpdist != null)
-            {
-                tmpdist.ShowDetails = true;
-            }
-            if (tmpSuggdist != null)
-            {
-                tmpSuggdist.distribution.ShowDetails = true;
-            }
-
-            StateHasChanged();
-        }
-        private void ShowBtnPress(int nr)
+       
+        private async void ShowBtnPress(int nr)
         {
             Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == nr);
 
@@ -1436,6 +1452,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 }
 
                 tmpdist.ShowDetails = !tmpdist.ShowDetails;
+
+                if (tmpdist.ShowDetails)
+                {
+                    if (!SuggestionMode)
+                    {
+                        await PrepareDataTable(tmpdist.DistributionId);
+                        tmpdist.ShowDetails = true;
+                    }
+                    else
+                    {
+                        await PrepareSuggestDataTable(tmpdist.DistributionId);
+                    }
+                }
 
                 // Actualizar el estado
                 StateHasChanged();
@@ -1595,7 +1624,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
                                     }
 
-                                    foreach (var itemOp in _All_Operations)
+                                    foreach (var itemOp in SOSDataServices._All_Operations)
                                     {
                                         if (!SOS_Registers_UserOperationRelationship.TryGetValue(itemOp.OperationId, out var contextitemOp))
                                         {
@@ -1637,8 +1666,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 }
 
             }
-            //Distribution tmpPerson = _distributions.First(f => f.DistributionId == nr);
-            //tmpPerson.ShowDetails = !tmpPerson.ShowDetails;
+          
         }
 
 
@@ -1674,63 +1702,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             return totalDiasLaborables;
         }
 
-        private async Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0)
-        {
-            int yearToCheck = startAvailabeDate.Year;
-            int initialDayOfYear = startAvailabeDate.DayOfYear;
-
-            while (startAvailabeDate.Year == yearToCheck || startAvailabeDate.DayOfYear < initialDayOfYear)
-            {
-                if (isSuggest)
-                {
-                    if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
-                    {
-                        return startAvailabeDate;
-                    }
-                }
-                else
-                {
-                    if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
-                    {
-                        return startAvailabeDate;
-                    }
-                }
-
-                startAvailabeDate = startAvailabeDate.AddDays(diasSeparate);
-
-                if (startAvailabeDate > DateTime.MaxValue)
-                {
-                    throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
-                }
-            }
-
-
-
-            return startAvailabeDate.AddDays(-1);
-        }
-
-        private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
-        {
-            int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate.Value.Date == dateToCheck.Date);
-            return count > 1;
-        }
-
-        private async Task<bool> IsDateSuggestAlreadyUsed(DateTime dateToCheck, int id_SV)
-        {
-            if (id_SV != 0)
-            {
-                int count = _All_Suggested_SOSJobobservation.Where(o => o.PlannedStartDate.Value.Date == dateToCheck.Date && o.SupervisorId == id_SV).Count();
-                return count >= JobsPorDia;
-            }
-
-            return true;
-
-        }
-
-        private async Task<bool> IsWeekend(DateTime dateToCheck)
-        {
-            return dateToCheck.DayOfWeek == DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
-        }
+        
 
         bool enableCreateSuggestion = false;
         bool SuggestionMode = false;
@@ -1785,106 +1757,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
 
-
                 StateHasChanged();
 
-                //
-                Suggested_SOS_Registers_UserOperationRelationship?.Clear();
-                try
-                {
-                    TimeSpan? startHour = new TimeSpan(00, 00, 00);
-
-                    base.StateHasChanged();
-                    //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
-                    Console.WriteLine($"TotalDist Count {selected_distribution.Operations?.Count}");
-
-                    if (_All_Suggested_SOSJobobservation.Count == 0)
-                    {
-                        foreach (var item in Dist_Manager)
-                        {
-
-                            if (item.isSelected)
-                            {
-                                foreach (var op in item.distribution.Operations)
-                                {
-                                    //check if exist
-                                    if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
-                                    {
-
-                                        JobObservationNulls _newSuggestion = new();
-
-                                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
-
-                                        // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                                        int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-                                        // Asignar el SupervisorId a _newSuggestion
-                                        _newSuggestion.SupervisorId = supervisorId;
-
-
-                                        SOSRegUserOperationRelationship regAux = new();
-                                        regAux.Register = new();
-                                        regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                        regAux.Register.OperationId = op.OperationId;
-                                        regAux.Register.SupervisorId = supervisorId;
-                                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                        regAux.Exist = false;
-                                        regAux.StateUpdate = true;
-                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-
-
-                                        _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                        _newSuggestion.Plant = _sos_plan.Plant;
-                                        _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                        _newSuggestion.Area = _sos_plan.Area;
-
-                                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-
-                                        _newSuggestion.Operation = op;
-                                        _newSuggestion.OperationId = op.OperationId;
-                                        _newSuggestion.Option = 2;
-                                        _newSuggestion.Type = 3;
-                                        _newSuggestion.Status = 7;
-                                        _newSuggestion.SectionIds = jobCategoryStructureIds;
-
-                                        _newSuggestion.IsActive = true;
-
-                                        DateTime parsedDate = Startday;
-                                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                        _newSuggestion.StartDate = parsedDate;
-                                        _newSuggestion.PlannedStartDate = parsedDate;
-
-
-                                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
-                                    }
-
-                                }
-
-                            }
-
-                        }
-                        //var OperationsInDist = _All_Operations.Where(o => o.id)
-
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
-
-                }
-                finally
-                {
-                    ShowLoading = false;
-                    isButtonDisabled = false;
-                    base.StateHasChanged();
-                }
-
+                await SOSDataServices.SetSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia);
+               
 
                 await PrepareSuggestDataTable();
                 Console.WriteLine($" Final First Sugg Generation");
@@ -1932,133 +1808,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 isButtonDisabled = true;
                 ShowLoading = true;
                 ShowTable = false;
+
                 base.StateHasChanged();
                 StateHasChanged();
 
-                _All_Suggested_SOSJobobservation?.Clear();
-                Suggested_SOS_Registers_UserOperationRelationship?.Clear();
-
-                var OperationIterator = selected_distribution.Operations;
-
-                Random random = new Random();
-
-                switch (OptionRandom)
-                {
-                    case 0:
-                        _All_Operations?.Clear();
-                        foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
-                        {
-                            _All_Operations.AddRange(item.Operations);
-                        }
-                        break;
-                    case 1:
-                        _All_Operations?.Clear();
-                        foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
-                        {
-                            _All_Operations.AddRange(item.Operations);
-                        }
-                        _All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
-                        //OperationIterator = OperationIterator.OrderBy(x => random.Next()).ToList();
-
-                        break;
-                    case 2:
-                        var _distributionsRandom = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).OrderBy(x => random.Next()).ToList();
-                        _All_Operations?.Clear();
-                        foreach (var item in _distributionsRandom)
-                        {
-                            _All_Operations.AddRange(item.Operations);
-                        }
-                        break;
-                }
-
-                TimeSpan? startHour = new TimeSpan(00, 00, 00);
-
-                try
-                {
-                    base.StateHasChanged();
-                    //Console.WriteLine($"Toal Count {_All_Operations?.Count}");
-                    Console.WriteLine($"Total Dist Count {OperationIterator?.Count}");
-
-                    if (_All_Suggested_SOSJobobservation.Count == 0)
-                    {
-                        //foreach (var op in _All_Operations)
-                        foreach (var op in _All_Operations)
-                        {
-                            if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
-                            {
-
-                                JobObservationNulls _newSuggestion = new();
-
-                                int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
-
-                                // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                                int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-                                // Asignar el SupervisorId a _newSuggestion
-                                _newSuggestion.SupervisorId = supervisorId;
-
-
-                                SOSRegUserOperationRelationship regAux = new();
-                                regAux.Register = new();
-                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                regAux.Register.OperationId = op.OperationId;
-                                regAux.Register.SupervisorId = supervisorId;
-                                regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                regAux.Exist = false;
-                                regAux.StateUpdate = true;
-                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-
-
-
-                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                _newSuggestion.Plant = _sos_plan.Plant;
-                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                _newSuggestion.Area = _sos_plan.Area;
-
-                                _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-
-                                _newSuggestion.Operation = op;
-                                _newSuggestion.OperationId = op.OperationId;
-
-
-                                _newSuggestion.Option = 2;
-                                _newSuggestion.Type = 3;
-                                _newSuggestion.Status = 7;
-                                _newSuggestion.SectionIds = jobCategoryStructureIds;
-                                _newSuggestion.IsActive = true;
-
-                                DateTime parsedDate = Startday;
-                                parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                _newSuggestion.StartDate = parsedDate;
-                                _newSuggestion.PlannedStartDate = parsedDate;
-
-
-
-                                _All_Suggested_SOSJobobservation.Add(_newSuggestion);
-                            }
-                        }
-                    }
-
-                    await PrepareSuggestDataTable();
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
-
-                }
-                finally
-                {
-
-                    ShowLoading = false;
-                    ShowTable = true;
-                    isButtonDisabled = false;
-                    base.StateHasChanged();
-                }
+                await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, startDate, JobsPorDia, OptionRandom);
+                await PrepareSuggestDataTable();
 
                 Console.WriteLine($" Final New Sugg Generation");
                 bool? resultDay = await DialogService.ShowMessageBox(
@@ -2313,7 +2068,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             GenerateCalendarHead();
             GenerateCalendarBody();
 
-            await LoadJobObservations();
             ShowLoading = false;
             ProgrammSuggestion = false ;
             StateHasChanged();
