@@ -24,6 +24,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Net.Http.Headers;
 using SupervisorMobility.Client.Data.Entities;
+using System.Diagnostics;
 
 namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 {
@@ -537,27 +538,45 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         }
 
 
-        private async void RemoveImage(int index, int imgIndex, bool isTemp)
+        //Delete Kaizen evidence
+        private bool visibleDelete = false;
+        public int removeImageIndex = 0;
+        public bool isPrevious = false;
+        public bool isTemporal = false;
+
+
+        private void OpenDeleteDialog(int index, bool isPrev, bool isTemp)
         {
-            if (isTemp)
+            removeImageIndex = index;
+            isPrevious = isPrev;
+            isTemporal = isTemp;
+            visibleDelete = true;
+        }
+        void CloseDeleteModal() => visibleDelete = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
+        private async void RemoveImage()
+        {
+            if (isTemporal)
             {
-                if (index >= 0 && index < tempCapturedImages.Count || index < tempCapturedImagesThen.Count)
+                if (removeImageIndex >= 0 && removeImageIndex < tempCapturedImages.Count || removeImageIndex < tempCapturedImagesThen.Count)
                 {
-                    if (imgIndex == 1)
+                    if (isPrevious)
                     {
-                        tempCapturedImages.RemoveAt(index);
+                        tempCapturedImages.RemoveAt(removeImageIndex);
                     }
                     else
                     {
-                        tempCapturedImagesThen.RemoveAt(index);
+                        tempCapturedImagesThen.RemoveAt(removeImageIndex);
                     }
                 }
             }
-            else if(index >= 0 && index < capturedImages.Count || index < capturedImagesThen.Count)
+            else if(removeImageIndex >= 0 && removeImageIndex < capturedImages.Count || removeImageIndex < capturedImagesThen.Count)
             {
-                if (imgIndex == 1)
+                if (isPrevious)
                 {
-                    var evidence = _kaizen.PreviousEvidences.ElementAtOrDefault(index);
+                    var evidence = _kaizen.PreviousEvidences.ElementAtOrDefault(removeImageIndex);
                     if (evidence != null)
                     {
                         await RemoveEvidence(evidence.FileUploadId, true);
@@ -566,7 +585,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                 }
                 else
                 {
-                    var evidence = _kaizen.ThenEvidences.ElementAtOrDefault(index);
+                    var evidence = _kaizen.ThenEvidences.ElementAtOrDefault(removeImageIndex);
                     if (evidence != null)
                     {
                         await RemoveEvidence(evidence.FileUploadId, false);
@@ -574,6 +593,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     }
                 }
             }
+
+            removeImageIndex = 0;
+            isPrevious = false;
+            isTemporal = false;
+            visibleDelete = false;
 
             StateHasChanged();
         }
@@ -792,5 +816,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             visibleEvidence = true;
 
         }
+
+
     }
 }
