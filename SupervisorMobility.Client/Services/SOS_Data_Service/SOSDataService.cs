@@ -730,6 +730,64 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             return null;
         }
 
+        public List<JobObservationNulls> Get_Suggest_AllSos_Month(int month)
+        {
+            return _All_Suggested_SOSJobobservation.Where(j => j.StartDate.Value.Month == month || j.PlannedStartDate.Value.Month == month).ToList();
+        }
+
+        public List<JobObservationNulls> Get_Suggest_AllSos_Month_Dist(int month, int dist_Id)
+        {
+            return _All_Suggested_SOSJobobservation.Where(j => j.StartDate.Value.Month == month || j.PlannedStartDate.Value.Month == month && j.DistributionId == dist_Id).ToList();
+        }
+
+        public List<JobObservationNulls> Get_Suggest_AllSos_Dist(int dist_Id)
+        {
+            return _All_Suggested_SOSJobobservation.Where(j => j.DistributionId == dist_Id).ToList();
+        }
+
+        public Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matrix_Month(int month)
+        {
+            return Suggested_Registers_Matrix.Where(kv => kv.Key.Item2 == month).ToDictionary(kv => kv.Key, kv => kv.Value);
+        }
+
+        public Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matri_Month_Dist(int month, int dist_Id)
+        {
+            var filteredDictionary = Suggested_Registers_Matrix.Where(kv => kv.Key.Item1 == dist_Id && kv.Key.Item2 == month).ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            return filteredDictionary;
+        }
+
+        public Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matrix_Dist(int dist_Id)
+        {
+            var filteredDictionary = Suggested_Registers_Matrix.Where(kv => kv.Key.Item1 == dist_Id).ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            return filteredDictionary;
+        }
+        public Dictionary<int, SOSRegUserOperationRelationship?> Get_Suggested_SOS_Registers_UserOperationRelationship(int dist_Id)
+        {
+
+            var targetDistribution = _distributions.FirstOrDefault(d => d.DistributionId == dist_Id);
+
+            if (targetDistribution != null)
+            {
+                var operationsInDistribution = targetDistribution.Operations;
+
+                var filteredRelationships = Suggested_SOS_Registers_UserOperationRelationship
+                  .Where(kvp => kvp.Value != null && operationsInDistribution
+                      .Any(op => op.OperationId == kvp.Key))
+                  .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                return filteredRelationships;
+            }
+            else
+            {
+                Console.WriteLine($"No se encontró la Distribution con ID: {dist_Id}");
+            }
+
+
+            return null;
+        }
+
         public void UpdateJobItem(JobObservation UpdatedItem)
         {
             JobObservationNulls itemInService = _All_SOSJobobservation.Find(j => j.JobObservationId == UpdatedItem.JobObservationId);

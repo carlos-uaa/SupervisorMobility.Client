@@ -2080,7 +2080,7 @@
                                     </MudDropContainer>
                                     <MudItem Style="display: flex; justify-content: space-evenly;">
                                         <MudSpacer />
-                                        <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="(() => CreateNewSuggestion())" Disabled="@isButtonDisabled" Class="mr-1">@Localizer["generateSuggestion"]</MudButton>
+                                        <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="(() => StartCreateNewSuggestion())" Disabled="@isButtonDisabled" Class="mr-1">@Localizer["generateSuggestion"]</MudButton>
                                             <MudSpacer />
                                         </MudItem>
                                     </ChildContent>
@@ -3268,20 +3268,20 @@ else
     <DialogContent>
         @if (enableCreateSuggestion)
         {
-            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+            <MudItem Class="mud-width-full d-flex flex-column flex-column justify-center" style="height:100%">
 
-                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
-                    <ItemTemplate>
-                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
-                            <MudItem class="d-flex flex-column justify-center align-self-center">
-                                <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
-                            </MudItem>
-                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
-                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
-                            </div>
-                        </ItemTemplate>
-                    </MudCarousel>
-                </MudContainer>
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.h3">¡Creando sugerencia!</MudText>
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
+                    Estamos trabajando duro para crear la sugerencia y tenerlo de nuevo en línea pronto. 💼💻
+                </MudText>
+
+                <MudItem class="d-flex flex-column justify-center align-self-center mt-3">
+                    <div class="hourglass"></div>
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                </MudItem>
+
+            </MudItem>
+            
         }
         else
         {
@@ -3397,7 +3397,7 @@ else
 
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Info" OnClick="CreateSuggestion" Disabled="@enableCreateSuggestion">@Localizer["generateSuggestion"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="() => StartCreateSuggestion()" Disabled="@enableCreateSuggestion">@Localizer["generateSuggestion"]</MudButton>
         </DialogActions>
     </MudDialog>
     @* JobObservationDetails dialog *@
@@ -3419,8 +3419,23 @@ else
     <MudDialog DisableSidePadding="false" @bind-IsVisible="ShowLoading" Options="dialogOptions">
         <DialogContent>
             <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                @if( isButtonDisabled){
 
-                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                 <MudItem Class="mud-width-full d-flex flex-column flex-column justify-center" style="height:100%">
+
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto" Typo="Typo.h3">¡Creando sugerencia!</MudText>
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">
+                        Estamos trabajando duro para crear la sugerencia y tenerlo de nuevo en línea pronto. 💼💻
+                    </MudText>
+
+                    <MudItem class="d-flex flex-column justify-center align-self-center mt-3">
+                        <div class="hourglass"></div>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                    </MudItem>
+
+            </MudItem>
+            }else{
+                 <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
                     <ItemTemplate>
                         <div class="d-flex flex-column flex-column justify-center" style="height:100%">
                             <MudItem class="d-flex flex-column justify-center align-self-center">
@@ -3431,6 +3446,7 @@ else
                         </div>
                     </ItemTemplate>
                 </MudCarousel>
+            }
             </MudContainer>
         </DialogContent>
         <DialogActions>

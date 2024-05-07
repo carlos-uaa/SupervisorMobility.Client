@@ -57,6 +57,15 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
 
         Dictionary<int, SOSRegUserOperationRelationship?> Get_SOS_Registers_UserOperationRelationship(int dist_Id);
+        
+        List<JobObservationNulls> Get_Suggest_AllSos_Month(int month);
+        List<JobObservationNulls> Get_Suggest_AllSos_Month_Dist(int month, int dist_Id);
+        List<JobObservationNulls> Get_Suggest_AllSos_Dist(int dist_Id);
+        
+        Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matrix_Month(int month);
+        Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matri_Month_Dist(int month, int dist_Id);
+        Dictionary<(int, int), List<JobObservationNulls>?> Get_Suggest_Registers_Matrix_Dist(int dist_Id);
+        Dictionary<int, SOSRegUserOperationRelationship?> Get_Suggested_SOS_Registers_UserOperationRelationship(int dist_Id);
 
         void UpdateJobItem(JobObservation UpdatedItem);
 
