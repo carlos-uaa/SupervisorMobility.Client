@@ -1031,7 +1031,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     return;
                 }
             }
+            //Eventual
+            _jobObservation.Type = 2;
+            _jobObservation.Status = 1;
 
+            FillJobObservationData();
+
+            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
+
+            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
+            if (result != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Job Observation Created", Severity.Info);
+
+                _jobObservation = result;
+                _ = await GenerateChecklistAnswers();
+                _ = await GenerateOperatorSignatureImage();
+
+                ClearJOStorage();
+
+                NavigationManager.NavigateTo("/jobobservation");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
+        }
+
+
+        public void FillJobObservationData()
+        {
             //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
             _jobObservation.ModelsSpecification = productSpecification;
@@ -1044,9 +1073,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.ProductId = jobProductId;
 
 
-            //Eventual
-            _jobObservation.Type = 2;
-            _jobObservation.Status = 1;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1118,26 +1144,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
-            var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
-
-            //var result = await JobObservationService.CreateJobObservation(_jobObservation);
-            if (result != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Job Observation Created", Severity.Info);
-
-                _jobObservation = result;
-                _ = await GenerateChecklistAnswers();
-                _ = await GenerateOperatorSignatureImage();
-
-                ClearJOStorage();
-
-                NavigationManager.NavigateTo("/jobobservation");
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
-
         }
+
 
         void CancelCreateJobObservation()
         {
@@ -1477,116 +1485,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             startHour = DateTime.Now.TimeOfDay;
 
-
-            //_jobObservation.OperationId = 0;
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
-            _jobObservation.ModelsSpecification = productSpecification;
-            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
-            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
-            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
-            _jobObservation.TaktTime = taktTime.ToString();
-            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
-            _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 2;
-
             if (_jobObservation.Justification == "")
             {
                 _jobObservation.Justification = null;
             }
 
 
-            if (CultureInfo.CurrentCulture.Name == "en-US")
-            {
-                var formatedStartDate = _jobObservation.StartDate;
-                var formatedEndDate = _jobObservation.EndDate;
-
-                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
-                var EnglishEndDate = formatedEndDate?.Month.ToString() + "/" + formatedEndDate?.Day.ToString() + "/" + formatedEndDate?.Year.ToString();
-                _jobObservation.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-                _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-
-
-
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-            }
-            else
-            {
-
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-
-            }
-
-            _jobObservation.Lup = _tempLup;
-            foreach (var question in questionAnswers)
-            {
-                if (question.Value.Answer != "" || question.Value.Edited)
-                {
-                    _jobObservation.ChecklistAnswers?.Add(question.Value);
-                }
-            }
+            FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1708,109 +1616,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            //_jobObservation.OperationId = 0;
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
-            _jobObservation.ModelsSpecification = productSpecification;
-            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
-            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
-            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
-            _jobObservation.TaktTime = taktTime.ToString();
-            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
-            _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
-
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 4;
 
-            if (CultureInfo.CurrentCulture.Name == "en-US")
-            {
-                var formatedStartDate = _jobObservation.StartDate;
-                var formatedEndDate = _jobObservation.EndDate;
 
-                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
-                var EnglishEndDate = formatedEndDate?.Month.ToString() + "/" + formatedEndDate?.Day.ToString() + "/" + formatedEndDate?.Year.ToString();
-                _jobObservation.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-                _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-
-
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-
-            }
-            else
-            {
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-
-            }
-
-            _jobObservation.Lup = _tempLup;
-            foreach (var question in questionAnswers)
-            {
-                if (question.Value.Answer != "" || question.Value.Edited)
-                {
-                    _jobObservation.ChecklistAnswers?.Add(question.Value);
-                }
-            }
+            FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1901,109 +1712,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-
-            //_jobObservation.OperationId = 0;
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
-            _jobObservation.ModelsSpecification = productSpecification;
-            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
-            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
-            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
-            _jobObservation.TaktTime = taktTime.ToString();
-            _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
-            _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
             //Eventual
             _jobObservation.Type = 2;
-
             _jobObservation.Status = 5;
 
-            if (CultureInfo.CurrentCulture.Name == "en-US")
-            {
-                var formatedStartDate = _jobObservation.StartDate;
-                var formatedEndDate = _jobObservation.EndDate;
 
-                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
-                var EnglishEndDate = formatedEndDate?.Month.ToString() + "/" + formatedEndDate?.Day.ToString() + "/" + formatedEndDate?.Year.ToString();
-                _jobObservation.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-                _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-
-            }
-            else
-            {
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
-                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
-
-                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                {
-                    Console.WriteLine(newDate1);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
-                }
-
-
-                if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
-                {
-                    Console.WriteLine(newDate2);
-                }
-                else
-                {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add($"Error in Date End", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
-                }
-                _jobObservation.PlannedStartDate = newDate1;
-                _jobObservation.PlannedEndDate = newDate2;
-                _jobObservation.StartDate = newDate1;
-                _jobObservation.EndDate = newDate2;
-
-            }
-
-            _jobObservation.Lup = _tempLup;
-            foreach (var question in questionAnswers)
-            {
-                if (question.Value.Answer != "" || question.Value.Edited)
-                {
-                    _jobObservation.ChecklistAnswers?.Add(question.Value);
-                }
-            }
+            FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -2095,6 +1809,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
+            //Eventual
+            _jobObservation.Type = 2;
+
+            _jobObservation.SsvSignature = "Signed";
+            _jobObservation.Status = 6;
+            endHour = DateTime.Now.TimeOfDay;
 
             //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
@@ -2106,13 +1826,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
-            _jobObservation.SsvSignature = "Signed";
 
-            //Eventual
-            _jobObservation.Type = 2;
-
-            _jobObservation.Status = 6;
-            endHour = DateTime.Now.TimeOfDay;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
