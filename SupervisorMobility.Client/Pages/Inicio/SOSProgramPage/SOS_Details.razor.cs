@@ -1765,6 +1765,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             Console.WriteLine("Final New Suggestion Generation");
             await DialogService.ShowMessageBox("Info!", "New suggestion created!", yesText: "OK!");
 
+
             // Restaura el estado y muestra la tabla nuevamente
             ShowLoading = false;
             enableCreateSuggestion = false;
