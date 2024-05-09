@@ -1,33 +1,9 @@
-using global::System;
-using global::System.Collections.Generic;
-using global::System.Linq;
-using global::System.Threading.Tasks;
-using global::Microsoft.AspNetCore.Components;
-using System.Net.Http;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
-using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using SupervisorMobility.Client;
-using SupervisorMobility.Client.Shared;
-using SupervisorMobility.Client.Services;
-using SupervisorMobility.Client.Data.Resources;
-using Microsoft.Extensions.Localization;
-using BlazorCameraStreamer;
-using System.Net.Http.Json;
-using AutoMapper;
 using MudBlazor;
 using MudBlazor.Utilities;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Services.BreadcrumsService;
-using SupervisorMobility.Client.Pages.Configuration.PlantPage;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -459,83 +435,48 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void SuggestYearlyTab()
         {
-            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+            DistSelect? tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
 
-            DistSelect? tmpSuggdist = null;
-            if (tmpdist == null)
+            if (tmpSuggdist != null)
             {
-                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
                 Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
             }
-            else
-            {
-                _distributions.ForEach(d => d.ShowDetails = false);
-            }
+
             StateHasChanged();
 
-            SuggestionMode = true;
-            MonthlyView = false;
+            ScheduleView = MonthlyView = false;
 
-            if (tmpdist != null)
-            {
-                await PrepareDataTable(tmpdist.DistributionId);
-                tmpdist.ShowDetails = true;
-            }
-            else if (tmpSuggdist != null)
+            SuggestionMode = true;
+
+            if (tmpSuggdist != null)
             {
                 await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
                 tmpSuggdist.distribution.ShowDetails = true;
             }
-            else if (!SuggestionMode)
-            {
-                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-                await PrepareDataTable();
-            }
-            else
-            {
-                await PrepareSuggestDataTable();
-            }
 
+          
             StateHasChanged();
         }
 
         private async void SuggestMontlyTab()
         {
-            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+            DistSelect? tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
 
-            DistSelect? tmpSuggdist = null;
-            if (tmpdist == null)
+            if (tmpSuggdist != null)
             {
-                tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
                 Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
             }
-            else
-            {
-                _distributions.ForEach(d => d.ShowDetails = false);
-            }
+            
             StateHasChanged();
 
             MonthlyView = SuggestionMode = true;
 
-            if (tmpdist != null)
-            {
-                await PrepareDataTable(tmpdist.DistributionId);
-                tmpdist.ShowDetails = true;
-            }
-            else if (tmpSuggdist != null)
+            if (tmpSuggdist != null)
             {
                 await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
                 tmpSuggdist.distribution.ShowDetails = true;
             }
-            else if (!SuggestionMode)
-            {
-                //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-                await PrepareDataTable();
-            }
-            else
-            {
-                await PrepareSuggestDataTable();
-            }
+            
 
             StateHasChanged();
         }
@@ -691,10 +632,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 await PrepareSuggestDataTable();
             }
+
             if (ScheduleView)
             {
                 GenerateCalendarHead();
                 GenerateCalendarBody();
+                if (SuggestionMode)
+                {
+                    await PrepareSuggestDataTable();
+                }
+                else
+                {
+                    await PrepareDataTable();
+                }
             }
 
 
@@ -802,11 +752,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             startDate = new DateTime(yearIndex, monthIndex, 1);
             endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-
-            startDate = new DateTime(yearIndex, monthIndex, 1);
-            endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
 
             if (tmpdist != null)
             {
@@ -928,12 +873,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 if (!MonthlyView || _All_Suggested_SOSJobobservation.Any(j => j.DistributionId != id_distribution) || _All_Suggested_SOSJobobservation?.Count == 0 || Suggested_Registers_Matrix?.Count == 0)
                 {
                     _All_Suggested_SOSJobobservation?.Clear();
-                    Suggested_Registers_Matrix?.Clear();
                     Suggested_SOS_Registers_UserOperationRelationship?.Clear();
                     _All_Suggested_SOSJobobservation = SOSDataServices.Get_Suggest_AllSos_Dist(id_distribution);
-                    Suggested_Registers_Matrix = SOSDataServices.Get_Suggest_Registers_Matrix_Dist(id_distribution);
                     Suggested_SOS_Registers_UserOperationRelationship = SOSDataServices.Get_Suggested_SOS_Registers_UserOperationRelationship(id_distribution);
                 }
+                    Suggested_Registers_Matrix?.Clear();
+                    Suggested_Registers_Matrix = SOSDataServices.Get_Suggest_Registers_Matrix_Dist(id_distribution);
             }
 
 
@@ -995,9 +940,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
+                        result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
+                        result.JobObservation.Operation = result.Operation;
+                        result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
+                        SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
+
+                        SOSDataServices._SosRegisters.Add(result);
+
+                        var matchingRegisters = SOSDataServices._SosRegisters?
+                       .Where(r => r.OperationId == OperationId && r.Year <= _sos_plan.AplicationYear && r.Month == month)
+                       .ToList();
+
+                        if(SOSDataServices.SOS_Registers_Matrix.TryGetValue((OperationId, month),out var contextFind))
+                        {
+                            if(contextFind != null)
+                            {
+                                contextFind = matchingRegisters;
+                            }
+                            else
+                            {
+                                SOS_Registers_Matrix.Add((OperationId, month), matchingRegisters);
+                            }
+                        }
+                        
+
                         disableBtnCreateSos = false;
 
                         ShowTable = false;
+                        //La pagina se resetea a shedule, hay que acomodar las variables
+                        MonthlyView = false;
+                        ScheduleView = true;
                         StateHasChanged();
 
 
@@ -1077,9 +1049,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
+                        result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
+                        result.JobObservation.Operation = result.Operation;
+                        result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
+                        SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
+
+                        SOSDataServices._SosRegisters.Add(result);
+
+                        var matchingRegisters = SOSDataServices._SosRegisters?
+                       .Where(r => r.OperationId == OperationId && r.Year <= _sos_plan.AplicationYear && r.Month == parsedDate.Month)
+                       .ToList();
+
+                        if (SOSDataServices.SOS_Registers_Matrix.TryGetValue((OperationId, parsedDate.Month), out var contextFind))
+                        {
+                            if (contextFind != null)
+                            {
+                                contextFind = matchingRegisters;
+                            }
+                            else
+                            {
+                                SOS_Registers_Matrix.Add((OperationId, parsedDate.Month), matchingRegisters);
+                            }
+                        }
+
                         disableBtnCreateSos = false;
 
-                        ShowTable = false;
+                        ShowTable = false; 
+                        //La pagina se resetea a shedule, hay que acomodar las variables
+                        MonthlyView = false;
+                        ScheduleView = true;
                         StateHasChanged();
 
 
@@ -1142,84 +1140,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
 
             StateHasChanged();
-        }
-
-
-
-        private async Task DownloadFileFromURL(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-
-        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
-        {
-
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-        }
-        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
-        {
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-
         }
 
         private bool visible = false;
@@ -1515,12 +1435,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         var result = await SOSServices.CreateSOSRegUserOperation(_sos_plan.SOSid, context.Register.Supervisor.UserId, op);
                         if (result != null)
                         {
-                            ShowTable = false;
-                            StateHasChanged();
                             context.Register = result;
                             context.Register.Supervisor = _Users.Find(u => u.UserId == context.Register.SupervisorId);
                             context.Exist = true;
                             context.StateUpdate = false;
+                            
+                            ShowTable = false;
+                            //La pagina se resetea a shedule, hay que acomodar las variables
+                            MonthlyView = false;
+                            ScheduleView = true;
+                            StateHasChanged();
+                            
                             await PrepareDataTable();
 
                             Snackbar.Clear();
@@ -1530,11 +1455,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                             StateHasChanged();
                         }
-
-
-
-
-
 
                     }
                     catch (Exception ex)
@@ -1574,18 +1494,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         if (result1 != null)
                                         {
                                             ShowTable = false;
-                                            StateHasChanged();
+                                            MonthlyView = false;
+                                            ScheduleView = true;
                                             context.Register = result1;
                                             context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
                                             context.Exist = true;
                                             context.StateUpdate = false;
+                                            StateHasChanged();
                                             await PrepareDataTable();
 
                                             Snackbar.Clear();
                                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                                             Snackbar.Add($"All Distribution Supervisor Assigned Changed", Severity.Info);
 
-
+                                            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
                                             StateHasChanged();
                                         }
                                         break;
@@ -1596,6 +1518,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         if (result2 != null)
                                         {
                                             ShowTable = false;
+                                            MonthlyView = false;
+                                            ScheduleView = true;
                                             StateHasChanged();
                                             context.Register = result2;
                                             context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
@@ -1607,6 +1531,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                                             Snackbar.Add($"All SOS Supervisor Assigned Changed", Severity.Info);
 
+                                            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
 
                                             StateHasChanged();
                                         }
@@ -1618,7 +1543,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         if (result3 != null)
                                         {
                                             ShowTable = false;
-                                            StateHasChanged();
+                                            MonthlyView = false;
+                                            ScheduleView = true; StateHasChanged();
                                             context.Register = result3;
                                             context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
                                             context.Exist = true;
@@ -1628,7 +1554,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                             Snackbar.Clear();
                                             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                                             Snackbar.Add($"SOS Supervisor Per Row Assigned", Severity.Info);
-
 
                                             StateHasChanged();
                                         }
@@ -1766,7 +1691,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             Task.Run(async () =>
             {
-                ShowLoading = true;
+                //ShowLoading = true;
                 await CreateSuggestion();
             }
            );
@@ -1783,7 +1708,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 await DialogService.ShowMessageBox("Info!", "Suggestion created!", yesText: "OK!");
                 Console.WriteLine($" Final First Sugg Generation");
 
-                ShowLoading = false;
+                //ShowLoading = false;
                 enableCreateSuggestion = false;
                 SVSinCharge = false;
                 isButtonDisabled = false;
@@ -1951,21 +1876,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 SearchJob.SupervisorId = context.Register.Supervisor.UserId;
 
                 Console.WriteLine($"Update SV");
+                visibleSuggestSVDialog = false;
             }
         }
 
         private async Task<AsyncVoidMethodBuilder> ApplySuggest()
         {
-            Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-            DistSelect? tmpSuggdist = null;
+            
+            DistSelect? tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
 
-            if (tmpdist == null)
+            if (tmpSuggdist != null)
             {
                 Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
-            }
-            else
-            {
-                _distributions.ForEach(d => d.ShowDetails = false);
             }
 
             isButtonDisabled = true;
@@ -1973,8 +1895,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             base.StateHasChanged();
             StateHasChanged();
 
+            //mandar absolutamente todas las existentes
 
-            var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, _All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
+            var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, SOSDataServices._All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
             if (result)
             {
                 StateHasChanged();
@@ -2084,7 +2007,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async void CloseToReprogramSuggestion()
         {
             ShowLoading = true;
+            int opid = (int)_Selected_Suggested_SOSJobobservatio_Null.OperationId;
+            int distid = (int)_Selected_Suggested_SOSJobobservatio_Null.DistributionId;
+            DateTime? oldDate = _Selected_Suggested_SOSJobobservatio_Null.StartDate;
+            DateTime? newDate= _Selected_Suggested_SOSJobobservation.PlannedStartDate;
+
+            if (Suggested_Registers_Matrix.TryGetValue((distid, oldDate.Value.Month), out var Suggestcontext))
+            {
+                var itemToMove = Suggestcontext.Find(j => j.StartDate.Value.Month == oldDate.Value.Month && j.OperationId == opid);
+
+                if (itemToMove != null)
+                {
+                    // Remover el elemento encontrado de la lista actual (Suggestcontext)
+                    Suggestcontext.Remove(itemToMove);
+
+                    // Obtener la lista correspondiente al nuevo mes (newMonth)
+                    if (Suggested_Registers_Matrix.TryGetValue((distid, newDate.Value.Month), out var targetContext))
+                    {
+                        // Agregar el elemento a la lista correspondiente al nuevo mes
+                        targetContext.Add(itemToMove);
+
+                        // Actualizar el diccionario con la nueva lista
+                        Suggested_Registers_Matrix[(distid, newDate.Value.Month)] = targetContext;
+                    }
+                }
+            }
+
             _mapper.Map(_Selected_Suggested_SOSJobobservation, _Selected_Suggested_SOSJobobservatio_Null);
+            //actualizar la matrix unicamente
             if (ScheduleView)
             {
                 GenerateCalendarHead();

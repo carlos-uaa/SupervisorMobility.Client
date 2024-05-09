@@ -1742,7 +1742,7 @@
 
                                                                     @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, _yearMonth.Value.Month), out var context))
                                                                     {
-                                                                        var job = context.FirstOrDefault();
+                                                                        var job = context?.FirstOrDefault();
 
                                                                         @if (_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId && j.Status == 7 && j.PlannedStartDate?.Month == _yearMonth?.Month && j.PlannedStartDate?.Day < date.Day && j.PlannedStartDate?.Year == _yearMonth?.Year) && date >= DateTime.Now)
                                                                         {
@@ -1755,7 +1755,7 @@
                                                                                     </MudMenuItem>
                                                                                 </MudMenu>
 
-                                                                                @if (job.JobObservation.PlannedStartDate?.Day == date.Day)
+                                                                                @if (job != null && job?.JobObservation?.PlannedStartDate?.Day == date.Day)
                                                                                 {
                                                                                     <MudTooltip Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
                                                                                         <MudIcon Icon="@Icons.Material.Filled.CropSquare" Color="Color.Warning" />
@@ -1764,7 +1764,7 @@
 
                                                                             </div>
                                                                         }
-                                                                        else if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
+                                                                        else if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId) && date >= DateTime.Now.Date )
                                                                         {
                                                                             <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Disabled="@disableBtnCreateSos" OnClick="@( () => CreateJobObservationInMonth(currentIndex, Distribution_Item.DistributionId, op.OperationId))"></MudButton>
                                                                         }
@@ -3166,7 +3166,7 @@
 
                                                                                             <MudTd style="display: flex; flex-wrap: wrap; justify-content: center">
                                                                                                
-                                                                                                    @if (Suggestcontext.Any(j => j.PlannedStartDate.Value.Month == currentIndex && j.OperationId == op.OperationId))
+                                                                                                    @if (Suggestcontext.Any(j => j.StartDate.Value.Month == currentIndex && j.OperationId == op.OperationId))
                                                                                                     {
                                                                                                         <MudTooltip @onclick="()=>OpenToReprogramSuggestion(Suggestcontext.FirstOrDefault())" @ontouchstart="()=>OpenToReprogramSuggestion(Suggestcontext.FirstOrDefault())" Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
                                                                                                             <MudIcon Icon="@Icons.Material.Filled.CropSquare" Color="Color.Warning" />
