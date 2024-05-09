@@ -47,6 +47,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                     ExpertiseTable.Add( new());
                 }
             }
+            await base.OnInitializedAsync();
         }
 
         private void DateChanged(DateRange range, int index)

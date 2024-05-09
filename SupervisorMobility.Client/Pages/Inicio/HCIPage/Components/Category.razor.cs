@@ -38,11 +38,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         [Parameter]
         public EventCallback<(HCICategory, int)> Upd { get; set; }
 
-        public List<HCICategory> ExistingCategories = new List<HCICategory>();
+        public List<Department> ExistingCategories = new List<Department>();
+        public bool dataloaded;
 
         protected async override Task OnInitializedAsync()
         {
-            ExistingCategories = await HCIService.GetHCICategories();
+            ExistingCategories = await DepartmentService.GetDepartments();
             if (!CategoryTable.Any())
             {
                 for (int i = 0; i < 5; i++)
@@ -50,6 +51,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                     CategoryTable.Add( new());
                 }
             }
+            dataloaded = true;
         }
 
         private void DateChanged(DateTime? range, int index)
@@ -57,9 +59,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             CategoryTable.ElementAt(index).Date = range;
             Upd.InvokeAsync((CategoryTable[index], index));
         }
-        private void OptionChanged(string val, int idx) //Changethis for the select
+        private void OptionChanged(int opt, int idx) //Changethis for the select
         {
-            CategoryTable[idx].Name = val;
+            CategoryTable[idx].ChosenCategoryDepartmentId = opt;
             Upd.InvokeAsync((CategoryTable[idx], idx));
         }
 

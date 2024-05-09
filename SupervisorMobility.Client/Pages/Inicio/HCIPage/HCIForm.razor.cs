@@ -52,7 +52,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
 
             if (HCIID == null)
             {
-                if(userId != null)
+                if(userId == 0)
                 {
                     _hci.User = await UsrsService.GetUser(userId);
                     _hci.UserId = userId;
@@ -115,7 +115,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     Snackbar.Add("Error", Severity.Error);
                 }
             }
-
+            NavManager.NavigateTo("/HCI");
         }
 
         //Knowledge & Qualification Control
@@ -301,7 +301,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             //    if (checkExpertise(expertise[i])) expertise.RemoveAt(i);
             //}
             expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
-            categories.RemoveAll(p=>p.Name.IsNullOrEmpty() && p.HCICategoryId == 0);
+            categories.RemoveAll(p=>p.ChosenCategoryDepartmentId == 0 && p.HCICategoryId == 0);
             comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.ComentaryId == 0);
         }
 
