@@ -1,16 +1,8 @@
-﻿using static System.Net.WebRequestMethods;
-using System.Text.Json.Serialization;
-using static MudBlazor.CategoryTypes;
-using SupervisorMobility.Client.Data.Entities;
+﻿using System.Text.Json.Serialization;
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using MudBlazor;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
-using DocumentFormat.OpenXml.Presentation;
 using System.Diagnostics;
-using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage;
-using DocumentFormat.OpenXml.Bibliography;
-using System.Net.Http.Headers;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -574,8 +566,22 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             }
             finally
             {
+                Suggested_Registers_Matrix?.Clear();
 
-               
+
+                foreach (var dist in _distributions)
+                {
+                    for (int i = 1; i < 13; i++)
+                    {
+                        int currentindex = i;
+                        var matchingRegisters = _All_Suggested_SOSJobobservation?
+                           .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
+                           .ToList();
+
+                        Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
+                    }
+                }
+
             }
 
             return new AsyncVoidMethodBuilder();
