@@ -4,6 +4,11 @@ using MudBlazor;
 using MudBlazor.Utilities;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Services.BreadcrumsService;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using System.Reflection.Metadata.Ecma335;
+using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -1479,119 +1484,122 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                             {
                                 context.Register.SupervisorId = context.Register.Supervisor.UserId;
 
-                                var option = await DialogService.ShowMessageBox(
-                                $"{Localizer1["SOS_Title_AssignSV"]}",
-                                (MarkupString)$"{Localizer1["SOS_Body_AssignSV"]}",
-                                yesText: $"{Localizer1["SOS_Yes_AssignSV"]}!", noText: $"{Localizer1["SOS_No_AssignSV"]} SSV", cancelText: $"{Localizer1["SOS_Null_AssignSV"]}!");
+                                var dialogOptions = new DialogOptions { FullWidth = true, DisableBackdropClick = true };
 
-                                Console.WriteLine($"Option : {option}");
-                                //mensaje de opocion
-                                switch (option)
+                                var dialog = await DialogService.ShowAsync<AssignSVDialog>(Localizer1["SOS_Title_AssignSV"], dialogOptions);
+                                var result = await dialog.Result;
+
+                                if(!result.Canceled)
                                 {
-                                    case true:
-                                        //Todos los reguistros Unicamente en la misma distribucion
-                                        var result1 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 1);
-                                        if (result1 != null)
-                                        {
-                                            ShowTable = false;
-                                            MonthlyView = false;
-                                            ScheduleView = true;
-                                            context.Register = result1;
-                                            context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
-                                            context.Exist = true;
-                                            context.StateUpdate = false;
-                                            StateHasChanged();
-                                            await PrepareDataTable();
-
-                                            Snackbar.Clear();
-                                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                            Snackbar.Add($"All Distribution Supervisor Assigned Changed", Severity.Info);
-
-                                            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-                                            StateHasChanged();
-                                        }
-                                        break;
-
-                                    case false:
-                                        //Todos los reguistros en la SOS
-                                        var result2 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 2);
-                                        if (result2 != null)
-                                        {
-                                            ShowTable = false;
-                                            MonthlyView = false;
-                                            ScheduleView = true;
-                                            StateHasChanged();
-                                            context.Register = result2;
-                                            context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
-                                            context.Exist = true;
-                                            context.StateUpdate = false;
-                                            await PrepareDataTable();
-
-                                            Snackbar.Clear();
-                                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                            Snackbar.Add($"All SOS Supervisor Assigned Changed", Severity.Info);
-
-                                            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-
-                                            StateHasChanged();
-                                        }
-                                        break;
-
-                                    case null:
-                                        //Todos los reguistros en la operacion ROW
-                                        var result3 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 3);
-                                        if (result3 != null)
-                                        {
-                                            ShowTable = false;
-                                            MonthlyView = false;
-                                            ScheduleView = true; StateHasChanged();
-                                            context.Register = result3;
-                                            context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
-                                            context.Exist = true;
-                                            context.StateUpdate = false;
-                                            await PrepareDataTable();
-
-                                            Snackbar.Clear();
-                                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                                            Snackbar.Add($"SOS Supervisor Per Row Assigned", Severity.Info);
-
-                                            StateHasChanged();
-                                        }
-                                        break;
-                                }
-
-                                if (option != null)
-                                {
-                                    SOS_Registers_UserOperationRelationship.Clear();
-                                    OperationsInDistributionCount.Clear();
-                                    Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
-                                    _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
-
-                                    foreach (var item in _SosRegistersrUserOperation)
+                                    bool? option = (bool?)result.Data;
+                                    Console.WriteLine($"Option : {option}");
+                                    //mensaje de opocion
+                                    switch (option)
                                     {
-                                        SOSRegUserOperationRelationship regAux = new();
-                                        regAux.Register = item;
-                                        regAux.StateUpdate = false;
-                                        regAux.Exist = true;
-                                        SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
+                                        case true:
+                                            //Todos los reguistros Unicamente en la misma distribucion
+                                            var result1 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 1);
+                                            if (result1 != null)
+                                            {
+                                                ShowTable = false;
+                                                MonthlyView = false;
+                                                ScheduleView = true;
+                                                context.Register = result1;
+                                                context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                                context.Exist = true;
+                                                context.StateUpdate = false;
+                                                StateHasChanged();
+                                                await PrepareDataTable();
+
+                                                    Snackbar.Clear();
+                                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                                    Snackbar.Add($"All Distribution Supervisor Assigned Changed", Severity.Info);
+
+                                                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                                                StateHasChanged();
+                                            }
+                                            break;
+
+                                        case false:
+                                            //Todos los reguistros en la SOS
+                                            var result2 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 2);
+                                            if (result2 != null)
+                                            {
+                                                ShowTable = false;
+                                                MonthlyView = false;
+                                                ScheduleView = true;
+                                                StateHasChanged();
+                                                context.Register = result2;
+                                                context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                                context.Exist = true;
+                                                context.StateUpdate = false;
+                                                await PrepareDataTable();
+
+                                                    Snackbar.Clear();
+                                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                                    Snackbar.Add($"All SOS Supervisor Assigned Changed", Severity.Info);
+
+                                                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+
+                                                    StateHasChanged();
+                                                }
+                                                break;
+
+                                        case null:
+                                            //Todos los reguistros en la operacion ROW
+                                            var result3 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 3);
+                                            if (result3 != null)
+                                            {
+                                                ShowTable = false;
+                                                MonthlyView = false;
+                                                ScheduleView = true; StateHasChanged();
+                                                context.Register = result3;
+                                                context.Register.Supervisor = _Users.ToList().Find(u => u.UserId == context.Register.SupervisorId);
+                                                context.Exist = true;
+                                                context.StateUpdate = false;
+                                                await PrepareDataTable();
+
+                                                    Snackbar.Clear();
+                                                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                                    Snackbar.Add($"SOS Supervisor Per Row Assigned", Severity.Info);
+
+                                                StateHasChanged();
+                                            }
+                                            break;
                                     }
 
-                                    foreach (var itemOp in SOSDataServices._All_Operations)
+                                    if (option != null)
                                     {
-                                        if (!SOS_Registers_UserOperationRelationship.TryGetValue(itemOp.OperationId, out var contextitemOp))
+                                        SOS_Registers_UserOperationRelationship.Clear();
+                                        OperationsInDistributionCount.Clear();
+                                        Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
+                                        _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
+
+                                        foreach (var item in _SosRegistersrUserOperation)
                                         {
-                                            //si no existre se crea de manera artificial
                                             SOSRegUserOperationRelationship regAux = new();
-                                            regAux.Register = new();
-                                            regAux.Exist = false;
+                                            regAux.Register = item;
                                             regAux.StateUpdate = false;
-                                            SOS_Registers_UserOperationRelationship.Add(itemOp.OperationId, regAux);
+                                            regAux.Exist = true;
+                                            SOS_Registers_UserOperationRelationship.Add((int)item.OperationId, regAux);
                                         }
+
+                                        foreach (var itemOp in SOSDataServices._All_Operations)
+                                        {
+                                            if (!SOS_Registers_UserOperationRelationship.TryGetValue(itemOp.OperationId, out var contextitemOp))
+                                            {
+                                                //si no existre se crea de manera artificial
+                                                SOSRegUserOperationRelationship regAux = new();
+                                                regAux.Register = new();
+                                                regAux.Exist = false;
+                                                regAux.StateUpdate = false;
+                                                SOS_Registers_UserOperationRelationship.Add(itemOp.OperationId, regAux);
+                                            }
+                                        }
+
+
                                     }
-
-
                                 }
-
 
                             }
                             catch (Exception ex)

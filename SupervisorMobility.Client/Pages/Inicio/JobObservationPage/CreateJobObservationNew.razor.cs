@@ -28,7 +28,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         DateTime newDate1;
         DateTime newDate2;
 
-        List<JobObservation> _jobObservations;
         List<Plant> _plants { get; set; } = new();
         List<Product> _products { get; set; } = new();
         List<Area> _areas = new();
@@ -278,7 +277,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (_jobObservation.ProductId != null)
                         {
                             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                            if(selectedProduct != null)
+                            {
+                                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                            }
                         }
 
                         Snackbar.Clear();
@@ -405,7 +407,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (user.UserType == 2)
                 {
-                    _jobObservation.PlantId = (int)user.PlantId;
+                    _jobObservation.PlantId = user.PlantId.HasValue ? (int)user.PlantId : 0;
                     _jobObservation.AreaId = 0;
                     _jobObservation.SupervisorId = 0;
                     //_allSupervisors = await UsersService.GetUsersByType(3);
@@ -426,21 +428,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     if (!PatPlantId.IsNullOrEmpty())
                     {
-                        _jobObservation.PlantId = int.Parse(PatPlantId);
+                        _jobObservation.PlantId = int.Parse(PatPlantId ?? "0");
 
-                        _jobObservation.AreaId = int.Parse(PatAreaId);
+                        _jobObservation.AreaId = int.Parse(PatAreaId ?? "0");
 
                         _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
                         _areas = _areas.OrderBy(a => a.Description).ToList();
 
-                        _jobObservation.SupervisorId = int.Parse(PatSupervisorId);
+                        _jobObservation.SupervisorId = int.Parse(PatSupervisorId ?? "0");
 
                         _jobObservation.Supervisor = await UsersService.GetUser(_jobObservation.SupervisorId);
 
                         _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
                         _distributions = _distributions.OrderBy(d => d.Description).ToList();
 
-                        _jobObservation.DistributionId = int.Parse(PatDistributionId);
+                        _jobObservation.DistributionId = int.Parse(PatDistributionId ?? "0");
 
                         _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
                         _products = _products.OrderBy(p => p.Description).ToList();
@@ -448,7 +450,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
                         _operations = _operations.OrderBy(o => o.Description).ToList();
 
-                        _jobObservation.OperationId = int.Parse(PatOperationId);
+                        _jobObservation.OperationId = int.Parse(PatOperationId ?? "0");
 
                         if (user.UserType == 1)
                         {
@@ -468,15 +470,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                         }
 
-                        _jobObservation.OperatorId = int.Parse(PatOperatorId);
+                        _jobObservation.OperatorId = int.Parse(PatOperatorId ?? "0");
                     }
                     else
                     {
-                        _jobObservation.PlantId = (int)user.PlantId;
+                        _jobObservation.PlantId = user.PlantId.HasValue ? (int)user.PlantId : 0;
+                        _jobObservation.AreaId = user.AreaId.HasValue ? (int)user.AreaId : 0;
 
-                        _jobObservation.AreaId = (int)user.AreaId;
 
-                        _areas = await AreaServices.GetAreas((int)user.PlantId);
+                        _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
                         _areas = _areas.OrderBy(a => a.Description).ToList();
 
 
@@ -737,7 +739,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             return Math.Round(centiseconds, 2);
         }
 
-        private void OnTimerTick(object sender, ElapsedEventArgs e)
+        private void OnTimerTick(object? sender, ElapsedEventArgs e)
         {
             if (isTimerRunning2)
             {
@@ -878,7 +880,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             Waiting = new int[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            if(selectedProduct != null)
+            {
+                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+
+            }
             var standardTimeIndex = _specifications.FindIndex(s => s == productSpecification);
 
             foreach (var op in _filteredOperations)
@@ -1315,11 +1321,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            User svAux = _supervisors?.Find(u => _jobObservation.SupervisorId == u.UserId);
+            User? svAux = _supervisors?.Find(u => _jobObservation.SupervisorId == u.UserId);
 
             foreach (Lup LupItem in lupsToAdd)
             {
-                LupItem.Observer = svAux.Name;
+                LupItem.Observer = svAux?.Name ?? "";
 
                 LupItem.JobObservationId = 0;
                 LupItem.Pillar = pillar;
@@ -1525,10 +1531,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         foreach (var question in category.ChecklistQuestions)
                         {
                             int secNum = section;
-                            if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                            if (_jobObservation.ChecklistAnswers != null && _jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
                             {
-                                ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
-                                if (string.IsNullOrEmpty(answer.Answer))
+                                ChecklistAnswer? answer = _jobObservation.ChecklistAnswers?.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                if (answer != null && string.IsNullOrEmpty(answer.Answer))
                                 {
                                     Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
                                     return true;
@@ -2002,52 +2008,42 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
 
-        private async void CloseModalFiles()
+        private void CloseModalFiles()
         {
             CodePathModalDisplay = false;
 
             StateHasChanged();
 
         }
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
+
+        private void OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
-          
             ShowLoading = true;
             SOSCodePathId = itemselected.SOSCodePathId;
             switch (panelSelect)
             {
                 case 1:
-            SosPanelOpen = "HOE";
+                    SosPanelOpen = "HOE";
                     break;
-
                 case 2:
                     SosPanelOpen = "CCP";
                     break;
-
                 case 3:
                     SosPanelOpen = "GOS";
                     break;
-
                 case 4:
                     SosPanelOpen = "HOE_CD";
                     break;
-
                 case 5:
                     SosPanelOpen = "CCP_CD";
                     break;
-
                 case 6:
                     SosPanelOpen = "GOS_CD";
                     break;
-
-             
             }
-
             CodePathModalDisplay = true;
             StateHasChanged();
-            return new AsyncVoidMethodBuilder();
         }
-       
 
 
         private async Task DownloadFileFromURL(string urlroute, string namefile)
@@ -2080,10 +2076,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
                     if (result == "File downloaded successfully")
                     {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
+                        if (DownloadLink != null)
                         {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink.operation.NameDocKey);
+                            if (DeleteTemp != null)
+                            {
+                                Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            }
                         }
                     }
 
@@ -2110,10 +2109,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
                     if (result == "File downloaded successfully")
                     {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
+                        if (DownloadLink != null)
                         {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink.operation.NameDocKey);
+                            if (DeleteTemp is not null)
+                            {
+                                Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            }
+
                         }
                     }
 
@@ -2194,41 +2197,44 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
-            foreach (var pillar in question.Pillars)
+            if (question.Pillars != null)
             {
-                switch (pillar)
+                foreach (var pillar in question.Pillars)
                 {
-                    case 1:
-                        areaS = notGood;
-                        area_ListS?.Add($"{secction}.{question.CategorySequence}- " + notGood);
-                        SyncLocalStorage.SetItem("area_ListS", area_ListS);
-                        Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
-                        break;
-                    case 2:
-                        areaQ = notGood;
-                        area_ListQ?.Add($"{secction}.{question.CategorySequence}- " + notGood);
-                        SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
-                        Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
-                        break;
-                    case 3:
-                        areaD = notGood;
-                        area_ListD?.Add($"{secction}.{question.CategorySequence}- " + notGood);
-                        SyncLocalStorage.SetItem("area_ListD", area_ListD);
-                        Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
-                        break;
-                    case 4:
-                        areaC = notGood;
-                        area_ListC?.Add($"{secction}.{question.CategorySequence}- " + notGood);
-                        SyncLocalStorage.SetItem("area_ListC", area_ListC);
-                        Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
-                        break;
-                    case 5:
-                        areaOther = notGood;
-                        area_ListOther?.Add($"{secction}.{question.CategorySequence}- " + notGood);
-                        SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
-                        Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
-                        break;
+                    switch (pillar)
+                    {
+                        case 1:
+                            areaS = notGood;
+                            area_ListS?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            SyncLocalStorage.SetItem("area_ListS", area_ListS);
+                            Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                            break;
+                        case 2:
+                            areaQ = notGood;
+                            area_ListQ?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
+                            Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
+                            break;
+                        case 3:
+                            areaD = notGood;
+                            area_ListD?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            SyncLocalStorage.SetItem("area_ListD", area_ListD);
+                            Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
+                            break;
+                        case 4:
+                            areaC = notGood;
+                            area_ListC?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            SyncLocalStorage.SetItem("area_ListC", area_ListC);
+                            Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
+                            break;
+                        case 5:
+                            areaOther = notGood;
+                            area_ListOther?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
+                            Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
+                            break;
 
+                    }
                 }
             }
 
@@ -2262,55 +2268,58 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            foreach (var pillarId in question.Pillars)
+            if(question.Pillars != null)
             {
-                switch (pillarId)
+                foreach (var pillarId in question.Pillars)
                 {
-                    case 1:
-                        int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
-                        if (area_ListS != null && index1 != -1)
-                        {
-                            area_ListS[index1] = fullEntry;
-                            SyncLocalStorage.SetItem("area_ListS", area_ListS);
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
-                        }
-                        break;
-                    case 2:
-                        int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
-                        if (area_ListQ != null && index2 != -1)
-                        {
-                            area_ListQ[index2] = fullEntry;
-                            SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
-                        }
-                        break;
-                    case 3:
-                        int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
-                        if (area_ListD != null && index3 != -1)
-                        {
-                            area_ListD[index3] = fullEntry;
-                            SyncLocalStorage.SetItem("area_ListD", area_ListD);
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
-                        }
-                        break;
-                    case 4:
-                        int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
-                        if (area_ListC != null && index4 != -1)
-                        {
-                            area_ListC[index4] = fullEntry;
-                            SyncLocalStorage.SetItem("area_ListC", area_ListC);
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
-                        }
-                        break;
-                    case 5:
-                        int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
-                        if (area_ListOther != null && index5 != -1)
-                        {
-                            area_ListOther[index5] = fullEntry;
-                            SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
-                        }
-                        break;
+                    switch (pillarId)
+                    {
+                        case 1:
+                            int index1 = area_ListS?.FindIndex(s => s?.IndexOf(searchString) != -1) ?? -1;
+                            if (area_ListS != null && index1 != -1)
+                            {
+                                area_ListS[index1] = fullEntry;
+                                SyncLocalStorage.SetItem("area_ListS", area_ListS);
+                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            }
+                            break;
+                        case 2:
+                            int index2 = area_ListQ?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            if (area_ListQ != null && index2 != -1)
+                            {
+                                area_ListQ[index2] = fullEntry;
+                                SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
+                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            }
+                            break;
+                        case 3:
+                            int index3 = area_ListD?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            if (area_ListD != null && index3 != -1)
+                            {
+                                area_ListD[index3] = fullEntry;
+                                SyncLocalStorage.SetItem("area_ListD", area_ListD);
+                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            }
+                            break;
+                        case 4:
+                            int index4 = area_ListC?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            if (area_ListC != null && index4 != -1)
+                            {
+                                area_ListC[index4] = fullEntry;
+                                SyncLocalStorage.SetItem("area_ListC", area_ListC);
+                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            }
+                            break;
+                        case 5:
+                            int index5 = area_ListOther?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            if (area_ListOther != null && index5 != -1)
+                            {
+                                area_ListOther[index5] = fullEntry;
+                                SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
+                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            }
+                            break;
+                    }
                 }
             }
 
@@ -2473,13 +2482,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await LocalStorage.SetItemAsync("QAnsImgFF", imagesFromFile);
                 try
                 {
-                    item.capturedImagesFiles.RemoveAt(index);
+                    item?.capturedImagesFiles?.RemoveAt(index);
                 }
                 catch(Exception ex)
                 {
                     Console.WriteLine("Nutin'", ex.Message);
                 }
-                item.MediaUris.RemoveAt(index);
+                item?.MediaUris.RemoveAt(index);
 
             }
             base.StateHasChanged();
@@ -2487,7 +2496,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
         {
-            if (_jobObservation.ChecklistAnswers.Count > 0)
+            if (_jobObservation.ChecklistAnswers?.Count > 0)
             {
                 foreach ((ChecklistAnswer question, int index) in _jobObservation.ChecklistAnswers.Select((question, index) => (question, index)))
                 {
@@ -2601,10 +2610,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         content.Add(content: new StringContent(question.QuestionID.ToString()), name: "checklistAnswer.QuestionID");
                         content.Add(content: new StringContent(question.Prompt.ToString()), name: "checklistAnswer.Prompt");
                         content.Add(content: new StringContent(question.Answer.ToString()), name: "checklistAnswer.Answer");
-                        if (!question.CommentarySV.IsNullOrEmpty())
-                            content.Add(content: new StringContent(question.CommentarySV?.ToString()), name: "checklistAnswer.CommentarySV");
-                        if (!question.CommentarySSV.IsNullOrEmpty())
-                            content.Add(content: new StringContent(question.CommentarySSV?.ToString()), name: "checklistAnswer.CommentarySSV");
+                        if (!string.IsNullOrEmpty(question.CommentarySV))
+                            content.Add(new StringContent(question.CommentarySV), "checklistAnswer.CommentarySV");
+
+                        if (!string.IsNullOrEmpty(question.CommentarySSV))
+                            content.Add(new StringContent(question.CommentarySSV), "checklistAnswer.CommentarySSV");
 
 
 
@@ -2712,14 +2722,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task UpdateOperator()
         {
-            _jobObservation.Operator = operatorUsers.FirstOrDefault(p=>p.UserId == _jobObservation.OperatorId);
+            var operatorUser = operatorUsers.FirstOrDefault(p => p.UserId == _jobObservation.OperatorId);
+            if (operatorUser != null)
+            {
+                _jobObservation.Operator = operatorUser;
+            }
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             SetAsCurrentJobObservation();
         }
 
         private async Task UpdateOperation()
         {
-            _jobObservation.Operation = _operations.FirstOrDefault(p=>p.OperationId == _jobObservation.OperationId);
+            var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
+            if (operation != null)
+            {
+                _jobObservation.Operation = operation;
+            }
+
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             SetAsCurrentJobObservation();
         }
