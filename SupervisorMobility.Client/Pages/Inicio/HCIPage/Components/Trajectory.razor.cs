@@ -20,13 +20,23 @@ using Microsoft.Extensions.Localization;
 using MudBlazor;
 using BlazorCameraStreamer;
 using Blazored.SessionStorage;
+using DocumentFormat.OpenXml.Packaging;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
     public partial class Trajectory
     {
         [Parameter]
-        public List<UserCareerPath> TrajectoryTable { get; set; } = new List<UserCareerPath>();
+        public bool details { get; set; }
+        [Parameter]
+        public List<UserCareerPath> TrajectoryTable { get; set; }
+
+        [Parameter]
+        public EventCallback<UserCareerPath> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(UserCareerPath, int)> Upd { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -37,6 +47,41 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                     TrajectoryTable.Add( new UserCareerPath { CareerPathNo = i+1 });
                 }
             }
+        }
+
+        private void DateChanged(DateTime? range, int index)
+        {
+            TrajectoryTable.ElementAt(index).ChangeDate = range;
+            Upd.InvokeAsync((TrajectoryTable[index], index));
+        }
+        private void TextChanged(string value, int index, int type)
+        {
+            switch (type)
+            {
+                case 0:
+                    TrajectoryTable[index].Department = value;
+                    break;
+                case 1:
+                    TrajectoryTable[index].Process = value;
+                    break;
+                case 2:
+                    TrajectoryTable[index].OperationDescription = value;
+                    break;
+            }
+            Upd.InvokeAsync((TrajectoryTable[index], index));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            UserCareerPath niu = new UserCareerPath { CareerPathNo = TrajectoryTable.Count + 1 };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 }

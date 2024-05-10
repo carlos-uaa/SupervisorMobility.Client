@@ -56,7 +56,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 if (logged)
                 {
                     await GetUserAsync();
-                    _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true);
+                    _SosReviewList = await SOSReviewServices.GetAllSOSReviews(true, true);
 
 
                     if (user.UserType == 2)

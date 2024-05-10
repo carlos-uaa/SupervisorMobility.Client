@@ -1,22 +1,50 @@
-﻿
+﻿@inject IDepartmentService DepartmentService
+@inject IStringLocalizer<Resource> Localizer
 <MudSimpleTable Elevation="0">
-    <thead>
-        <tr>
-            <th style="text-align:center">Category or level</th>
-            <th style="text-align:center">Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in CategoryTable)
-        {
+    @if(dataloaded){
+        <thead>
             <tr>
-                <td>
-                    <MudTextField @bind-Value="item.Value.category" Variant="Variant.Text" FullWidth></MudTextField>
-                </td>
-                <td>
-                    <MudDatePicker @bind-Date="item.Value.date" Clearable="true" />
-                </td>
+                <th style="text-align:center">@Localizer["CatOrLvl"]</th>
+                <th style="text-align:center">@Localizer["date"]</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
+        </thead>
+        <tbody>
+            @foreach (var item in CategoryTable.Select((value, index) => new { index, value }))
+            {
+                if(item.value.IsActive.Value){
+                    <tr>
+                        <td>
+                            @if (!details)
+                            {
+                                <MudSelect T="int" Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" Value="item.value.ChosenCategoryDepartmentId" ValueChanged="opt=>OptionChanged(opt, item.index)">
+                                    <MudSelectItem Disabled="true" Value="0">Select a category</MudSelectItem>
+                                    @foreach (var ctgr in ExistingCategories)
+                                    {
+                                        <MudSelectItem Value="ctgr.DepartmentId">@($"{ctgr.Code} - {ctgr.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                @* <MudTextField Value="item.value.Name" ValueChanged="(string? val)=>OptionChanged(val,item.index)" Variant="Variant.Text" FullWidth></MudTextField> *@
+                            }
+                            else
+                            {
+                                var tempCategory = ExistingCategories.FirstOrDefault(p => p.DepartmentId == item.value.ChosenCategoryDepartmentId);
+                                <MudTextField Value="@($"{tempCategory.Code} - {tempCategory.Description}")" Variant="Variant.Text" FullWidth ReadOnly></MudTextField>
+                            }
+                        </td>
+                        <td>
+                            <MudDatePicker Date="item.value.Date" DateChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details"/>
+                        </td>
+                        <td style="width:20%">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
+                            @if (item.value.Equals(CategoryTable.LastOrDefault(p => p.IsActive == true)))
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    }
 </MudSimpleTable>

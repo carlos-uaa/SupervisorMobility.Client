@@ -16,12 +16,15 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? Email { get; set; } = string.Empty;
         public int UserType { get; set; }
 
+        public string? Management { get; set; }
+        public string? Department { get; set; }
+        public string? Process { get; set; }
+
         public int? SuperiorId { get; set; }
         public User? Superior { get; set; }
 
         public ICollection<User>? Subordinates { get; set; }
         public ICollection<ILURegister>? ILURegisers { get; set; }
-        public ICollection<UserCareerPath>? UserCareerPaths { get; set; }
 
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdated { get; set; }

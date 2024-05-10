@@ -16,6 +16,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<ILULevel> _LevelsILU { get; set; } = new();
         //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
         private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
+       
+
         private Dictionary<int, bool> Distributions_Knolowed { get; set; } = new Dictionary<int, bool>();
         private Dictionary<int, bool> User_Knolowed { get; set; } = new Dictionary<int, bool>();
 
@@ -83,11 +85,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
             _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem("PAT", href: "/PAT"),
-            new BreadcrumbItem(text: Localizer["PATDetails"], href: "", disabled: true),
-        };
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem("PAT", href: "/PAT"),
+                new BreadcrumbItem(text: Localizer["PATDetails"], href: "", disabled: true),
+            };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
@@ -159,8 +161,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
-            //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
+            //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
 

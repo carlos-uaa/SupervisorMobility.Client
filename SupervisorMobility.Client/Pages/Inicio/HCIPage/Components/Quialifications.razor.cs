@@ -25,9 +25,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 {
     public partial class Quialifications
     {
+        [Parameter]
+        public bool details { get; set; }
+        [Parameter]
+        public List<HCITransaction> QualificationsTable { get; set; }
 
         [Parameter]
-        public List<HCITransaction> QualificationsTable { get; set; } = new List<HCITransaction>();
+        public EventCallback<HCITransaction> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(HCITransaction, int)> Upd { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -35,9 +44,33 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    QualificationsTable.Add(new HCITransaction { Type = 3 });
+                    QualificationsTable.Add(new HCITransaction { Type = 3, IsActive = true });
                 }
             }
+        }
+
+        private void DateChanged(DateTime? range, int index)
+        {
+            QualificationsTable.ElementAt(index).DateEnd = range;
+            Upd.InvokeAsync((QualificationsTable[index], index));
+        }
+        private void TextChanged(string val, int idx)
+        {
+            QualificationsTable[idx].Description = val;
+            Upd.InvokeAsync((QualificationsTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCITransaction niu = new HCITransaction { Type = 3, IsActive = true };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 

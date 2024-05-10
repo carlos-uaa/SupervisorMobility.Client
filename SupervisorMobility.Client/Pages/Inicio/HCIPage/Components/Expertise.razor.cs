@@ -26,7 +26,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
     public partial class Expertise
     {
         [Parameter]
-        public List<ILURegister> ExpertiseTable { get; set; } = new List<ILURegister>();
+        public bool details { get; set; }
+        [Parameter]
+        public List<HCIILU> ExpertiseTable { get; set; }
+
+
+        [Parameter]
+        public EventCallback<HCIILU> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(HCIILU, int)> Upd { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -37,6 +47,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                     ExpertiseTable.Add( new());
                 }
             }
+            await base.OnInitializedAsync();
+        }
+
+        private void DateChanged(DateRange range, int index)
+        {
+            ExpertiseTable[index].Start = range.Start;
+            ExpertiseTable[index].End = range.End;
+            Upd.InvokeAsync((ExpertiseTable[index], index));
+        }
+        private void TextChanged(string val, int idx)
+        {
+            ExpertiseTable[idx].Description = val;
+            Upd.InvokeAsync((ExpertiseTable[idx], idx));
+        }
+        private void LevelChanged(string val, int idx)
+        {
+            ExpertiseTable[idx].level = val;
+            Upd.InvokeAsync((ExpertiseTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCIILU niu = new HCIILU();
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 }

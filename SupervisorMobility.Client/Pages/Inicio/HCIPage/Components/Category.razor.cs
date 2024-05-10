@@ -26,23 +26,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
     public partial class Category
     {
         [Parameter]
-        public Dictionary<int, dicValuesCategory> CategoryTable { get; set; } = new Dictionary<int, dicValuesCategory>();
+        public bool details { get; set; }
+
+        [Parameter]
+        public List<HCICategory> CategoryTable { get; set; }
+
+        [Parameter]
+        public EventCallback<HCICategory> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(HCICategory, int)> Upd { get; set; }
+
+        public List<Department> ExistingCategories = new List<Department>();
+        public bool dataloaded;
 
         protected async override Task OnInitializedAsync()
         {
+            ExistingCategories = await DepartmentService.GetDepartments();
             if (!CategoryTable.Any())
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    CategoryTable.Add(i, new());
+                    CategoryTable.Add( new());
                 }
             }
+            dataloaded = true;
         }
-    }
 
-    public class dicValuesCategory
-    {
-        public DateTime? date;
-        public string category;
+        private void DateChanged(DateTime? range, int index)
+        {
+            CategoryTable.ElementAt(index).Date = range;
+            Upd.InvokeAsync((CategoryTable[index], index));
+        }
+        private void OptionChanged(int opt, int idx) //Changethis for the select
+        {
+            CategoryTable[idx].ChosenCategoryDepartmentId = opt;
+            Upd.InvokeAsync((CategoryTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCICategory niu = new HCICategory();
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
+        }
     }
 }

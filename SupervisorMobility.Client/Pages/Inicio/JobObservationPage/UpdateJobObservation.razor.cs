@@ -367,6 +367,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 }
 
+                _jobObservation.TaktTime = "1.46";
+                taktTime = 1.46;
                     StateHasChanged();
                 await GetUserAsync();
 
@@ -886,13 +888,59 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
+        public bool ChecklistQuestionsValidation()
+        {
+            foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
+            {
+                if (ids.Any(id => id == category.JobCategoryStructureId.ToString()))
+                {
+                    if (category.Type == StructureType.Checklist)
+                    {
+                        if (category.ChecklistQuestions.Count > 0)
+                        {
+                            foreach (var question in category.ChecklistQuestions)
+                            {
+                                int secNum = section;
+                                if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
+                                {
+                                    ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
+                                    if (string.IsNullOrEmpty(answer.Answer))
+                                    {
+                                        Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
+                                        return true; 
+                                    }
+                                }
+                                else
+                                {
+                                    ChecklistAnswer answer = questionAnswers[question.QuestionID];
+                                    if (string.IsNullOrEmpty(answer.Answer))
+                                    {
+                                        Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         //Under Review Job observation
         public async void UnderReviewJobObservation()
         {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
+
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 visibleSign = false;
                 currentImage = "";
@@ -901,16 +949,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
                 currentImage = "";
                 return;
             }
             if (currentImage == "")
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
             }
@@ -1072,6 +1116,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Reject Job observation
         async void Reject()
         {
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
 
             if (_jobObservation.SsvCommentary == null || _jobObservation.SsvCommentary == "")
             {
@@ -1260,6 +1308,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public async Task SignDate()
         {
+            if (ChecklistQuestionsValidation())
+            {
+                return;
+            }
 
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {

@@ -10,6 +10,6 @@
         public DateTime? DateStart { get; set; }
         public DateTime? DateEnd { get; set; }
         public int Type { get; set; }
-        public bool? IsActive { get; set; }
+        public bool? IsActive { get; set; } = true;
     }
 }

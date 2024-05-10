@@ -1,5 +1,7 @@
 ﻿
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.JSInterop;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using static System.Net.WebRequestMethods;
@@ -25,6 +27,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<bool> CreateHCI(HCI content)
         {
+            content.User = null;
             var response = await _http.PostAsJsonAsync($"HCI", content);
 
             return response.IsSuccessStatusCode;
@@ -32,7 +35,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 
         public async Task<HCI> GetHCI(int id)
         {
-            var response = await _http.GetAsync($"HCI/{id}");
+            var response = await _http.GetAsync($"HCI/{id}?includeNavigation=true&includePeople=true");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<HCI>();
@@ -40,21 +43,80 @@ namespace SupervisorMobility.Client.Services.HCIService
             }
 
             return null;
+        } 
+        
+        public async Task<List<User>> GetUsersWithoutHCI()
+        {
+            var response = await _http.GetAsync($"HCI/NoHciUsers");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<User>>();
+                return content;
+            }
+
+            return null;
         }
 
-        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeEvidences = false, bool includeTransactions = false)
+        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"HCI/?includeNavigation={includeNavigation}&includePeople={includePeople}&includeTransactions={includeTransactions}&includeComments={includeComments}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<HCI>>();
+                return content;
+            }
+
+            return null;
         }
 
         public async Task<bool> UpdateHCI(HCI content)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"HCI/{content.HCIId}", content);
+
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeleteHCI(int hciId)
         {
+            var response = await _http.DeleteAsync($"HCI/{hciId}");
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public Task<List<HCICategory>> GetCategories()
+        {
             throw new NotImplementedException();
+        }
+
+        public Task<HCICategory> GetCategorieById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HCICategory> CreateCategorie(HCICategory Categorie)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateCategorie(HCICategory Categorie)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteCategorie(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<HCICategory>> GetHCICategories()
+        {
+            var response = await _http.GetAsync("HCI/Categories");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<List<HCICategory>>();
+                return content;
+            }
+            return null;
         }
     }
 }

@@ -2,6 +2,7 @@ using FuzzyString;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Services.BreadcrumsService;
+using SupervisorMobility.Client.Services.HCIService;
 using SupervisorMobility.Client.Shared;
 using static MudBlazor.CategoryTypes;
 
@@ -20,6 +21,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private string json = string.Empty;
         public User loggedUser = new();
 
+        private List<Data.Entities.HCI> _HCIs;
 
         private List<BreadcrumbItem> _links;
 
@@ -89,10 +91,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                             break;
                     }
-
-
                 }
             }
+
+            _HCIs = await HCIsServices.GetHCIs();
 
 
         }
@@ -268,6 +270,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
         private void RowClickEvent(TableRowClickEventArgs<User> tableRowClickEventArgs)
         {
+        }
+
+        private void CreateHci(int UserId)
+        {
+        NavigationManager.NavigateTo($"/HCI/Create/?user={UserId}");
         }
 
         private string SelectedRowClassFunc(User element, int rowNumber)

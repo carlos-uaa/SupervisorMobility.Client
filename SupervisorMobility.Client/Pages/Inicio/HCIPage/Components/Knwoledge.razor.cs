@@ -26,12 +26,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
     public partial class Knwoledge
     {
         [Parameter]
+        public bool details { get; set; }
+        [Parameter]
         public string Title { get; set; } = "notitle";
         [Parameter]
         public int type { get; set; } = 1;
 
         [Parameter]
-        public List<HCITransaction> KnowledgeTable { get; set; } = new List<HCITransaction>();
+        public List<HCITransaction> KnowledgeTable { get; set; }
+
+        [Parameter]
+        public EventCallback<HCITransaction> Add { get; set; }
+        [Parameter]
+        public EventCallback<int> Del { get; set; }
+        [Parameter]
+        public EventCallback<(HCITransaction, int)> Upd { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -48,6 +58,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             KnowledgeTable.ElementAt(index).DateStart = range.Start;
             KnowledgeTable.ElementAt(index).DateEnd = range.End;
+            Upd.InvokeAsync((KnowledgeTable[index], index));
+        }
+        private void TextChanged(string val, int idx)
+        {
+            KnowledgeTable[idx].Description = val;
+            Upd.InvokeAsync((KnowledgeTable[idx], idx));
+        }
+
+        private void Delete(int index)
+        {
+            //KnowledgeTable.RemoveAt(index);
+            Del.InvokeAsync(index);
+        }
+
+        private void AddHere()
+        {
+            HCITransaction niu = new HCITransaction { Type = type };
+            //KnowledgeTable.Add(niu);
+            Add.InvokeAsync(niu);
         }
     }
 }

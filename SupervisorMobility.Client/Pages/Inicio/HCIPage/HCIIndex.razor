@@ -1,4 +1,4 @@
-﻿@page "/hci"
+﻿@page "/HCI"
 @inject IBreadcrumbService BreadcrumbService
 @inject IHCIService HCIsServices
 @inject NavigationManager NavigationManager
@@ -74,10 +74,17 @@ else
 {
     @if (_HCIs.Count > 0)
     {
-        <MudTable Items="_HCIs" Hover="true" T="Data.Entities.HCI" Class="styled-table table-striped" FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" T="HCI">
+        <MudTable Items="_HCIs"  T="HCI" Hover="true" Class="styled-table table-striped"
+        FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+                  SortLabel="SortBy" Filter="new Func<HCI,bool>(FilterFunc1)"
+                  RowsPerPage="15" HorizontalScrollbar="true" Virtualize="true">
             <ToolBarContent>
+                <MudText Typo="Typo.h6" Align="Align.Center">@Localizer["HCI"]</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="@searchString" Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-2"></MudTextField>
+                    <MudSpacer />
                 <MudSpacer />
-                <MudButton @onclick="(() => Createhci())">
+                <MudButton @onclick="(() => OpenCreateHci())">
                     <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
                     </MudButton>
@@ -93,7 +100,7 @@ else
                 }
 
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.HCIName)">
+                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Name)">
                         @Localizer["name"]
                     </MudTableSortLabel>
                 </MudTh>
@@ -126,7 +133,7 @@ else
                 }
                 <MudTd DataLabel=@Localizer["name"]>
                     <MudText Align="Align.Center">
-                        @(context.HCIName.Length > 25 ? context.HCIName.Substring(0, 20) + "..." : context.HCIName)
+                        @(context.User?.Name.Length > 25 ? context.User?.Name.Substring(0, 20) + "..." : context.User?.Name)
                     </MudText>
                 </MudTd>
               
@@ -149,7 +156,7 @@ else
                                     <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                                 </ActivatorContent>
                                 <ChildContent>
-                                    @* <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HCIDetails( context.HCIId))" @ontouchstart="(() => HCIDetails(context.HCIId))">@Localizer["HCIDetails"]</MudMenuItem> *@
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HCIDetails( context.HCIId))" @ontouchstart="(() => HCIDetails(context.HCIId))">@Localizer["HCIDetails"]</MudMenuItem>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHCI(context.HCIId))" @ontouchstart="(() => UpdateHCI( context.HCIId))">@Localizer["editHCI"]</MudMenuItem>
                                     <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.HCIId))" @ontouchstart="(() => OpenDeleteDialog(context.HCIId))">@Localizer["deleteHCI"]</MudMenuItem>
                                 </ChildContent>
@@ -157,22 +164,111 @@ else
                         </MudText>
                     </MudTd>
                 </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 15, 25, 50, 100, int.MaxValue }" />
+                </PagerContent>
             </MudTable>
     }
     else
     {
-        <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreNoHCIsCreatedForThisPlant"]</MudText>
+        <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreNoHCIsCreated"]</MudText>
         <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-            <MudButton Color="Color.Info" @onclick="(() => Createhci())">@Localizer["createANewHCI"]</MudButton>
+            <MudButton Color="Color.Info" @onclick="(() => OpenCreateHci())">@Localizer["create"] @Localizer["hci"]</MudButton>
             </MudText>
     }
 }
 
+<MudDialog @bind-IsVisible="ShowCreateHCI" Options="dialogSVOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="text-align: center;">Create HCI</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAutocomplete Class="mt-5" Clearable T="User" Label="@Localizer1["UsersSupervisor"]" @bind-Value="_SelectUser"
+                          SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} - {e.Group?.Description}")"
+                          Variant="Variant.Outlined"
+                          ShowProgressIndicator="true" MaxItems="null" ResetValueOnEmptyText>
+            <ItemTemplate Context="e">
+                <MudItem Style="text-align: center">
+                    @switch (e.UserType)
+                    {
+                        case 3:
+                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                            break;
+                    }
+                </MudItem>
+                <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                </ItemTemplate>
+            </MudAutocomplete>
+
+        @if (_SelectUser != null)
+        {
+            <MudCard Class="mt-10">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary">U</MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body1">@_SelectUser.Name</MudText>
+                      
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @_SelectUser?.UserId</div>
+                    <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @_SelectUser?.Group?.Description</div>
+                    <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_SelectUser?.Area?.Code - @_SelectUser?.Area?.Description </MudChip>
+                    </MudCardContent>
+                    <MudCardActions Style="justify-content: flex-end;">
+                    </MudCardActions>
+                </MudCard>
+        }
+        else
+        {
+            <MudChip Icon="@Icons.Material.Filled.CrisisAlert" Class="mt=10" Style="display: flex;" Color="Color.Info">Select User from list</MudChip>
+        }
+    </DialogContent>
+    <DialogActions>
+
+        @if (_SelectUser != null)
+            {
+            <MudIconButton Icon="@Icons.Material.Filled.Save" OnClick="@( () =>  Createhci())" Color="Color.Default" />
+            }
+
+        
+
+
+    </DialogActions>
+</MudDialog>
+
+
+
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+            <MudText Class="mt-4 mb-4">
+                @Localizer["areYouSureYouWantToDeleteThisHCI"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+            <MudButton @onclick="(() => DeleteHCI(deleteHCIId))" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+        </DialogActions>
+    </MudDialog>
 
 @code {
 
     private List<BreadcrumbItem> _links;
     private List<Data.Entities.HCI> _HCIs;
+    private List<User> _Users;
 
     private IList<string> _sourceMsgLoading = new List<string>();
     private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -188,6 +284,10 @@ else
     private string json = string.Empty;
     public User user = new();
     public bool logged = false;
+
+    private User _SelectUser;
+    public bool ShowCreateHCI = false;
+    private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
 
     protected async override Task OnInitializedAsync()
     {
@@ -211,6 +311,7 @@ else
         BreadcrumbService.UpdateBreadcrumbs(_links);
 
         logged = await TryGetAsync();
+        _Users = await HCIsServices.GetUsersWithoutHCI();
 
         if (!logged)
         {
@@ -225,11 +326,11 @@ else
             _HCIs = new();
             try
             {
-                _HCIs = await HCIsServices.GetHCIs(includePeople: true);
+                _HCIs = await HCIsServices.GetHCIs(includePeople: true, includeNavigation: true);
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -240,7 +341,16 @@ else
 
         }
     }
-  
+
+    // private async void GetUsersWithoutHCI()
+    // {
+    // }
+    
+    private async void OpenCreateHci()
+    {
+        ShowCreateHCI = true;
+    }
+
     private async Task<bool> TryGetAsync()
     {
         bool hasProperty = await HasPropertyAsync();
@@ -260,8 +370,7 @@ else
 
     private void Createhci()
     {
-        NavigationManager.NavigateTo($"/HCI/Create");
-
+        NavigationManager.NavigateTo($"/HCI/Create/?user={_SelectUser.UserId}");
     }
 
     void HCIDetails(int HCIID)
@@ -294,7 +403,6 @@ else
         visibleDelete = true;
     }
 
- 
 
     private int selectedRowNumber = -1;
     private MudTable<Data.Entities.HCI> SelectTableEvent;
@@ -310,7 +418,7 @@ else
             selectedRowNumber = -1;
             if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                NavigationManager.NavigateTo($"hci/Updatehci/{element.HCIId}");
+                NavigationManager.NavigateTo($"HCI/Update/{element.HCIId}");
             }
             return string.Empty;
         }
@@ -324,4 +432,42 @@ else
             return string.Empty;
         }
     }
+
+
+    private async Task<IEnumerable<User>> SearchSV(string value)
+    {
+        // In real life use an asynchronous function for fetching data from an api.
+        // await Task.Delay(1000);
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return _Users;
+
+        return _Users.Where(x => x.Name.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private string searchString = "";
+
+    private bool FilterFunc1(HCI element) => FilterFunc(element, searchString);
+    private bool FilterFunc(HCI element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.User!.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.User?.Plant?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.User?.Plant?.Code?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+     
+        if (element.User?.Area?.Description?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.User?.Area?.Code?.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+     
+
+        return false;
+    }
+   
+
 }
