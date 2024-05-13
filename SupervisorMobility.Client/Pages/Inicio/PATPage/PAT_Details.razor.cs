@@ -70,6 +70,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int operator_id { get; set; }
         private string ProgrammedStartDate { get; set; }
 
+
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
