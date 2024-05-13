@@ -105,7 +105,7 @@ if (env.IsDevelopment())
 }
 else
 {
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/"), Timeout = TimeSpan.FromMinutes(10) });
+    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10203/api/"), Timeout = TimeSpan.FromMinutes(10) });
 }
 
 
