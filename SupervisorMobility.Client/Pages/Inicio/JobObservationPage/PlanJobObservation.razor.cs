@@ -199,12 +199,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (CCPFolders != null)
                 {
-                    folderCCPError = false;
+                    //folderCCPError = false;
                     rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
                 }
                 else
                 {
-                    folderCCPError = true;
+                    //folderCCPError = true;
                 }
 
             }
@@ -619,101 +619,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         void CloseHoe() => HoeDialog = false;
 
 
-        private async Task DownloadFileFromURL(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-
-        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
-        {
-
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-        }
-        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
-        {
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-
-        }
-
      
         private CDMS_CCP_Archives? AuxCcpFilesInFolder;
         private CDMS_HOE_Archives? AuxHoeFilesInFolder;
         private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
+      
         //CommonDirection Files
         private CDMS_CCP_Archives? CcpFilesInFolderCD;
         private CDMS_HOE_Archives? HoeFilesInFolderCD;
@@ -1026,49 +936,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-    CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
+        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
         TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-        TreeItemData SelectedNodeCCP { get; set; }
-        TreeItemData nodoEncontrado { get; set; }
-        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
-        {
-
-            try
-            {
-                ShowLoading = true;
-
-                if (CCPrute != "")
-                {
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
-            }
-            finally
-            {
-                ShowLoading = false;
-                StateHasChanged();
-            }
-
-            return new AsyncVoidMethodBuilder();
-
-        }
-
+     
     }
 }

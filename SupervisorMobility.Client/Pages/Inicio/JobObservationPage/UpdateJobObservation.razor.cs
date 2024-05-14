@@ -2288,102 +2288,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-
-
-
-        //HOE, CCP, GOS
-        private bool CcpDialog = false;
-        private bool HoeDialog = false;
-        private bool GosDialog = false;
-        private bool folderError = false;
-
-
         private CDMS_CCP_Archives CcpFilesInFolder = new CDMS_CCP_Archives();
         private CDMS_HOE_Archives HoeFilesInFolder = new CDMS_HOE_Archives();
         private CDMS_GOS_Archives GosFilesInFolder = new CDMS_GOS_Archives();
 
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-
-
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
-
-        private async Task DownloadFileFromURL(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-
-        private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
-        {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-        }
-        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
-        {
-
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
-        }
-        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
-        {
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
-
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
-
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-
-                }
-            }
-        }
 
         public void ShowDateMessage()
         {
