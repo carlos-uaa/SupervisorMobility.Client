@@ -229,10 +229,9 @@
             </MudItem>
         </MudItem>
     </TitleContent>
-    <DialogContent>
-       
-
-    </DialogContent>
+        <DialogContent>
+            <SupervisorMobility.Client.Pages.Components.TreeView Path_Id="SosCode.SOSCodePathId" panel="panelSelect"></SupervisorMobility.Client.Pages.Components.TreeView>
+        </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseCodePathModal" Variant="Variant.Filled">@Localizer["Close"]</MudButton>
     </DialogActions>
@@ -420,130 +419,7 @@
 
     private async void OpenDialogCodePath()
     {
-        // if (SosCode.HOE != "" || SosCode.CCP != "" || SosCode.GOS != "")
-        // {
-
-        //     ModalCodePathDisplay = true;
-
-
-        //     folderErrorGOS = true;
-        //     GOSrute = SosCode.GOS;
-
-        //     Console.WriteLine($"gos {GOSrute}");
-
-        //     GosFilesInFolder = new CDMS_GOS_Archives();
-
-        //     GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-        //     if (GosFilesInFolder == null)
-        //     {
-        //         folderErrorGOS = true;
-        //     }
-        //     else
-        //     {
-        //         folderErrorGOS = false;
-        //     }
-
-
-        //     folderErrorCCP = true;
-        //     CCPrute = SosCode.CCP;
-        //     Console.WriteLine($"Cpc {CCPrute}");
-
-        //     CcpFilesInFolder = new CDMS_CCP_Archives();
-        //     CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-        //     if (CcpFilesInFolder == null)
-        //         folderErrorCCP = true;
-        //     else
-        //         folderErrorCCP = false;
-
-        //     nodoEncontrado = TreeServices.FindNodeByPath(rootNodeCCP, CCPrute);
-
-        //     if (nodoEncontrado != null)
-        //     {
-        //         // El nodo fue encontrado, puedes trabajar con él aquí
-        //         // Por ejemplo, imprimir su nombre
-        //         Console.WriteLine("Nombre del nodo encontrado: " + nodoEncontrado.Nombre);
-        //     }
-        //     else
-        //     {
-        //         // El nodo no fue encontrado
-        //         Console.WriteLine("La ruta no se encontró en el árbol.");
-        //     }
-
-
-        //     folderErrorHOE = true;
-
-        //     HOErute = SosCode.HOE;
-        //     Console.WriteLine($"hoe {HOErute}");
-        //     HoeFilesInFolder = new CDMS_HOE_Archives();
-        //     HoeFilesInFolder = await CDMSServices.GetFilesHOE(HOErute);
-        //     if (HoeFilesInFolder == null)
-        //         folderErrorHOE = true;
-        //     else
-        //         folderErrorHOE = false;
-
-
-        //     //Common Directions
-        //     if (SosCode.CommonDirectionGOS != "")
-        //     {
-
-        //         folderErrorGOSCD = true;
-        //         GOSruteCD = SosCode.CommonDirectionGOS;
-
-        //         Console.WriteLine($"gos {GOSruteCD}");
-
-        //         GosFilesInFolderCD = new CDMS_GOS_Archives();
-
-        //         GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-        //         if (GosFilesInFolderCD == null)
-        //         {
-        //             folderErrorGOSCD = true;
-        //         }
-        //         else
-        //         {
-        //             folderErrorGOSCD = false;
-        //         }
-
-        //     }
-
-        //     @if (SosCode.CommonDirectionCCP != "")
-        //     {
-        //         folderErrorCCPCD = true;
-        //         CCPruteCD = SosCode.CommonDirectionCCP;
-        //         Console.WriteLine($"Cpc {CCPruteCD}");
-
-        //         CcpFilesInFolderCD = new CDMS_CCP_Archives();
-        //         CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-        //         if (CcpFilesInFolderCD == null)
-        //             folderErrorCCPCD = true;
-        //         else
-        //             folderErrorCCPCD = false;
-
-        //     }
-
-        //     if (SosCode.CommonDirectionHOE != "")
-        //     {
-
-
-        //         folderErrorHOECD = true;
-
-        //         HOEruteCD = SosCode.CommonDirectionHOE;
-        //         Console.WriteLine($"hoe {HOEruteCD}");
-        //         HoeFilesInFolderCD = new CDMS_HOE_Archives();
-        //         HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-        //         if (HoeFilesInFolderCD == null)
-        //             folderErrorHOECD = true;
-        //         else
-        //             folderErrorHOECD = false;
-        //     }
-
-        //     //EndCommon Directions
-
-        //     StateHasChanged();
-
-
-        // }
-
-
+        ModalCodePathDisplay = true;
     }//open dialog
 
     private async void CloseCodePathModal()
@@ -555,75 +431,6 @@
 
     }
 
-    private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
-    {
-        var fileName = namefile;
-        var fileURL = urlroute;
-        await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
-    }
-    
-    private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
-    {
-
-        CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
-
-        if (DownloadLink is not null)
-        {
-            var fileName = namefile;
-            var fileURL = DownloadLink?.operation.URL;
-
-            Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-            try
-            {
-                var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                if (result == "File downloaded successfully")
-                {
-                    var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                    if (DeleteTemp is not null)
-                    {
-                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-            }
-        }
-    }
-    private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
-    {
-        CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
-
-        if (DownloadLink is not null)
-        {
-            var fileName = namefile;
-            var fileURL = DownloadLink?.operation.URL;
-
-            Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
-
-            try
-            {
-                var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                if (result == "File downloaded successfully")
-                {
-                    var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                    if (DeleteTemp is not null)
-                    {
-                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-            }
-        }
-
-    }//download files
 
 
     private bool FilterFuncDocumentsHOE(HOEDocument element)

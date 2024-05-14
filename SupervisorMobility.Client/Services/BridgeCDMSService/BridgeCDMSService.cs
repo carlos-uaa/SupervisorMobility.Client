@@ -6,7 +6,9 @@ using SupervisorMobility.Client.Data.Entities.CDMS;
 using System;
 using System.IO;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.XPath;
 
 namespace SupervisorMobility.Client.Services.BridgeCDMSService
 {
@@ -127,7 +129,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
         }
 
-        public async Task<CDMS_DownloadFile> GetDownloadLinkCCP(string URL)
+        public async Task<CDMS_DownloadFile> GetDownloadLinkCCP(string URL, string namefile)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -310,38 +312,6 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        //public async Task<CDMS_DownloadFile> GetDownloadLinkHOE(string URL)
-        //{
-        //    var parameters = new Dictionary<string, string>
-        //    {
-        //        { "route", URL }
-        //    };
-
-        //    var content = new FormUrlEncodedContent(parameters);
-
-
-        //    try
-        //    {
-        //        var response = await _http.PostAsync("SMGos/PostDownloadfileGos", content);
-
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
-        //            return result;
-        //        }
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
-        //    }
-        //    catch (TaskCanceledException ex)
-        //    {
-        //        Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
-        //    }
-
-        //    return null;
-        //}
-
         //GOS
         public async Task<CDMS_GOS_Directory> GetFoldersGOS()
         {
@@ -441,7 +411,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        public async Task<CDMS_DownloadFile> GetDownloadLinkGOS(string URL)
+        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -458,8 +428,44 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
-                    return result;
+                    var keyDocument = response.Headers.GetValues("KeyDocument").FirstOrDefault();
+                    var pathDocument = response.Headers.GetValues("PathDocument").FirstOrDefault();
+
+                    Console.WriteLine($"KeyDocument: {keyDocument}");
+                    Console.WriteLine($"PathDocument: {pathDocument}");
+
+                    // Obtener el contenido de la respuesta como un Stream
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        // Leer los bytes del Stream
+                        byte[] fileBytes;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            fileBytes = memoryStream.ToArray();
+                        }
+
+                        // Obtener los encabezados adicionales de la respuesta
+
+                        var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", namefile, fileBytes);
+
+                        if (result == "File downloaded successfully")
+                        {
+                            var DeleteTemp = await DeleteFileTempGOS(keyDocument, pathDocument );
+                            if (DeleteTemp is not null)
+                            {
+                                Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error durante la descarga del archivo.");
+                        }
+
+                      
+                    }//end using
+
+                    return new AsyncVoidMethodBuilder();
                 }
                 else
                 {
@@ -476,14 +482,15 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            return null;
+            return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<CDMS_General> DeleteFileTempGOS(string FileName)
+        public async Task<CDMS_General> DeleteFileTempGOS(string FileName, string pathFile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "routeDelete", FileName }
+                { "routeDelete", FileName },
+                { "documentDelete", pathFile }
             };
 
             var content = new FormUrlEncodedContent(parameters);

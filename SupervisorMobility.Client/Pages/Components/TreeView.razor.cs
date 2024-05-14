@@ -226,64 +226,64 @@ namespace SupervisorMobility.Client.Pages.Components
         private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
         {
 
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkCCP(urlroute);
+            _ = await CDMSServices.GetDownloadLinkCCP(urlroute, namefile);
 
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
+            //if (DownloadLink is not null)
+            //{
+            //    var fileName = namefile;
+            //    var fileURL = DownloadLink?.operation.URL;
 
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+            //    Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
 
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
+            //    try
+            //    {
+            //        var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+            //        if (result == "File downloaded successfully")
+            //        {
+            //            var DeleteTemp = await CDMSServices.DeleteFileTempCCP(DownloadLink?.operation.NameDocKey);
+            //            if (DeleteTemp is not null)
+            //            {
+            //                Console.WriteLine($"Download GOS - fileDownlaod Succes");
+            //            }
+            //        }
 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+            //    }
+            //}
         }//end download file ccp
 
         private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
         {
-            CDMS_DownloadFile DownloadLink = await CDMSServices.GetDownloadLinkGOS(urlroute);
+            _ = await CDMSServices.GetDownloadLinkGOS(urlroute, namefile);
 
-            if (DownloadLink is not null)
-            {
-                var fileName = namefile;
-                var fileURL = DownloadLink?.operation.URL;
+            //if (DownloadLink is not null)
+            //{
+            //    var fileName = namefile;
+            //    var fileURL = DownloadLink?.operation.URL;
 
-                Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
+            //    Console.WriteLine($"NamekEY: {DownloadLink?.operation.NameDocKey}");
 
-                try
-                {
-                    var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
-                    if (result == "File downloaded successfully")
-                    {
-                        var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
-                        if (DeleteTemp is not null)
-                        {
-                            Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                        }
-                    }
+            //    try
+            //    {
+            //        var result = await JS.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", fileName, fileURL);
+            //        if (result == "File downloaded successfully")
+            //        {
+            //            var DeleteTemp = await CDMSServices.DeleteFileTempGOS(DownloadLink?.operation.NameDocKey);
+            //            if (DeleteTemp is not null)
+            //            {
+            //                Console.WriteLine($"Download GOS - fileDownlaod Succes");
+            //            }
+            //        }
 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
-                }
-            }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine($"Error In Download Gos File: {ex.Message} ");
+            //    }
+            //}
 
         }//end download file gos
 
