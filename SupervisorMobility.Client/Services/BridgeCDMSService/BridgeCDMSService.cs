@@ -410,6 +410,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
+        public class ResponseObject
+        {
+            public string Keydocument { get; set; }
+            public string Pathdocument { get; set; }
+        }
 
         public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile)
         {
@@ -428,12 +433,15 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var keyDocument = response.Headers.GetValues("KeyDocument").FirstOrDefault();
-                    var pathDocument = response.Headers.GetValues("PathDocument").FirstOrDefault();
+                    foreach (var header in response.Headers)
+                    {
+                        Console.WriteLine($"Header Name: {header.Key}, Values: {string.Join(",", header.Value)}");
+                    }
 
-                    Console.WriteLine($"KeyDocument: {keyDocument}");
-                    Console.WriteLine($"PathDocument: {pathDocument}");
-
+                    foreach (var header in response.Content.Headers)
+                    {
+                        Console.WriteLine($"Content.Headers Name: {header.Key}, Values: {string.Join(",", header.Value)}");
+                    }
                     // Obtener el contenido de la respuesta como un Stream
                     using (var stream = await response.Content.ReadAsStreamAsync())
                     {
@@ -451,11 +459,12 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                         if (result == "File downloaded successfully")
                         {
-                            var DeleteTemp = await DeleteFileTempGOS(keyDocument, pathDocument );
-                            if (DeleteTemp is not null)
-                            {
+                            //var DeleteTemp = await DeleteFileTempGOS(keyDocument, pathDocument );
+                            //if (DeleteTemp is not null)
+                            //{
+                            //    Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                            //}
                                 Console.WriteLine($"Download GOS - fileDownlaod Succes");
-                            }
                         }
                         else
                         {
