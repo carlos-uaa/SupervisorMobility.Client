@@ -410,6 +410,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
+        public class ResponseObject
+        {
+            public string Keydocument { get; set; }
+            public string Pathdocument { get; set; }
+        }
 
         public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile)
         {
@@ -433,6 +438,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                         Console.WriteLine($"Header Name: {header.Key}, Values: {string.Join(",", header.Value)}");
                     }
 
+                    foreach (var header in response.Content.Headers)
+                    {
+                        Console.WriteLine($"Content.Headers Name: {header.Key}, Values: {string.Join(",", header.Value)}");
+                    }
                     // Obtener el contenido de la respuesta como un Stream
                     using (var stream = await response.Content.ReadAsStreamAsync())
                     {
