@@ -1,0 +1,86 @@
+﻿<MudDialog DisableSidePadding="false">
+    <TitleContent>
+        <MudItem>
+            <MudText Typo="Typo.h6" Style="text-align:center">Evidence for @Prompt</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <CameraStreamer @ref=CameraStreamerReference
+                                Width=1280
+                                Height=720
+                                OnRendered=OnRenderedHandler
+                                OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                                CameraID=@cameraId
+                                Autostart />
+                <MudItem style="text-align: center">
+                    @if (frameCount > 0)
+                    {
+                        <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                            Take photo
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
+                            Take photo
+                        </MudButton>
+                    }
+                </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Prompt { get; set; }
+
+    [Parameter]
+    public EventCallback<string> returnFrame { get; set; }
+
+
+    private CameraStreamer CameraStreamerReference;
+
+    private string? cameraId = null;
+
+    private int frameCount;
+
+    private string imageData;
+
+
+    private async void OnRenderedHandler()
+    {
+
+        frameCount = 0;
+        if (await CameraStreamerReference.GetCameraAccessAsync())
+        {
+            await CameraStreamerReference.ReloadAsync();
+
+        }
+    }
+
+    private async void Stop()
+    {
+        await CameraStreamerReference.StopAsync();
+    }
+
+    private void OnFrameHandler(string _)
+    {
+        ++frameCount;
+    }
+
+    private async void GetCurrentFrame()
+    {
+        imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+        Stop();
+
+        await returnFrame.InvokeAsync(imageData);
+        MudDialog.Close();
+    }
+}

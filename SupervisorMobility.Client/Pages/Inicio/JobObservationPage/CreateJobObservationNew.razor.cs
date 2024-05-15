@@ -9,6 +9,8 @@ using MudBlazor;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
+using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -80,8 +82,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         string cycle4Color = "";
         string cycle5Color = "";
         public int opt = 1;
-        int SOSCodePathId { get; set; } = 0;
-        string SosPanelOpen { get; set; } = "";
 
         //Glosary
         private List<Glosary> glosary = new();
@@ -89,11 +89,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Past Job observation
         //Lup Modal
-        private bool visiblePast = false;
-        private bool visibleLup = false;
         private int lupId;
 
-        private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private DialogOptions dialogLupOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         //Past job observation
@@ -1392,13 +1390,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         //Past Job observation
-        private void OpenDialogLup(int id)
+        private async void OpenDialogLup(int id)
         {
-            lupId = id;
-            visibleLup = true;
+            var parameters = new DialogParameters { { "lupId", id } };
+            var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLupOptions);
+            await dialog.Result;
         }
 
-        private void OpenDialogPastJobObservations()
+        private async void OpenDialogPastJobObservations()
         {
             if (!flag)
             {
@@ -1415,23 +1414,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            visiblePast = true;
+            var parameters = new DialogParameters {
+                { "DistDesc", distribution.Description },
+                { "OperaDesc", operation.Description },
+                { "pastjobObservations", pastjobObservations },
+                { "pastLup", pastLup }
+            };
+            var dialog = await DialogService.ShowAsync<PastJobObs_Dialog>("", parameters, dialogPastJobObservations);
+            await dialog.Result;
         }
-
-        void CloseLup() => visibleLup = false;
-        void CloseOverdue() => visiblePast = false;
-
-        void EditLup(int lupId)
-        {
-            NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
-        }
-
-        void GoToJobObservation(int jobObservationId)
-        {
-            NavigationManager.NavigateTo($"/");
-            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
-        }
-
 
 
         //In progress
@@ -1442,7 +1433,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select a distribution!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1451,7 +1441,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select an operator!", Severity.Error);
-                visibleSign = false;
                 return;
             }
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
@@ -1573,7 +1562,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select a distribution!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1582,7 +1570,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select an operator!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1598,7 +1585,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1662,7 +1648,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select a distribution!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1671,7 +1656,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select an operator!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1680,7 +1664,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"You need to add a commentary to reject the job observation", Severity.Error);
-                visibleSign = false;
                 return;
             }
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
@@ -1688,7 +1671,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1747,12 +1729,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Finished Job observation
-        private bool visibleSign = false;
-        private void OpenSignComment()
+        private async void OpenSignComment()
         {
-            visibleSign = true;
+            var parameters = new DialogParameters
+            {
+                { "userName", user.Name }
+            };
+            var dialog = await DialogService.ShowAsync<SignJobObservation_Dialog>("", parameters, dialogSignOptions);
+            var result = await dialog.Result;
+            if (!result.Canceled)
+            {
+                int option = (int)result.Data;
+                switch (option)
+                {
+                    case 0:
+                        Reject();
+                        break;
+                    case 1:
+                        SignDate();
+                        break;
+                    default:
+                        return;
+                }
+            }
         }
-        void CloseSign() => visibleSign = false;
         private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
 
         public async Task SignDate()
@@ -1767,7 +1767,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select a distribution!", Severity.Error);
-                visibleSign = false;
                 return;
             }
 
@@ -1784,7 +1783,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select an operator!", Severity.Error);
-                visibleSign = false;
                 return;
             }
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
@@ -1792,7 +1790,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1997,7 +1994,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         MudTabPanel GOS;
         MudTabPanel GOSCD;
 
-        public bool CodePathModalDisplay { get; set; } = false;
         private string searchCodeString = "";
         bool ShowLoading = true;
         private IList<string> _sourceMsgLoading = new List<string>();
@@ -2008,18 +2004,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
 
-        private void CloseModalFiles()
-        {
-            CodePathModalDisplay = false;
-
-            StateHasChanged();
-
-        }
-
-        private void OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
+        private async void OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
             ShowLoading = true;
-            SOSCodePathId = itemselected.SOSCodePathId;
+            string SosPanelOpen = string.Empty;
             switch (panelSelect)
             {
                 case 1:
@@ -2041,8 +2029,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     SosPanelOpen = "GOS_CD";
                     break;
             }
-            CodePathModalDisplay = true;
-            StateHasChanged();
+            var parameters = new DialogParameters {
+                { "SOSCodePathId", itemselected.SOSCodePathId },
+                { "panelSelect", SosPanelOpen }
+            };
+            var dialog = await DialogService.ShowAsync<Guide_Dialog>("", parameters, dialogOptions);
+            await dialog.Result;
         }
 
 
@@ -2096,15 +2088,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
              //Guide Modal
         MudTabs guideTabs;
 
-        private bool visibleGuide = false;
-        private int selectedPillar = 0;
-        private void OpenGuideDialog(int pillarID)
+        private async void OpenGuideDialog(int pillarID)
         {
-            selectedPillar = pillarID;
-            visibleGuide = true;
+            var parameters = new DialogParameters
+            {
+                { "selectedPillar", pillarID }
+            };
+            var dialog = await DialogService.ShowAsync<Guide_Dialog>("", parameters, dialogGuideOptions);
+            await dialog.Result;
 
         }
-        void CloseGuideModal() => visibleGuide = false;
         private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
         //Questions and answers
@@ -2269,12 +2262,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         //camara for atachment answer
-        bool visibleDialogAnswerCamera = false;
         ChecklistAnswer SelectedAnswer { get; set; }
-        private void OpenCameraAnswerDialog(ChecklistAnswer item)
+        private async void OpenCameraAnswerDialog(ChecklistAnswer item)
         {
+            var parameters = new DialogParameters { { "Prompt", item.Prompt }, { "returnFrame", GetCurrentFrameAnswer } };
             SelectedAnswer = item;
-            visibleDialogAnswerCamera = true;
+            var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
+            await dialog.Result;
         }
 
         //Camera
@@ -2298,57 +2292,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
         void Close2() => visibleCamera = false;
-        private CameraStreamer CameraStreamerReference;
-
-        private string? cameraId = null;
-
-        private int frameCount;
 
         private string imageData;
 
-
-        private async void OnRenderedHandler()
+        private async void GetCurrentFrameAnswer(string data)
         {
-
-            frameCount = 0;
-            if (await CameraStreamerReference.GetCameraAccessAsync())
-            {
-                await CameraStreamerReference.ReloadAsync();
-
-            }
-        }
-
-        private async void Start()
-        {
-            await CameraStreamerReference.StartAsync();
-        }
-
-        private async void Stop()
-        {
-            await CameraStreamerReference.StopAsync();
-        }
-
-        private void OnFrameHandler(string _)
-        {
-            ++frameCount;
-        }
-
-        private async void GetCurrentFrame()
-        {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
-
-            if (!string.IsNullOrEmpty(imageData))
-            {
-                capturedImages.Add(imageData);
-            }
-            visibleCamera = false;
-            StateHasChanged();
-            Stop();
-        }
-
-        private async void GetCurrentFrameAnswer()
-        {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+            imageData = data;
 
             if (!string.IsNullOrEmpty(imageData))
             {
@@ -2356,11 +2305,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 imagesFromCamera[SelectedAnswer.QuestionID].Add(imageData);
                 await LocalStorage.SetItemAsync("QAnsImgFC", imagesFromCamera);
             }
-            visibleDialogAnswerCamera = false;
             SelectedAnswer.Edited = true;
 
             StateHasChanged();
-            Stop();
         }
         private bool IsValidBase64String(string base64String)
         {
