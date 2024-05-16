@@ -218,9 +218,11 @@ namespace SupervisorMobility.Client.Pages.Components
         }
         private async Task DownloadFileFromURL_HOE(string urlroute, string namefile)
         {
-            var fileName = namefile;
-            var fileURL = urlroute;
-            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+            _ = await CDMSServices.Download_DeleteFileTempHOE(namefile, urlroute);
+               
+            //var fileName = namefile;
+            //var fileURL = urlroute;
+            //await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
         }
 
         private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)

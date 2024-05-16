@@ -361,8 +361,111 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        //GOS
-        public async Task<CDMS_GOS_Directory> GetFoldersGOS()
+        public async Task<AsyncVoidMethodBuilder> Download_DeleteFileTempHOE(string FileName, string pathFile)
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                { "route", pathFile }
+            };
+
+            var json = JsonConvert.SerializeObject(parameters);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await _http.PostAsync("BridgeCDMS/SMHoe/PostDownloadHOE", content);
+
+                string PathDocument = "";
+
+                if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
+                {
+                    string headerValue = pathValue.FirstOrDefault();
+                    PathDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+
+                    // Obtener el contenido de la respuesta como un Stream
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        // Leer los bytes del Stream
+                        byte[] fileBytes;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            fileBytes = memoryStream.ToArray();
+                        }
+
+                        var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", FileName, fileBytes);
+
+                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        if (result == "File downloaded successfully")
+                        {
+                            var DELETEparameters = new Dictionary<string, string>
+                                {
+                                    { "documentDelete", PathDocument }
+                                };
+
+                            var deletejson = JsonConvert.SerializeObject(DELETEparameters);
+
+                            var deletecontent = new StringContent(deletejson, Encoding.UTF8, "application/json");
+
+                            try
+                            {
+                                var DeleteTemp = await _http.PostAsync("BridgeCDMS/SMHoe/DeleteFileTempHoe", deletecontent);
+
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    Console.WriteLine($"Delete File TempHOE successfully");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"DELETE TEMP hoe, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                                }
+                            }
+                            catch (HttpRequestException ex)
+                            {
+                                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                            }
+                            catch (TaskCanceledException ex)
+                            {
+                                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                            }
+                          
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error durante la descarga del archivo.");
+                        }
+
+                    }//end using
+
+                    return new AsyncVoidMethodBuilder();
+                }
+                else
+                {
+                    Console.WriteLine($"GET FILE HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
+
+            return new AsyncVoidMethodBuilder();
+        }
+            //GOS
+            public async Task<CDMS_GOS_Directory> GetFoldersGOS()
         {
 
             try
