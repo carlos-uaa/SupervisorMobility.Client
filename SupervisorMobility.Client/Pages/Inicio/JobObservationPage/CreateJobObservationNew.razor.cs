@@ -2156,6 +2156,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
+            visibleActiveLupItem = true;
             SetAsCurrentJobObservation();
 
             item.Show = true;
@@ -2891,5 +2892,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
                 ,"DblManagement","Waiting","CC"});
         }
+
+
+        //Active LUP items
+
+        bool visibleActiveLupItem = false;
+        private void OpenCameraAnswerDialog()
+        {
+            visibleActiveLupItem = true;
+        }
+
+        //Camera
+        private DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
     }
 }
