@@ -45,6 +45,21 @@ namespace SupervisorMobility.Client.Services.LupService
 
             return lup;
         }
+        
+        public async Task<List<Lup>> GetAllLupInsidences(int QuestionId, int supervisor_id)
+        {
+            var response = await _http.GetAsync($"lup/Insidences/{QuestionId}?supervisor_id={supervisor_id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var lup = JsonSerializer.Deserialize<List<Lup>>(content, _options);
+
+            return lup;
+        }
 
         public async Task<List<Lup>> GetLupsByFilters(int year, int operationId)
         {

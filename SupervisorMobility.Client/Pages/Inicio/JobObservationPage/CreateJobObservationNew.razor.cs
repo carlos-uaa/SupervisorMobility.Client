@@ -2111,7 +2111,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
         {
-
+            // get incidences
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
