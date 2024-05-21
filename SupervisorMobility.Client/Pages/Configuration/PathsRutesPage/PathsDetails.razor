@@ -18,19 +18,14 @@
 @inject ITreeService TreeServices
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbServices
 
 
 <MudGrid>
     <MudItem xs="12">
         @if (ShowLoading)
         {
-            @*<MudItem>
-                <MudBreadcrumbs Items="_links">
-                    <ItemTemplate Context="item">
-                        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-                    </ItemTemplate>
-                </MudBreadcrumbs>
-            </MudItem>*@
+           
             <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
                 <ItemTemplate>
                     <div class="d-flex flex-column flex-column justify-center" style="height:100%">
@@ -45,13 +40,7 @@
         }
         else if (SosCode != null)
         {
-            <MudItem>
-                <MudBreadcrumbs Items="_links">
-                    <ItemTemplate Context="item">
-                        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-                    </ItemTemplate>
-                </MudBreadcrumbs>
-            </MudItem>
+          
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
@@ -166,7 +155,7 @@
                     </MudCard>
 
                     <MudItem Class="ml-10 mr-10">
-                        <MudCard Elevation="3" Class="p-4" @onclick="@(e => OpenDialogCodePath())">
+                        <MudCard Elevation="3" Class="p-4" @onclick="@(e => OpenDialogCodePath(SosCode, HOECD))">
 
                             <MudCardHeader>
 
@@ -217,19 +206,7 @@
 
 
 <MudDialog @bind-IsVisible="ModalCodePathDisplay" Options="dialogOptions" Style="    max-height: 95vh;    min-height: 80vh;">
-    <TitleContent>
-        <MudItem style="display: flex;    justify-content: space-evenly;   align-items: flex-end;">
-            <MudText Typo="Typo.subtitle1">@SosCode.Code</MudText>
-            <MudItem Style="min-width: 35vw;    max-width: 50vw;    align-self: center">
-                <MudTextField @bind-Value="searchCodeString" Placeholder="@Localizer["Search"]" TextChanged="SearchFunction" Adornment="Adornment.Start" Clearable="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-            </MudItem>
-            <MudItem style="display: flex; align-items: center">
-                <MudChip Color="Color.Info">@SosCode.Product?.Code</MudChip>
-                <MudText Typo="Typo.body1">@SosCode.Product?.Description</MudText>
-            </MudItem>
-        </MudItem>
-    </TitleContent>
-        <DialogContent>
+    <DialogContent>
             <SupervisorMobility.Client.Pages.Components.TreeView Path_Id="SosCode.SOSCodePathId" panel="panelSelect"></SupervisorMobility.Client.Pages.Components.TreeView>
         </DialogContent>
     <DialogActions>
@@ -325,8 +302,9 @@
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
                 new BreadcrumbItem(text: Localizer["PathsRoute"], href: "/PathsRoute"),
-                new BreadcrumbItem(text: Localizer["PathsRouteCreate"], href: "/PathsRoute", disabled: true),
+                new BreadcrumbItem(text: Localizer["PathsRouteDetails"], href: "/PathsRoute", disabled: true),
             };
+        BreadcrumbServices.UpdateBreadcrumbs(_links);
 
         try
         {
@@ -417,10 +395,10 @@
         NavigationManager.NavigateTo($"/PathsRoute/PathUpdate/{Code_PathId}");
     }//edit
 
-    private async void OpenDialogCodePath()
-    {
-        ModalCodePathDisplay = true;
-    }//open dialog
+    // private async void OpenDialogCodePath()
+    // {
+    //     ModalCodePathDisplay = true;
+    // }//open dialog
 
     private async void CloseCodePathModal()
     {
@@ -432,16 +410,6 @@
     }
 
 
-
-    private bool FilterFuncDocumentsHOE(HOEDocument element)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        return false;
-    }//filter function Documents
 
 
     private CDMS_CCP_Archives? AuxCcpFilesInFolder;
@@ -485,153 +453,43 @@
         StateHasChanged();
 
     }
+
+    int SOSCodePathId { get; set; } = 0;
+    string SosPanelOpen { get; set; } = "";
+
     private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, MudTabPanel panelSelect)
     {
-        searchCodeString = itemselected.Code;
         ShowLoading = true;
+        SOSCodePathId = itemselected.SOSCodePathId;
+
+        if (panelSelect == HOE)
+        {
+            SosPanelOpen = "HOE";
+        }
+        else if (panelSelect == CCP)
+        {
+            SosPanelOpen = "CCP";
+        }
+        else if (panelSelect == GOS)
+        {
+            SosPanelOpen = "GOS";
+        }
+        else if (panelSelect == HOECD)
+        {
+            SosPanelOpen = "HOE_CD";
+        }
+        else if (panelSelect == CCPCD)
+        {
+            SosPanelOpen = "CCP_CD";
+        }
+        else if (panelSelect == GOSCD)
+        {
+            SosPanelOpen = "GOS_CD";
+        }
+
         CodePathModalDisplay = true;
-        HoeFilesInFolder = new CDMS_HOE_Archives();
         StateHasChanged();
 
-        try
-        {
-            CodePathDialogDisplay = itemselected;
-
-            HOErute = itemselected.HOE;
-            if (itemselected.HOE != "")
-            {
-                Console.WriteLine($"hoe {itemselected.HOE}");
-                HoeFilesInFolder = await CDMSServices.GetFilesHOE(itemselected.HOE);
-                if (HoeFilesInFolder == null)
-                    folderErrorHOE = true;
-                else
-                {
-                    AuxHoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolder);
-
-                    folderErrorHOE = false;
-                }
-            }
-
-            folderErrorGOS = true;
-            GOSrute = itemselected.GOS;
-
-            if (itemselected.GOS != "")
-            {
-
-                Console.WriteLine($"gos {GOSrute}");
-
-
-                GosFilesInFolder = await CDMSServices.GetFilesGOS(GOSrute);
-                if (GosFilesInFolder == null)
-                {
-                    folderErrorGOS = true;
-                }
-                else
-                {
-                    folderErrorGOS = false;
-                    AuxGosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolder);
-                }
-
-            }
-
-            folderErrorCCP = true;
-            CCPrute = itemselected.CCP;
-            if (itemselected.CCP != "")
-            {
-
-                Console.WriteLine($"CCP {CCPrute}");
-
-                CcpFilesInFolder = new CDMS_CCP_Archives();
-                CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                if (CcpFilesInFolder == null)
-                    folderErrorCCP = true;
-                else
-                {
-                    AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                    folderErrorCCP = false;
-
-                }
-            }
-
-
-            //Common Directions
-            folderErrorGOSCD = true;
-            if (itemselected.CommonDirectionGOS != "")
-            {
-
-                GOSruteCD = itemselected.CommonDirectionGOS;
-
-                Console.WriteLine($"gos cd {GOSruteCD}");
-
-                GosFilesInFolderCD = new CDMS_GOS_Archives();
-
-                GosFilesInFolderCD = await CDMSServices.GetFilesGOS(GOSruteCD);
-                if (GosFilesInFolderCD == null)
-                {
-                    folderErrorGOSCD = true;
-                }
-                else
-                {
-                    folderErrorGOSCD = false;
-                    AuxGosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(GosFilesInFolderCD);
-                }
-
-            }
-
-            folderErrorCCPCD = true;
-            if (itemselected.CommonDirectionCCP != "")
-            {
-                CCPruteCD = itemselected.CommonDirectionCCP;
-                Console.WriteLine($"Ccp cd {CCPruteCD}");
-
-                CcpFilesInFolderCD = new CDMS_CCP_Archives();
-                CcpFilesInFolderCD = await CDMSServices.GetFilesCCP(CCPruteCD);
-                if (CcpFilesInFolderCD == null)
-                    folderErrorCCPCD = true;
-                else
-                {
-                    folderErrorCCPCD = false;
-                    AuxCcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolderCD);
-                }
-
-            }
-
-            if (itemselected.CommonDirectionHOE != "")
-            {
-
-
-                folderErrorHOECD = true;
-
-                HOEruteCD = itemselected.CommonDirectionHOE;
-                Console.WriteLine($"hoe cd {HOEruteCD}");
-                HoeFilesInFolderCD = new CDMS_HOE_Archives();
-                HoeFilesInFolderCD = await CDMSServices.GetFilesHOE(HOEruteCD);
-                if (HoeFilesInFolderCD == null)
-                    folderErrorHOECD = true;
-                else
-                {
-                    AuxHoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(HoeFilesInFolderCD);
-
-                    folderErrorHOECD = false;
-                }
-            }
-
-            //EndCommon Directions
-
-
-
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"OpenDialogCodePath Error: {ex.Message}");
-        }
-        finally
-        {
-            await SearchFunction();
-            ShowLoading = false;
-            StateHasChanged();
-        }
 
         return new AsyncVoidMethodBuilder();
     }
@@ -672,107 +530,6 @@
 
         return new AsyncVoidMethodBuilder();
 
-    }
-
-
-    private async Task<AsyncVoidMethodBuilder> SearchFunction()
-    {
-        Console.WriteLine($"SearchFunction - Start {DateTime.Now}");
-
-        if (CodePathDialogDisplay != null)
-        {
-            try
-            {
-                ShowLoading = true;
-                Console.WriteLine($"State Start {ShowLoading}");
-                StateHasChanged();
-
-                if (string.IsNullOrEmpty(searchCodeString))
-                {
-                    if (CodePathDialogDisplay.HOE != "")
-                        HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-
-                    if (CodePathDialogDisplay.GOS != "")
-                        GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-
-                    if (CodePathDialogDisplay.CCP != "")
-                        CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-
-                    if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                        HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-
-                    if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                        GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-
-                    if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                        CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                }
-                else
-                {
-                    if (CodePathDialogDisplay.HOE != "")
-                    {
-                        HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-                        HoeFilesInFolder.operation = HoeFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                    if (CodePathDialogDisplay.GOS != "")
-                    {
-                        GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-                        GosFilesInFolder.operation = AuxGosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                    if (CodePathDialogDisplay.CCP != "")
-                    {
-                        CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-                        CcpFilesInFolder.operation = CcpFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                    if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                    {
-                        HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-                        HoeFilesInFolderCD.operation = HoeFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                    if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                    {
-                        GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-                        GosFilesInFolderCD.operation = GosFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                    if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                    {
-                        CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                        CcpFilesInFolderCD.operation = CcpFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                    }
-
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error Filter: {ex.Message}");
-            }
-            finally
-            {
-                ShowLoading = false;
-                StateHasChanged();
-            }
-        }
-        else
-        {
-            Console.WriteLine($"Error Filter es nullo");
-        }
-
-        Console.WriteLine($"SearchFunction - End {DateTime.Now}");
-        Console.WriteLine($"State End {ShowLoading}");
-        //// if text is null or empty, show complete list
-        //if (string.IsNullOrEmpty(searchString))
-        //    return GosFilesInFolder.operation;
-
-        //return GosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-        return new AsyncVoidMethodBuilder();
     }
 
 

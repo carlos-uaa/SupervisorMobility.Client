@@ -1744,31 +1744,17 @@
                                                                     {
                                                                         var job = context?.FirstOrDefault();
 
-                                                                        @if (_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId && j.Status == 7 && j.PlannedStartDate?.Month == _yearMonth?.Month && j.PlannedStartDate?.Day < date.Day && j.PlannedStartDate?.Year == _yearMonth?.Year) && date >= DateTime.Now)
+                                                                        @if (_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId && j.Status == 7 && j.PlannedStartDate?.Month == _yearMonth?.Month && j.PlannedStartDate?.Day == date.Day && j.PlannedStartDate?.Year == _yearMonth?.Year))
                                                                         {
-                                                                            <div style="display: flex; flex-wrap: wrap;  flex-direction: column; align-content: flex-end; justify-content: space-around; ">
-
-                                                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@($"{dayName} {currentIndex}")" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-
-                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="@(()=>OpenDialog3((int)job.JobObservationId, (DateTime)date))" @ontouchstart="@(()=>OpenDialog3((int)job.JobObservationId, (DateTime)date))">
-                                                                                        @Localizer["programmedJobObservation"]
-                                                                                    </MudMenuItem>
-                                                                                </MudMenu>
-
-                                                                                @if (job != null && job?.JobObservation?.PlannedStartDate?.Day == date.Day)
-                                                                                {
-                                                                                    <MudTooltip Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
-                                                                                        <MudIcon Icon="@Icons.Material.Filled.CropSquare" Color="Color.Warning" />
-                                                                                    </MudTooltip>
-                                                                                }
-
-                                                                            </div>
+                                                                            <MudTooltip Text="@Localizer["programmedJobObservation"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="@(()=>OpenDialog3((int)job.JobObservationId, (DateTime)date))" @ontouchstart="@(()=>OpenDialog3((int)job.JobObservationId, (DateTime)date))">
+                                                                                <MudIcon Icon="@Icons.Material.Filled.CropSquare" Color="Color.Warning" />
+                                                                            </MudTooltip>
                                                                         }
                                                                         else if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId) && date >= DateTime.Now.Date )
                                                                         {
                                                                             <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Disabled="@disableBtnCreateSos" OnClick="@( () => CreateJobObservationInMonth(currentIndex, Distribution_Item.DistributionId, op.OperationId))"></MudButton>
                                                                         }
-                                                                        else if (_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId && j.PlannedStartDate?.Day == date.Day && j.PlannedStartDate?.Month == _yearMonth?.Month && j.PlannedStartDate?.Year == _yearMonth?.Year))
+                                                                        else if (_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId && j.PlannedStartDate?.Day == date.Day && j.PlannedStartDate?.Month == _yearMonth?.Month && j.PlannedStartDate?.Year == _yearMonth?.Year && j.Status != 7 ))
                                                                         {
                                                                             <MudTooltip Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
                                                                                 <MudIcon Icon="@Icons.Material.Filled.CropSquare" Color="Color.Warning" />
@@ -1779,7 +1765,7 @@
                                                                             var jobs = _All_SOSJobobservation.Find(j => j.OperationId == op.OperationId && j.Status == 7);
 
                                                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@($"{dayName} {currentIndex}")" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                                <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="@(()=>OpenDialog3((int)jobs.JobObservationId,(DateTime) date))" @ontouchstart="@(()=>OpenDialog3((int)jobs.JobObservationId, (DateTime)date))">
+                                                                                <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="@(()=>OpenDialog3((int)job.JobObservationId,(DateTime) date))" @ontouchstart="@(()=>OpenDialog3((int)job.JobObservationId, (DateTime)date))">
                                                                                     @Localizer["programmedJobObservation"]
                                                                                 </MudMenuItem>
                                                                             </MudMenu>
