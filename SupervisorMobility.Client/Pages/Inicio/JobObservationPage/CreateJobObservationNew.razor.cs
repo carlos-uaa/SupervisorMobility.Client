@@ -1983,7 +1983,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     Console.WriteLine(lup.Oportunity);
                 }
-                visibleActiveLupItem = true;
+                DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+                var parameters = new DialogParameters { { "lupInsidences", lupInsidences } };
+                var dialog = await DialogService.ShowAsync<ActiveLUPItems_Dialog>("", parameters, dialogActiveLupItemsOptions);
+                await dialog.Result;
             }
 
             SetAsCurrentJobObservation();
@@ -2674,14 +2677,5 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
                 ,"DblManagement","Waiting","CC"});
         }
-
-
-        //Active LUP items
-
-        bool visibleActiveLupItem = false;
-
-        //Camera
-        private DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
-
     }
 }
