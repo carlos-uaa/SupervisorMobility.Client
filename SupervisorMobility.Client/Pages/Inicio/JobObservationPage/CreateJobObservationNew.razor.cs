@@ -9,6 +9,7 @@ using MudBlazor;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Globalization;
@@ -38,11 +39,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Operation> _filteredOperations = new();
 
         List<User> _supervisors { get; set; } = new();
-        List<User> _allSupervisors = new();
 
         List<Lup> _tempLup { get; set; } = new();
         Lup lup { get; set; } = new();
-        List<Lup> _lup { get; set; } = new();
         List<string> _specifications { get; set; } = new();
 
         AssyChart? _assychart { get; set; }
@@ -56,45 +55,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string areaC;
         public string areaOther;
 
-        string[] modelsSpecification = new string[5] { "0", "0", "0", "0", "0" };
-        double[] TimeArray = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
-        string[] cycles = new string[5] { "", "", "", "", "" };
-        double[] HoeTimes = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
-
         public string placeholder = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
           "sed do eiusmod tempor incididuntut labore et dolore magna aliqua. Ut enim ad minim " +
           "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo coe velit esse cillum";
-
-        //timer
-        const string DEFAULT_TIME = "00:00:00.000";
-        string elapsedTime = DEFAULT_TIME;
-        System.Timers.Timer timer = new System.Timers.Timer(1);
-        DateTime startTime = DateTime.Now;
-        bool isRunning = false;
-        bool isRunning2 = false;
-        bool isRunning3 = false;
-        bool isRunning4 = false;
-        bool isRunning5 = false;
-
-        string cycle1Color = "";
-        string cycle2Color = "";
-        string cycle3Color = "";
-        string cycle4Color = "";
-        string cycle5Color = "";
-        public int opt = 1;
 
         //Glosary
         private List<Glosary> glosary = new();
         private Dictionary<string, Glosary> _glosaryInfo;
 
         //Past Job observation
-        //Lup Modal
-        private int lupId;
-
-        private DialogOptions dialogLupOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
-        //Past job observation
         public List<JobObservation> pastJobs = new();
         public List<JobObservation> pastjobObservations = new();
         public List<Lup> pastLup = new();
@@ -135,7 +106,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
-        Dictionary<string, double> specificationTimes = new Dictionary<string, double>();
 
 
         public string productSpecification = "";
@@ -544,6 +514,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
 
+            StateHasChanged();
+
         }
 
 
@@ -635,41 +607,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int[] DoubleManagment = new int[5];
         private int[] Waiting = new int[5];
 
-
-        private void UpdateValue(int operationId, int cycleIndex, double newValue)
-        {
-            if (!OperationTimes.ContainsKey(operationId))
-            {
-                OperationTimes[operationId] = new Dictionary<int, double>();
-            }
-
-            OperationTimes[operationId][cycleIndex] = newValue;
-            SyncLocalStorage.SetItem("OpTimes", OperationTimes);
-            SetAsCurrentJobObservation();
-            StateHasChanged();
-
-            Console.WriteLine("Diccionario actualizado:");
-            foreach (var kvp in OperationTimes)
-            {
-                Console.WriteLine($"OperationId: {kvp.Key}");
-                foreach (var cycleKvp in kvp.Value)
-                {
-                    Console.WriteLine($"  CycleIndex: {cycleKvp.Key}, Value: {cycleKvp.Value}");
-                }
-            }
-
-        }
-
-        private string elapsedTime2 = "00:00:00.000";
-        private DateTime startTime2;
         private bool isTimerRunning2 = false;
-        private System.Timers.Timer timer2;
 
         private int currentOperationIndex = 0;
         private int currentCycle = 1;
-        private string cronometerTime = "0.00";
 
         private double previousOperationTime = 0.0;
+
+        CreateJobObservation.Timer Timer;
 
         private void NextOperation()
         {
@@ -679,15 +624,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (currentOperationIndex > 0)
                 {
-                    double elapsedCentiseconds = GetElapsedCentiseconds() - previousOperationTime;
+                    double elapsedCentiseconds = Timer.GetElapsedCentiseconds() - previousOperationTime;
                     OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
                 }
                 else
                 {
-                    OperationTimes[currentOperation.OperationId][currentCycle] = GetElapsedCentiseconds();
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Timer.GetElapsedCentiseconds();
                 }
 
-                previousOperationTime = GetElapsedCentiseconds();
+                previousOperationTime = Timer.GetElapsedCentiseconds();
 
                 currentOperationIndex++;
                 if (currentOperationIndex >= _filteredOperations.Count)
@@ -696,9 +641,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     currentCycle++;
                     SyncLocalStorage.SetItem("CC",currentCycle);
                     SyncLocalStorage.SetItem("OpTimes", OperationTimes);
-                    Console.WriteLine("Total cycle time: " + cronometerTime);
-                    PauseTimer();
-                    cronometerTime = "0.00";
                 }
 
                 SetAsCurrentJobObservation();
@@ -706,100 +648,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-
-        private void StartOrPauseTimer()
+        public void ChangeCycle(int cycle)
         {
-            if (isTimerRunning2)
-            {
-                PauseTimer();
-            }
-            else
-            {
-                StartTimer();
-            }
-
+            currentCycle = cycle;
         }
 
-
-        private double GetElapsedCentiseconds()
-        {
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-
-            return Math.Round(centiseconds, 2);
-        }
-
-        private void OnTimerTick(object? sender, ElapsedEventArgs e)
-        {
-            if (isTimerRunning2)
-            {
-                TimeSpan hundreths;
-                double centiseconds = 0.0;
-                if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-                {
-                    centiseconds = hundreths.TotalMilliseconds / 60000.0;
-                }
-                else
-                {
-                    Console.WriteLine("Wrong timestamp format.");
-                }
-
-                cronometerTime = string.Format("{0:0.000}", centiseconds);
-            }
-
-            DateTime currentTime = e.SignalTime;
-            elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
-            StateHasChanged();
-        }
-
-        bool errorflag = false;
-        private void StartTimer()
-        {
-            int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
-            if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
-            {
-                errorflag = false;
-                isTimerRunning2 = true;
-                startTime2 = DateTime.Now;
-                timer2 = new System.Timers.Timer(1);
-                timer2.Elapsed += OnTimerTick;
-                timer2.AutoReset = true;
-                timer2.Enabled = true;
-            }
-            else
-            {
-                Snackbar.Add("primero llena los campos indicados", Severity.Warning);
-                errorflag = true;
-            }
-        }
-
-        public bool checkIfError(int i, int value)
-        {
-            if (errorflag)
-            {
-                bool check = currentCycle - 1 == i;
-                bool chekV = value == 0;
-                return check && chekV;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         private void PauseTimer()
         {
-            cronometerTime = "0.00";
             isTimerRunning2 = false;
-            timer2.Enabled = false;
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
@@ -811,10 +668,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void StartOver()
         {
-            //currentCycle = 1;
-            cronometerTime = "0.00";
             isTimerRunning2 = false;
-            if (timer2 != null) timer2.Enabled = false;
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
@@ -828,7 +682,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             try
             {
-                SyncLocalStorage.RemoveItem("OpTimes");
+                SyncLocalStorage.SetItem("OpTimes", OperationTimes);
                 SyncLocalStorage.RemoveItem("StepsNumber");
                 SyncLocalStorage.RemoveItem("DblManagement");
                 SyncLocalStorage.RemoveItem("Waiting");
@@ -870,8 +724,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        public void InitializeCycleTimes()
+        public void InitializeCycleTimes(string specification)
         {
+            productSpecification = specification;
             _filteredOperations = new();
             StepsNumber = new int[5];
             DoubleManagment = new int[5];
@@ -929,8 +784,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private async Task ShowSpecifications()
+        private async Task ShowSpecifications(int id)
         {
+            jobProductId = id;
             _specifications = new();
             productSpecification = "";
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
@@ -1158,10 +1014,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         //Lup
-        void Closed(MudChip chip)
-        {
-            // react to chip closed
-        }
         public void AddTempLup(int pillar)
         {
             if (_jobObservation.SupervisorId == 0)
@@ -1390,12 +1242,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         //Past Job observation
-        private async void OpenDialogLup(int id)
-        {
-            var parameters = new DialogParameters { { "lupId", id } };
-            var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLupOptions);
-            await dialog.Result;
-        }
 
         private async void OpenDialogPastJobObservations()
         {
@@ -1746,7 +1592,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         Reject();
                         break;
                     case 1:
-                        SignDate();
+                        await SignDate();
                         break;
                     default:
                         return;
@@ -1940,7 +1786,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        
 
         //Files Path
         private CDMS_CCP_Archives? CcpFilesInFolder;
@@ -1994,48 +1840,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         MudTabPanel GOS;
         MudTabPanel GOSCD;
 
-        private string searchCodeString = "";
-        bool ShowLoading = true;
-        private IList<string> _sourceMsgLoading = new List<string>();
-        private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+        
 
         SOSCodePath CodePathDialogDisplay { get; set; }
 
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
-
-        private async void OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
-        {
-            ShowLoading = true;
-            string SosPanelOpen = string.Empty;
-            switch (panelSelect)
-            {
-                case 1:
-                    SosPanelOpen = "HOE";
-                    break;
-                case 2:
-                    SosPanelOpen = "CCP";
-                    break;
-                case 3:
-                    SosPanelOpen = "GOS";
-                    break;
-                case 4:
-                    SosPanelOpen = "HOE_CD";
-                    break;
-                case 5:
-                    SosPanelOpen = "CCP_CD";
-                    break;
-                case 6:
-                    SosPanelOpen = "GOS_CD";
-                    break;
-            }
-            var parameters = new DialogParameters {
-                { "SOSCodePathId", itemselected.SOSCodePathId },
-                { "panelSelect", SosPanelOpen }
-            };
-            var dialog = await DialogService.ShowAsync<Guide_Dialog>("", parameters, dialogOptions);
-            await dialog.Result;
-        }
 
 
         TreeItemData nodoEncontrado { get; set; }
@@ -2048,7 +1858,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             try
             {
-                ShowLoading = true;
 
                 if (CCPrute != "")
                 {
@@ -2075,7 +1884,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             finally
             {
-                ShowLoading = false;
                 StateHasChanged();
             }
 
@@ -2087,18 +1895,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         ///
              //Guide Modal
         MudTabs guideTabs;
-
-        private async void OpenGuideDialog(int pillarID)
-        {
-            var parameters = new DialogParameters
-            {
-                { "selectedPillar", pillarID }
-            };
-            var dialog = await DialogService.ShowAsync<Guide_Dialog>("", parameters, dialogGuideOptions);
-            await dialog.Result;
-
-        }
-        private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
         //Questions and answers
 
@@ -2153,14 +1949,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             item.Show = true;
             item.Edited = true;
-
-            //foreach (var kvp in questionResponses)
-            //{
-            //    int questionId = kvp.Key;
-            //    string answer = kvp.Value;
-            //    Console.WriteLine($"QuestionID: {questionId}, Respuesta: {answer}");
-
-            //}
 
             StateHasChanged();
             base.StateHasChanged();
@@ -2265,7 +2053,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         ChecklistAnswer SelectedAnswer { get; set; }
         private async void OpenCameraAnswerDialog(ChecklistAnswer item)
         {
-            var parameters = new DialogParameters { { "Prompt", item.Prompt }, { "returnFrame", GetCurrentFrameAnswer } };
+            var parameters = new DialogParameters { { "Prompt", $"Evidence for {item.Prompt}" }, { "returnFrame", EventCallback.Factory.Create<string>(this, GetCurrentFrameAnswer) } };
             SelectedAnswer = item;
             var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
             await dialog.Result;
@@ -2274,24 +2062,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Camera
         private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
 
-        private List<string> capturedImages = new List<string>();
-
         public int lupPhotosId = 0;
         public string oportunity = "";
         public int photosPillar = 0;
 
-        private bool visibleCamera = false;
-        public bool accessCamera = false;
-        private void OpenCameraDialog(int lupId, string lupOportunity, int pillar)
-        {
-            photosPillar = pillar;
-            oportunity = lupOportunity;
-            lupPhotosId = lupId;
-
-            visibleCamera = true;
-
-        }
-        void Close2() => visibleCamera = false;
 
         private string imageData;
 
@@ -2509,13 +2283,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public bool visibleOperatorSignature = false;
 
-        private void OpenSignOperator()
-        {
-            visibleOperatorSignature = true;
-        }
-
-        private DialogOptions dialogOperatorSignatureOptions = new() { CloseOnEscapeKey = true, FullWidth = true, CloseButton = true, DisableBackdropClick = true, FullScreen = true };
-
         private string currentImage = "";
 
         private void HandleSignatureSaved()
@@ -2608,9 +2375,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SetAsCurrentJobObservation();
         }
 
-        private async Task OnKPIChange()
+        private async Task OnKPIChange(int id)
         {
-            _jobObservation.KpiId = kpiID;
+            _jobObservation.KpiId = kpiID = id;
             await JobObservationContext_OnFieldChanged(); 
         }
 
