@@ -113,14 +113,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         string currentLanguage = "es-ES";
 
+        public class LupOpportunity
+        {
+            public int QuestionID { get; set; }
+            public string Opportunity { get; set; }
+        }
+
         //Lup list
-        public List<string> area_ListS = new List<string>();
-        public List<string> area_ListQ = new List<string>();
-        public List<string> area_ListD = new List<string>();
-        public List<string> area_ListC = new List<string>();
-        public List<string> area_ListOther = new List<string>();
+        public List<LupOpportunity> area_ListS = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListQ = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListD = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListC = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListOther = new List<LupOpportunity>();
 
         private DialogOptions options = new DialogOptions() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
+
+        List<Lup> lupInsidences = new();
 
         protected async override Task OnInitializedAsync()
         {
@@ -196,11 +204,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (jo) { jo = false; _jobObservation = await LocalStorage.GetItemAsync<JobObservation>("JobObs") ?? throw new ArgumentNullException("Error Retriving Job Observation", nameof(_jobObservation)); fake = true; }
                         if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes);  }
                         if (la) { la = false; _tempLup = await LocalStorage.GetItemAsync<List<Lup>>("LupToAdd") ?? new(); }
-                        if (aS) { aS = false; area_ListS = await LocalStorage.GetItemAsync<List<string>>("area_ListS") ?? new(); }
-                        if (aQ) { aQ = false; area_ListQ = await LocalStorage.GetItemAsync<List<string>>("area_ListQ") ?? new(); }
-                        if (aD) { aD = false; area_ListD = await LocalStorage.GetItemAsync<List<string>>("area_ListD") ?? new(); }
-                        if (aC) { aC = false; area_ListC = await LocalStorage.GetItemAsync<List<string>>("area_ListC") ?? new(); }
-                        if (aO) { aO = false; area_ListOther = await LocalStorage.GetItemAsync<List<string>>("area_ListOther") ?? new(); }
+                        if (aS) { aS = false; area_ListS = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListS") ?? new(); }
+                        if (aQ) { aQ = false; area_ListQ = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListQ") ?? new(); }
+                        if (aD) { aD = false; area_ListD = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListD") ?? new(); }
+                        if (aC) { aC = false; area_ListC = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListC") ?? new(); }
+                        if (aO) { aO = false; area_ListOther = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListOther") ?? new(); }
                         if (iF) { iF = false; imagesFromFile = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<string, string[]>>>("QAnsImgFF") ?? new(); }
                         if (iC) { iC = false; imagesFromCamera = await LocalStorage.GetItemAsync<Dictionary<int, List<string>>>("QAnsImgFC") ?? new(); }
                         if (iS) { iS = false; currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; }
@@ -895,7 +903,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Type = 2;
             _jobObservation.Status = 1;
 
-            FillJobObservationData();
+            await FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
 
@@ -919,7 +927,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        public void FillJobObservationData()
+        public async Task FillJobObservationData()
         {
             //_jobObservation.OperationId = 0;
             _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
@@ -932,7 +940,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
 
-
+            startHour = DateTime.Now.TimeOfDay;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -945,7 +953,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
 
 
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
                 hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
                 if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
@@ -953,15 +961,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine(newDate1);
                 }
                 else
+                {
                     Console.WriteLine("Unable to parse '{0}'", hour1);
-
+                    return;
+                }
 
                 if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
                 {
                     Console.WriteLine(newDate2);
                 }
                 else
+                {
                     Console.WriteLine("Unable to parse '{0}'", hour2);
+                }
 
                 _jobObservation.PlannedStartDate = newDate1;
                 _jobObservation.PlannedEndDate = newDate2;
@@ -970,7 +982,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
-                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
                 hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
                 if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
@@ -1003,7 +1015,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.ChecklistAnswers?.Add(question.Value);
                 }
             }
-
+            await Task.CompletedTask;
         }
 
 
@@ -1020,9 +1032,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"First select a Supervisor", Severity.Error);
+                Snackbar.Add("First select a Supervisor", Severity.Error);
                 return;
             }
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
             List<Lup> lupsToAdd = new List<Lup>();
 
@@ -1031,11 +1045,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 1:
                     if (area_ListS != null && area_ListS.Count > 0)
                     {
-                        foreach (string str in area_ListS)
+                        foreach (var lupOpportunity in area_ListS)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
 
                         try
@@ -1051,20 +1068,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error S Area is empty", Severity.Error);
+                        Snackbar.Add("Error S Area is empty", Severity.Error);
                         return;
                     }
                     break;
+
                 case 2:
                     if (area_ListQ != null && area_ListQ.Count > 0)
                     {
-                        foreach (string str in area_ListQ)
+                        foreach (var lupOpportunity in area_ListQ)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
 
                         try
@@ -1080,21 +1099,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Q Area is empty", Severity.Error);
+                        Snackbar.Add("Error Q Area is empty", Severity.Error);
                         return;
                     }
                     break;
+
                 case 3:
                     if (area_ListD != null && area_ListD.Count > 0)
                     {
-                        foreach (string str in area_ListD)
+                        foreach (var lupOpportunity in area_ListD)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
+
                         try
                         {
                             SyncLocalStorage.RemoveItem("area_ListD");
@@ -1103,25 +1125,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             Console.WriteLine("Item not found or already deleted", e.Message);
                         }
+
                         area_ListD.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error D Area is empty", Severity.Error);
+                        Snackbar.Add("Error D Area is empty", Severity.Error);
                         return;
                     }
                     break;
+
                 case 4:
                     if (area_ListC != null && area_ListC.Count > 0)
                     {
-                        foreach (string str in area_ListC)
+                        foreach (var lupOpportunity in area_ListC)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
+
                         try
                         {
                             SyncLocalStorage.RemoveItem("area_ListC");
@@ -1130,25 +1156,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             Console.WriteLine("Item not found or already deleted", e.Message);
                         }
+
                         area_ListC.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error C Area is empty", Severity.Error);
+                        Snackbar.Add("Error C Area is empty", Severity.Error);
                         return;
                     }
                     break;
+
                 case 5:
                     if (area_ListOther != null && area_ListOther.Count > 0)
                     {
-                        foreach (string str in area_ListOther)
+                        foreach (var lupOpportunity in area_ListOther)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
+
                         try
                         {
                             SyncLocalStorage.RemoveItem("area_ListOther");
@@ -1157,41 +1187,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         {
                             Console.WriteLine("Item not found or already deleted", e.Message);
                         }
+
                         area_ListOther.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error Others Area is empty", Severity.Error);
+
+                        Snackbar.Add("Error Others Area is empty", Severity.Error);
                         return;
                     }
                     break;
 
+                default:
+                    Snackbar.Add("Invalid pillar", Severity.Error);
+                    return;
             }
-
 
             User? svAux = _supervisors?.Find(u => _jobObservation.SupervisorId == u.UserId);
 
-            foreach (Lup LupItem in lupsToAdd)
+            foreach (Lup lupItem in lupsToAdd)
             {
-                LupItem.Observer = svAux?.Name ?? "";
+                lupItem.Observer = svAux?.Name ?? "";
+                lupItem.JobObservationId = 0;
+                lupItem.Pillar = pillar;
+                lupItem.Status = 1;
+                lupItem.CreatedDate = DateTime.Now;
+                lupItem.IsActive = true;
 
-                LupItem.JobObservationId = 0;
-                LupItem.Pillar = pillar;
-                LupItem.Status = 1;
-                LupItem.CreatedDate = DateTime.Now;
-                LupItem.IsActive = true;
-
-                _tempLup.Add(LupItem);
+                _tempLup.Add(lupItem);
             }
             SyncLocalStorage.SetItem("LupToAdd", _tempLup);
-            lup = new();
+            lup = new Lup();
 
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"Lup item added", Severity.Info);
-
+            Snackbar.Add("Lup item added", Severity.Info);
         }
 
         private void RemoveFromList(int pilarId, int indexRemove)
@@ -1323,9 +1351,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
-
-            startHour = DateTime.Now.TimeOfDay;
-
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 2;
@@ -1335,7 +1360,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            FillJobObservationData();
+            await FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1459,7 +1484,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Status = 4;
 
 
-            FillJobObservationData();
+            await FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1551,7 +1576,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Status = 5;
 
 
-            FillJobObservationData();
+            await FillJobObservationData();
 
             var result = await JobObservationService.CreateJobObservationWithLup(_jobObservation);
             //var result = await JobObservationService.CreateJobObservation(_jobObservation);
@@ -1898,51 +1923,67 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private void AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
+        private async Task AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
         {
-
+            // get incidences
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
+
             if (question.Pillars != null)
             {
                 foreach (var pillar in question.Pillars)
                 {
+                    var lupOpportunity = new LupOpportunity
+                    {
+                        QuestionID = question.QuestionID,
+                        Opportunity = $"{secction}.{question.CategorySequence}- " + notGood,
+                    };
+
                     switch (pillar)
                     {
                         case 1:
                             areaS = notGood;
-                            area_ListS?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            area_ListS?.Add(lupOpportunity);
                             SyncLocalStorage.SetItem("area_ListS", area_ListS);
                             Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                             break;
                         case 2:
                             areaQ = notGood;
-                            area_ListQ?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            area_ListQ?.Add(lupOpportunity);
                             SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
                             Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                             break;
                         case 3:
                             areaD = notGood;
-                            area_ListD?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            area_ListD?.Add(lupOpportunity);
                             SyncLocalStorage.SetItem("area_ListD", area_ListD);
                             Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                             break;
                         case 4:
                             areaC = notGood;
-                            area_ListC?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            area_ListC?.Add(lupOpportunity);
                             SyncLocalStorage.SetItem("area_ListC", area_ListC);
                             Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
                             break;
                         case 5:
                             areaOther = notGood;
-                            area_ListOther?.Add($"{secction}.{question.CategorySequence}- " + notGood);
+                            area_ListOther?.Add(lupOpportunity);
                             SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
                             Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                             break;
-
                     }
                 }
+            }
+
+            lupInsidences = await LupService.GetAllLupInsidences(question.QuestionID, _jobObservation.SupervisorId, _jobObservation.DistributionId);
+            if (lupInsidences != null && lupInsidences.Count > 0)
+            {
+                foreach (var lup in lupInsidences)
+                {
+                    Console.WriteLine(lup.Oportunity);
+                }
+                visibleActiveLupItem = true;
             }
 
             SetAsCurrentJobObservation();
@@ -1967,61 +2008,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            if(question.Pillars != null)
+
+            if (question.Pillars != null)
             {
                 foreach (var pillarId in question.Pillars)
                 {
                     switch (pillarId)
                     {
                         case 1:
-                            int index1 = area_ListS?.FindIndex(s => s?.IndexOf(searchString) != -1) ?? -1;
+                            int index1 = area_ListS?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                             if (area_ListS != null && index1 != -1)
                             {
-                                area_ListS[index1] = fullEntry;
+                                area_ListS[index1].Opportunity = fullEntry;
                                 SyncLocalStorage.SetItem("area_ListS", area_ListS);
-                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                                Snackbar.Add($"Commentary added to Lup in Safety & Environment", Severity.Success);
                             }
                             break;
                         case 2:
-                            int index2 = area_ListQ?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            int index2 = area_ListQ?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                             if (area_ListQ != null && index2 != -1)
                             {
-                                area_ListQ[index2] = fullEntry;
+                                area_ListQ[index2].Opportunity = fullEntry;
                                 SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
-                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                                Snackbar.Add($"Commentary added to Lup in Quality", Severity.Success);
                             }
                             break;
                         case 3:
-                            int index3 = area_ListD?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            int index3 = area_ListD?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                             if (area_ListD != null && index3 != -1)
                             {
-                                area_ListD[index3] = fullEntry;
+                                area_ListD[index3].Opportunity = fullEntry;
                                 SyncLocalStorage.SetItem("area_ListD", area_ListD);
-                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                                Snackbar.Add($"Commentary added to Lup in Delivery", Severity.Success);
                             }
                             break;
                         case 4:
-                            int index4 = area_ListC?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            int index4 = area_ListC?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                             if (area_ListC != null && index4 != -1)
                             {
-                                area_ListC[index4] = fullEntry;
+                                area_ListC[index4].Opportunity = fullEntry;
                                 SyncLocalStorage.SetItem("area_ListC", area_ListC);
-                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                                Snackbar.Add($"Commentary added to Lup in Cost", Severity.Success);
                             }
                             break;
                         case 5:
-                            int index5 = area_ListOther?.FindIndex(s => s.IndexOf(searchString) != -1) ?? -1;
+                            int index5 = area_ListOther?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                             if (area_ListOther != null && index5 != -1)
                             {
-                                area_ListOther[index5] = fullEntry;
+                                area_ListOther[index5].Opportunity = fullEntry;
                                 SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
-                                Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                                Snackbar.Add($"Commentary added to Lup in Other", Severity.Success);
                             }
                             break;
                     }
                 }
             }
-
         }
 
 
@@ -2605,5 +2646,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
                 ,"DblManagement","Waiting","CC"});
         }
+
+
+        //Active LUP items
+
+        bool visibleActiveLupItem = false;
+        private void OpenCameraAnswerDialog()
+        {
+            visibleActiveLupItem = true;
+        }
+
+        //Camera
+        private DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
     }
 }

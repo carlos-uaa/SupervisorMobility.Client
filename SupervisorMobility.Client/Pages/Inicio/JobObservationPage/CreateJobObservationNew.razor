@@ -79,20 +79,20 @@
         transition: all 0.3s ease-out;
     }
 
-    .canvas-container:hover {
-        transform: scale(1.005);
-    }
+        .canvas-container:hover {
+            transform: scale(1.005);
+        }
 
 </style>
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["jobObservations"]</PageTitle>
-    @*Breadcrumb links*@
-    <div style="display: flex; align-items: center; justify-content: space-between;" @onkeydown="HandleKeyDown">
-            <MudItem Style="text-align: start">
-            @if (_assychart != null)
-                    {
-                        <MudItem Class="d-flex flex-row align-start justify-center">
+@*Breadcrumb links*@
+<div style="display: flex; align-items: center; justify-content: space-between;" @onkeydown="HandleKeyDown">
+    <MudItem Style="text-align: start">
+        @if (_assychart != null)
+        {
+            <MudItem Class="d-flex flex-row align-start justify-center">
 
                 @if (_assychart.RoutesProductsAssyChart?.Count > 0)
                 {
@@ -182,20 +182,20 @@
 
 
         }
-        </MudItem>
-        <MudItem Style="text-align: end">
-            <MudButton @onclick="(() => OpenDialogPastJobObservations())" @ontouchstart="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
-        </MudItem>
-    </div>
+    </MudItem>
+    <MudItem Style="text-align: end">
+        <MudButton @onclick="(() => OpenDialogPastJobObservations())" @ontouchstart="(() => OpenDialogPastJobObservations())" Class="ml-4" Style="float:right" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
+    </MudItem>
+</div>
 
-    @* Job Observation Form*@
+@* Job Observation Form*@
 <EditForm Model="_jobObservation" OnValidSubmit="CreateNewJobObservation">
-        <DataAnnotationsValidator />
+    <DataAnnotationsValidator />
 
-        <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
-            <MudItem lg="10" md="12" sm="12" xs="12">
-                <MudItem Class="d-flex justify-space-between mb-2">
-                    <MudItem Style="text-align: start">
+    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+        <MudItem lg="10" md="12" sm="12" xs="12">
+            <MudItem Class="d-flex justify-space-between mb-2">
+                <MudItem Style="text-align: start">
 
 
                 </MudItem>
@@ -256,8 +256,9 @@
                     }
                 </MudExpansionPanels>
             }
-            @if(!string.IsNullOrEmpty(_jobObservation.OperatorSignature)){
-                 <MudItem Style="text-align:center; display: flex; justify-content: center;">
+            @if (!string.IsNullOrEmpty(_jobObservation.OperatorSignature))
+            {
+                <MudItem Style="text-align:center; display: flex; justify-content: center;">
                     <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature OnSignatureSaved="HandleSignatureSaved" Image="@currentImage" ClearSignature="HandleClearSignature"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.OperatorSignature>
                 </MudItem>
             }
@@ -266,11 +267,52 @@
                 <MudItem Class="ml-auto mt-4">
 
                     <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4">@Localizer["createJobObservation"]</MudButton>
-                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => SaveProgressJobObservation())">@Localizer["saveProgress"]</MudButton>
-                        <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">@Localizer["underReview"]</MudButton>
-                        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateJobObservation())">@Localizer["cancel"]</MudButton>
-                    </MudItem>
-                </MudCardActions>
+                    <MudButton StartIcon="@Icons.Material.Filled.StopCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => SaveProgressJobObservation())">@Localizer["saveProgress"]</MudButton>
+                    <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">@Localizer["underReview"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateJobObservation())">@Localizer["cancel"]</MudButton>
+                </MudItem>
+            </MudCardActions>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@* Active LUP items *@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleActiveLupItem" Options="dialogActiveLupItemsOptions">
+    <TitleContent>
+        <MudItem Style="display: flex; justify-content: center; align-items: center">
+            <MudIcon Icon="@Icons.Material.Filled.List" Title="Favorite" Class="mr-2" Color="Color.Primary"/>
+            <MudText Typo="Typo.h6" Style="text-align:center" >Active LUP items</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+            <MudItem>
+                <MudSimpleTable FixedHeader=true Style="height: 55vh" Class="styled-table table-striped mb-5" Hover>
+                    <thead>
+                        <tr>
+                            <th style="text-align:center">
+                                ID
+                            </th>
+                            <th style="text-align:center">
+                                Oportunity
+                            </th>
+                            <th style="text-align:center">
+                                Date
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lup in lupInsidences)
+                        {
+                            <tr>
+                                <td style="text-align:center">@lup.LupId </td>
+                                <td style="text-align:center">@lup.Oportunity </td>
+                                <td style="text-align:center">@lup.CreatedDate </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
             </MudItem>
-        </MudGrid>
-    </EditForm>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>

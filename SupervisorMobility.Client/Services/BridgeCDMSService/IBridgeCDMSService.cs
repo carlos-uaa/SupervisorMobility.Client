@@ -17,8 +17,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile);
         Task<CDMS_General> DeleteFileTempGOS(string FileName, string pathFile);
 
-        Task<CDMS_DownloadFile> GetDownloadLinkCCP(string URL, string namefile);
-        Task<CDMS_General> DeleteFileTempCCP(string FileName);
+        Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(string URL, string namefile);
+        Task<CDMS_General> DeleteFileTempCCP(string FileName, string pathFile);
+
+        Task<AsyncVoidMethodBuilder> Download_DeleteFileTempHOE(string FileName, string pathFile);
 
     }
 }

@@ -193,7 +193,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         {
             if(year != 0 && operationId != 0)
             {
-                _lup = await LupServices.GetLupsByFilters(year, operationId);
+                _lup = await LupServices.GetLupsByFilters(operationId: operationId);
             }
             else if(year == 0 &&  operationId == 0) 
             {

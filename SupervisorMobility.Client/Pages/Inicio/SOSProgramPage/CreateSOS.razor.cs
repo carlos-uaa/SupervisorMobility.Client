@@ -73,7 +73,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             else
             {
                 await GetUserAsync();
-                
+
                 _plants = await PlantServices.GetPlants();
                 //_sosReview.AplicationYear = DateTime.Now.Year;
                 _sosReview.CreationDate = DateTime.Now;
@@ -88,7 +88,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         _allSupervisors = await UsersService.GetUsersByType(3, true, false);
 
                     }
-                    else if(user.UserType == 2)
+                    else if (user.UserType == 2)
                     {
                         _sosReview.PlantId = (int)user.PlantId;
 
@@ -99,7 +99,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         }
                         _Supervisors?.ToList().AddRange(user.Subordinates);
 
-                    } else if(user.UserType == 3)
+                    }
+                    else if (user.UserType == 3)
                     {
                         _sosReview.PlantId = (int)user.PlantId;
 
@@ -110,7 +111,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         {
                             _sosReview.Supervisors = new List<User>();
                         }
+                        _allSupervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_sosReview.PlantId, _sosReview.AreaId, 3, true, false);
+                        if (_Supervisors == null)
+                        {
+                            _Supervisors = new List<User>();
+                        }
+                        _Supervisors = _allSupervisors;
+                        if (_Supervisors.Any(u => u.UserId == user.UserId))
+                        {
+                            int indexofRemove = _Supervisors.FindIndex(u => u.UserId == user.UserId);
+                            if (indexofRemove > -1)
+                            {
+                                _Supervisors.RemoveAt(indexofRemove);
+                            }
+
+                        }
                         _sosReview.Supervisors?.Add(user);
+
                         cantCreate = _sosReview.Supervisors.Count == 0;
 
                     }
@@ -136,11 +153,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void OnSelectedSuperiorFunction(User element, int type)
         {
-            
-            selectedSupervisorOfList = element;
-          
 
-            if (selectedSupervisorOfList != new User() )
+            selectedSupervisorOfList = element;
+
+
+            if (selectedSupervisorOfList != new User())
             {
                 ActiveAddSubordinated = false;
             }
@@ -206,7 +223,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             supervisorId = 0;
             _sosReview.AreaId = 0;
 
-            if(user.UserType == 1)
+            if (user.UserType == 1)
                 _areas = await AreaServices.GetAreas(_sosReview.PlantId);
 
 
@@ -216,7 +233,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void ShowSupervisors()
         {
-            if(_sosReview.Supervisors == null)
+            if (_sosReview.Supervisors == null)
             {
                 _sosReview.Supervisors = new List<User>();
             }
@@ -244,9 +261,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     }
                 }
             }
+            else if (user.UserType == 3)
+            {
+                //_Supervisors = _allSupervisors;
+
+                if (_Supervisors == null)
+                {
+                    _Supervisors = new List<User>();
+                }
+                _Supervisors.ToList().AddRange(_allSupervisors);
+                if (_Supervisors.Any(u => u.UserId == user.UserId))
+                {
+                    int indexofRemove = _Supervisors.FindIndex(u => u.UserId == user.UserId);
+                    if (indexofRemove > -1)
+                    {
+                        _Supervisors.RemoveAt(indexofRemove);
+                    }
+
+                }
+                _sosReview.Supervisors?.Add(user);
+            }
 
 
-                cantCreate = _sosReview.Supervisors.Count == 0;
+            cantCreate = _sosReview.Supervisors.Count == 0;
 
             StateHasChanged();
             base.StateHasChanged();
@@ -274,13 +311,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _sosReview.Supervisors = new List<User>();
             }
 
-            switch(user.UserType)
+            switch (user.UserType)
             {
                 case 2:
                     _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
                     break;
                 case 3:
-                _sosReview.Supervisors.Add(user);
+                    _sosReview.Supervisors.Add(user);
                     break;
             }
 

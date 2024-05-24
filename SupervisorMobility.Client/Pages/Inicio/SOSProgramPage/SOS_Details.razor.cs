@@ -1,13 +1,8 @@
-using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Utilities;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Services.BreadcrumsService;
-using SupervisorMobility.Client.Pages.Configuration.PlantPage;
-using System.Reflection.Metadata.Ecma335;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
@@ -948,6 +943,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
                         result.JobObservation.Operation = result.Operation;
                         result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
+                            result.JobObservation.JobObservationId = (int)result.JobObservationId;
                         SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
 
                         SOSDataServices._SosRegisters.Add(result);
@@ -1051,12 +1047,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                    SOSRegisterJobObservation? result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
                         result.JobObservation.Operation = result.Operation;
                         result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
+                            result.JobObservation.JobObservationId = (int)result.JobObservationId;
                         SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
 
                         SOSDataServices._SosRegisters.Add(result);
@@ -1096,14 +1093,105 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 }
                 else
                 {
-                    bool? result = await DialogService.ShowMessageBox(
-                    "Atencion",
-                    (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
-                    yesText: "Entendio!");
+                    if(user.UserType == 3)
+                    {
+                        var resultCreateSv = await SOSServices.CreateSOSRegUserOperation(_sos_plan.SOSid, user.UserId, OperationId);
+                        if (resultCreateSv != null)
+                        {
+                            context.Register = resultCreateSv;
+                            context.Register.Supervisor = _Users.Find(u => u.UserId == context.Register.SupervisorId);
+                            context.Exist = true;
+                            context.StateUpdate = false;
+                        
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"SOS Supervisor Auto Assigned", Severity.Info);
 
-                    Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+                            StateHasChanged();
+                        }
 
-                    //msg de crear Supervisor
+                        _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
+                        _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
+                        _NewJobObservation.OperationId = OperationId;
+                        _NewJobObservation.DistributionId = DistributionId;
+
+                        _NewJobObservation.SupervisorId = (int)context.Register.SupervisorId;
+
+                        _NewJobObservation.Option = 2;
+                        _NewJobObservation.Type = 3;
+                        _NewJobObservation.Status = 7;
+                        _NewJobObservation.SectionIds = jobCategoryStructureIds;
+                        _NewJobObservation.IsActive = true;
+
+
+                        DateTime parsedDate = new DateTime((int)_sos_plan.AplicationYear, _yearMonth.Value.Month, day);
+                        parsedDate = await SOSDataServices.FindNextAvailableDate(parsedDate, false);
+                        _NewJobObservation.StartDate = parsedDate;
+
+
+
+
+                        SOSRegisterJobObservation? result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                        if (result != null)
+                        {
+                            result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
+                            result.JobObservation.Operation = result.Operation;
+                            result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
+                            result.JobObservation.JobObservationId = (int)result.JobObservationId;
+                            var jobToAdd = await JobObsServices.GetJobObservationById((int)result.JobObservationId);
+                            var jobMapped = _mapper.Map<JobObservationNulls>(jobToAdd);
+                            SOSDataServices._All_SOSJobobservation.Add(jobMapped);
+
+                            SOSDataServices._SosRegisters.Add(result);
+
+                            var matchingRegisters = SOSDataServices._SosRegisters?
+                           .Where(r => r.OperationId == OperationId && r.Year <= _sos_plan.AplicationYear && r.Month == parsedDate.Month)
+                           .ToList();
+
+                            if (SOSDataServices.SOS_Registers_Matrix.TryGetValue((OperationId, parsedDate.Month), out var contextFind))
+                            {
+                                if (contextFind != null)
+                                {
+                                    contextFind = matchingRegisters;
+                                }
+                                else
+                                {
+                                    SOS_Registers_Matrix.Add((OperationId, parsedDate.Month), matchingRegisters);
+                                }
+                            }
+
+                            disableBtnCreateSos = false;
+
+                            ShowTable = false;
+                            MonthlyView = false;
+                            ScheduleView = true;
+
+
+                            await PrepareDataTable();
+
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"SOS Review Job Observation Created", Severity.Info);
+                            StateHasChanged();
+                        }
+
+
+                    }
+                    else
+                    {
+                        bool? result = await DialogService.ShowMessageBox(
+                        "Atencion",
+                        (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
+                        yesText: "Entendio!");
+
+                        Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+
+                        ////ssv o admin intentanto crear job
+                        ///
+                    }
+
+
+
                 }
 
             }
@@ -1111,8 +1199,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 bool? result = await DialogService.ShowMessageBox(
                 "Atencion",
-                (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
-                yesText: "Entendio!");
+                (MarkupString)$"SOS Register User-Operation Relationship Not Exist.",
+                yesText: "ok!");
 
                 Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
