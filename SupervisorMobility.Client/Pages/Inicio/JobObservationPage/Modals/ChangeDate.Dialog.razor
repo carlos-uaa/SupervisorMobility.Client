@@ -1,0 +1,47 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+<MudDialog DisableSidePadding="false">
+    <DialogContent>
+        <MudContainer Style="min-height:40vh; max-height: 75vh; overflow-y: scroll; text-align: center">
+            <MudSimpleTable>
+                <thead>
+                    <tr>
+                        <th colspan="2" style="text-align:center">
+                            <MudText Typo="Typo.h6">@Localizer["selectANewDate"]</MudText>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <MudDatePicker DateChanged="@(dt => OnStartDateChanged.InvokeAsync((DateTime)dt!))" Date="_jobObservation.StartDate" Label=@Localizer["newStartDate"] Color="Color.Info" AdornmentColor="Color.Info" Class="pt-2" />
+                        </td>
+                        <td>
+                            <MudDatePicker @bind-Date="_jobObservation.EndDate" Label=@Localizer["newEndDate"] Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+            <MudText Typo="Typo.h6" Class="mt-4">@Localizer["WriteDownACommentToChangeTheDate"]</MudText>
+            <MudTextField T="string" @bind-Value="_jobObservation.Justification" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="10" Class="mt-4" />
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" @onclick="(() => ChangeDate.InvokeAsync())">@Localizer["save"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public JobObservation _jobObservation { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<DateTime> OnStartDateChanged { get; set; }
+    [Parameter]
+    public EventCallback ChangeDate { get; set; }
+
+    void Close() => MudDialog.Close();
+}

@@ -513,12 +513,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Change date modal and function
-        private bool visible = false;
-        private void OpenCommentDialog()
+        private async void OpenCommentDialog()
         {
-            visible = true;
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "DeleteLup", EventCallback.Factory.Create<DateTime>(this, OnStartDateChanged) }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
+            var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialog.Result;
         }
-        void Close() => visible = false;
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         private void OnStartDateChanged(DateTime dt)
@@ -2431,16 +2431,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Guide Modal
         MudTabs guideTabs;
 
-        private bool visibleGuide = false;
         private int selectedPillar = 0;
-        private void OpenGuideDialog(int pillarID)
-        {
-            selectedPillar = pillarID;
-            visibleGuide = true;
-
-        }
-        void CloseGuideModal() => visibleGuide = false;
-        private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
         private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
         {
