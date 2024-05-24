@@ -50,6 +50,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? StdChange { get; set; }
         public int? StdUpdate { get; set; }
 
-
+        public int? ChecklistQuestionId { get; set; }
+        public ChecklistQuestion? ChecklistQuestion { get; set; }
     }
 }
