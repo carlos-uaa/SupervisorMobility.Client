@@ -1923,7 +1923,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Questions and answers
 
-        private async Task AddLupOpportunity(ChecklistAnswer item, int secction, ChecklistQuestion question)
+        private async Task AddLupOpportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
         {
             // get incidences
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
@@ -1937,7 +1937,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     var lupOpportunity = new LupOpportunity
                     {
                         QuestionID = question.QuestionID,
-                        Opportunity = $"{secction}.{question.CategorySequence}- " + notGood,
+                        Opportunity = $"{section}.{question.CategorySequence}- " + notGood,
                     };
 
                     switch (pillar)
