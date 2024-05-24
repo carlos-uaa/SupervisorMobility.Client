@@ -2204,8 +2204,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             {
                                 if (!string.IsNullOrEmpty(answer.MediaUris[i]))
                                 {
-                                    // Elimina la cabecera si está presente
-                                    var base64Data = imageData.Replace("data:image/png;base64,", "");
+                                    var imageData = answer.MediaUris[i];
+                                    string base64Data = "";
+                                    if (imageData.Contains("data:image/png;base64,"))
+                                    {
+                                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                                    }
+                                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                                    {
+                                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                                    }
+                                    else if (imageData.Contains("data:image/jpg;base64,"))
+                                    {
+                                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                                    }
+                                    else if (imageData.Contains("data:image/gif;base64,"))
+                                    {
+                                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                                    }
+                                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                                    {
+                                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                                    }
+
+                                    if (!IsValidBase64String(base64Data))
+                                    {
+                                        Snackbar.Clear();
+                                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                                        Snackbar.Add("Invalid image data", Severity.Error);
+                                        continue;
+                                    }
 
                                     var filename = imagesFromFile[answer.QuestionID].ElementAt(i);
 
@@ -2651,10 +2679,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Active LUP items
 
         bool visibleActiveLupItem = false;
-        private void OpenCameraAnswerDialog()
-        {
-            visibleActiveLupItem = true;
-        }
 
         //Camera
         private DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
