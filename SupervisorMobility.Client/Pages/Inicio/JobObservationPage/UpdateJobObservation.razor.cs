@@ -1,5 +1,7 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -7,6 +9,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Services.BreadcrumsService;
 using System.Globalization;
 using System.Net.Http.Headers;
@@ -34,10 +37,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         DateTime newDate1;
         DateTime newDate2;
 
-        //Objects
-        private bool dense = false;
-        private bool hover = false;
-        private bool ronly = false;
         TimeSpan? endHour { get; set; }
         TimeSpan? startHour { get; set; }
 
@@ -70,7 +69,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //timer
         const string DEFAULT_TIME = "00:00:00.000";
         string elapsedTime = DEFAULT_TIME;
-        System.Timers.Timer timer = new System.Timers.Timer(1);
         DateTime startTime = DateTime.Now;
         bool isRunning = false;
         bool isRunning2 = false;
@@ -92,11 +90,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Lup Modal
-        private bool visibleLup = false;
-        private bool visiblePast = false;
         private int lupId;
 
-        private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
         private DialogOptions dialogPastJobObservations = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         //Past job observation
@@ -159,11 +154,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         bool NoData { get; set; } = false;
         //Lup list
-        public List<string> area_ListS = new List<string>();
-        public List<string> area_ListQ = new List<string>();
-        public List<string> area_ListD = new List<string>();
-        public List<string> area_ListC = new List<string>();
-        public List<string> area_ListOther = new List<string>();
+        public class LupOpportunity
+        {
+            public int QuestionID { get; set; }
+            public string Opportunity { get; set; }
+        }
+
+        //Lup list
+        public List<LupOpportunity> area_ListS = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListQ = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListD = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListC = new List<LupOpportunity>();
+        public List<LupOpportunity> area_ListOther = new List<LupOpportunity>();
+
+        List<Lup> lupInsidences = new();
         List<Lup> _tempLup { get; set; } = new();
 
         public bool flag = false;
@@ -518,12 +522,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Change date modal and function
-        private bool visible = false;
-        private void OpenCommentDialog()
+        private async void OpenCommentDialog()
         {
-            visible = true;
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "DeleteLup", EventCallback.Factory.Create<DateTime>(this, OnStartDateChanged) }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
+            var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialog.Result;
         }
-        void Close() => visible = false;
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         private void OnStartDateChanged(DateTime dt)
@@ -942,7 +946,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1126,7 +1129,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"You need to add a commentary to reject the job observation", Severity.Error);
-                visibleSign = false;
                 return;
             }
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
@@ -1134,7 +1136,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1298,13 +1299,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Finished Job observation
-        private bool visibleSign = false;
-        private void OpenSignComment()
-        {
-            visibleSign = true;
-        }
-        void CloseSign() => visibleSign = false;
         private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
+        private async void OpenSignComment()
+        {
+            var parameters = new DialogParameters
+            {
+                { "userName", user.Name }
+            };
+            var dialog = await DialogService.ShowAsync<SignJobObservation_Dialog>("", parameters, dialogSignOptions);
+            var result = await dialog.Result;
+            if (!result.Canceled)
+            {
+                int option = (int)result.Data;
+                switch (option)
+                {
+                    case 0:
+                        Reject();
+                        break;
+                    case 1:
+                        await SignDate();
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
 
         public async Task SignDate()
         {
@@ -1318,7 +1337,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                visibleSign = false;
                 currentImage = "";
                 return;
             }
@@ -1487,7 +1505,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["Feedbackmissing"], Severity.Warning);
-                visibleSign = false;
                 return;
             }
             _ = await GenerateChecklistAnswers();
@@ -1632,266 +1649,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-
-        //timer
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cycles[0] = string.Format("{0:0.000}", centiseconds); break;
-                case 2:
-                    cycles[1] = string.Format("{0:0.000}", centiseconds); break;
-                case 3:
-                    cycles[2] = string.Format("{0:0.000}", centiseconds); break;
-                case 4:
-                    cycles[3] = string.Format("{0:0.000}", centiseconds); break;
-                case 5:
-                    cycles[4] = string.Format("{0:0.000}", centiseconds); break;
-            }
-
-            DateTime currentTime = e.SignalTime;
-            elapsedTime = $"{currentTime.Subtract(startTime)}".Substring(0, 12);
-            StateHasChanged();
-        }
-
-        void StartTimer(int option)
-        {
-
-            startTime = DateTime.Now;
-            timer = new System.Timers.Timer(1);
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
-            timer.Enabled = true;
-            switch (option)
-            {
-                case 1: isRunning = true; cycle1Color = ""; break;
-                case 2: isRunning2 = true; cycle2Color = ""; break;
-                case 3: isRunning3 = true; cycle3Color = ""; break;
-                case 4: isRunning4 = true; cycle4Color = ""; break;
-                case 5: isRunning5 = true; cycle5Color = ""; break;
-            }
-
-        }
-
-        void StopTimer()
-        {
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-            switch (opt)
-            {
-                case 1:
-                    cycles[0] = string.Format("{0:0.000}", centiseconds); isRunning = false; break;
-                case 2:
-                    cycles[1] = string.Format("{0:0.000}", centiseconds); isRunning2 = false; break;
-                case 3:
-                    cycles[2] = string.Format("{0:0.000}", centiseconds); isRunning3 = false; break;
-                case 4:
-                    cycles[3] = string.Format("{0:0.000}", centiseconds); isRunning4 = false; break;
-                case 5:
-                    cycles[4] = string.Format("{0:0.000}", centiseconds); isRunning5 = false; break;
-            }
-
-            isRunning = false;
-            Console.WriteLine($"Elapsed Time: {elapsedTime}");
-            timer.Enabled = false;
-            elapsedTime = DEFAULT_TIME;
-
-
-        }
-
-        void OnTimerChanged(int option)
-        {
-            if (taktTime == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime"], Severity.Warning);
-                return;
-            }
-
-
-            if (option == 1 && HoeTimes[0] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime1"], Severity.Warning);
-                return;
-            }
-            else if (option == 2 && HoeTimes[1] == 0.0)
-            {
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime2"], Severity.Warning);
-                return;
-            }
-            else if (option == 3 && HoeTimes[2] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime3"], Severity.Warning);
-                return;
-            }
-            else if (option == 4 && HoeTimes[3] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime4"], Severity.Warning);
-                return;
-            }
-            else if (option == 5 && HoeTimes[4] == 0.0)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["firstTakeTime5"], Severity.Warning);
-                return;
-            }
-            opt = option;
-
-            if (opt == 1 && !isRunning || opt == 2 && !isRunning2 || opt == 3 && !isRunning3 || opt == 4 && !isRunning4 || opt == 5 && !isRunning5)
-            {
-                StopTimer();
-                switch (opt)
-                {
-                    case 1:
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 2:
-                        isRunning = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 3:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning4 = false;
-                        isRunning5 = false;
-                        break;
-                    case 4:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning5 = false;
-                        break;
-                    case 5:
-                        isRunning = false;
-                        isRunning2 = false;
-                        isRunning3 = false;
-                        isRunning4 = false;
-                        break;
-                }
-
-                StartTimer(opt);
-            }
-            else
-            {
-
-                StopTimer();
-
-
-                for (int i = 0; i < HoeTimes.Length; i++)
-                {
-                    if (double.TryParse(cycles[i], out double cycleValue2) && HoeTimes[i] != 0.0)
-                    {
-                        double lowerBound = HoeTimes[i] * 0.95; // Valor mínimo permitido (95% de HoeTimes)
-                        double upperBound = HoeTimes[i] * 1.05; // Valor máximo permitido (105% de HoeTimes)
-
-                        if (cycleValue2 >= lowerBound && cycleValue2 <= upperBound)
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "green"; break;
-                                case 1: cycle2Color = "green"; break;
-                                case 2: cycle3Color = "green"; break;
-                                case 3: cycle4Color = "green"; break;
-                                case 4: cycle5Color = "green"; break;
-                            }
-                        }
-                        else if (cycleValue2 < HoeTimes[i])
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "yellow"; break;
-                                case 1: cycle2Color = "yellow"; break;
-                                case 2: cycle3Color = "yellow"; break;
-                                case 3: cycle4Color = "yellow"; break;
-                                case 4: cycle5Color = "yellow"; break;
-                            }
-                        }
-                        else
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "red"; break;
-                                case 1: cycle2Color = "red"; break;
-                                case 2: cycle3Color = "red"; break;
-                                case 3: cycle4Color = "red"; break;
-                                case 4: cycle5Color = "red"; break;
-                            }
-                            if (areaD == "" || areaD == null)
-                                areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
-                            else
-                            {
-                                if (areaD.Contains($"Cycle time {i + 1}"))
-                                {
-                                    continue;
-                                }
-                                areaD = areaD + $", Cycle time {i + 1} ({cycleValue2}) took longer than standard time ({HoeTimes[i]})";
-                            }
-                        }
-
-                        if (cycleValue2 > taktTime)
-                        {
-                            switch (i)
-                            {
-                                case 0: cycle1Color = "red"; break;
-                                case 1: cycle2Color = "red"; break;
-                                case 2: cycle3Color = "red"; break;
-                                case 3: cycle4Color = "red"; break;
-                                case 4: cycle5Color = "red"; break;
-                            }
-                            Snackbar.Clear();
-                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                            Snackbar.Add(Localizer["timeNG..."], Severity.Warning);
-                            areaD = $"Cycle time {i + 1} ({cycleValue2}) took longer than Takt time ({taktTime})";
-                        }
-                    }
-                }
-
-
-            }
-            StateHasChanged();
-        }
-
-
-
-
         //Past Job Observations Modal
-        private void OpenDialogPastJobObservations()
+        private async void OpenDialogPastJobObservations()
         {
             if (!flag)
             {
@@ -1908,28 +1667,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
-            visiblePast = true;
+            var parameters = new DialogParameters {
+                { "DistDesc", _distributions.First(p=>p.DistributionId == _jobObservation.DistributionId) },
+                { "OperaDesc", operation.Description },
+                { "pastjobObservations", pastjobObservations },
+                { "pastLup", pastLup }
+            };
+            var dialog = await DialogService.ShowAsync<PastJobObs_Dialog>("", parameters, dialogPastJobObservations);
+            await dialog.Result;
         }
-
-        void CloseOverdue() => visiblePast = false;
-
-
-        //Lup Modal
-        private void OpenDialogLup(int id)
+        private async void OpenDialogLup(int id)
         {
-            lupId = id;
-            visibleLup = true;
+            DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+            var parameters = new DialogParameters { { "lupId", id } };
+            var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLup);
+            await dialog.Result;
         }
 
-        void CloseLup() => visibleLup = false;
         void EditLup(int lupId)
         {
             NavigationManager.NavigateTo($"lup/updatelup/{lupId}");
         }
 
-        async Task DeleteLup(int lupId)
+        async Task DeleteLup(int deleteLupId)
         {
-            await LupService.DeleteLup(lupId);
+            await LupService.DeleteLup(deleteLupId);
 
             _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
 
@@ -1965,7 +1727,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"Lup Deleted", Severity.Info);
-            visibleDelete = false;
 
             StateHasChanged();
         }
@@ -2015,6 +1776,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private double previousOperationTime = 0.0;
 
+        UpdateJobObsCmpts.Timer Timer;
         private void NextOperation()
         {
             if (currentOperationIndex < _filteredOperations.Count)
@@ -2023,15 +1785,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (currentOperationIndex > 0)
                 {
-                    double elapsedCentiseconds = GetElapsedCentiseconds() - previousOperationTime;
+                    double elapsedCentiseconds = Timer.GetElapsedCentiseconds() - previousOperationTime;
                     OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
                 }
                 else
                 {
-                    OperationTimes[currentOperation.OperationId][currentCycle] = GetElapsedCentiseconds();
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Timer.GetElapsedCentiseconds();
                 }
 
-                previousOperationTime = GetElapsedCentiseconds();
+                previousOperationTime = Timer.GetElapsedCentiseconds();
 
                 currentOperationIndex++;
                 if (currentOperationIndex >= _filteredOperations.Count)
@@ -2047,81 +1809,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-
-        private void StartOrPauseTimer()
+        public void ChangeCycle(int cycle)
         {
-            if (isTimerRunning2)
-            {
-                PauseTimer();
-            }
-            else
-            {
-                StartTimer();
-            }
-
-        }
-
-
-        private double GetElapsedCentiseconds()
-        {
-            TimeSpan hundreths;
-            double centiseconds = 0.0;
-            if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-            {
-                centiseconds = hundreths.TotalMilliseconds / 60000.0;
-            }
-            else
-            {
-                Console.WriteLine("Wrong timestamp format.");
-            }
-
-            return Math.Round(centiseconds, 2);
-        }
-
-        private void OnTimerTick(object sender, ElapsedEventArgs e)
-        {
-            if (isTimerRunning2)
-            {
-                TimeSpan hundreths;
-                double centiseconds = 0.0;
-                if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
-                {
-                    centiseconds = hundreths.TotalMilliseconds / 60000.0;
-                }
-                else
-                {
-                    Console.WriteLine("Wrong timestamp format.");
-                }
-
-                cronometerTime = string.Format("{0:0.000}", centiseconds);
-            }
-
-            DateTime currentTime = e.SignalTime;
-            elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
-            StateHasChanged();
+            currentCycle = cycle;
         }
 
         bool errorflag = false;
-
-        private void StartTimer()
-        {
-            int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
-            if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
-            {
-                errorflag = false;
-                isTimerRunning2 = true;
-                startTime2 = DateTime.Now;
-                timer2 = new System.Timers.Timer(1);
-                timer2.Elapsed += OnTimerTick;
-                timer2.AutoReset = true;
-                timer2.Enabled = true;
-            }
-            else
-            {
-                Snackbar.Add("primero llena los campos indicados", Severity.Warning);
-                errorflag = true;
-            }
-        }
 
         public bool checkIfError(int i, int value)
         {
@@ -2139,9 +1832,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void PauseTimer()
         {
-            cronometerTime = "0.00";
             isTimerRunning2 = false;
-            timer2.Enabled = false;
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
@@ -2156,10 +1847,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //currentCycle = 1;
             cronometerTime = "0.00";
             isTimerRunning2 = false;
-            if (timer2 != null)
-            {
-                timer2.Enabled = false;
-            }
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
@@ -2203,8 +1890,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private void ShowSpecifications()
+        private void ShowSpecifications(int id)
         {
+            jobProductId = id;
              _specifications = new();
             productSpecification = "0";
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
@@ -2237,8 +1925,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             StateHasChanged();
         }
-        public void InitializeCycleTimes()
+        public void InitializeCycleTimes(string specification)
         {
+            productSpecification = specification;
             _filteredOperations = new();
             StepsNumber = new int[5];
             DoubleManagment = new int[5];
@@ -2294,13 +1983,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
-        public void ShowDateMessage()
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add(Localizer["btnChangeDate"], Severity.Info);
-        }
-
         public void ShowHourMessage()
         {
             Snackbar.Clear();
@@ -2310,14 +1992,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Delete lup
-        private bool visibleDelete = false;
-        public int deleteLupId = 0;
-        private void OpenDeleteDialog(int deleteId)
+        private async void OpenDeleteDialog(int deleteId)
         {
-            deleteLupId = deleteId;
-            visibleDelete = true;
+            var parameters = new DialogParameters { { "Name", user.Name }, { "lupId", deleteId }, { "DeleteLup", EventCallback.Factory.Create<int>(this, DeleteLup) } };
+            var dialog = await DialogService.ShowAsync<Delete_Dialog>("", parameters, dialogDeleteOptions);
+            await dialog.Result;
+
         }
-        void CloseDeleteModal() => visibleDelete = false;
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter };
 
 
@@ -2567,12 +2248,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
         //camara for atachment answer
-        bool visibleDialogAnswerCamera = false;
         ChecklistAnswer SelectedAnswer { get; set; }
-        private void OpenCameraAnswerDialog(ChecklistAnswer item)
+        private async void OpenCameraAnswerDialog(ChecklistAnswer item)
         {
+            var parameters = new DialogParameters { { "Prompt", $"Evidence for {item.Prompt}" }, { "returnFrame", EventCallback.Factory.Create<string>(this, GetCurrentFrameAnswer) } };
             SelectedAnswer = item;
-            visibleDialogAnswerCamera = true;
+            var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
+            await dialog.Result;
         }
 
         //Camera
@@ -2580,84 +2262,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private List<string> capturedImages = new List<string>();
 
-        public int lupPhotosId = 0;
-        public string oportunity = "";
-        public int photosPillar = 0;
-
-        private bool visibleCamera = false;
-        public bool accessCamera = false;
-        private void OpenCameraDialog(int lupId, string lupOportunity, int pillar)
+        private async void OpenCameraDialog()
         {
-            photosPillar = pillar;
-            oportunity = lupOportunity;
-            lupPhotosId = lupId;
-
-            visibleCamera = true;
-
+            var parameters = new DialogParameters { { "Prompt", $"LUP Evidence" }, { "returnFrame", EventCallback.Factory.Create<string>(this, GetCurrentFrame) } };
+            var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
+            await dialog.Result;
         }
-        void Close2() => visibleCamera = false;
-
-        private CameraStreamer CameraStreamerReference;
 
         private string? cameraId = null;
 
         private int frameCount;
-
-        private string imageData;
-
-
-        private async void OnRenderedHandler()
+        private async void GetCurrentFrame(string imageData)
         {
-
-            frameCount = 0;
-            if (await CameraStreamerReference.GetCameraAccessAsync())
-            {
-                await CameraStreamerReference.ReloadAsync();
-
-            }
-        }
-
-        private async void Start()
-        {
-            await CameraStreamerReference.StartAsync();
-        }
-
-        private async void Stop()
-        {
-            await CameraStreamerReference.StopAsync();
-        }
-
-        private void OnFrameHandler(string _)
-        {
-            ++frameCount;
-        }
-
-        private async void GetCurrentFrame()
-        {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
-
             if (!string.IsNullOrEmpty(imageData))
             {
                 capturedImages.Add(imageData);
             }
-            visibleCamera = false;
             StateHasChanged();
-            Stop();
         }
 
-        private async void GetCurrentFrameAnswer()
+        private async void GetCurrentFrameAnswer(string imageData)
         {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
 
             if (!string.IsNullOrEmpty(imageData))
             {
                 SelectedAnswer.capturedImages.Add(imageData);
             }
-            visibleDialogAnswerCamera = false;
             SelectedAnswer.Edited = true;
 
             StateHasChanged();
-            Stop();
         }
         private bool IsValidBase64String(string base64String)
         {
@@ -2677,7 +2310,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private async Task UploadEvidence()
+        private async Task UploadEvidence(int lupPhotosId)
         {
             if (capturedImages.Count > 0)
             {
@@ -2807,16 +2440,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Guide Modal
         MudTabs guideTabs;
 
-        private bool visibleGuide = false;
         private int selectedPillar = 0;
-        private void OpenGuideDialog(int pillarID)
-        {
-            selectedPillar = pillarID;
-            visibleGuide = true;
-
-        }
-        void CloseGuideModal() => visibleGuide = false;
-        private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
 
         private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
         {
@@ -3064,15 +2688,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Show Photo
         private DialogOptions dialogPhotoOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
-        private bool visiblePhoto = false;
-
         private int photoIndex = 0;
 
-        private void OpenPhotoDialog(int index, ChecklistAnswer item)
+        private async void OpenPhotoDialog(int index, ChecklistAnswer item)
         {
+            var parameters = new DialogParameters { { "photoIndex", index }, { "SelectedAnswer", item }, { "imageUrls", imageUrls } };
             SelectedAnswer = item;
             photoIndex = index;
-            visiblePhoto = true;
+            var dialog = await DialogService.ShowAsync<Photo_Dialog>("", parameters, dialogPhotoOptions);
+            await dialog.Result;
         }
 
         private void HandleSignatureSaved()
@@ -3183,10 +2807,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //LUP
         public async void AddTempLup(int pillar)
         {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             if (_jobObservation.SupervisorId == 0)
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"First select a Supervisor", Severity.Error);
                 return;
             }
@@ -3198,18 +2822,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 1:
                     if (area_ListS != null && area_ListS.Count > 0)
                     {
-                        foreach (string str in area_ListS)
+                        foreach (var lupOpportunity in area_ListS)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
+
                         area_ListS.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Error S Area is empty", Severity.Error);
                         return;
                     }
@@ -3217,18 +2843,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 2:
                     if (area_ListQ != null && area_ListQ.Count > 0)
                     {
-                        foreach (string str in area_ListQ)
+                        foreach (var lupOpportunity in area_ListQ)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
                         area_ListQ.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Error Q Area is empty", Severity.Error);
                         return;
                     }
@@ -3236,18 +2863,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 3:
                     if (area_ListD != null && area_ListD.Count > 0)
                     {
-                        foreach (string str in area_ListD)
+                        foreach (var lupOpportunity in area_ListD)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
                         area_ListD.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Error D Area is empty", Severity.Error);
                         return;
                     }
@@ -3255,18 +2883,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 4:
                     if (area_ListC != null && area_ListC.Count > 0)
                     {
-                        foreach (string str in area_ListC)
+                        foreach (var lupOpportunity in area_ListC)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
                         area_ListC.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Error C Area is empty", Severity.Error);
                         return;
                     }
@@ -3274,18 +2903,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 case 5:
                     if (area_ListOther != null && area_ListOther.Count > 0)
                     {
-                        foreach (string str in area_ListOther)
+                        foreach (var lupOpportunity in area_ListOther)
                         {
-                            Lup newLup = new Lup();
-                            newLup.Oportunity = ObjectCloner.ObjectCloner.DeepClone(str);
-                            lupsToAdd?.Add(newLup);
+                            Lup newLup = new Lup
+                            {
+                                ChecklistQuestionId = lupOpportunity.QuestionID,
+                                Oportunity = ObjectCloner.ObjectCloner.DeepClone(lupOpportunity.Opportunity)
+                            };
+                            lupsToAdd.Add(newLup);
                         }
+
                         area_ListOther.Clear();
                     }
                     else
                     {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Error Others Area is empty", Severity.Error);
                         return;
                     }
@@ -3308,15 +2939,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             lup = new();
 
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"Lup item added", Severity.Info);
 
         }
 
         //Questions and answers
 
-        private void AddLupOpportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
+        private async void AddLupOpportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
         {
 
             Snackbar.Configuration.MaxDisplayedSnackbars = 5;
@@ -3324,36 +2953,57 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             var notGood = currentLanguage == "es-ES" ? question.NotGood : question.NotGoodEN;
             foreach (var pillar in question.Pillars)
             {
+                var lupOpportunity = new LupOpportunity
+                {
+                    QuestionID = question.QuestionID,
+                    Opportunity = $"{section}.{question.CategorySequence}- " + notGood,
+                };
+
                 switch (pillar)
                 {
                     case 1:
                         areaS = notGood;
-                        area_ListS?.Add($"{section}.{question.CategorySequence}- " + notGood);
+                        area_ListS?.Add(lupOpportunity);
                         Snackbar.Add("LUP added in Safety & Environment Pillar SECTION 3", Severity.Warning);
                         break;
                     case 2:
                         areaQ = notGood;
-                        area_ListQ?.Add($"{section}.{question.CategorySequence}- " + notGood);
+                        area_ListQ?.Add(lupOpportunity);
                         Snackbar.Add("LUP added in Quality Pillar SECTION 3", Severity.Warning);
                         break;
                     case 3:
                         areaD = notGood;
-                        area_ListD?.Add($"{section}.{question.CategorySequence}- " + notGood);
+                        area_ListD?.Add(lupOpportunity);
                         Snackbar.Add("LUP added in Delivery Pillar SECTION 3", Severity.Warning);
                         break;
                     case 4:
                         areaC = notGood;
-                        area_ListC?.Add($"{section}.{question.CategorySequence}- " + notGood);
+                        area_ListC?.Add(lupOpportunity);
                         Snackbar.Add("LUP added in Cost Pillar SECTION 3", Severity.Warning);
                         break;
                     case 5:
                         areaOther = notGood;
-                        area_ListOther?.Add($"{section}.{question.CategorySequence}- " + notGood);
+                        area_ListOther?.Add(lupOpportunity);
                         Snackbar.Add("LUP added in Other Pillar SECTION 3", Severity.Warning);
                         break;
 
                 }
             }
+
+            lupInsidences = await LupService.GetAllLupInsidences(question.QuestionID, _jobObservation.SupervisorId, _jobObservation.DistributionId);
+            if (lupInsidences != null && lupInsidences.Count > 0)
+            {
+                foreach (var lup in lupInsidences)
+                {
+                    Console.WriteLine(lup.Oportunity);
+                }
+                DialogOptions dialogActiveLupItemsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+                var parameters = new DialogParameters { { "lupInsidences", lupInsidences } };
+                var dialog = await DialogService.ShowAsync<ActiveLUPItems_Dialog>("", parameters, dialogActiveLupItemsOptions);
+                await dialog.Result;
+            }
+
+
 
             item.Show = true;
             item.Edited = true;
@@ -3411,43 +3061,43 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 switch (pillarId)
                 {
                     case 1:
-                        int index1 = area_ListS.FindIndex(s => s.IndexOf(searchString) != -1);
+                        int index1 = area_ListS?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                         if (area_ListS != null && index1 != -1)
                         {
-                            area_ListS[index1] = fullEntry;
+                            area_ListS[index1].Opportunity = fullEntry;
                             Snackbar.Add($"Commentary added to Lup", Severity.Success);
                         }
                         break;
                     case 2:
-                        int index2 = area_ListQ.FindIndex(s => s.IndexOf(searchString) != -1);
+                        int index2 = area_ListQ?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                         if (area_ListQ != null && index2 != -1)
                         {
-                            area_ListQ[index2] = fullEntry;
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            area_ListQ[index2].Opportunity = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup in Quality", Severity.Success);
                         }
                         break;
                     case 3:
-                        int index3 = area_ListD.FindIndex(s => s.IndexOf(searchString) != -1);
+                        int index3 = area_ListD?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                         if (area_ListD != null && index3 != -1)
                         {
-                            area_ListD[index3] = fullEntry;
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            area_ListD[index3].Opportunity = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup in Delivery", Severity.Success);
                         }
                         break;
                     case 4:
-                        int index4 = area_ListC.FindIndex(s => s.IndexOf(searchString) != -1);
+                        int index4 = area_ListC?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                         if (area_ListC != null && index4 != -1)
                         {
-                            area_ListC[index4] = fullEntry;
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            area_ListC[index4].Opportunity = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup in Cost", Severity.Success);
                         }
                         break;
                     case 5:
-                        int index5 = area_ListOther.FindIndex(s => s.IndexOf(searchString) != -1);
+                        int index5 = area_ListOther?.FindIndex(l => l.QuestionID == question.QuestionID && l.Opportunity.Contains(searchString)) ?? -1;
                         if (area_ListOther != null && index5 != -1)
                         {
-                            area_ListOther[index5] = fullEntry;
-                            Snackbar.Add($"Commentary added to Lup", Severity.Success);
+                            area_ListOther[index5].Opportunity = fullEntry;
+                            Snackbar.Add($"Commentary added to Lup in Other", Severity.Success);
                         }
                         break;
                 }

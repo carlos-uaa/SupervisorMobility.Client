@@ -1,0 +1,172 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudDialog DisableSidePadding="false">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; min-height:50vh; overflow-y: scroll">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    @Localizer["pastJobObservationLup"]
+                </MudText>
+                <MudText>
+                    <MudChip Color="Color.Info" Variant="Variant.Text">@DistDesc</MudChip>
+                    <MudChip Color="Color.Info" Variant="Variant.Text">@OperaDesc</MudChip>
+
+                </MudText>
+            </MudItem>
+            @if (pastjobObservations.Count > 0)
+            {
+                <MudTable Items="pastjobObservations" T="JobObservation" Bordered Class="mt-3 past-jobObservations-table mb-10">
+                    <HeaderContent>
+                        <MudTh style="text-align: center">
+                            <MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.JobObservationId)">Id</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                        <MudTh style="text-align: center; width: 65%">@Localizer["totalLup"]</MudTh>
+                        <MudTh style="text-align: center"><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudTooltip Text=@Localizer["goToJobObservation"] Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small" @onclick="(() => GoToJobObservation(context.JobObservationId))"> @context.JobObservationId</MudChip>
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>@context.StartDate?.ToShortDateString()</MudText>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>
+                                @if (pastLup.Count > 0)
+                                {
+                                    @foreach (var lup in pastLup)
+                                    {
+                                        if (lup.JobObservationId == context.JobObservationId)
+                                        {
+                                            <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                    <MudChip Color="Color.Info" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                        @switch (lup.Pillar)
+                                                        {
+                                                            case 1:
+                                                                <span>S | &nbsp;</span>
+                                                                break;
+                                                            case 2:
+                                                                <span>Q | &nbsp;</span>
+                                                                break;
+                                                            case 3:
+                                                                <span>D | &nbsp;</span>
+                                                                break;
+                                                            case 4:
+                                                                <span>C | &nbsp;</span>
+                                                                break;
+                                                            case 5:
+                                                                <span>@Localizer["other"] | &nbsp;</span>
+                                                                break;
+                                                        }
+                                                        @if (lup.Oportunity.Length < 70)
+                                                        {
+                                                            @lup.Oportunity
+                                                        }
+                                                        else
+                                                        {
+                                                            @lup.Oportunity.Substring(0, 70) <span>...</span>
+                                                        }
+                                                    </MudChip>
+                                                    @switch (lup.Status)
+                                                    {
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                            break;
+                                                    }
+                                                </MudButton>
+                                            </MudTooltip>
+                                        }
+                                    }
+                                }
+                            </MudText>
+                        </MudTd>
+                        <MudTd>
+                            <MudText>
+
+                                @switch (context.Status)
+                                {
+                                    case 1:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                                        break;
+                                    case 2:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                        break;
+                                    case 3:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                        break;
+                                    case 4:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                        break;
+                                    case 5:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                        break;
+                                    case 6:
+                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                        break;
+                                }
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudItem Style="text-align: center; margin-top: 100px">
+                    <MudText Typo="Typo.h6">
+                        @Localizer["thereAreNoPastJobObservations"]
+                    </MudText>
+                </MudItem>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string DistDesc { get; set; }
+    [Parameter]
+    public string OperaDesc { get; set; }
+
+    [Parameter]
+    public List<JobObservation> pastjobObservations { get; set; } = new();
+    [Parameter]
+    public List<Lup> pastLup { get; set; } = new();
+
+    private DialogOptions dialogLupOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+    void Close() => MudDialog.Close();
+
+    void GoToJobObservation(int jobObservationId)
+    {
+        NavigationManager.NavigateTo($"/");
+        NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+    }
+
+    private async void OpenDialogLup(int id)
+    {
+        var parameters = new DialogParameters { { "lupId", id } };
+        var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLupOptions);
+        await dialog.Result;
+    }
+}
+
+

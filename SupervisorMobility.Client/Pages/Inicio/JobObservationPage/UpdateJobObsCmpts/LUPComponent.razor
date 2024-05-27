@@ -1,0 +1,945 @@
+﻿@using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals
+@using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.UpdateJobObservation;
+@inject IStringLocalizer<Resource> Localizer
+@inject IDialogService DialogService
+
+<MudExpansionPanel Text="@title" Style="min-width: 100%" IsInitiallyExpanded=true>
+    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
+        <thead>
+            <tr>
+                <th>
+                    <MudText Style="font-weight:bold;">
+                        @Localizer["pillar"]
+                    </MudText>
+                </th>
+                <th>
+                    <MudText Style="text-align:center; font-weight:bold;">
+                        @Localizer["areaOfOportunityDetected"]
+                    </MudText>
+                </th>
+                <th style="width: 5%">
+                    @Localizer["add"]
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="10%">
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["S & E"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudButton OnClick="(() => OpenGuideDialog(0))">@word.Name</MudButton>
+                            </MudBadge>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudText @onclick="(() => OpenGuideDialog(0))">S & E</MudText>
+                    }
+                    <br />
+                    @if (auxErgonomicsLevel != 0)
+                    {
+                        <MudTooltip Text=@Localizer["Ergonomics Level"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudChip Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Info" Variant="Variant.Outlined" Style="margin-left: -4px">
+                                @switch (auxErgonomicsLevel)
+                                {
+                                    case 1:
+                                        <span>A</span>
+                                        break;
+                                    case 2:
+                                        <span>B</span>
+                                        break;
+                                    case 3:
+                                        <span>C</span>
+                                        break;
+                                }
+                            </MudChip>
+                        </MudTooltip>
+
+                    }
+                </td>
+                <td style="align-content: end">
+                    @* <MudTextField T="string" @bind-Value="areaS" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+
+                    @if (area_ListS?.Count > 0)
+                    {
+                        <MudItem>
+                            @foreach (var (find, index) in area_ListS.Select((find, index) => (find, index)))
+                            {
+                                <MudTextField T="string" @bind-Value="area_ListS[index].Opportunity" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList.InvokeAsync((1, index)))" />
+                            }
+                        </MudItem>
+                    }
+
+                </td>
+                <td>
+                    <MudTooltip Text=@Localizer["addToPillarSInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudIconButton @onclick="(() => AddTempLup.InvokeAsync(1))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                    </MudTooltip>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["Q"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudButton @onclick="(() => OpenGuideDialog(1))">@word.Name</MudButton>
+                            </MudBadge>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudText @onclick="(() => OpenGuideDialog(1))">Q</MudText>
+                    }
+                </td>
+                <td style="align-content: end">
+                    @if (area_ListQ?.Count > 0)
+                    {
+                        <MudItem>
+                            @foreach (var (find, index) in area_ListQ.Select((find, index) => (find, index)))
+                            {
+                                <MudTextField T="string" @bind-Value="area_ListQ[index].Opportunity" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList.InvokeAsync((2, index)))" />
+                            }
+                        </MudItem>
+                    }
+                    @* <MudTextField T="string" @bind-Value="areaQ" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                </td>
+                <td>
+                    <MudTooltip Text=@Localizer["addToPillarQInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudIconButton @onclick="(() => AddTempLup.InvokeAsync(2))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                    </MudTooltip>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["D"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudButton @onclick="(() => OpenGuideDialog(2))">@word.Name</MudButton>
+                            </MudBadge>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudText @onclick="(() => OpenGuideDialog(2))">D</MudText>
+                    }
+                </td>
+                <td style="align-content: end">
+                    @if (area_ListD?.Count > 0)
+                    {
+                        <MudItem>
+                            @foreach (var (find, index) in area_ListD.Select((find, index) => (find, index)))
+                            {
+                                <MudTextField T="string" @bind-Value="area_ListD[index].Opportunity" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList.InvokeAsync((3, index)))" />
+                            }
+                        </MudItem>
+                    }
+                    @* <MudTextField T="string" @bind-Value="areaD" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                </td>
+                <td>
+                    <MudTooltip Text=@Localizer["addToPillarDInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudIconButton @onclick="(() => AddTempLup.InvokeAsync(3))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                    </MudTooltip>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["C"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudButton @onclick="(() => OpenGuideDialog(3))">@word.Name</MudButton>
+                            </MudBadge>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudText @onclick="(() => OpenGuideDialog(3))">C</MudText>
+                    }
+                </td>
+                <td style="align-content: end">
+                    @if (area_ListC?.Count > 0)
+                    {
+                        <MudItem>
+                            @foreach (var (find, index) in area_ListC.Select((find, index) => (find, index)))
+                            {
+                                <MudTextField T="string" @bind-Value="area_ListC[index].Opportunity" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList.InvokeAsync((4, index)))" />
+                            }
+                        </MudItem>
+                    }
+                    @* <MudTextField T="string" @bind-Value="areaC" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                </td>
+                <td>
+                    <MudTooltip Text=@Localizer["addToPillarCInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudIconButton @onclick="(() => AddTempLup.InvokeAsync(4))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                    </MudTooltip>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["Other"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudButton @onclick="(() => OpenGuideDialog(4))">@Localizer["other"]</MudButton>
+                            </MudBadge>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudText @onclick="(() => OpenGuideDialog(4))">@Localizer["other"]</MudText>
+                    }
+                </td>
+                <td style="align-content: end">
+                    @if (area_ListOther?.Count > 0)
+                    {
+                        <MudItem>
+                            @foreach (var (find, index) in area_ListOther.Select((find, index) => (find, index)))
+                            {
+                                <MudTextField T="string" @bind-Value="area_ListOther[index].Opportunity" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.DeleteForever" OnAdornmentClick="@(() => RemoveFromList.InvokeAsync((5, index)))" />
+                            }
+                        </MudItem>
+                    }
+                    @* <MudTextField T="string" @bind-Value="areaOther" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Clearable /> *@
+                </td>
+                <td>
+                    <MudTooltip Text=@Localizer["addToPillarOtherInLup"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudIconButton @onclick="(() => AddTempLup.InvokeAsync(5))" Variant="Variant.Filled" Color="Color.Info" Icon="@Icons.Material.Filled.Add" Size="Size.Small"></MudIconButton>
+                    </MudTooltip>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+    <br>
+    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-6" Elevation="0">
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Elevation="0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <MudText Style="font-weight:bold;">
+                                        @Localizer["pillar"]
+                                    </MudText>
+                                </th>
+                                <th>
+                                    <MudText Style="text-align:center; font-weight:bold;">
+                                        @Localizer["improveActivityDetected"]
+                                    </MudText>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td width="10%">
+                                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("S & E"))
+                                    {
+                                        Glosary word;
+                                        word = _glosaryInfo["S & E"];
+                                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                <MudText>@word.Name</MudText>
+                                            </MudBadge>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>S & E</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (_lupJobObservations.Lup.Count > 0)
+                                    {
+                                        foreach (var lup in _lupJobObservations.Lup)
+                                        {
+                                            if (lup.Pillar == 1)
+                                            {
+                                                <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                        @if (capturedImages.Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup.LupId, lup.Oportunity, lup.Pillar))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            </MudTooltip>
+
+                                                        }
+
+                                                        <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @if (lup.Oportunity.Length < 50)
+                                                            {
+                                                                @lup.Oportunity
+                                                            }
+                                                            else
+                                                            {
+                                                                @lup.Oportunity.Substring(0, 50) <span>...</span>
+                                                            }
+                                                        </MudChip>
+                                                        @switch (lup.Status)
+                                                        {
+                                                            case 1:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                                break;
+                                                            case 2:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                                break;
+                                                            case 3:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                                break;
+                                                            case 4:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                                break;
+                                                        }
+                                                        <MudTooltip Text="Delete Lup item" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => OpenDeleteDialog.InvokeAsync(lup.LupId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                </MudTooltip>
+
+                                            }
+                                        }
+                                        @if (capturedImages.Count > 0 && photosPillar == 1)
+                                        {
+                                            <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
+                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                    <TitleContent>
+                                                        <MudText Style="text-align: center; padding:0 !important">
+                                                            @Localizer["Add Evidence Photos "]
+                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                ID @lupPhotosId
+                                                                @if (oportunity.Length < 50)
+                                                                {
+                                                                    <span>&nbsp; @oportunity</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>&nbsp;@oportunity.Substring(0, 50) ...</span>
+                                                                }
+                                                            </MudChip>
+                                                        </MudText>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem Class="d-flex mt-4" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                            @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                            {
+                                                                <MudItem Class="mr-8 mb-4">
+                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                        <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                        </MudTooltip>
+                                                                    </MudItem>
+                                                                    <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                </MudItem>
+                                                            }
+                                                        </MudItem>
+
+                                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                            <MudItem Class="mb-4">
+                                                                <MudButton Variant="Variant.Filled" @onclick="(() => OpenCamera(lupPhotosId, oportunity, photosPillar))" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                                @{
+                                                                    string uploadMessage = "Upload Photo";
+                                                                    if (capturedImages.Count > 1)
+                                                                    {
+                                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";
+                                                                    }
+                                                                }
+
+                                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick="()=>UploadEvidence.InvokeAsync(lupPhotosId)" StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                                            </MudItem>
+                                                        </div>
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Q"))
+                                    {
+                                        Glosary word;
+                                        word = _glosaryInfo["Q"];
+                                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                <MudText>@word.Name</MudText>
+                                            </MudBadge>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>Q</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (_lupJobObservations.Lup.Count > 0)
+                                    {
+                                        foreach (var lup in _lupJobObservations.Lup)
+                                        {
+                                            if (lup.Pillar == 2)
+                                            {
+                                                <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                        @if (capturedImages.Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup.LupId, lup.Oportunity, lup.Pillar))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            </MudTooltip>
+
+                                                        }
+
+                                                        <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @if (lup.Oportunity.Length < 50)
+                                                            {
+                                                                <span>&nbsp;@lup.Oportunity</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>&nbsp;@lup.Oportunity.Substring(0, 50) ...</span>
+                                                            }
+                                                        </MudChip>
+                                                        @switch (lup.Status)
+                                                        {
+                                                            case 1:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                                break;
+                                                            case 2:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                                break;
+                                                            case 3:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                                break;
+                                                            case 4:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                                break;
+                                                        }
+                                                        <MudTooltip Text=@Localizer["deleteLupItem"] Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => OpenDeleteDialog.InvokeAsync(lup.LupId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                </MudTooltip>
+
+                                            }
+                                        }
+                                        @if (capturedImages.Count > 0 && photosPillar == 2)
+                                        {
+                                            <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
+                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                    <TitleContent>
+                                                        <MudText Style="text-align: center; padding:0 !important">
+                                                            @Localizer["Add Evidence Photos "]
+                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                ID @lupPhotosId
+                                                                @if (oportunity.Length < 50)
+                                                                {
+                                                                    <span>&nbsp; @oportunity</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>&nbsp;@oportunity.Substring(0, 50) ...</span>
+                                                                }
+                                                            </MudChip>
+                                                        </MudText>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                            @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                            {
+                                                                <MudItem Class=" mr-8 mb-4">
+                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                        <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                        </MudTooltip>
+                                                                    </MudItem>
+                                                                    <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                </MudItem>
+                                                            }
+                                                        </MudItem>
+                                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                            <MudItem Class="mb-4">
+                                                                <MudButton Variant="Variant.Filled" @onclick="(() => OpenCamera(lupPhotosId, oportunity, photosPillar))" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                                @{
+                                                                    string uploadMessage = "Upload Photo";
+                                                                    if (capturedImages.Count > 1)
+                                                                    {
+                                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";
+                                                                    }
+                                                                }
+
+                                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick="()=>UploadEvidence.InvokeAsync(lupPhotosId)" StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                                            </MudItem>
+                                                        </div>
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("D"))
+                                    {
+                                        Glosary word;
+                                        word = _glosaryInfo["D"];
+                                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                <MudText>@word.Name</MudText>
+                                            </MudBadge>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>D</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (_lupJobObservations.Lup.Count > 0)
+                                    {
+                                        foreach (var lup in _lupJobObservations.Lup)
+                                        {
+                                            if (lup.Pillar == 3)
+                                            {
+                                                <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                        @if (capturedImages.Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup.LupId, lup.Oportunity, lup.Pillar))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            </MudTooltip>
+
+                                                        }
+
+                                                        <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @if (lup.Oportunity.Length < 50)
+                                                            {
+                                                                @lup.Oportunity
+                                                            }
+                                                            else
+                                                            {
+                                                                @lup.Oportunity.Substring(0, 50) <span>...</span>
+                                                            }
+                                                        </MudChip>
+                                                        @switch (lup.Status)
+                                                        {
+                                                            case 1:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                                break;
+                                                            case 2:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                                break;
+                                                            case 3:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                                break;
+                                                            case 4:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                                break;
+                                                        }
+                                                        <MudTooltip Text=@Localizer["deleteLupItem"] Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => OpenDeleteDialog.InvokeAsync(lup.LupId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                </MudTooltip>
+
+                                            }
+                                        }
+                                        @if (capturedImages.Count > 0 && photosPillar == 3)
+                                        {
+                                            <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
+                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                    <TitleContent>
+                                                        <MudText Style="text-align: center; padding:0 !important">
+                                                            @Localizer["Add Evidence Photos "]
+                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                ID @lupPhotosId
+                                                                @if (oportunity.Length < 50)
+                                                                {
+                                                                    <span>&nbsp; @oportunity</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>&nbsp;@oportunity.Substring(0, 50) ...</span>
+                                                                }
+                                                            </MudChip>
+                                                        </MudText>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                            @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                            {
+                                                                <MudItem Class=" mr-8 mb-4">
+                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                        <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                        </MudTooltip>
+                                                                    </MudItem>
+                                                                    <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                </MudItem>
+                                                            }
+                                                        </MudItem>
+                                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                            <MudItem Class="mb-4">
+                                                                <MudButton Variant="Variant.Filled" @onclick="(() => OpenCamera(lupPhotosId, oportunity, photosPillar))" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                                @{
+                                                                    string uploadMessage = "Upload Photo";
+                                                                    if (capturedImages.Count > 1)
+                                                                    {
+                                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";
+                                                                    }
+                                                                }
+
+                                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick="()=>UploadEvidence.InvokeAsync(lupPhotosId)" StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                                            </MudItem>
+                                                        </div>
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("C"))
+                                    {
+                                        Glosary word;
+                                        word = _glosaryInfo["C"];
+                                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                <MudText>@word.Name</MudText>
+                                            </MudBadge>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>C</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (_lupJobObservations.Lup.Count > 0)
+                                    {
+                                        foreach (var lup in _lupJobObservations.Lup)
+                                        {
+                                            if (lup.Pillar == 4)
+                                            {
+                                                <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                        @if (capturedImages.Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup.LupId, lup.Oportunity, lup.Pillar))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            </MudTooltip>
+
+                                                        }
+
+                                                        <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @if (lup.Oportunity.Length < 50)
+                                                            {
+                                                                @lup.Oportunity
+                                                            }
+                                                            else
+                                                            {
+                                                                @lup.Oportunity.Substring(0, 50) <span>...</span>
+                                                            }
+                                                        </MudChip>
+                                                        @switch (lup.Status)
+                                                        {
+                                                            case 1:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                                break;
+                                                            case 2:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                                break;
+                                                            case 3:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                                break;
+                                                            case 4:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                                break;
+                                                        }
+                                                        <MudTooltip Text=@Localizer["deleteLupItem"] Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => OpenDeleteDialog.InvokeAsync(lup.LupId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                </MudTooltip>
+
+                                            }
+                                        }
+                                        @if (capturedImages.Count > 0 && photosPillar == 4)
+                                        {
+                                            <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
+                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                    <TitleContent>
+                                                        <MudText Style="text-align: center; padding:0 !important">
+                                                            @Localizer["Add Evidence Photos "]
+                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                ID @lupPhotosId
+                                                                @if (oportunity.Length < 50)
+                                                                {
+                                                                    <span>&nbsp; @oportunity</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>&nbsp;@oportunity.Substring(0, 50) ...</span>
+                                                                }
+                                                            </MudChip>
+                                                        </MudText>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                            @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                            {
+                                                                <MudItem Class=" mr-8 mb-4">
+                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                        <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                        </MudTooltip>
+                                                                    </MudItem>
+                                                                    <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                </MudItem>
+                                                            }
+                                                        </MudItem>
+                                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                            <MudItem Class="mb-4">
+                                                                <MudButton Variant="Variant.Filled" @onclick="(() => OpenCamera(lupPhotosId, oportunity, photosPillar))" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                                @{
+                                                                    string uploadMessage = "Upload Photo";
+                                                                    if (capturedImages.Count > 1)
+                                                                    {
+                                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";
+                                                                    }
+                                                                }
+
+                                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick="()=>UploadEvidence.InvokeAsync(lupPhotosId)" StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                                            </MudItem>
+                                                        </div>
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Other"))
+                                    {
+                                        Glosary word;
+                                        word = _glosaryInfo["Other"];
+                                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                                <MudText>@Localizer["other"]</MudText>
+                                            </MudBadge>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <span>@Localizer["other"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (_lupJobObservations.Lup.Count > 0)
+                                    {
+                                        foreach (var lup in _lupJobObservations.Lup)
+                                        {
+                                            if (lup.Pillar == 5)
+                                            {
+                                                <MudTooltip Text="@lup.LupId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined" @onclick="(() => OpenDialogLup(lup.LupId))">
+                                                        @if (capturedImages.Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup.LupId, lup.Oportunity, lup.Pillar))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            </MudTooltip>
+
+                                                        }
+
+                                                        <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @if (lup.Oportunity.Length < 70)
+                                                            {
+                                                                @lup.Oportunity
+                                                            }
+                                                            else
+                                                            {
+                                                                @lup.Oportunity.Substring(0, 70) <span>...</span>
+                                                            }
+                                                        </MudChip>
+                                                        @switch (lup.Status)
+                                                        {
+                                                            case 1:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">@Localizer["new"]</MudChip>
+                                                                break;
+                                                            case 2:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Info" Size="Size.Small">@Localizer["inProgress"]</MudChip>
+                                                                break;
+                                                            case 3:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small">@Localizer["finished"]</MudChip>
+                                                                break;
+                                                            case 4:
+                                                                <MudChip Variant="Variant.Text" Color="Color.Error" Size="Size.Small">@Localizer["canceled"]</MudChip>
+                                                                break;
+                                                        }
+                                                        <MudTooltip Text=@Localizer["deleteLupItem"] Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => OpenDeleteDialog.InvokeAsync(lup.LupId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                </MudTooltip>
+
+                                            }
+                                        }
+                                        @if (capturedImages.Count > 0 && photosPillar == 5)
+                                        {
+                                            <MudExpansionPanels Elevation="1" MultiExpansion="true" Dense>
+                                                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;" Dense>
+                                                    <TitleContent>
+                                                        <MudText Style="text-align: center; padding:0 !important">
+                                                            @Localizer["Add Evidence Photos "]
+                                                            <MudChip Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.ChecklistRtl">
+                                                                ID @lupPhotosId
+                                                                @if (oportunity.Length < 50)
+                                                                {
+                                                                    <span>&nbsp;@oportunity</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>&nbsp;@oportunity.Substring(0, 50) ...</span>
+                                                                }
+                                                            </MudChip>
+                                                        </MudText>
+                                                    </TitleContent>
+                                                    <ChildContent>
+                                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                            @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                            {
+                                                                <MudItem Class=" mr-8 mb-4">
+                                                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                        <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                        </MudTooltip>
+                                                                    </MudItem>
+                                                                    <MudImage ObjectFit="ObjectFit.Cover" Height="160" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                </MudItem>
+                                                            }
+                                                        </MudItem>
+                                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                            <MudItem Class="mb-4">
+                                                                <MudButton Variant="Variant.Filled" @onclick="(() => OpenCamera(lupPhotosId, oportunity, photosPillar))" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                                @{
+                                                                    string uploadMessage = "Upload Photo";
+                                                                    if (capturedImages.Count > 1)
+                                                                    {
+                                                                        uploadMessage = "Upload " + capturedImages.Count.ToString() + " Photos";
+                                                                    }
+                                                                }
+
+                                                                <MudButton Class="ml-4" Variant="Variant.Filled" @onclick="()=>UploadEvidence.InvokeAsync(lupPhotosId)" StartIcon="@Icons.Material.Filled.FileUpload" Color="Color.Primary">@uploadMessage</MudButton>
+                                                            </MudItem>
+                                                        </div>
+                                                    </ChildContent>
+                                                </MudExpansionPanel>
+                                            </MudExpansionPanels>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudExpansionPanel>
+
+@code {
+    [Parameter]
+    public string title { get; set; } = "";
+    [Parameter]
+    public Dictionary<string, Glosary> _glosaryInfo { get; set; }
+    [Parameter]
+    public int auxErgonomicsLevel { get; set; }
+    [Parameter]
+    public List<LupOpportunity> area_ListS { get; set; } = new List<LupOpportunity>();
+    [Parameter]
+    public List<LupOpportunity> area_ListQ { get; set; } = new List<LupOpportunity>();
+    [Parameter]
+    public List<LupOpportunity> area_ListD { get; set; } = new List<LupOpportunity>();
+    [Parameter]
+    public List<LupOpportunity> area_ListC { get; set; } = new List<LupOpportunity>();
+    [Parameter]
+    public List<LupOpportunity> area_ListOther { get; set; } = new List<LupOpportunity>();
+    [Parameter]
+    public JobObservation _lupJobObservations { get; set; } = new();
+    [Parameter]
+    public List<string> capturedImages { get; set; } = new List<string>();
+
+    [Parameter]
+    public EventCallback<(int, int)> RemoveFromList { get; set; }
+    [Parameter]
+    public EventCallback<int> AddTempLup { get; set; }
+    [Parameter]
+    public EventCallback OpenCameraDialog { get; set; }
+    [Parameter]
+    public EventCallback<int> OpenDeleteDialog { get; set; }
+    [Parameter]
+    public EventCallback<int> RemoveImage { get; set; }
+    [Parameter]
+    public EventCallback<int> UploadEvidence { get; set; }
+
+    private async void OpenGuideDialog(int pillarID)
+    {
+        var parameters = new DialogParameters
+            {
+                { "selectedPillar", pillarID }
+            };
+        var dialog = await DialogService.ShowAsync<Guide_Dialog>("", parameters, dialogGuideOptions);
+        await dialog.Result;
+
+    }
+    private DialogOptions dialogGuideOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, Position = DialogPosition.TopCenter };
+
+    void Closed(MudChip chip)
+    {
+        // react to chip closed
+    }
+
+
+    private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+    private async void OpenDialogLup(int id)
+    {
+        var parameters = new DialogParameters { { "lupId", id } };
+        var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLup);
+        await dialog.Result;
+    }
+
+    public int lupPhotosId = 0;
+    public string oportunity = "";
+    public int photosPillar = 0;
+
+    private void OpenCamera(int lupId, string lupOportunity, int pillar)
+    {
+        photosPillar = pillar;
+        oportunity = lupOportunity;
+        lupPhotosId = lupId;
+
+        OpenCameraDialog.InvokeAsync();
+    }
+}

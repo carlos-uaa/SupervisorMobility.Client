@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.LupService
@@ -61,9 +62,24 @@ namespace SupervisorMobility.Client.Services.LupService
             return lup;
         }
 
-        public async Task<List<Lup>> GetLupsByFilters(int year, int operationId)
+        public async Task<List<Lup>> GetAllLupInsidences(int checklistQuestionId, int supervisor_id, int distributionId)
         {
-            var response = await _http.GetAsync($"lup/ByFilters/{year}/{operationId}");
+            var response = await _http.GetAsync($"lup/Insidences/{checklistQuestionId}?supervisor_id={supervisor_id}&distributionId={distributionId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var lup = JsonSerializer.Deserialize<List<Lup>>(content, _options);
+
+            return lup;
+        }
+
+        public async Task<List<Lup>> GetLupsByFilters(DateTime? startDate, DateTime? endDate, int plantId, int areaId, int distributionId, int operationId, int supervisorId, int status)
+        {
+            var response = await _http.GetAsync($"lup/ByFilters?startDate={startDate}&endDate={endDate}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&supervisorId={supervisorId}&status={status}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
