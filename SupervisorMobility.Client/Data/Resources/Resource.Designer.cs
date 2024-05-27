@@ -781,6 +781,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Configuration IS.
+        /// </summary>
+        public static string configurationIS {
+            get {
+                return ResourceManager.GetString("configurationIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Administration module to manage the system IS information and to make modifications data panel specification, problem defects, checkpoint, Template, etc..
+        /// </summary>
+        public static string configurationISDescription {
+            get {
+                return ResourceManager.GetString("configurationISDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Confirm.
         /// </summary>
         public static string confirm {
