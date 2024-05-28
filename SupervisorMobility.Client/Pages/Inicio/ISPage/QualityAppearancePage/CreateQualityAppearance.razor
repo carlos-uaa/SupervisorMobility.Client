@@ -1,0 +1,369 @@
+﻿@page "/qualityAppeareance/createqualityAppereance"
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IAreaService AreaServices
+@inject IUserService UsersService
+@inject IProductService ProductsService
+
+<PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
+<MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+    <MudItem lg="12" md="12" sm="12" xs="12">
+        <MudExpansionPanels Elevation="5" MultiExpansion="true">
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudItem style="display: flex; align-items: center; justify-content:space-between; ">
+                        <MudImage ObjectFit="ObjectFit.Cover" Height="35" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                        <MudItem>
+                            <MudText Typo="Typo.h6" Style="text-align: center;">
+                                @Localizer["CHECK SHEET DE APARIENCIA CALIDAD"]
+                            </MudText>
+                            <MudText Typo="Typo.h6" Style="text-align: center;">
+                                @Localizer["(PARTES INTERIORES)"]
+                            </MudText>
+                        </MudItem>
+                        <MudItem Class="mr-4">
+                            <p Style="text-align: end;">
+                                Rev. 6
+                            </p>
+                            <p Style="text-align: end;">
+                                Última Rev. Abril 2023
+                            </p>
+                            <p Style="text-align: end;">
+                                Próxima Rev. Abril 2026
+                            </p>
+                        </MudItem>
+                    </MudItem>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="partName" Label="Nombre de la parte" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                </td>
+                                <td rowspan="2">
+                                    <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="productId">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                                        @foreach (var type in _products)
+                                            {
+                                            <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                                            }
+                                    </MudSelect>
+                                </td>
+                                <td rowspan="2" style="text-align:center">
+                                    Elaboró
+                                    <MudChip  Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                        @Localizer["unsigned"]
+                                    </MudChip>
+                                </td>
+                                <td rowspan="2" style="text-align:center">
+                                    Revisó
+                                    <MudChip Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                        @Localizer["unsigned"]
+                                    </MudChip>
+                                </td>
+                                <td rowspan="2" style="text-align:center">
+                                    Aprobó
+                                    <MudChip  Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                                        @Localizer["unsigned"]
+                                    </MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="50%">
+                                    <MudTextField @bind-Value="partNumber" Label="Número de parte" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+
+                                </td>
+ 
+                            </tr>
+                            <tr>
+                                <td colspan="5">
+                                    <p>CROQUIS</p>
+                                    <MudItem style="height:50vh; text-align:center; display: flex; align-items: center; justify-content: center;">
+                                        <MudImage ObjectFit="ObjectFit.Cover" Height="200" Src="Images/door.png" Alt="Evidence" Class="rounded-lg mr-4" />
+                                    </MudItem>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["I. Basic Panel Data"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Elevation="0" Hover Dense>
+                        <thead>
+                            <tr>
+                                <th rowspan="5" style="vertical-align: bottom;">Item</th>
+                                <th rowspan="5" style="vertical-align: bottom;">Datos</th>
+                                <th>Programado</th>
+                                @for(int i = 0; i<9; i++)
+                                {
+                                    
+                                    <td>
+                                        <MudInput @bind-Value="programmed" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>Inspector</th>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td>
+                                        <MudInput @bind-Value="inspector" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;" ></MudInput>
+                                    </td>
+                                }
+                                
+                            </tr>
+                            <tr>
+                                <th>Hora</th>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td>
+                                        <MudInput @bind-Value="hour" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td>Fecha</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td>
+                                        <MudInput @bind-Value="date" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput>
+                                    </td>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center">1</td>
+                                <td style="text-align: center" colspan="2">
+                                    Especificacion DEL Material
+                                    <br />
+                                    CR5 U GI
+
+                                </td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+
+                                    <td>
+                                        <MudInput @bind-Value="materialSpecification" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">2</td>
+                                <td style="text-align: center" colspan="2">
+                                    ESPESOR DE LA PARTE
+                                    <br />
+                                    0.60mm Min 0.42mm
+
+                                </td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+
+                                    <td>
+                                        <MudInput @bind-Value="partThickness" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">3</td>
+                                <td style="text-align: center" colspan="2">
+                                    CANTIDAD DE BARRENOS
+                                    <br />
+                                    83 Barrenos
+
+                                </td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+
+                                    <td><MudInput @bind-Value="boreholesQuantity" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">4</td>
+                                <td style="text-align: center" colspan="2">
+                                    LAMINA
+                                    <br />
+                                    GA
+
+                                </td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+
+                                    <td><MudInput @bind-Value="laminate" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">5</td>
+                                <td style="text-align: center" colspan="2">
+                                    No. DE PIEZA LIBERADA
+                                </td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+
+                                    <td><MudInput @bind-Value="partNumberReleased" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                <TitleContent>
+                    <MudText Typo="Typo.h6" Style="text-align: center;">
+                        @Localizer["II. Problems. Criteria"]
+                    </MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudSimpleTable Style="overflow-x: auto;" Elevation="0" Hover Dense>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center">Item</th>
+                                <th style="text-align: center">Descripción del defecto</th>
+                                <th colspan="9"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center">1.1</td>
+                                <td style="text-align: center">Fractura</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="fracture" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.2</td>
+                                <td style="text-align: center">Mal formado de radio</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="radiusMalformation" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.3</td>
+                                <td style="text-align: center">Golpes</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="strikes" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.4</td>
+                                <td style="text-align: center">Adelgazamiento</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="thinning" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.5</td>
+                                <td style="text-align: center">Falta de material</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="lackOfMaterial" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.6</td>
+                                <td style="text-align: center">Arrastre</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="corrosionControl" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.7</td>
+                                <td style="text-align: center">Control de corrosión 0.15 mm max. en panel de acero y 0.30 panel de aluminio</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="corrosionControl" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.8</td>
+                                <td style="text-align: center">Empalme</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="fitting" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.9</td>
+                                <td style="text-align: center">Arrugas</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="generalGrate" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.10</td>
+                                <td style="text-align: center">Rebaba general 0.30 mm max.</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="gap" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.11</td>
+                                <td style="text-align: center">Fisura</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="fracture" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.12</td>
+                                <td style="text-align: center">Button mark</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="buttonMark" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.13</td>
+                                <td style="text-align: center">Mercedes mark</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="mercedesMark" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td style="text-align: center">1.14</td>
+                                <td style="text-align: center">Barreno burring</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td><MudInput @bind-Value="burringHole" Variant="Variant.Text" Margin="Margin.Dense" Style="font-size: 13px;"></MudInput></td>
+                                }
+                            </tr>
+                            <tr>
+                                <td colspan="2">Revisó supervisor</td>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <td>
+                                        <MudIcon Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Size="Size.Small">
+                                            @Localizer["unsigned"]
+                                        </MudIcon>
+                                    </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+
+
+                </ChildContent>
+            </MudExpansionPanel>
+
+        </MudExpansionPanels>
+    </MudItem>
+</MudGrid>
