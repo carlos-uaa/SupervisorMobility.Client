@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace SupervisorMobility.Client.Data.Entities.IS
-
 {
     public class DataPanel
     {
@@ -16,5 +15,9 @@ namespace SupervisorMobility.Client.Data.Entities.IS
 
         public ICollection<DataPanelSpecification>? Specifications { get; set; }
         = new List<DataPanelSpecification>();
+
+        //variables para drop zone re-order sequence
+        public string Container { get; set; } = "CategoryContainer";
+
     }
 }

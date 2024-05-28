@@ -19,29 +19,62 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         public User user = new();
         public bool logged = false;
 
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+        public bool ShowLoading = true;
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            _dataPanelsCategories = await DataPanelServices.GetAllDataPanels();
 
-            await GetUserAsync();
-            logged = await HasPropertyAsync();
-            if (!logged)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error You have to log in", Severity.Error);
-                NavigationManager.NavigateTo($"/");
-            }
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
 
             _links = new List<BreadcrumbItem>
              {
-                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                            new BreadcrumbItem(text: Localizer["DataPanel"], href: "", disabled: true)
-                        };
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
+                new BreadcrumbItem(text: Localizer["DataPanel"], href: "", disabled: true)
+            };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
+
+            try
+            {
+                await GetUserAsync();
+                logged = await HasPropertyAsync();
+                if (!logged)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Error You have to log in", Severity.Error);
+                    NavigationManager.NavigateTo($"/");
+                }
+
+                _dataPanelsCategories = await DataPanelServices.GetAllDataPanels();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                ShowLoading = false;
+                base.StateHasChanged();
+            }
+
         }
 
         //Local storage user
@@ -65,27 +98,29 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         private async Task<bool> HasPropertyAsync()
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
-        // Category details
-        void CategoryDetails(int categoryId)
-        {
-            NavigationManager.NavigateTo($"/checklistcategories/category/{categoryId}");
-        }
 
+        // Create CreateDataPanel
+        void CreateDataPanel()
+        {
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/createcategory");
+        }
+        // Details CreateDataPanel
         void DataPanelDetails(int datapanelId)
         {
-            NavigationManager.NavigateTo($"/datapanelcategories/{datapanelId}");
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/detailscategory/{datapanelId}");
         }
-        // Delete category
-        async Task DeleteCategory(int categoryId)
-        {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this category?");
 
-            if (confirm)
-            {
-                _checklistCategories.RemoveAll(category => category.JobCategoryStructureId == categoryId);
-                await JobStructureCategoriesService.DeleteCategory(categoryId);
-            }
+        // Reorder CreateDataPanel
+        void ReOrderDataPanel()
+        {
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/sequence");
         }
+        // Update category
+        void UpdateCategory(int categoryId)
+        {
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/updatecategory/{categoryId}");
+        }
+
         async Task DeleteDataPanel(int datapanelId)
         {
             bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this DataPanel?");
@@ -97,47 +132,43 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
             }
         }
 
-
-        // Update category
-        void UpdateCategory(int categoryId)
-        {
-            NavigationManager.NavigateTo($"checklistcategories/category/updatecategory/{categoryId}");
-        }
-
         private string searchString = "";
 
-        private bool FilterFunc(JobCategoryStructure element)
+        private bool FilterFunc(DataPanel element)
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.JobCategoryStructureId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+
+
+
+            if (element.DataTitle.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
                 return true;
-            if (element.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+
+            var searchWords = searchString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Verificar si todas las palabras en searchWords están contenidas en DataTitle
+            if (searchWords.All(word => element.DataTitle.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
                 return true;
-            if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.Sequence.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if ($"{element.JobCategoryStructureId} {element.Code} {element.Description} {element.Sequence}".Contains(searchString))
-                return true;
+
+
             return false;
         }
 
         private int selectedRowNumber = -1;
-        private MudTable<JobCategoryStructure> SelectTableEvent;
+        private MudTable<DataPanel> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<JobCategoryStructure> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<DataPanel> tableRowClickEventArgs)
         {
         }
 
-        private string SelectedRowClassFunc(JobCategoryStructure element, int rowNumber)
+        private string SelectedRowClassFunc(DataPanel element, int rowNumber)
         {
             if (selectedRowNumber == rowNumber)
             {
                 selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element) && element.Type == StructureType.Checklist)
+                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
                 {
-                    NavigationManager.NavigateTo($"checklistcategories/category/{element.JobCategoryStructureId}");
+                    DataPanelDetails(element.DataPanelId);
                 }
                 return string.Empty;
             }
@@ -152,24 +183,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
             }
         }
 
-        private string GetStructureTypeText(StructureType type)
-        {
-            switch (type)
-            {
-                case StructureType.Titular:
-                    return "Title & Info";
-                case StructureType.Checklist:
-                    return "Checklist Section";
-                case StructureType.Timer:
-                    return "Cicle Timer's";
-                case StructureType.LUP:
-                    return "LUP";
-                case StructureType.Signature:
-                    return "Signature & Commentary";
-                default:
-                    return "Desconocido";
-            }
-        }
+
 
     }
 }

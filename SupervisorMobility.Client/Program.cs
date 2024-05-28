@@ -1,5 +1,6 @@
 global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
+global using SupervisorMobility.Client.Data.Entities.IS;
 global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
