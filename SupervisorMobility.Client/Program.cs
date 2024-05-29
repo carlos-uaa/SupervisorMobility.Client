@@ -36,10 +36,10 @@ global using SupervisorMobility.Client.Services.ILUService;
 global using SupervisorMobility.Client.Services.SOSReviewService;
 global using SupervisorMobility.Client.Services.DepartmentService;
 global using SupervisorMobility.Client.Services.BreadcrumsService;
-global using SupervisorMobility.Client.Services.ProductsService;
 global using SupervisorMobility.Client.Services.HCIService;
 global using SupervisorMobility.Client.Services.SOS_Data_Service;
 global using System.Text.Json;
+global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -96,6 +96,10 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
+
+//IS Apariencia Plantilla
+builder.Services.AddScoped<IDataPanelService, DataPanelService>();
+
 
 // Connection to API
 var env = builder.HostEnvironment;

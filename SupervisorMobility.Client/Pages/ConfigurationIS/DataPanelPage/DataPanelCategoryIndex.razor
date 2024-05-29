@@ -1,0 +1,118 @@
+﻿@page "/datapanelcategories"
+@inject IJobStructureService JobStructureCategoriesService
+@inject IDataPanelService DataPanelServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["jobstructure"]</PageTitle>
+
+
+<MudTable Items="_checklistCategories" Hover="true" T="JobCategoryStructure" SortLabel="Sort By" Height="80vh"
+          RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent" 
+    Filter="new Func<JobCategoryStructure,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+            <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    
+                <MudSpacer />
+                <MudButton Href="/checklistcategory/createcategory">
+                    <MudText>@Localizer1["JSNewCategory"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add"  Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+                <MudButton Href="/checklistcategories/sequence">
+                    <MudText>@Localizer1["JSReOrder"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Reorder" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        @if(user.UserType == 1)
+        {
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<JobCategoryStructure, object>(x=>x?.JobCategoryStructureId)">Category Id</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<JobCategoryStructure, object>(x=>x?.Code)">Code</MudTableSortLabel>
+            </MudTh>
+        }
+       
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobCategoryStructure, object>(x=>x?.Description)">Description</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobCategoryStructure, object>(x=>x?.Sequence)">Sequence</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<JobCategoryStructure, object>(x=>x?.Type)">Type</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Actions</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="JobCategoryStructureId">
+            <MudText Align="Align.Center">@context.JobCategoryStructureId</MudText>
+        </MudTd>
+        <MudTd DataLabel="Code">
+            <MudText Align="Align.Center">@context.Code</MudText>
+        </MudTd>
+        <MudTd DataLabel="Description">
+            <MudText Align="Align.Center">@context.Description</MudText>
+        </MudTd>
+        <MudTd DataLabel="Sequence">
+            <MudText Align="Align.Center">@context.Sequence</MudText>
+        </MudTd>
+        <MudTd DataLabel="Type">
+            <MudText Align="Align.Center">@GetStructureTypeText(context.Type)</MudText>
+        </MudTd>
+
+      @*  <MudTd DataLabel="Status">
+            @if (context.IsActive == true)
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                </MudText>
+            }
+            else
+            {
+                <MudText Align="Align.Center">
+                    <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                </MudText>
+            }
+        </MudTd>*@
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @if (context.Type == StructureType.Checklist)
+                        {
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => CategoryDetails(context.JobCategoryStructureId))" @ontouchstart="(() => CategoryDetails(context.JobCategoryStructureId))">Details</MudMenuItem>
+                        }
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateCategory(context.JobCategoryStructureId))" @ontouchstart="(() => UpdateCategory(context.JobCategoryStructureId))">Edit </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteCategory(context.JobCategoryStructureId))" @ontouchstart="(() => DeleteCategory(context.JobCategoryStructureId))">Delete </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+
+
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
