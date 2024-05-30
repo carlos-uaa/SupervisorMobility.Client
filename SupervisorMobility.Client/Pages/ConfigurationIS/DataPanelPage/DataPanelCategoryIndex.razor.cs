@@ -11,7 +11,6 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
-        public List<JobCategoryStructure> _checklistCategories { get; set; } = new();
         public List<DataPanel> _dataPanelsCategories { get; set; } = new();
 
         //User
@@ -19,9 +18,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         public User user = new();
         public bool logged = false;
 
+        //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
-
         public bool ShowLoading = true;
 
         // Initialization
@@ -102,12 +101,12 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         // Create CreateDataPanel
         void CreateDataPanel()
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/createcategory");
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/Create");
         }
         // Details CreateDataPanel
         void DataPanelDetails(int datapanelId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/detailscategory/{datapanelId}");
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/Details/{datapanelId}");
         }
 
         // Reorder CreateDataPanel
@@ -118,7 +117,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         // Update category
         void UpdateCategory(int categoryId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/updatecategory/{categoryId}");
+            NavigationManager.NavigateTo($"configurationIS/DataPanels/Update/{categoryId}");
         }
 
         async Task DeleteDataPanel(int datapanelId)

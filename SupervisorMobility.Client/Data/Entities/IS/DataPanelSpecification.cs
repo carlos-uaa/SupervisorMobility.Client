@@ -16,5 +16,8 @@ namespace SupervisorMobility.Client.Data.Entities.IS
 
         public int? DataPanelId { get; set; }
         public DataPanel? DataPanel { get; set; }
+
+        //variables para drop zone re-order sequence
+        public string Container { get; set; } = "CategoryContainer";
     }
 }
