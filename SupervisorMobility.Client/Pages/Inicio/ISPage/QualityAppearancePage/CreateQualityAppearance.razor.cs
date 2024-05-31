@@ -16,12 +16,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+
+        public string signatureUser  = string.Empty;
+        public bool isHeader = false;
+        public int userType = 0;
+
         string partName = "FR DOOR INR RH";
         string partNumber = "A2477221001D";
         string programmed = "500";
         string inspector = "A. GARCIA";
         string hour = "22:45";
         string date = "14/02/24";
+
+        string ssvImage = string.Empty;
+        string svImage = string.Empty;
+        string operatorImage = string.Empty;
 
         public class ItemModel
         {
@@ -258,6 +267,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         private void HandleSignatureSaved()
         {
             currentImage = _signatureImageService.GetImage();
+
+            switch (userType)
+            {
+                case 1: ssvImage = currentImage; break;
+                case 2: svImage = currentImage; break;
+                case 3: operatorImage = currentImage; break;
+            }
+
+            isHeader = false;
+            userType = 0;
+            currentImage = "";
         }
 
         private void HandleClearSignature()
@@ -266,5 +286,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         }
 
 
+
+        private void SignAppearance(bool header, int user)
+        {
+            //SSV
+            isHeader = header;
+            userType = user;
+
+            switch (userType)
+            {
+                case 1: signatureUser = "SSV Signature"; break;
+                case 2: signatureUser = "SV Signature"; break;
+                case 3: signatureUser = "Operator Signature"; break;
+            }
+            StateHasChanged();
+        }
     }
 }
