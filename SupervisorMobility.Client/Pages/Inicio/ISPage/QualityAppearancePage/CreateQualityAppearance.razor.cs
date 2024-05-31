@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.IS;
+using SupervisorMobility.Client.Services.SignatureImageService;
 
 namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 {
@@ -249,6 +250,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
                 }
             }
             StateHasChanged();
+        }
+
+
+        private string currentImage = "";
+
+        private void HandleSignatureSaved()
+        {
+            currentImage = _signatureImageService.GetImage();
+        }
+
+        private void HandleClearSignature()
+        {
+            currentImage = "";
         }
 
 
