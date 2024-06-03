@@ -1,17 +1,15 @@
-ï»¿using Microsoft.JSInterop;
+using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.IS;
 
-namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
+namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
 {
-    public partial class DataPanelCategoryIndex
+    public partial class PartIndex
     {
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         // Objects
-        public List<DataPanel> _dataPanelsCategories { get; set; } = new();
+        public List<Part> _Parts { get; set; } = new();
 
         //User
         private string json = string.Empty;
@@ -44,7 +42,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
              {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                new BreadcrumbItem(text: Localizer["DataPanel"], href: "", disabled: true)
+                new BreadcrumbItem(text: Localizer["Parts"], href: "", disabled: true)
             };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
@@ -61,7 +59,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
                     NavigationManager.NavigateTo($"/");
                 }
 
-                _dataPanelsCategories = await DataPanelServices.GetAllDataPanels();
+                _Parts = await PartsServices.GetAllParts();
 
             }
             catch (Exception ex)
@@ -98,55 +96,57 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
-        // Create CreateDataPanel
-        void CreateDataPanel()
+        // Create CreateParts
+        void CreateParts()
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Create");
+            NavigationManager.NavigateTo($"configurationIS/Parts/Create");
         }
-        // Details CreateDataPanel
-        void DataPanelDetails(int datapanelId)
+        // Details CreateParts
+        void PartsDetails(int PartsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Details/{datapanelId}");
+            NavigationManager.NavigateTo($"configurationIS/Parts/Details/{PartsId}");
         }
 
-        // Reorder CreateDataPanel
-        void ReOrderDataPanel()
-        {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/sequence");
-        }
         // Update category
-        void UpdateCategory(int categoryId)
+        void PartUpdate(int PartsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Update/{categoryId}");
+            NavigationManager.NavigateTo($"configurationIS/Parts/Update/{PartsId}");
         }
 
-        async Task DeleteDataPanel(int datapanelId)
+        async Task DeleteParts(int PartsId)
         {
-            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this DataPanel?");
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Parts?");
 
             if (confirm)
             {
-                _dataPanelsCategories.RemoveAll(category => category.DataPanelId == datapanelId);
-                await DataPanelServices.DeleteDataPanel(datapanelId);
+                _Parts.RemoveAll(p => p.PartId == PartsId);
+                await PartsServices.DeletePart(PartsId);
             }
         }
 
         private string searchString = "";
 
-        private bool FilterFunc(DataPanel element)
+        private bool FilterFunc(Part element)
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
 
 
+            if (element.PartName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
 
-            if (element.DataTitle.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (element.PartNumber.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
                 return true;
 
             var searchWords = searchString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Verificar si todas las palabras en searchWords estÃ¡n contenidas en DataTitle
-            if (searchWords.All(word => element.DataTitle.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
+            // Verificar si todas las palabras en searchWords están contenidas en DataTitle
+            if (searchWords.All(word => element.PartNumber.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
+                return true;
+
+
+            // Verificar si todas las palabras en searchWords están contenidas en DataTitle
+            if (searchWords.All(word => element.PartName.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
                 return true;
 
 
@@ -154,20 +154,20 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
         }
 
         private int selectedRowNumber = -1;
-        private MudTable<DataPanel> SelectTableEvent;
+        private MudTable<Part> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<DataPanel> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<Part> tableRowClickEventArgs)
         {
         }
 
-        private string SelectedRowClassFunc(DataPanel element, int rowNumber)
+        private string SelectedRowClassFunc(Part element, int rowNumber)
         {
             if (selectedRowNumber == rowNumber)
             {
                 selectedRowNumber = -1;
                 if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
                 {
-                    DataPanelDetails(element.DataPanelId);
+                    PartsDetails(element.PartId);
                 }
                 return string.Empty;
             }
