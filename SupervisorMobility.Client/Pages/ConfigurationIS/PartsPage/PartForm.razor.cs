@@ -212,7 +212,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/DataPanels");
+                        NavigationManager.NavigateTo($"/configurationIS/Parts");
                         //NavigationManager.NavigateTo($"/");
                     }
                     else
@@ -302,13 +302,13 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                     {
                         Snackbar.Configuration.MaxDisplayedSnackbars = 10;
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Image Added to Kaizen", Severity.Info);
+                        Snackbar.Add("Image Added to Part Item", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Failed to upload Image to Kaizen", Severity.Error);
+                        Snackbar.Add("Failed to upload Image to Part Item", Severity.Error);
                     }
 
                 }
@@ -344,6 +344,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
         //Show Evidence 
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+        private readonly DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
         private bool visibleEvidence = false;
 
@@ -396,16 +397,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                 }
             }
         }
-        private void RemoveImage(int index)
-        {
-
-            if (index >= 0 && index < partImages.Count )
-            {
-               
-                partImages.RemoveAt(index);
-               
-            }
-        }
+     
 
         private void OpenEvidenceDialog(int index, int evidenceIndex)
         {
@@ -471,6 +463,24 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             isTemporal = isTemp;
             visibleDelete = true;
         }
+        private void RemoveImage()
+        {
 
+            if (removeImageIndex >= 0)
+            {
+                if (isTemporal)
+                {
+                    if (removeImageIndex < tempCapturedImages.Count)
+                    tempCapturedImages.RemoveAt(removeImageIndex);
+                }
+                else
+                {
+                    if (removeImageIndex < partImages.Count)
+                        partImages.RemoveAt(removeImageIndex);
+                }
+            }
+            CloseDeleteModal();
+        }
+        void CloseDeleteModal() => visibleDelete = false;
     }
 }

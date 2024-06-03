@@ -45,8 +45,8 @@ else
                                     break;
                                 case PageType.Update:
                                     <MudText Typo="Typo.h6">@Localizer["PartUpdate"]</MudText>
-                                    break; 
-                                    case PageType.Details:
+                                    break;
+                                case PageType.Details:
                                     <MudText Typo="Typo.h6">@Localizer["PartDetails"]</MudText>
                                     break;
                             }
@@ -57,10 +57,11 @@ else
                                 case PageType.Details:
 
                                     <MudChip Variant="Variant.Text" Color="Color.Success" OnClick="() => PartUpdate((int)PartId)" @ontouchstart="() => PartUpdate((int)PartId)">
-                                        @Localizer["Details"]
+                                        @Localizer["edit"]
                                         <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
                                     </MudChip>
-                                    break;  case PageType.Create:
+                                    break;
+                                case PageType.Create:
                                     <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["create"]</MudChip>
                                     break;
                                 case PageType.Update:
@@ -80,18 +81,18 @@ else
                                 <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
                             }
                         </MudSelect>
-                            
-                            @if (user.UserType == 1)
+
+                        @if (user.UserType == 1)
                         {
                             <MudSwitch Class="mt-3" Label="Is active?" ReadOnly="@(pageType == PageType.Details)" @bind-Checked="_Part.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                         }
 
                         <MudItem>
 
-                            @if(pageType != PageType.Details)
+                            @if (pageType != PageType.Details)
                             {
-                                
-                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
 
                                     <InputFile id="previousEvidence" OnChange="@( (e) => UploadFiles(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
                                     <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
@@ -110,7 +111,7 @@ else
                                             </MudButton>
                                         </MudItem>
                                     }
-                                else if (partImages.Count > 0)
+                                    else if (partImages.Count > 0)
                                     {
                                         <MudItem>
                                             <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
@@ -160,7 +161,7 @@ else
 
                     </MudCardContent>
                     <MudCardActions>
-                        @if(pageType != PageType.Details)
+                        @if (pageType != PageType.Details)
                         {
                             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])</MudButton>
                         }
@@ -259,50 +260,64 @@ else
                     </MudPaper>
                 </ChildContent>
             </MudTabPanel>
-            @if(pageType != PageType.Create)
+            @if (pageType != PageType.Create)
             {
-            <MudTabPanel @onclick="(() => photoIndex = 0)">
-                <TabContent>
-                    <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Just added prev.</MudChip>
-                </TabContent>
-                <ChildContent>
-                    <MudPaper Elevation="0">
-                        @if (tempCapturedImages.Count() > 0)
-                        {
-                            <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
-                                <PreviousButtonTemplate>
-                                    <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
-                                        <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
-                                    </MudAvatar>
-                                </PreviousButtonTemplate>
-                                <NextButtonTemplate>
-                                    <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
-                                        <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
-                                    </MudAvatar>
-                                </NextButtonTemplate>
-                                <ChildContent>
-                                    @foreach (var evidence in tempCapturedImages)
-                                    {
-                                        <MudCarouselItem Transition="Transition.Fade">
-                                            <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
-                                        </MudCarouselItem>
-                                    }
-                                </ChildContent>
-                            </MudCarousel>
-                        }
-                        else
-                        {
-                            <MudItem Style="height: 75vh">
-                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                    @Localizer["there is no sketches:)"]
-                                </MudAlert>
-                            </MudItem>
-                        }
-                    </MudPaper>
-                </ChildContent>
-            </MudTabPanel>
+                <MudTabPanel @onclick="(() => photoIndex = 0)">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Just added prev.</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudPaper Elevation="0">
+                            @if (tempCapturedImages.Count() > 0)
+                            {
+                                <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                                    <PreviousButtonTemplate>
+                                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                                        </MudAvatar>
+                                    </PreviousButtonTemplate>
+                                    <NextButtonTemplate>
+                                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                                        </MudAvatar>
+                                    </NextButtonTemplate>
+                                    <ChildContent>
+                                        @foreach (var evidence in tempCapturedImages)
+                                        {
+                                            <MudCarouselItem Transition="Transition.Fade">
+                                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                            </MudCarouselItem>
+                                        }
+                                    </ChildContent>
+                                </MudCarousel>
+                            }
+                            else
+                            {
+                                <MudItem Style="height: 75vh">
+                                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                        @Localizer["there is no sketches:)"]
+                                    </MudAlert>
+                                </MudItem>
+                            }
+                        </MudPaper>
+                    </ChildContent>
+                </MudTabPanel>
             }
         </MudTabs>
     </DialogContent>
-                
+
+</MudDialog>
+
+<MudDialog @bind-IsVisible="visibleDelete" Options="dialogDeleteOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">@Localizer["confirm"]</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+            @Localizer["Are you sure you want to delete this Image?"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteModal" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => RemoveImage())" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Variant="Variant.Filled">@Localizer["delete"]</MudButton>
+    </DialogActions>
 </MudDialog>
