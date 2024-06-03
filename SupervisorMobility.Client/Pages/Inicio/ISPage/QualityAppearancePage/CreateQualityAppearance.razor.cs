@@ -4,6 +4,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.IS;
 using SupervisorMobility.Client.Services.SignatureImageService;
+using static SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage.CreateQualityAppearance;
 
 namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 {
@@ -17,7 +18,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         public User user = new();
         public bool logged = false;
 
-        public string signatureUser  = string.Empty;
+        public string signatureUser = string.Empty;
         public bool isHeader = false;
         public int userType = 0;
 
@@ -49,81 +50,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
             public string PartNumberReleased { get; set; }
         }
 
-        private List<SpecificationValues> specificationValues = new List<SpecificationValues>
-    {
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-        new SpecificationValues
-        {
-            MaterialSpecification = "CR5",
-            PartThickness = "0.77",
-            BoreholesQuantity = "540",
-            Laminate = "G1",
-            PartNumberReleased = "01"
-        },
-    };
+        private List<SpecificationValues> specificationValues = new List<SpecificationValues>();
+
 
         string fracture = "OK";
         string radiusMalformation = "OK";
@@ -169,6 +97,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
             }
+
+
+
+            try
+            {
+                specificationValues = new List<SpecificationValues>
+            {
+                new SpecificationValues { MaterialSpecification = "1", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "2", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "3", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "4", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "5", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "6", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "7", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "8", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" },
+                new SpecificationValues { MaterialSpecification = "9", PartThickness = "0.77", BoreholesQuantity = "540", Laminate = "G1", PartNumberReleased = "01" }
+            };
+
+                Console.WriteLine($"specificationValues count: {specificationValues.Count}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Initialization Error: {ex.Message}");
+            }
+
+            Console.WriteLine($"specificationValues count: {specificationValues.Count}");
             AddItem();
             _products = await ProductsService.GetProducts();
             _products = _products.OrderBy(p => p.Description).ToList();
@@ -179,9 +133,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
             _allSSVs = _allSSVs.OrderBy(s => s.Name).ToList();
 
             _seniorSupervisors = _allSSVs;
+            StateHasChanged();
         }
-        //Local storage user
-        private async Task GetUserAsync()
+
+    //Local storage user
+    private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
                 user = new();
