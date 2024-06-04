@@ -32,7 +32,9 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
             var datapanel = JsonSerializer.Deserialize<DataPanel>(content, _options);
 
             return datapanel;
-        }
+        } 
+
+       
 
         public async Task<List<DataPanel>> GetAllDataPanels(bool includeSpecifications = false)
         {
@@ -49,9 +51,49 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
             return datapanels;
         }
 
-        public Task<DataPanel> GetDataPanel(bool includeSpecification = false)
+        public async Task<DataPanel> GetDataPanel(int id_datapanel, bool includeSpecifications = false)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"IS/Aparence/DataPanels/{id_datapanel}?includeSpecifications={includeSpecifications}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var datapanel = JsonSerializer.Deserialize<DataPanel>(content, _options);
+
+            return datapanel;
+        }
+
+        public async Task<DataPanel?> UpdateDataPanel(DataPanel dataPaneltoUpdate)
+        {
+            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/{dataPaneltoUpdate.DataPanelId}", dataPaneltoUpdate);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var datapanel = JsonSerializer.Deserialize<DataPanel>(content, _options);
+
+            return datapanel;
+        }
+        public async Task<bool> UpdatePanelSequence(int datapanel_Id, DataPanel dataPanel)
+        {
+            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/sequence/{datapanel_Id}", dataPanel);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Failed");
+                return false;
+            }
+            else
+            {
+                Console.WriteLine("Ok");
+                return true;
+            }
         }
 
         public async Task<DataPanel> DeleteDataPanel(int id)
@@ -72,6 +114,22 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
         #endregion
 
         #region DataPanelSpecification
+        public async Task<DataPanelSpecification> CreateSpecification(DataPanelSpecification specification)
+        {
+            var response = await _http.PostAsJsonAsync($"IS/Aparence/DataPanels/Specification", specification);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var datapanel = JsonSerializer.Deserialize<DataPanelSpecification>(content, _options);
+
+            return datapanel;
+        }
+
+
         public async Task<List<DataPanelSpecification>> GetAllSpecificationsFromDataPanel(bool includeDataPanel = false)
         {
             var response = await _http.GetAsync($"IS/Aparence/DataPanels/Specification?includeDataPanel={includeDataPanel}");
@@ -101,6 +159,22 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
             var datapanelspecification = JsonSerializer.Deserialize<DataPanelSpecification>(content, _options);
 
             return datapanelspecification;
+        }
+
+        public async Task<bool> UpdateSpecificationSequence(int datapanel_Id, DataPanelSpecification dataSpecification)
+        {
+            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/Specification/sequence/{datapanel_Id}", dataSpecification);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Failed");
+                return false;
+            }
+            else
+            {
+                Console.WriteLine("Ok");
+                return true;
+            }
         }
         #endregion
     }

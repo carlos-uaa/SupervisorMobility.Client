@@ -6,8 +6,8 @@
         public int PartId { get; set; }
         public bool? IsActive { get; set; }
 
-        public string PartName { get; set; } = string.Empty;
-        public int PartNumber { get; set; }
+        public string? PartName { get; set; } = string.Empty;
+        public string? PartNumber { get; set; } = string.Empty;
 
         public int ModelId { get; set; }
         public Product? Model { get; set; }

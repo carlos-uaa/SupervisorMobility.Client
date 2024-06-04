@@ -314,7 +314,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         {
             imageIndex = index;
             visibleCamera = true;
-
         }
 
         private CameraStreamer CameraStreamerReference;
