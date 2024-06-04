@@ -1,8 +1,8 @@
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.IS;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using SupervisorMobility.Client.Services.SignatureImageService;
 using static SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage.CreateQualityAppearance;
 
@@ -11,7 +11,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
     public partial class CreateQualityAppearance
     {
         private List<BreadcrumbItem> _links;
-        Apearance _appeareance { get; set; } = new();
+        Appearance _appearance { get; set; } = new();
         public List<DataPanel> _dataPanelsCategories { get; set; } = new();
         //User
         private string json = string.Empty;
@@ -133,11 +133,51 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
             _allSSVs = _allSSVs.OrderBy(s => s.Name).ToList();
 
             _seniorSupervisors = _allSSVs;
+            _appearance.Observations = new List<Commentary>();
             StateHasChanged();
         }
 
-    //Local storage user
-    private async Task GetUserAsync()
+        private async Task CreateNewAppearance()
+        {
+
+
+            _appearance.ApproverUserId = ssvId;
+            _appearance.ReviewerId = supervisorId;
+            _appearance.ManufacturerId = operatorId;
+
+            if (!(items == null || !items.Any()))
+            {
+                foreach (var item in items)
+                {
+                    var appeareanceCommentary = new Commentary
+                    {
+                        ComentaryId = 0,
+                        Comment = item.Commentary,
+                        IsActive = true
+                    };
+                    _appearance.Observations.Add(appeareanceCommentary);
+                }
+            }
+            var result = await AppearanceServices.CreateAppearance(_appearance);
+
+            if (result != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Appearance Created", Severity.Info);
+
+                //_appeareance = result;
+                //_ = await UploadEvidence();
+
+                NavigationManager.NavigateTo("/appearance");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); 
+
+        }
+
+
+        //Local storage user
+        private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
                 user = new();

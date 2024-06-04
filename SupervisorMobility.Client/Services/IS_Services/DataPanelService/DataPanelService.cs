@@ -21,7 +21,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
         #region DataPanel
         public  async Task<DataPanel> CreateDataPanel(DataPanel dataPaneltoCreate)
         {
-            var response = await _http.PostAsJsonAsync($"IS/Aparence/DataPanels", dataPaneltoCreate);
+            var response = await _http.PostAsJsonAsync($"IS/Appearance/DataPanels", dataPaneltoCreate);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -36,7 +36,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
 
         public async Task<List<DataPanel>> GetAllDataPanels(bool includeSpecifications = false)
         {
-            var response = await _http.GetAsync($"IS/Aparence/DataPanels?includeSpecifications={includeSpecifications}");
+            var response = await _http.GetAsync($"IS/Appearance/DataPanels?includeSpecifications={includeSpecifications}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -56,7 +56,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
 
         public async Task<DataPanel> DeleteDataPanel(int id)
         {
-            var response = await _http.DeleteAsync($"IS/Aparence/DataPanels/{id}");
+            var response = await _http.DeleteAsync($"IS/Appearance/DataPanels/{id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
         #region DataPanelSpecification
         public async Task<List<DataPanelSpecification>> GetAllSpecificationsFromDataPanel(bool includeDataPanel = false)
         {
-            var response = await _http.GetAsync($"IS/Aparence/DataPanels/Specification?includeDataPanel={includeDataPanel}");
+            var response = await _http.GetAsync($"IS/Appearance/DataPanels/Specification?includeDataPanel={includeDataPanel}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -90,7 +90,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
        
         public async Task<DataPanelSpecification> GetDataPanelSpecification(int id_DataPanelSpecification, bool includeDataPanel = false)
         {
-            var response = await _http.GetAsync($"IS/Aparence/DataPanels/Specification/{id_DataPanelSpecification}?includeDataPanel={includeDataPanel}");
+            var response = await _http.GetAsync($"IS/Appearance/DataPanels/Specification/{id_DataPanelSpecification}?includeDataPanel={includeDataPanel}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

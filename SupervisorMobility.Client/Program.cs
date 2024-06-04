@@ -39,6 +39,7 @@ global using SupervisorMobility.Client.Services.DepartmentService;
 global using SupervisorMobility.Client.Services.BreadcrumsService;
 global using SupervisorMobility.Client.Services.HCIService;
 global using SupervisorMobility.Client.Services.SOS_Data_Service;
+global using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
 global using System.Text.Json;
 global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 using Microsoft.AspNetCore.Components.Web;
@@ -51,6 +52,7 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
+using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -97,6 +99,7 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
+builder.Services.AddScoped<IAppearanceService, AppearanceService>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();
