@@ -1,0 +1,155 @@
+﻿@page "/configurationIS/DataPanels/Details/{DataPanelId:int}"
+
+@inject IDataPanelService DataPanelServices
+@inject IJobStructureService JobStructureCategoriesService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IBreadcrumbService BreadcrumbService
+@inject ISnackbar Snackbar
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @_DataPanel.DataTitle</PageTitle>
+
+
+@*Dashboard grid*@
+    <MudGrid class="mt-2">
+    @*Plant info*@
+    <MudItem xs="12" sm="6" md="3">
+        <MudButton @onclick="(() => UpdateCategory(DataPanelId))" @ontouchstart="(() => UpdateCategory(DataPanelId))" FullWidth="true" Class="d-flex justify-center">
+            <MudCard Style="height:100%; width: 100%">
+            <MudCardHeader>
+                <CardHeaderActions>
+                </CardHeaderActions>
+                <CardHeaderContent>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Style="justify-content:center">
+                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.ViewList"></MudIcon></MudText>
+                <MudText Align="Align.Center">@_DataPanel.DataPanelId</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center">@_DataPanel.DataTitle</MudText>
+                @if (_DataPanel.IsActive == true)
+                {
+                    <MudText Align="Align.Center" Class="pt-2">
+                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Class="pa-4">
+                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+        </MudButton>
+        
+    </MudItem>
+    @*Related questions*@
+    <MudItem xs="12" sm="6" md="9">
+        <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
+            <MudTabPanel Icon="@Icons.Material.Filled.Checklist" Text="Specifications">
+                @if (_DataPanel.Specifications.Count() > 0)
+                {
+                    <MudTable Items="_DataPanel.Specifications" Hover="true" T="DataPanelSpecification" Class="styled-table table-striped"
+                              Height="70vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+                    FixedHeader=true Filter="new Func<DataPanelSpecification,bool>(FilterFunc)">
+                        <ToolBarContent>
+                            <MudSpacer />
+                            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable></MudTextField>
+    
+                            <MudSpacer />
+                            <MudButton @onclick="(() => CreateSpecification(DataPanelId))">
+                                <MudText>Create Specification Item</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Specification" Color="Color.Primary"></MudIcon>
+                            </MudButton>
+                            <MudSpacer />
+                            <MudButton @onclick="(() => SpecificationSequence(DataPanelId))">
+                                <MudText>Re order Specifications</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Reorder" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+                            </MudButton>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            @if(user.UserType == 1)
+                            {
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x?.DataPanelSpecificationId)">Specification Id</MudTableSortLabel>
+                            </MudTh>
+                            }
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x?.DataSpecification)">Specification</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<DataPanelSpecification, object>(x=>x?.ItemOrder)">Sequence</MudTableSortLabel>
+                            </MudTh>
+                            @if(user.UserType == 1){
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x?.IsActive)">Is Active</MudTableSortLabel>
+                            </MudTh>
+                            }
+                            <MudTh>
+                                <MudText Align="Align.Center">Actions</MudText>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            @if (user.UserType == 1)
+                            {
+                            <MudTd DataLabel="Specification Id">
+                                <MudText Align="Align.Center">@context.DataPanelSpecificationId</MudText>
+                            </MudTd>
+                            }
+                            <MudTd DataLabel="Specification">
+                                <MudText Align="Align.Center">@context.DataSpecification</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Sequence">
+                                <MudText Align="Align.Center">@context.ItemOrder</MudText>
+                            </MudTd>
+                            @if(user.UserType == 1)
+                            {
+                            <MudTd DataLabel="Status">
+                                @if (context.IsActive == true)
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                                    </MudText>
+                                }
+                            </MudTd>
+                            }
+                            <MudTd DataLabel="Actions">
+                                <MudText Align="Align.Center">
+                                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                        <ActivatorContent>
+                                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                        </ActivatorContent>
+                                        <ChildContent>
+                                            @*<MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary">Details</MudMenuItem>*@
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSpecification(DataPanelId, context.DataPanelSpecificationId))" @ontouchstart="(() => UpdateSpecification(DataPanelId, context.DataPanelSpecificationId))">Edit Specification </MudMenuItem>
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteSpecification(DataPanelId, context.DataPanelSpecificationId))" @ontouchstart="(() => DeleteSpecification(DataPanelId, context.DataPanelSpecificationId))">Delete Specification</MudMenuItem>
+                                        </ChildContent>
+                                    </MudMenu>
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">There are no specifications created for this data panel.</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
+                        <MudButton Color="Color.Info" @onclick="(() => CreateSpecification(DataPanelId))">Create a new specification</MudButton>
+                    </MudText>
+                }
+            </MudTabPanel>
+        </MudTabs>
+    </MudItem>
+</MudGrid>

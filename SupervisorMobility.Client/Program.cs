@@ -1,5 +1,6 @@
 global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
+global using SupervisorMobility.Client.Data.Entities.IS;
 global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
@@ -42,6 +43,7 @@ global using SupervisorMobility.Client.Services.SOS_Data_Service;
 global using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
 global using System.Text.Json;
 global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
+global using SupervisorMobility.Client.Services.IS_Services.PartService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -100,6 +102,7 @@ builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadS
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
 builder.Services.AddScoped<IAppearanceService, AppearanceService>();
+builder.Services.AddScoped<IPartServices, PartServices>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();

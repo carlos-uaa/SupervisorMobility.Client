@@ -1,6 +1,8 @@
-﻿@page "/configurationIS/DataPanels"
+﻿@page "/configurationIS/Parts"
 
-@inject IDataPanelService DataPanelServices
+
+
+@inject IPartServices PartsServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource1> Localizer1
@@ -9,7 +11,7 @@
 @inject IBreadcrumbService BreadcrumbService
 
 @*Title*@
-<PageTitle>Supervisor Mobility | @Localizer["DataPanel"]</PageTitle>
+<PageTitle>Supervisor Mobility | @Localizer["Parts"]</PageTitle>
 
 
 @if (ShowLoading)
@@ -26,15 +28,15 @@
         </ItemTemplate>
     </MudCarousel>
 }
-else if (_dataPanelsCategories.Count == 0)
+else if (_Parts.Count == 0)
 {
     <MudContainer>
 
         <MudText Align="Align.Center">
-            <h4>@Localizer["thereAreNoDataPanelCreated"]</h4>
+            <h4>@Localizer["thereAreNoPartsCreated"]</h4>
             <MudSpacer></MudSpacer>
-            <MudButton @onclick="(() => CreateDataPanel())" @ontouchstart="(() => CreateDataPanel())">
-                <MudText>@Localizer["createDataPanel"]</MudText>
+            <MudButton @onclick="(() => CreateParts())" @ontouchstart="(() => CreateParts())">
+                <MudText>@Localizer["createParts"]</MudText>
                 <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
             </MudButton>
         </MudText>
@@ -42,23 +44,18 @@ else if (_dataPanelsCategories.Count == 0)
 }
 else
 {
-    <MudTable Items="_dataPanelsCategories" Hover="true" T="DataPanel" SortLabel="Sort By" Height="80vh"
+    <MudTable Items="_Parts" Hover="true" T="Part" SortLabel="Sort By" Height="80vh"
               RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
-              Filter="new Func<DataPanel,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+              Filter="new Func<Part,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
         <ToolBarContent>
             <MudGrid class="d-flex flex-column justify-center align-self-center mb-10 mt-8">
                 <MudItem Class="d-flex">
                     <MudSpacer />
                     <MudTextField @bind-Value="searchString" Placeholder="Search" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     <MudSpacer />
-                    <MudButton @onclick="(() => CreateDataPanel())" @ontouchstart="(() => CreateDataPanel())">
+                    <MudButton @onclick="(() => CreateParts())" @ontouchstart="(() => CreateParts())">
                         <MudText>@Localizer1["NewDataPanel"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
-                    </MudButton>
-                    <MudSpacer />
-                    <MudButton @onclick="(() => ReOrderDataPanel())" @ontouchstart="(() => ReOrderDataPanel())">
-                        <MudText>@Localizer1["JSReOrder"]</MudText>
-                        <MudIcon Icon="@Icons.Material.Filled.Reorder" Color="Color.Primary"></MudIcon>
                     </MudButton>
                     <MudSpacer />
                 </MudItem>
@@ -68,19 +65,19 @@ else
             @if (user.UserType == 1)
             {
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<DataPanel, object>(x=>x?.DataPanelId)">Data Panel Id</MudTableSortLabel>
+                    <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartId)">Part Id</MudTableSortLabel>
                 </MudTh>
             }
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<DataPanel, object>(x=>x?.ItemOrder)" InitialDirection="SortDirection.Ascending">Order</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartName)" InitialDirection="SortDirection.Ascending">Part Name</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<DataPanel, object>(x=>x?.DataTitle)">Title</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartNumber)">Part Number</MudTableSortLabel>
             </MudTh>
             @if (user.UserType == 1)
             {
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<DataPanel, object>(x=>x?.IsActive)">Is Active</MudTableSortLabel>
+                    <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.IsActive)">Is Active</MudTableSortLabel>
                 </MudTh>
             }
             <MudTh>
@@ -91,14 +88,14 @@ else
             @if (user.UserType == 1)
             {
                 <MudTd DataLabel="DataPanelId">
-                    <MudText Align="Align.Center">@context.DataPanelId</MudText>
+                    <MudText Align="Align.Center">@context.PartId</MudText>
                 </MudTd>
             }
             <MudTd DataLabel="Code">
-                <MudText Align="Align.Center">@context.ItemOrder</MudText>
+                <MudText Align="Align.Center">@context.PartName</MudText>
             </MudTd>
             <MudTd DataLabel="Description">
-                <MudText Align="Align.Center">@context.DataTitle</MudText>
+                <MudText Align="Align.Center">@context.PartNumber</MudText>
             </MudTd>
             @if (user.UserType == 1)
             {
@@ -124,9 +121,9 @@ else
                             <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                         </ActivatorContent>
                         <ChildContent>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => DataPanelDetails(context.DataPanelId))" @ontouchstart="(() => DataPanelDetails(context.DataPanelId))">Details</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateCategory(context.DataPanelId))" @ontouchstart="(() => UpdateCategory(context.DataPanelId))">Edit </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteDataPanel(context.DataPanelId))" @ontouchstart="(() => DeleteDataPanel(context.DataPanelId))">Delete </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => PartsDetails(context.PartId))" @ontouchstart="(() => PartsDetails(context.PartId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => PartUpdate(context.PartId))" @ontouchstart="(() => PartUpdate(context.PartId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteParts(context.PartId))" @ontouchstart="(() => DeleteParts(context.PartId))">Delete </MudMenuItem>
                         </ChildContent>
                     </MudMenu>
 
@@ -137,3 +134,4 @@ else
         </RowTemplate>
     </MudTable>
 }
+
