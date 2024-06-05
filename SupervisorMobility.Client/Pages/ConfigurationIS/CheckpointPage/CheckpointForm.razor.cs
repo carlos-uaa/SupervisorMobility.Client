@@ -5,15 +5,15 @@ using MudBlazor;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
-namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
+
+namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 {
-    public partial class PartForm
+    public partial class CheckpointForm
     {
         [Parameter]
-        public int? PartId { get; set; }
+        public int? CheckpointId { get; set; }
 
-        public Part _Part{ get; set; } = new Part();
-        private List<Product> _products = new List<Product>();
+        public Checkpoint _Checkpoint { get; set; } = new Checkpoint();
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
@@ -39,8 +39,6 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
 
         public PageType pageType { get; set; }
 
-        
-
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -57,7 +55,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             {
                 pageType = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
             }
-            
+
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -76,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
              {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                new BreadcrumbItem(text: Localizer["Parts"], href: "/configurationIS/Parts")
+                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoints")
             };
 
 
@@ -93,42 +91,41 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             {
                 try
                 {
-                    _products = await ProductsServices.GetProducts();
 
                     switch (pageType)
                     {
                         case PageType.Details:
-                            if (PartId != null)
+                            if (CheckpointId != null)
                             {
-                                _Part = await PartsServices.GetPart((int)PartId, true);
-                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Parts/{PartId}", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Part.PartName, href: $"/configurationIS/Parts/{PartId}", disabled: true));
+                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
                             }
                             break;
                         case PageType.Create:
-                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/Parts/", disabled: true));
-                            _Part.IsActive = true;
+                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/Checkpoints/", disabled: true));
+                            _Checkpoint.IsActive = true;
                             break;
 
                         case PageType.Update:
-                            if (PartId != null)
+                            if (CheckpointId != null)
                             {
-                                _Part = await PartsServices.GetPart((int)PartId, true);
-                                //_Part 
-                            _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Parts/", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Part.PartName, href: $"/configurationIS/Parts/{PartId}", disabled: true));
+                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
+                                //_Checkpoint 
+                                _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoints/", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
                             }
                             break;
                     }
 
-                    if(pageType != PageType.Create)
+                    if (pageType != PageType.Create)
                     {
-                        if (_Part.Sketches != null && _Part.Sketches.Count > 0)
+                        if (_Checkpoint.Sketches != null && _Checkpoint.Sketches.Count > 0)
                         {
-                            foreach (var evidence in _Part.Sketches)
+                            foreach (var evidence in _Checkpoint.Sketches)
                             {
-                                var imageUrl = await PartsServices.ShowImagePart(evidence.FileUploadId);
-                                partImages.Add(imageUrl);
+                                var imageUrl = await _CheckPointServices.ShowImageCheckpoint(evidence.FileUploadId);
+                                CheckpointImages.Add(imageUrl);
                             }
                         }
                     }
@@ -177,16 +174,16 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             {
                 case PageType.Create:
 
-                    var resultCreate = await PartsServices.CreatePart(_Part);
+                    var resultCreate = await _CheckPointServices.CreateCheckpoint(_Checkpoint);
 
                     if (resultCreate != null)
                     {
-                        _Part = resultCreate;
-                        _ = await UploadPartScketches();
+                        _Checkpoint = resultCreate;
+                        _ = await UploadCheckpointScketches();
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Parts");
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoints");
 
                     }
                     else
@@ -201,16 +198,16 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                     break;
 
                 case PageType.Update:
-                    Part? resultUpdate = await PartsServices.UpdatePart(_Part);
+                    Checkpoint? resultUpdate = await _CheckPointServices.UpdateCheckpoint(_Checkpoint);
 
                     if (resultUpdate != null)
                     {
-                        _ = await UploadUpdatePartScketches();
+                        _ = await UploadUpdateCheckpointScketches();
 
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Parts");
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoints");
                         //NavigationManager.NavigateTo($"/");
                     }
                     else
@@ -225,21 +222,21 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             }
         }
 
-        private async Task<AsyncVoidMethodBuilder> UploadUpdatePartScketches()
+        private async Task<AsyncVoidMethodBuilder> UploadUpdateCheckpointScketches()
         {
-            await UploadImages(tempCapturedImages, _Part.PartId, true);
+            await UploadImages(tempCapturedImages, _Checkpoint.CheckpointId, true);
 
             return new AsyncVoidMethodBuilder();
         }
 
-        private async Task<AsyncVoidMethodBuilder> UploadPartScketches()
+        private async Task<AsyncVoidMethodBuilder> UploadCheckpointScketches()
         {
-            await UploadImages(partImages, _Part.PartId, true);
+            await UploadImages(CheckpointImages, _Checkpoint.CheckpointId, true);
 
             return new AsyncVoidMethodBuilder();
         }
 
-        private async Task UploadImages(List<string> images, int part_id, bool isPrevious)
+        private async Task UploadImages(List<string> images, int Checkpoint_id, bool isPrevious)
         {
 
             if (images.Count > 0)
@@ -294,19 +291,19 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                     content.Add(fileContent, "\"file\"", "evidence.png");
 
 
-                    var result = await PartsServices.UploadSketchPart(content, part_id);
+                    var result = await _CheckPointServices.UploadSketchCheckpoint(content, Checkpoint_id);
 
                     if (result is not null)
                     {
                         Snackbar.Configuration.MaxDisplayedSnackbars = 10;
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Image Added to Part Item", Severity.Info);
+                        Snackbar.Add("Image Added to Checkpoint Item", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Failed to upload Image to Part Item", Severity.Error);
+                        Snackbar.Add("Failed to upload Image to Checkpoint Item", Severity.Error);
                     }
 
                 }
@@ -334,9 +331,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
             }
         }
 
-        void PartUpdate(int PartsId)
+        void CheckpointUpdate(int CheckpointsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/Parts/Update/{PartsId}", forceLoad: true);
+            NavigationManager.NavigateTo($"configurationIS/Checkpoints/Update/{CheckpointsId}", forceLoad: true);
         }
 
         //Show Evidence 
@@ -349,7 +346,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
         private int photoIndex = 0;
         private int selectedEvidence = 0;
 
-        private List<string> partImages = new List<string>();
+        private List<string> CheckpointImages = new List<string>();
         private readonly List<string> tempCapturedImages = new();
 
         private bool visibleCamera = false;
@@ -383,10 +380,10 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                         switch (pageType)
                         {
                             case PageType.Create:
-                                partImages.Add(mediaUri);
+                                CheckpointImages.Add(mediaUri);
                                 break;
                             case PageType.Update:
-                            tempCapturedImages.Add(mediaUri);
+                                tempCapturedImages.Add(mediaUri);
                                 break;
 
                         }
@@ -395,7 +392,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                 }
             }
         }
-     
+
 
         private void OpenEvidenceDialog(int index, int evidenceIndex)
         {
@@ -431,7 +428,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                 switch (pageType)
                 {
                     case PageType.Create:
-                        partImages.Add(imageData);
+                        CheckpointImages.Add(imageData);
                         break;
                     case PageType.Update:
                         tempCapturedImages.Add(imageData);
@@ -469,12 +466,12 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                 if (isTemporal)
                 {
                     if (removeImageIndex < tempCapturedImages.Count)
-                    tempCapturedImages.RemoveAt(removeImageIndex);
+                        tempCapturedImages.RemoveAt(removeImageIndex);
                 }
                 else
                 {
-                    if (removeImageIndex < partImages.Count)
-                        partImages.RemoveAt(removeImageIndex);
+                    if (removeImageIndex < CheckpointImages.Count)
+                        CheckpointImages.RemoveAt(removeImageIndex);
                 }
             }
             CloseDeleteModal();
