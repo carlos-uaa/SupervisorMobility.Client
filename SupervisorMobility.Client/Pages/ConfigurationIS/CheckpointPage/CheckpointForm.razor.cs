@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
              {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoints")
+                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoint")
             };
 
 
@@ -98,12 +98,12 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                             if (CheckpointId != null)
                             {
                                 _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
-                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
                             }
                             break;
                         case PageType.Create:
-                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/Checkpoints/", disabled: true));
+                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/Checkpoint/", disabled: true));
                             _Checkpoint.IsActive = true;
                             break;
 
@@ -112,8 +112,8 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                             {
                                 _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
                                 //_Checkpoint 
-                                _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoints/", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoints/{CheckpointId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoint/", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
                             }
                             break;
                     }
@@ -183,7 +183,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Checkpoints");
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoint");
 
                     }
                     else
@@ -207,7 +207,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Checkpoints");
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoint");
                         //NavigationManager.NavigateTo($"/");
                     }
                     else
@@ -333,7 +333,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 
         void CheckpointUpdate(int CheckpointsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/Checkpoints/Update/{CheckpointsId}", forceLoad: true);
+            NavigationManager.NavigateTo($"configurationIS/Checkpoint/Update/{CheckpointsId}", forceLoad: true);
         }
 
         //Show Evidence 
