@@ -102,7 +102,6 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
-builder.Services.AddScoped<IPartServices, PartServices>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();
