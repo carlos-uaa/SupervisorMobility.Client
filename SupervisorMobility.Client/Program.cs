@@ -44,6 +44,8 @@ global using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
 global using System.Text.Json;
 global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 global using SupervisorMobility.Client.Services.IS_Services.PartService;
+global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService;
+global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -54,7 +56,6 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
-using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -101,11 +102,13 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
-builder.Services.AddScoped<IAppearanceService, AppearanceService>();
 builder.Services.AddScoped<IPartServices, PartServices>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();
+builder.Services.AddScoped<IPartServices, PartServices>();
+builder.Services.AddScoped<IProblemDefectServices, ProblemDefectServices>();
+builder.Services.AddScoped<ICheckPointService, CheckpointService>();
 
 
 // Connection to API

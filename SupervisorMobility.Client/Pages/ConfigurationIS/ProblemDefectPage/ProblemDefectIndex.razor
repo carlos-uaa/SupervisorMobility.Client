@@ -1,0 +1,136 @@
+﻿@page "/configurationIS/ProblemDefect"
+
+@inject IProblemDefectServices ProblemDefectsServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["ProblemDefects"]</PageTitle>
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else if (_ProblemDefects.Count == 0)
+{
+    <MudContainer>
+
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoProblemDefectsCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton @onclick="(() => CreateProblemDefects())" @ontouchstart="(() => CreateProblemDefects())">
+                <MudText>@Localizer["createProblemDefects"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+    <MudTable Items="_ProblemDefects" Hover="true" T="ProblemDefect" SortLabel="Sort By" Height="80vh"
+              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+              Filter="new Func<ProblemDefect,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10 mt-8">
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton @onclick="(() => CreateProblemDefects())" @ontouchstart="(() => CreateProblemDefects())">
+                        <MudText>@Localizer1["NewDataPanel"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<ProblemDefect, object>(x=>x?.ProblemDefectId)">ProblemDefect Id</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ProblemDefect, object>(x=>x?.DefectDescription)" >Defect Description</MudTableSortLabel>
+            </MudTh> 
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ProblemDefect, object>(x=>x?.ItemOrder)" InitialDirection="SortDirection.Ascending">Item Order</MudTableSortLabel>
+            </MudTh>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<ProblemDefect, object>(x=>x?.IsActive)">Is Active</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="DataPanelId">
+                    <MudText Align="Align.Center">@context.ProblemDefectId</MudText>
+                </MudTd>
+            }
+         
+            <MudTd DataLabel="Description">
+                <MudText Align="Align.Center">@context.DefectDescription</MudText>
+            </MudTd>  
+            <MudTd DataLabel="Sequence">
+                <MudText Align="Align.Center">@context.ItemOrder</MudText>
+            </MudTd>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="Status">
+                    @if (context.IsActive == true)
+                    {
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
+                        </MudText>
+                    }
+                </MudTd>
+            }
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => ProblemDefectsDetails(context.ProblemDefectId))" @ontouchstart="(() => ProblemDefectsDetails(context.ProblemDefectId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => ProblemDefectUpdate(context.ProblemDefectId))" @ontouchstart="(() => ProblemDefectUpdate(context.ProblemDefectId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteProblemDefects(context.ProblemDefectId))" @ontouchstart="(() => DeleteProblemDefects(context.ProblemDefectId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+
+
+                </MudText>
+            </MudTd>
+
+        </RowTemplate>
+    </MudTable>
+}
+

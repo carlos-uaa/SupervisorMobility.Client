@@ -1,16 +1,15 @@
-﻿@page "/configurationIS/Parts/Create"
-@page "/configurationIS/Parts/Details/{PartId:int}"
-@page "/configurationIS/Parts/Update/{PartId:int}"
+﻿@page "/configurationIS/Checkpoint/Create"
+@page "/configurationIS/Checkpoint/Details/{CheckpointId:int}"
+@page "/configurationIS/Checkpoint/Update/{CheckpointId:int}"
 
-@inject IPartServices PartsServices
-@inject IProductService ProductsServices
-@inject IFileUploadAndDownloadService FilesServices
+@inject ICheckPointService _CheckPointServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
 @inject ISnackbar Snackbar
 @inject IBreadcrumbService BreadcrumbService
+
 
 
 @if (ShowLoading)
@@ -31,7 +30,7 @@ else
 {
 
     @*Form*@
-    <EditForm Model="_Part" OnValidSubmit="SubmitOperations">
+    <EditForm Model="_Checkpoint" OnValidSubmit="SubmitOperations">
         <DataAnnotationsValidator />
         <MudGrid>
             <MudItem xs="12">
@@ -41,13 +40,13 @@ else
                             @switch (pageType)
                             {
                                 case PageType.Create:
-                                    <MudText Typo="Typo.h6">@Localizer["PartCreate"]</MudText>
+                                    <MudText Typo="Typo.h6">@Localizer["CheckpointCreate"]</MudText>
                                     break;
                                 case PageType.Update:
-                                    <MudText Typo="Typo.h6">@Localizer["PartUpdate"]</MudText>
+                                    <MudText Typo="Typo.h6">@Localizer["CheckpointUpdate"]</MudText>
                                     break;
                                 case PageType.Details:
-                                    <MudText Typo="Typo.h6">@Localizer["PartDetails"]</MudText>
+                                    <MudText Typo="Typo.h6">@Localizer["CheckpointDetails"]</MudText>
                                     break;
                             }
                         </CardHeaderContent>
@@ -56,7 +55,7 @@ else
                             {
                                 case PageType.Details:
 
-                                    <MudChip Variant="Variant.Text" Color="Color.Success" OnClick="() => PartUpdate((int)PartId)" @ontouchstart="() => PartUpdate((int)PartId)">
+                                    <MudChip Variant="Variant.Text" Color="Color.Success" OnClick="() => CheckpointUpdate((int)CheckpointId)" @ontouchstart="() => CheckpointUpdate((int)CheckpointId)">
                                         @Localizer["edit"]
                                         <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
                                     </MudChip>
@@ -71,20 +70,13 @@ else
                         </CardHeaderActions>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudTextField Label="@Localizer1["PartName"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_Part.PartName" For="@(() => _Part.PartName)" />
-                        <MudTextField Label="@Localizer1["PartNmber"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_Part.PartNumber" For="@(() => _Part.PartNumber)" />
+                        <MudTextField Label="@Localizer1["CheckpointTitle"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_Checkpoint.CheckpointTitle" For="@(() => _Checkpoint.CheckpointTitle)" />
+                        <MudTextField Label="@Localizer1["CheckpointDescription"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_Checkpoint.CheckpointDescription" For="@(() => _Checkpoint.CheckpointDescription)" />
 
-                        <MudSelect T="int" Label=@Localizer["product"] ReadOnly="@(pageType == PageType.Details)" Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@_Part.ModelId">
-                            <MudSelectItem Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                            @foreach (var type in _products)
-                            {
-                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
-                            }
-                        </MudSelect>
-
+            
                         @if (user.UserType == 1)
                         {
-                            <MudSwitch Class="mt-3" Label="Is active?" ReadOnly="@(pageType == PageType.Details)" @bind-Checked="_Part.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                            <MudSwitch Class="mt-3" Label="Is active?" ReadOnly="@(pageType == PageType.Details)" @bind-Checked="_Checkpoint.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
                         }
 
                         <MudItem>
@@ -103,7 +95,7 @@ else
                                                for="previousEvidence">
                                         Load picture
                                     </MudButton>
-                                    @if (partImages.Count == 0)
+                                    @if (CheckpointImages.Count == 0)
                                     {
                                         <MudItem>
                                             <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
@@ -111,7 +103,7 @@ else
                                             </MudButton>
                                         </MudItem>
                                     }
-                                    else if (partImages.Count > 0)
+                                    else if (CheckpointImages.Count > 0)
                                     {
                                         <MudItem>
                                             <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
@@ -122,12 +114,12 @@ else
 
 
                             <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-                                @if (partImages.Count > 0 || tempCapturedImages.Count > 0)
+                                @if (CheckpointImages.Count > 0 || tempCapturedImages.Count > 0)
                                 {
                                     <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
                                         <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
 
-                                            @foreach (var (image, index) in partImages.Select((image, index) => (image, index)))
+                                            @foreach (var (image, index) in CheckpointImages.Select((image, index) => (image, index)))
                                             {
                                                 <MudItem Class=" mr-8 mb-4">
                                                     <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
@@ -165,7 +157,7 @@ else
                         {
                             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])</MudButton>
                         }
-                        <MudButton Href="/configurationIS/Parts" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+                        <MudButton Href="/configurationIS/Checkpoints" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -226,7 +218,7 @@ else
                 </TabContent>
                 <ChildContent>
                     <MudPaper Elevation="0">
-                        @if (partImages.Count() > 0)
+                        @if (CheckpointImages.Count() > 0)
                         {
                             <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
                                 <PreviousButtonTemplate>
@@ -240,7 +232,7 @@ else
                                     </MudAvatar>
                                 </NextButtonTemplate>
                                 <ChildContent>
-                                    @foreach (var evidence in partImages)
+                                    @foreach (var evidence in CheckpointImages)
                                     {
                                         <MudCarouselItem Transition="Transition.Fade">
                                             <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
