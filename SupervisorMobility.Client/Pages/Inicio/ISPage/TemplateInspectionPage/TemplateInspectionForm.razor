@@ -1,0 +1,85 @@
+﻿@page "/TemplateInspection/Create/{PartID:int?}"
+@using SupervisorMobility.Client.Pages.Inicio.ISPage.TemplateInspectionPage.FormComponents
+@inject NavigationManager NavManager
+@inject IPartServices PartService
+
+@if (dataloaded)
+{
+    <MudPaper Style="text-align:center; align-items:center;"><PartInfo part="@part"/></MudPaper>
+    <br />
+    <MudPaper Style="text-align:center; align-items:center;">
+        <ConfirmationPoints logbookTemplate="@logbookTemplate" checkPoints="@currentCheckPoints" />
+        <Signatures/>
+    </MudPaper>
+    <br />
+}
+
+@code {
+    [Parameter]
+    public int? TemplateID { get; set; }
+    [Parameter]
+    public int? PartID { get; set; }
+
+    public int Action { get; set; }
+    public bool dataloaded;
+
+    public Part part { get; set; }
+    public Template template { get; set; }
+    public LogbookTemplate logbookTemplate { get; set; }
+
+    public List<Checkpoint> checkPoints { get; set; }
+    public List<Checkpoint> currentCheckPoints { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var currentUrl = NavManager.Uri;
+        Action = getAction(currentUrl);
+
+        if(PartID != null)
+        {
+            part = await PartService.GetPart(PartID.Value,true,true);
+        }
+
+        if (Action > 1)
+        {
+            //Get data process
+        }
+        else if (Action == 1)
+        {
+            currentCheckPoints.Add(new Checkpoint
+                {
+                    CheckpointDescription = "test",
+                    CheckpointTitle = "test",
+                    Standars = new List<CheckpointNorm> { new CheckpointNorm { Standard = "Testestandar", CheckpointNormId = 1 }, new CheckpointNorm { Standard = "Test2", CheckpointNormId = 2, Sketches = new List<FileUpload> { new FileUpload { FileUploadId = 0 } } } },
+
+                });
+            currentCheckPoints.Add(new Checkpoint { CheckpointDescription = "single No title", Standars = new List<CheckpointNorm> { new CheckpointNorm { Standard = "Testestandar", CheckpointNormId = 3 } } });
+
+            logbookTemplate = new LogbookTemplate();
+            logbookTemplate.CheckpointsResults = new List<CheckpointAnswerColumn>();
+
+            for(int i=0; i < 7; i++)
+            {
+                var temp = new List<CheckpointNormAnswer>();
+                foreach(var item in currentCheckPoints)
+                {
+                    foreach (var jtem in item.Standars)
+                    {
+                        temp.Add(new CheckpointNormAnswer { 
+                            CheckpointNorm = jtem,
+                            CheckpointNormId = jtem.CheckpointNormId
+                        });
+                    }
+                }
+                logbookTemplate.CheckpointsResults.Add(new CheckpointAnswerColumn { Date=new DateTime(), RAN = string.Empty, CheckpointsResults = temp, InspectorObservations = new Commentary() });
+            }
+        }
+
+        dataloaded = true;
+    }
+
+    private int getAction(string? currentUrl)
+    {
+        return currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 2 : currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 1 : -1;
+    }
+}
