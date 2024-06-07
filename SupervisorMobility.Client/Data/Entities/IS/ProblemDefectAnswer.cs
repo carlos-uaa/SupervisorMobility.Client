@@ -13,7 +13,7 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         public string Result { get; set; } = string.Empty;
 
         public int? LogbookId { get; set; }
-        public LogbookAparence? Logbook { get; set; }
+        public LogbookAppearance? Logbook { get; set; }
 
         public int? ProblemId { get; set; }
         public ProblemDefect? Problem { get; set; }

@@ -1,9 +1,9 @@
 ﻿
 namespace SupervisorMobility.Client.Data.Entities.IS
 {
-    public class Apearance
+    public class Appearance
     {
-        public int ApearanceId { get; set; }
+        public int AppearanceId { get; set; }
         public bool? IsActive { get; set; }
         
         public int? PartId { get; set; }
@@ -30,8 +30,8 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         public ICollection<ProblemDefect>? ProblemDefectItems { get; set; }
          = new List<ProblemDefect>();
 
-        public ICollection<LogbookAparence>? LogbooksAparence { get; set; }
-         = new List<LogbookAparence>();
+        public ICollection<LogbookAppearance>? LogbooksAppearance { get; set; }
+         = new List<LogbookAppearance>();
 
     }
 }
