@@ -8,8 +8,8 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
         
         #region Checkpoint
         Task<Checkpoint> CreateCheckpoint(Checkpoint CheckpointtoCreate);
-        Task<Checkpoint> GetCheckpoint(int id_Checkpoint, bool includeStandars = false, bool includeSketches = false);
-        Task<List<Checkpoint>> GetAllCheckpoints(bool includeStandars = false, bool includeSketches = false);
+        Task<Checkpoint> GetCheckpoint(int id_Checkpoint, bool includeStandars = false, bool includeSketches = false, bool includeSketchesStandars = false);
+        Task<List<Checkpoint>> GetAllCheckpoints(bool includeStandars = false, bool includeSketches = false, bool includeSketchesStandars = false);
 
         Task<Checkpoint?> UpdateCheckpoint(Checkpoint CheckpointtoUpdate);
         Task<Checkpoint> DeleteCheckpoint(int id);

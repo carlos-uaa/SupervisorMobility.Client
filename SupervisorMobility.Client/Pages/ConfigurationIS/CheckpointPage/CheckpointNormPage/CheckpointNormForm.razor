@@ -1,5 +1,214 @@
-﻿<h3>CheckpointForm</h3>
+﻿@page "/configurationIS/Checkpoint/Details/{CheckpointId:int}/CreateStandars"
+@page "/configurationIS/Checkpoint/Details/{CheckpointId:int}/UpdateStandars/{Norm_Id:int}"
+@page "/configurationIS/Checkpoint/Details/{CheckpointId:int}/DetailsStandars/{Norm_Id:int}"
+
+@inject ICheckPointService _CheckPointServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
 
 @code {
+    [Parameter]
+    public int CheckpointId { get; set; } 
+    [Parameter]
+    public int? Norm_Id { get; set; }
+
+    public CheckpointNorm _CheckpointNorm { get; set; } = new CheckpointNorm();
+    public Checkpoint _Checkpoint { get; set; } = new Checkpoint();
+
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+
+    //PageType
+    public enum PageType
+    {
+        Details,
+        Create,
+        Update,
+        Another
+    }
+    public PageType pageType { get; set; }
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+        var currentUrl = NavigationManager.Uri;
+
+        pageType = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? PageType.Details : PageType.Another;
+
+        if (pageType == PageType.Another)
+        {
+            pageType = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Another;
+        }
+
+        if (pageType == PageType.Another)
+        {
+            pageType = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
+        }
+
+
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+
+        _links = new List<BreadcrumbItem>
+             {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
+                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoint" )
+            };
+
+
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+        else
+        {
+            try
+            {
+
+                switch (pageType)
+                {
+                    case PageType.Details:
+                        if (CheckpointId != null)
+                        {
+                            _CheckpointNorm = await _CheckPointServices.GetCheckpointNorm((int)Norm_Id, true);
+                            _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));  
+                            _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                            _links.Add(new BreadcrumbItem(text: Localizer["DetailsStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));  
+                            _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars", disabled: true ));
+                        }
+                        break;
+                    case PageType.Create:
+                        _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId);
+                        _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
+                        _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                        _links.Add(new BreadcrumbItem(text: Localizer["CreateStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: false));
+                        _CheckpointNorm.IsActive = true;
+                        break;
+
+                    case PageType.Update:
+                        if (CheckpointId != null)
+                        {
+                            _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, false);
+                            //_Checkpoint
+                            _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                            _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoint/", disabled: true));
+                        }
+                        break;
+                }
+
+                // if (pageType != PageType.Create)
+                // {
+                //     if (_Checkpoint.Sketches != null && _Checkpoint.Sketches.Count > 0)
+                //     {
+                //         foreach (var Sketch in _Checkpoint.Sketches)
+                //         {
+                //             var imageUrl = await _CheckPointServices.ShowImageCheckpoint(Sketch.FileUploadId);
+                //             ImgDto tmpimgDto = new();
+                //             tmpimgDto.src = imageUrl;
+                //             tmpimgDto.imgId = Sketch.FileUploadId;
+
+                //             CheckpointImages.Add(tmpimgDto);
+                //         }
+                //     }
+
+                //     if (_Checkpoint.Standars != null && _Checkpoint.Standars.Count > 0)
+                //     {
+                //         foreach (var standar in _Checkpoint.Standars)
+                //         {
+
+                //             List<ImgDto> Stdimg = new List<ImgDto>();
+
+                //             if (standar.Sketches != null && standar.Sketches.Count > 0)
+                //             {
+                //                 foreach (var standarSketch in standar.Sketches)
+                //                 {
+
+                //                     var imageUrl = await _CheckPointServices.ShowImageCheckpointNorm(standarSketch.FileUploadId);
+                //                     ImgDto tmpimgDto = new();
+                //                     tmpimgDto.src = imageUrl;
+                //                     tmpimgDto.imgId = standarSketch.FileUploadId;
+
+                //                     Stdimg.Add(tmpimgDto);
+                //                 }
+                //             }
+
+                //             StandarImages.Add(standar.CheckpointNormId, Stdimg);
+
+                //             List<string> tmpImg = new List<string>();
+
+                //             tempStandarImages.Add(standar.CheckpointNormId, tmpImg);
+
+                //         }
+                //     }
+                // }
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                BreadcrumbService.UpdateBreadcrumbs(_links);
+                ShowLoading = false;
+                base.StateHasChanged();
+            }
+        }
+
+
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 }

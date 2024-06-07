@@ -37,9 +37,9 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 
        
 
-        public async Task<List<Checkpoint>> GetAllCheckpoints(bool includeStandars = false, bool includeSketches = false)
+        public async Task<List<Checkpoint>> GetAllCheckpoints(bool includeStandars = false, bool includeSketches = false, bool includeSketchesStandars = false)
         {
-            var response = await _http.GetAsync($"IS/Template/Checkpoints?includeStandars={includeStandars}&includeSketches={includeSketches}");
+            var response = await _http.GetAsync($"IS/Template/Checkpoints?includeStandars={includeStandars}&includeSketches={includeSketches}&includeSketchesStandars={includeSketchesStandars}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -52,9 +52,9 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
             return Checkpoints;
         }
 
-        public async Task<Checkpoint> GetCheckpoint(int id_Checkpoint, bool includeStandars = false, bool includeSketches = false)
+        public async Task<Checkpoint> GetCheckpoint(int id_Checkpoint, bool includeStandars = false, bool includeSketches = false, bool includeSketchesStandars = false)
         {
-            var response = await _http.GetAsync($"IS/Template/Checkpoints/{id_Checkpoint}?includeStandars={includeStandars}&includeSketches={includeSketches}");
+            var response = await _http.GetAsync($"IS/Template/Checkpoints/{id_Checkpoint}?includeStandars={includeStandars}&includeSketches={includeSketches}&includeSketchesStandars={includeSketchesStandars}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
