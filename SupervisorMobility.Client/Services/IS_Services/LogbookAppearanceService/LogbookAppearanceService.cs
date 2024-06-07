@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.LogbookAppearanceServic
         }
         public async Task<LogbookAppearance?> GetLogbookAppearance(int logbookLogbookAppearance_id, bool includePanelResults = false, bool includeProblemDefectResults = false)
         {
-            var response = await _http.GetAsync($"IS/Appearance/Logbook/{logbookLogbookAppearance_id}?includePanelResults={includePanelResults}?includeProblemDefectResults={includeProblemDefectResults}");
+            var response = await _http.GetAsync($"IS/Appearance/Logbook/{logbookLogbookAppearance_id}?includePanelResults={includePanelResults}&includeProblemDefectResults={includeProblemDefectResults}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -51,7 +51,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.LogbookAppearanceServic
 
         public async Task<List<LogbookAppearance>> GetAllLogbookAppearances(bool includePanelResults = false, bool includeProblemDefectResults = false)
         {
-            var response = await _http.GetAsync($"IS/Appearance/Logbook?includePanelResults={includePanelResults}?includeProblemDefectResults={includeProblemDefectResults}");
+            var response = await _http.GetAsync($"IS/Appearance/Logbook?includePanelResults={includePanelResults}&includeProblemDefectResults={includeProblemDefectResults}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

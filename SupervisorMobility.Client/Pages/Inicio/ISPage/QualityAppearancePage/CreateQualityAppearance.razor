@@ -12,6 +12,7 @@
 @inject IAppearanceService AppearanceServices
 @inject ILogbookAppearanceService LogbookAppearanceServices
 @inject SignatureImageService _signatureImageService
+@inject IPartServices PartsServices
 
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
 <EditForm Model="_appearance" OnValidSubmit="CreateNewAppearance">
@@ -54,8 +55,13 @@
                             <tbody>
                                 <tr>
                                     <td width="33%">
-                                   
-                                        <MudTextField @bind-Value="partName" Label="Nombre de la parte" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
+                                        <MudSelect T="int" Label=@Localizer["part"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="partId">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPart"]</MudSelectItem>
+                                            @foreach (var type in _Parts)
+                                            {
+                                                <MudSelectItem Value="type.PartId">@($"{type.PartName}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
                                     </td>
                                     <td>
                                         @if (_seniorSupervisors.Count > 0)
@@ -95,7 +101,10 @@
                                 </tr>
                                 <tr>
                                     <td width="33%">
-                                        <MudTextField @bind-Value="partNumber" Label="Número de parte" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                         @if(partId != 0){
+                                            partNumber = _Parts.Where(p => p.PartId == partId).FirstOrDefault().PartNumber ?? "";
+                                        }
+                                        <MudTextField @bind-Value="partNumber" Label="Numero de la parte" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly ></MudTextField>
                                     </td>
                                     <td>
                                         @if(ssvId != 0)
@@ -148,13 +157,10 @@
                                 </tr>
                                 <tr>
                                     <td width="33%">
-                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="productId">
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                                            @foreach (var type in _products)
-                                            {
-                                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
+                                        @if(partId != 0){
+                                            partModel = _Parts.Where(p => p.PartId == partId).FirstOrDefault().Model?.Code ?? "";
+                                        }
+                                        <MudTextField @bind-Value="partModel" Label="@Localizer["product"]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly></MudTextField>
                                     </td>
                                     <td>
                                         @if(supervisorId != 0)

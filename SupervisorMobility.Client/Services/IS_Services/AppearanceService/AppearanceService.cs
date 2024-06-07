@@ -36,7 +36,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.AppearanceService
         }
         public async Task<Appearance?> GetAppearance(int appearance_id, bool includeDataPanelItems = false, bool includeProblemDefectItems = false, bool includeLogBookAppearance = false)
         {
-            var response = await _http.GetAsync($"IS/Appearance/{appearance_id}?includeDataPanelItems={includeDataPanelItems}?includeProblemDefectItems={includeProblemDefectItems}?includeLogBookAppearance={includeLogBookAppearance}");
+            var response = await _http.GetAsync($"IS/Appearance/{appearance_id}?includeDataPanelItems={includeDataPanelItems}&includeProblemDefectItems={includeProblemDefectItems}&includeLogBookAppearance={includeLogBookAppearance}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -52,7 +52,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.AppearanceService
 
         public async Task<List<Appearance>> GetAllAppearances(bool includeDataPanelItems = false, bool includeProblemDefectItems = false, bool includeLogBookAppearance = false)
         {
-            var response = await _http.GetAsync($"IS/Appearance?includeDataPanelItems={includeDataPanelItems}?includeProblemDefectItems={includeProblemDefectItems}?includeLogBookAppearance={includeLogBookAppearance}");
+            var response = await _http.GetAsync($"IS/Appearance?includeDataPanelItems={includeDataPanelItems}&includeProblemDefectItems={includeProblemDefectItems}&includeLogBookAppearance={includeLogBookAppearance}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
