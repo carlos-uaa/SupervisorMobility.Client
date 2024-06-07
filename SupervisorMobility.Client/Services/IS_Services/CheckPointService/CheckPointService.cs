@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.IS;
 using System.Net.Http.Json;
 
@@ -199,7 +200,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 
         public async Task<string> ShowImageCheckpoint(int idfile)
         {
-            var response = await _http.GetAsync($"IS/Template/Checkpoints/Skecth/{idfile}");
+            var response = await _http.GetAsync($"IS/Template/Checkpoints/Sketch/{idfile}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -239,7 +240,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 
         public async Task<string> ShowImageCheckpointNorm(int idfile)
         {
-            var response = await _http.GetAsync($"IS/Template/Checkpoints/Norms/Skecth/{idfile}");
+            var response = await _http.GetAsync($"IS/Template/Checkpoints/Norms/Sketch/{idfile}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -256,7 +257,29 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
         }
 
 
+        public async Task<bool> RemoveSketchCheckPoint(int CheckpointId, int fileUploadId)
+        {
+            var response = await _http.GetAsync($"IS/Template/Checkpoints/{CheckpointId}/Sketch/{fileUploadId}/remove");
 
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<bool> RemoveSketchCheckPointNorm(int Checkpoint_NormId, int fileUploadId)
+        {
+            var response = await _http.GetAsync($"IS/Template/Checkpoints/Norms/{Checkpoint_NormId}/Sketch/{fileUploadId}/remove");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+
+            return false;
+        }
 
 
     }

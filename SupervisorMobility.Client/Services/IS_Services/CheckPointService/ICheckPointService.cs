@@ -1,4 +1,5 @@
 ﻿using SupervisorMobility.Client.Data.Entities.IS;
+using SupervisorMobility.Client.Pages.Inicio.TemplateInspectionPage.FormComponents;
 
 namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 {
@@ -28,5 +29,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
         Task<FileUpload> UploadSketchCheckpointNorm(MultipartFormDataContent? contentfiles, int CheckpointNorm_id);
         Task<string> ShowImageCheckpoint(int idfile);
         Task<string> ShowImageCheckpointNorm(int idfile);
+        Task<bool> RemoveSketchCheckPoint(int CheckpointId, int fileUploadId);
+        Task<bool> RemoveSketchCheckPointNorm(int Checkpoint_NormId, int fileUploadId);
     }
 }

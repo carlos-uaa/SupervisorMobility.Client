@@ -1,9 +1,13 @@
 using BlazorCameraStreamer;
+using DocumentFormat.OpenXml.Office2010.PowerPoint;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.IS;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 
 
 namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
@@ -14,7 +18,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         public int? CheckpointId { get; set; }
 
         public Checkpoint _Checkpoint { get; set; } = new Checkpoint();
-
+        
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
@@ -29,6 +33,21 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         public User user = new();
         public bool logged = false;
 
+        //imgs
+        private List<ImgDto> CheckpointImages = new List<ImgDto>();
+        private readonly List<string> tempCapturedImages = new();
+        class ImgDto
+        {
+            public string src { get; set; }
+            public int imgId { get; set; }
+        }
+        //standars img dictinary
+        private Dictionary<int, List<ImgDto>> StandarImages = new Dictionary<int, List<ImgDto>>();
+        private Dictionary<int, List<string>> tempStandarImages = new Dictionary<int, List<string>>();
+
+        bool seeImgManager { get; set; } = false;
+
+        //PageType
         public enum PageType
         {
             Details,
@@ -36,9 +55,49 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             Update,
             Another
         }
-
         public PageType pageType { get; set; }
+        //Flags
+        private bool AddNormStandar = false;
 
+        //Spectable
+        private string searchStringNormStandar = "";
+        private CheckpointNorm selectedItem1 = null;
+        private CheckpointNorm elementBeforeEdit;
+        private HashSet<CheckpointNorm> selectedItems1 = new HashSet<CheckpointNorm>();
+        private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.Start;
+        private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.Start;
+        private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+
+        private IEnumerable<CheckpointNorm> Elements = new List<CheckpointNorm>();
+        //Show Sketch 
+        private DialogOptions dialogSketchOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+        private readonly DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+        private bool visibleSketch = false;
+
+        private int photoIndex = 0;
+        private int selectedSketch = 0;
+
+        private bool visibleCamera = false;
+        private int imageIndex = 0;
+
+        private CameraStreamer CameraStreamerReference;
+
+        private string? cameraId = null;
+
+        private int frameCount;
+
+        private string imageData;
+
+        private bool visibleDelete = false;
+        public int removeImageIndex = 0;
+        public int removeImageId = 0;
+        public bool isPrevious = false;
+        public bool isTemporal = false;
+
+        private int selectedRowNumber = -1;
+        private MudTable<CheckpointNorm> SelectTableEvent;
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -97,9 +156,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         case PageType.Details:
                             if (CheckpointId != null)
                             {
-                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
+                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true, true);
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
                                 _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
                             }
                             break;
                         case PageType.Create:
@@ -110,10 +169,10 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         case PageType.Update:
                             if (CheckpointId != null)
                             {
-                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true);
+                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true, true);
                                 //_Checkpoint 
+                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
                                 _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoint/", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: true));
                             }
                             break;
                     }
@@ -122,10 +181,44 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                     {
                         if (_Checkpoint.Sketches != null && _Checkpoint.Sketches.Count > 0)
                         {
-                            foreach (var evidence in _Checkpoint.Sketches)
+                            foreach (var Sketch in _Checkpoint.Sketches)
                             {
-                                var imageUrl = await _CheckPointServices.ShowImageCheckpoint(evidence.FileUploadId);
-                                CheckpointImages.Add(imageUrl);
+                                var imageUrl = await _CheckPointServices.ShowImageCheckpoint(Sketch.FileUploadId);
+                                ImgDto tmpimgDto = new();
+                                tmpimgDto.src = imageUrl;
+                                tmpimgDto.imgId = Sketch.FileUploadId; 
+
+                                CheckpointImages.Add(tmpimgDto);
+                            }
+                        }
+
+                        if (_Checkpoint.Standars != null && _Checkpoint.Standars.Count > 0)
+                        {
+                            foreach (var standar in _Checkpoint.Standars)
+                            {
+
+                                List<ImgDto> Stdimg = new List<ImgDto>();
+
+                                if (standar.Sketches != null && standar.Sketches.Count > 0)
+                                {
+                                    foreach (var standarSketch in standar.Sketches)
+                                    {
+
+                                        var imageUrl = await _CheckPointServices.ShowImageCheckpointNorm(standarSketch.FileUploadId);
+                                        ImgDto tmpimgDto = new();
+                                        tmpimgDto.src = imageUrl;
+                                        tmpimgDto.imgId = standarSketch.FileUploadId;
+
+                                        Stdimg.Add(tmpimgDto);
+                                    }
+                                }
+
+                                StandarImages.Add(standar.CheckpointNormId, Stdimg);
+
+                                List<string> tmpImg = new List<string>();
+
+                                tempStandarImages.Add( standar.CheckpointNormId, tmpImg );
+
                             }
                         }
                     }
@@ -142,7 +235,6 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                     base.StateHasChanged();
                 }
             }
-
 
 
         }
@@ -231,7 +323,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 
         private async Task<AsyncVoidMethodBuilder> UploadCheckpointScketches()
         {
-            await UploadImages(CheckpointImages, _Checkpoint.CheckpointId, true);
+            await UploadImages(CheckpointImages.Select(img => img.src).ToList(), _Checkpoint.CheckpointId, true);
 
             return new AsyncVoidMethodBuilder();
         }
@@ -288,7 +380,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                     var fileContent = new StreamContent(imageStream);
                     fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
 
-                    content.Add(fileContent, "\"file\"", "evidence.png");
+                    content.Add(fileContent, "\"file\"", "Sketch.png");
 
 
                     var result = await _CheckPointServices.UploadSketchCheckpoint(content, Checkpoint_id);
@@ -336,35 +428,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             NavigationManager.NavigateTo($"configurationIS/Checkpoint/Update/{CheckpointsId}", forceLoad: true);
         }
 
-        //Show Evidence 
-        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
-        private readonly DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
-
-        private bool visibleEvidence = false;
-
-        private int photoIndex = 0;
-        private int selectedEvidence = 0;
-
-        private List<string> CheckpointImages = new List<string>();
-        private readonly List<string> tempCapturedImages = new();
-
-        private bool visibleCamera = false;
-        private int imageIndex = 0;
-
-        private CameraStreamer CameraStreamerReference;
-
-        private string? cameraId = null;
-
-        private int frameCount;
-
-        private string imageData;
-
-        private bool visibleDelete = false;
-        public int removeImageIndex = 0;
-        public bool isPrevious = false;
-        public bool isTemporal = false;
-
+        
         private async Task UploadFiles(InputFileChangeEventArgs e, int type)
         {
             foreach (var file in e.GetMultipleFiles())
@@ -380,7 +444,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         switch (pageType)
                         {
                             case PageType.Create:
-                                CheckpointImages.Add(mediaUri);
+                                ImgDto _tmpimg = new ImgDto();
+                                _tmpimg.src = mediaUri;
+                                CheckpointImages.Add(_tmpimg);
                                 break;
                             case PageType.Update:
                                 tempCapturedImages.Add(mediaUri);
@@ -394,11 +460,11 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         }
 
 
-        private void OpenEvidenceDialog(int index, int evidenceIndex)
+        private void OpenSketchDialog(int index, int SketchIndex)
         {
             photoIndex = index;
-            selectedEvidence = evidenceIndex;
-            visibleEvidence = true;
+            selectedSketch = SketchIndex;
+            visibleSketch = true;
 
         }
 
@@ -428,7 +494,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                 switch (pageType)
                 {
                     case PageType.Create:
-                        CheckpointImages.Add(imageData);
+                        ImgDto _tmpimg = new ImgDto();
+                        _tmpimg.src = imageData;
+                        CheckpointImages.Add(_tmpimg);
                         break;
                     case PageType.Update:
                         tempCapturedImages.Add(imageData);
@@ -451,11 +519,12 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             ++frameCount;
         }
 
-        private void OpenDeleteDialog(int index, bool isPrev, bool isTemp)
+        private void OpenDeleteDialog(int index, bool isPrev, bool isTemp, int id = 0)
         {
             removeImageIndex = index;
             isPrevious = isPrev;
             isTemporal = isTemp;
+            removeImageId = id;
             visibleDelete = true;
         }
         private void RemoveImage()
@@ -466,16 +535,202 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                 if (isTemporal)
                 {
                     if (removeImageIndex < tempCapturedImages.Count)
+                    {
                         tempCapturedImages.RemoveAt(removeImageIndex);
+                    }
                 }
                 else
                 {
                     if (removeImageIndex < CheckpointImages.Count)
+                    {
+                        if(removeImageId != 0)
+                            RemoveSketch(removeImageId);
+
                         CheckpointImages.RemoveAt(removeImageIndex);
+                        //llamar funcion para eliminar imagen
+                        visibleDelete = false;
+
+                    }
                 }
             }
             CloseDeleteModal();
+
         }
         void CloseDeleteModal() => visibleDelete = false;
-    }
+
+        private async Task RemoveSketch(int fileUploadId)
+        {
+            var response = await _CheckPointServices.RemoveSketchCheckPoint((int)CheckpointId, fileUploadId);
+            if (response)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Sketch removed", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Failed to remove Sketch", Severity.Error);
+            }
+        }
+
+
+        // Create Standars
+        void CreateStandars(int chekpointId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/CreateStandars");
+        }
+        //re order Standars
+        void StandarsSequence(int chekpointId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/sequence");
+        }
+        // Delete question
+        async Task DeleteStandars(int chekpointId, int chPointNorm_Id)
+        {
+            bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Standar/Norm?");
+
+            if (confirm)
+            {
+                _Checkpoint.Standars.ToList().RemoveAll(st => st.CheckpointNormId == chPointNorm_Id);
+                await _CheckPointServices.DeleteCheckpointNorm(chPointNorm_Id);
+            }
+        }
+
+        // Update question
+        void UpdateStandars(int chekpointId, int StandarsId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/UpdateStandars/{StandarsId}");
+        }
+
+        private string searchString = "";
+
+        private bool FilterFunc(CheckpointNorm element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            //if (element.DataStandars.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if (element.ItemOrder.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if (element.DataPanelStandarsId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            //    return true;
+            //if ($"{element.DataPanelStandarsId}".Contains(searchString))
+            //    return true;
+
+
+            //if (element.DataStandars.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+            //    return true;
+
+            //var searchWords = searchString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            //// Verificar si todas las palabras en searchWords están contenidas en Data Standars
+            //if (searchWords.All(word => element.DataStandars.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
+            //    return true;
+
+            return false;
+        }
+
+       
+
+        private void RowClickEvent(TableRowClickEventArgs<CheckpointNorm> tableRowClickEventArgs)
+        {
+        }
+
+        private string SelectedRowClassFunc(CheckpointNorm element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                selectedRowNumber = -1;
+                UpdateStandars((int)CheckpointId, element.CheckpointNormId);
+                return string.Empty;
+            }
+            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+      
+
+        private void AddOneMoreNormStandar()
+        {
+            AddNormStandar = true;
+            if (_Checkpoint.Standars == null)
+            {
+                _Checkpoint.Standars = new List<CheckpointNorm>();
+            }
+
+
+            Random random = new Random();
+            int positiveRandomNumber = random.Next(1, int.MaxValue); // Genera un número aleatorio positivo
+            int negativeRandomNumber = -positiveRandomNumber;
+
+            CheckpointNorm NewItemSpec = new CheckpointNorm();
+          
+            StandarImages.Add(negativeRandomNumber, new List<ImgDto>()); 
+            tempStandarImages.Add(negativeRandomNumber, new List<string>()); 
+
+            NewItemSpec.CheckpointNormId = negativeRandomNumber; 
+            NewItemSpec.Standard = "New Item, pls change this";
+            NewItemSpec.IsActive = true;
+
+            _Checkpoint.Standars?.Add(NewItemSpec);
+
+
+            AddNormStandar = false;
+        }
+
+        private bool FilterFuncNormStandar(CheckpointNorm element)
+        {
+
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+
+
+            return false;
+        }
+
+        private void BackupItem(object element)
+        {
+            elementBeforeEdit = new()
+            {
+                CheckpointNormId = ((CheckpointNorm)element).CheckpointNormId,
+                Standard = ((CheckpointNorm)element).Standard,
+                ItemOrder = ((CheckpointNorm)element).ItemOrder,
+                IsActive = ((CheckpointNorm)element).IsActive
+            };
+
+        }
+
+        private void ResetItemToOriginalValues(object element)
+        {
+            ((CheckpointNorm)element).CheckpointNormId = elementBeforeEdit.CheckpointNormId;
+            ((CheckpointNorm)element).Standard = elementBeforeEdit.Standard;
+            ((CheckpointNorm)element).ItemOrder = elementBeforeEdit.ItemOrder;
+            ((CheckpointNorm)element).IsActive = elementBeforeEdit.IsActive;
+        }
+
+        private void ItemHasBeenCommitted(object element)
+        {
+            Console.WriteLine("Comitt item");
+        }
+
+        int ckStd_id { get; set; } = 0;
+        void OpenImagesEditor(int Check_iD)
+        {
+            ckStd_id = Check_iD;
+            seeImgManager = true; 
+        }
+
+        void CloseImagesEditor() => seeImgManager = false;
+
+    } // partial class end
+
 }

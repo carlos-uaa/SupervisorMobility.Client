@@ -115,8 +115,8 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.PartsPage
                             {
                                 _Part = await PartsServices.GetPart((int)PartId, true);
                                 //_Part 
+                                _links.Add(new BreadcrumbItem(text: _Part.PartName, href: $"/configurationIS/Parts/{PartId}"));
                             _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Parts/", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _Part.PartName, href: $"/configurationIS/Parts/{PartId}", disabled: true));
                             }
                             break;
                     }
