@@ -1,0 +1,113 @@
+﻿@implements IDisposable
+@inject IJSRuntime JS
+@inject IStringLocalizer<Resource> Localizer
+@inject SignatureImageService _signatureImageService
+
+<div class="container drawing-container pa-8">
+    <div class="row justify-content-center">
+        <div class="col-md-12 text-center position-relative mt-4">
+            @*<h3>@Localizer["operatorsSignature"]</h3>*@
+            <h3>@title</h3>
+            @if (!string.IsNullOrEmpty(Image))
+            {
+                <MudImage ObjectFit="ObjectFit.Cover" Height="200" Width="500" Src="@Image" Elevation="25" Class="rounded-lg" />
+            }
+            else
+            {
+                <canvas id="SignatureRef" class="canvas-container" height="200" width="500" @ref="canvasRef" @onmouseup="EndDrawing" @ontouchend="EndDrawing"
+                @onmouseout="EndDrawing" @ontouchleave="EndDrawing"/>
+            }
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-12 text-center">
+            @if (signatureSaved)
+            {
+                <MudChip Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@Localizer["Signature saved"]</MudChip>
+            }
+            else
+            {
+                <MudChip Disabled="@(!hasDrawing)" OnClick="GenerateSignature" Color="Color.Info" Icon="@Icons.Material.Filled.SaveAs">Save Signature</MudChip>
+            }
+            <MudButton OnClick="ClearCanvas">Clear</MudButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnSignatureSaved { get; set; }
+
+    [Parameter] public EventCallback ClearSignature { get; set; }
+
+    [Parameter] public string title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Image { get; set; } = null;
+
+    private ElementReference canvasRef;
+
+    private bool hasDrawing = false;
+    private bool signatureSaved = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine(canvasRef.Id);
+            await JS.InvokeVoidAsync("window.SignatureCanvasOperations.initializeCanvas", "SignatureRef");
+        }
+    }
+
+    private async Task ClearCanvas()
+    {
+        Image = null;
+        await JS.InvokeVoidAsync("SignatureCanvasOperations.clearCanvas", "SignatureRef");
+        hasDrawing = false;
+        signatureSaved = false;
+        await ClearSignature.InvokeAsync();
+    }
+
+
+    private async Task GenerateSignature()
+    {
+        if (hasDrawing)
+        {
+            string signatureImageBase64 = await JS.InvokeAsync<string>("SignatureCanvasOperations.generateSignature", "SignatureRef");
+            _signatureImageService.SetImage(signatureImageBase64);
+            await OnSignatureSaved.InvokeAsync();
+            signatureSaved = true;
+        }
+    }
+
+    private void EndDrawing(MouseEventArgs e)
+    {
+        hasDrawing = true;
+    }
+    private void EndDrawing(TouchEventArgs e)
+    {
+        hasDrawing = true;
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+}
+
+<style>
+    .canvas-container {
+        border: 1px dashed #000;
+        box-shadow: 5px 5px 5px rgb(218, 214, 213);
+        border-radius: 10px;
+        transition: all 0.3s ease-out;
+    }
+
+        .canvas-container:hover {
+            transform: scale(1.005);
+        }
+
+    .drawing-container {
+        overflow: hidden;
+    }
+</style>

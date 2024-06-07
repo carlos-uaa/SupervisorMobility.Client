@@ -1,4 +1,4 @@
-﻿window.testCanvas = {
+﻿window.SignatureCanvasOperations = {
     initializeCanvas: (canvasId) => {
         const canvas = document.getElementById(canvasId);
         const context = canvas.getContext('2d');
@@ -63,7 +63,7 @@
 
         canvas.addEventListener('touchmove', drawTouch);
         canvas.addEventListener('touchend', () => { isDrawing = false; document.body.style.overflow = ''; });
-        canvas.addEventListener('touchleave', ()=> isDrawing = false);
+        canvas.addEventListener('touchleave', () => isDrawing = false);
         // Set up event listeners (e.g., mousemove, mousedown, mouseup)
         // Handle drawing logic here
     },
@@ -73,5 +73,26 @@
         context.lineTo(x2, y2);
         context.stroke();
     },
+    clearCanvas: (canvasId) => {
+        var canvas = document.getElementById(canvasId);
+        if (canvas) {
+            var context = canvas.getContext('2d');
+            context.strokeStyle = 'black';
+            context.lineWidth = 5;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        } else {
+            console.error("Canvas with the provided ID was not found.");
+        }
+    },
+    generateSignature: (canvasId) => {
+        var canvas = document.getElementById(canvasId);
+        if (canvas) {
+            var dataUrl = canvas.toDataURL();
+            return dataUrl;
+        } else {
+            console.error("Canvas with the provided ID was not found.");
+            return "";
+        }
+    }
     // Add other drawing functions as needed
 };

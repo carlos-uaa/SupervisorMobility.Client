@@ -12,25 +12,13 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         public int? TemplateId { get; set; }
         public Template? TemplateInspection {  get; set; }
 
+        public List<CheckpointAnswerColumn>? CheckpointsResults { get; set; }
+        = new List<CheckpointAnswerColumn>();
 
-        public DateTime? Date { get; set; }
-
-        public TimeSpan? Time { get; set; }
-        public string? RAN { get; set; }
-
-        public ICollection<CheckpointNormAnswer>? CheckpointsResults { get; set; }
-= new List<CheckpointNormAnswer>();
-
-        public int? InspectorId { get; set; }
-        public User? Inspector { get; set; }
-        public string? InspectorSignature { get; set; }
-        public DateTime? InspectorSignatureDate { get; set; }
-        public ICollection<Commentary>? InspectorObservations { get; set; }
         public int? SupervisorId { get; set; }
         public User? Supervisor { get; set; }
-        public string? SupervisorSignature { get; set; }
-        public DateTime? SupervisorSignatureDate { get; set; }
+        public FileUpload? SupervisorSignatureImage { get; set; } = new();
 
-      
+
     }
 }
