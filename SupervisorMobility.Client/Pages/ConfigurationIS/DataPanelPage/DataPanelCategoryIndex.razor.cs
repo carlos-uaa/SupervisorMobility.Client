@@ -128,6 +128,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.DataPanelPage
             {
                 _dataPanelsCategories.RemoveAll(category => category.DataPanelId == datapanelId);
                 await DataPanelServices.DeleteDataPanel(datapanelId);
+                StateHasChanged();
             }
         }
 

@@ -721,6 +721,10 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         void UpdateStandars(int chekpointId, int StandarsId)
         {
             NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/UpdateStandars/{StandarsId}");
+        }  
+        void DetailsStandars(int chekpointId, int StandarsId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/DetailsStandars/{StandarsId}");
         }
 
         private string searchString = "";
@@ -761,7 +765,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             if (selectedRowNumber == rowNumber)
             {
                 selectedRowNumber = -1;
-                UpdateStandars((int)CheckpointId, element.CheckpointNormId);
+                DetailsStandars((int)CheckpointId, element.CheckpointNormId);
                 return string.Empty;
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
