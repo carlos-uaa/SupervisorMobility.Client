@@ -53,7 +53,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
 
         public async Task<DataPanel> GetDataPanel(int id_datapanel, bool includeSpecifications = false)
         {
-            var response = await _http.GetAsync($"IS/Aparence/DataPanels/{id_datapanel}?includeSpecifications={includeSpecifications}");
+            var response = await _http.GetAsync($"IS/Appearance/DataPanels/{id_datapanel}?includeSpecifications={includeSpecifications}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -68,7 +68,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
 
         public async Task<DataPanel?> UpdateDataPanel(DataPanel dataPaneltoUpdate)
         {
-            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/{dataPaneltoUpdate.DataPanelId}", dataPaneltoUpdate);
+            var response = await _http.PutAsJsonAsync($"IS/Appearance/DataPanels/{dataPaneltoUpdate.DataPanelId}", dataPaneltoUpdate);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -82,7 +82,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
         }
         public async Task<bool> UpdatePanelSequence(int datapanel_Id, DataPanel dataPanel)
         {
-            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/sequence/{datapanel_Id}", dataPanel);
+            var response = await _http.PutAsJsonAsync($"IS/Appearance/DataPanels/sequence/{datapanel_Id}", dataPanel);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -116,7 +116,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
         #region DataPanelSpecification
         public async Task<DataPanelSpecification> CreateSpecification(DataPanelSpecification specification)
         {
-            var response = await _http.PostAsJsonAsync($"IS/Aparence/DataPanels/Specification", specification);
+            var response = await _http.PostAsJsonAsync($"IS/Appearance/DataPanels/Specification", specification);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -163,7 +163,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.DataPanelService
 
         public async Task<bool> UpdateSpecificationSequence(int datapanel_Id, DataPanelSpecification dataSpecification)
         {
-            var response = await _http.PutAsJsonAsync($"IS/Aparence/DataPanels/Specification/sequence/{datapanel_Id}", dataSpecification);
+            var response = await _http.PutAsJsonAsync($"IS/Appearance/DataPanels/Specification/sequence/{datapanel_Id}", dataSpecification);
 
             if (!response.IsSuccessStatusCode)
             {
