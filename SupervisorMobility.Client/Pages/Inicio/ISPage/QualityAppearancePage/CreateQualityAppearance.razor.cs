@@ -134,7 +134,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 
             Console.WriteLine($"specificationValues count: {specificationValues.Count}");
             AddItem();
-            _Parts = await PartsServices.GetAllParts();
+            _Parts = await PartsServices.GetAllParts(includeModel: true);
             _Parts = _Parts.OrderBy(p => p.PartName).ToList();
 
             _dataPanelsCategories = await DataPanelServices.GetAllDataPanels();

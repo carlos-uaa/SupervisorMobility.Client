@@ -23,7 +23,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
 
         public async Task<ProblemDefect?> CreateProblemDefect(ProblemDefect ProblemDefectToCreate)
         {
-            var response = await _http.PostAsJsonAsync($"IS/Aparence/Problems", ProblemDefectToCreate);
+            var response = await _http.PostAsJsonAsync($"IS/Appearance/Problems", ProblemDefectToCreate);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -38,7 +38,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
         }
         public async Task<ProblemDefect?> GetProblemDefect(int ProblemDefect_id)
         {
-            var response = await _http.GetAsync($"IS/Aparence/Problems/{ProblemDefect_id}");
+            var response = await _http.GetAsync($"IS/Appearance/Problems/{ProblemDefect_id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
 
         public async Task<List<ProblemDefect>> GetAllProblemDefects()
         {
-            var response = await _http.GetAsync($"IS/Aparence/Problems");
+            var response = await _http.GetAsync($"IS/Appearance/Problems");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -69,7 +69,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
 
         public async Task<ProblemDefect?> UpdateProblemDefect(ProblemDefect ProblemDefectToUpdate)
         {
-            var response = await _http.PutAsJsonAsync($"IS/Aparence/Problems/{ProblemDefectToUpdate.ProblemDefectId}", ProblemDefectToUpdate);
+            var response = await _http.PutAsJsonAsync($"IS/Appearance/Problems/{ProblemDefectToUpdate.ProblemDefectId}", ProblemDefectToUpdate);
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -83,7 +83,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
         }
         public async Task<bool> DeleteProblemDefect(int ProblemDefect_id)
         {
-            var response = await _http.DeleteAsync($"IS/Aparence/Problems/{ProblemDefect_id}");
+            var response = await _http.DeleteAsync($"IS/Appearance/Problems/{ProblemDefect_id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

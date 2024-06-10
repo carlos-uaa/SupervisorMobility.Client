@@ -51,9 +51,9 @@ namespace SupervisorMobility.Client.Services.IS_Services.PartService
         }
 
 
-        public async Task<List<Part>> GetAllParts(bool includeScketes = false)
+        public async Task<List<Part>> GetAllParts(bool includeScketes = false, bool includeModel = false)
         {
-            var response = await _http.GetAsync($"IS/Part?includeScketes={includeScketes}");
+            var response = await _http.GetAsync($"IS/Part?includeScketes={includeScketes}&includeModel={includeModel}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
