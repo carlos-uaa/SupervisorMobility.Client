@@ -133,7 +133,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
              {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoint")
+                new BreadcrumbItem(text: Localizer["Checkpoints"], href: "/configurationIS/Checkpoint" )
             };
 
 
@@ -169,7 +169,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         case PageType.Update:
                             if (CheckpointId != null)
                             {
-                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true, true);
+                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, true, true, true);
                                 //_Checkpoint 
                                 _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
                                 _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoint/", disabled: true));
@@ -318,6 +318,18 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         {
             await UploadImages(tempCapturedImages, _Checkpoint.CheckpointId, true);
 
+            //Upload images from standars
+            foreach(var standar in _Checkpoint.Standars) {
+
+                if (tempStandarImages.TryGetValue(standar.CheckpointNormId,out var newImgs) )
+                {
+                    if(newImgs != null)
+                    {
+                        await UploadCheckpointNormScketches(newImgs, standar.CheckpointNormId);
+                    }
+                }
+            }
+
             return new AsyncVoidMethodBuilder();
         }
 
@@ -405,6 +417,90 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 
         }
 
+        private async Task<AsyncVoidMethodBuilder> UploadCheckpointNormScketches(List<string> images, int Checkpoint_id)
+        {
+            await UploadNormImages(images, Checkpoint_id);
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+        private async Task UploadNormImages(List<string> images, int Checkpoint_Norm_id)
+        {
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "Sketch.png");
+
+
+                    var result = await _CheckPointServices.UploadSketchCheckpointNorm(content, Checkpoint_Norm_id);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to Checkpoint Item", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to Checkpoint Item", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
         private bool IsValidBase64String(string base64String)
         {
             if (string.IsNullOrEmpty(base64String))
@@ -429,7 +525,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         }
 
         
-        private async Task UploadFiles(InputFileChangeEventArgs e, int type)
+        private async Task UploadFiles(InputFileChangeEventArgs e, int type, int id_stdCheckpoint=0)
         {
             foreach (var file in e.GetMultipleFiles())
             {
@@ -446,10 +542,24 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                             case PageType.Create:
                                 ImgDto _tmpimg = new ImgDto();
                                 _tmpimg.src = mediaUri;
+                                if (id_stdCheckpoint != 0)
+                                {
+                                    StandarImages[id_stdCheckpoint].Add(_tmpimg);
+                                }
+                                else
+                                {
                                 CheckpointImages.Add(_tmpimg);
+                                }
                                 break;
                             case PageType.Update:
-                                tempCapturedImages.Add(mediaUri);
+                                if (id_stdCheckpoint != 0)
+                                {
+                                    tempStandarImages[id_stdCheckpoint].Add(mediaUri);
+                                }
+                                else
+                                {
+                                    tempCapturedImages.Add(mediaUri);
+                                }
                                 break;
 
                         }
@@ -468,8 +578,9 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 
         }
 
-        private void OpenCameraDialog(int index)
+        private void OpenCameraDialog(int index, int Std_id = 0)
         {
+            ckStd_id = Std_id;
             imageIndex = index;
             visibleCamera = true;
         }
@@ -499,7 +610,14 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
                         CheckpointImages.Add(_tmpimg);
                         break;
                     case PageType.Update:
-                        tempCapturedImages.Add(imageData);
+                        if(ckStd_id != 0)
+                        {
+                            tempStandarImages[ckStd_id].Add(imageData);
+                        }
+                        else
+                        {
+                            tempCapturedImages.Add(imageData);
+                        }
                         break;
 
                 }
@@ -603,6 +721,10 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
         void UpdateStandars(int chekpointId, int StandarsId)
         {
             NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/UpdateStandars/{StandarsId}");
+        }  
+        void DetailsStandars(int chekpointId, int StandarsId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{chekpointId}/DetailsStandars/{StandarsId}");
         }
 
         private string searchString = "";
@@ -643,7 +765,7 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             if (selectedRowNumber == rowNumber)
             {
                 selectedRowNumber = -1;
-                UpdateStandars((int)CheckpointId, element.CheckpointNormId);
+                DetailsStandars((int)CheckpointId, element.CheckpointNormId);
                 return string.Empty;
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))

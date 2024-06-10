@@ -12,7 +12,8 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         //Formato tiene datos con tendencia a ser establecidos
         public int ItemOrder { get; set; }
         public string Standard { get; set; } = string.Empty;
-
+        public int CheckpointId { get; set; }
+        public Checkpoint? Checkpoint { get; set; }
         public ICollection<FileUpload>? Sketches { get; set; } = new List<FileUpload>();
 
     }
