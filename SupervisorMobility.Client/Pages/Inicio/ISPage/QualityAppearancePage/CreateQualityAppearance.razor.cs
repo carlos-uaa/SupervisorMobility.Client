@@ -89,6 +89,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 
         public List<Part> _Parts { get; set; } = new();
 
+        //Signature modal
+        private bool visibleSign = false;
+
+        void CloseSign()
+        {
+            isHeader = true;
+            visibleSign = false;
+        }
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -276,6 +286,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 
         private void HandleSignatureSaved()
         {
+            visibleSign = false;
             currentImage = _signatureImageService.GetImage();
 
             switch (userType)
@@ -309,6 +320,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
                 case 2: signatureUser = "SV Signature"; break;
                 case 3: signatureUser = "Operator Signature"; break;
             }
+
+            visibleSign = true;
             StateHasChanged();
         }
 
@@ -345,5 +358,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
                     _appearance.CreatedDate = newDate1;
             }
         }
+
+
+
+
     }
 }
