@@ -1,5 +1,5 @@
 ﻿using SupervisorMobility.Client.Data.Entities.IS;
-using SupervisorMobility.Client.Pages.Inicio.TemplateInspectionPage.FormComponents;
+using SupervisorMobility.Client.Pages.Inicio.ISPage.TemplateInspectionPage.FormComponents;
 
 namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 {

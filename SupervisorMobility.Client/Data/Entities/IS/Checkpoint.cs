@@ -13,7 +13,7 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         public string CheckpointDescription { get; set; } = string.Empty;
 
         public ICollection<FileUpload>? Sketches { get; set; } = new List<FileUpload>();
-        public ICollection<CheckpointNorm>? Standars { get; set; } = new List<CheckpointNorm>();
+        public List<CheckpointNorm>? Standars { get; set; } = new List<CheckpointNorm>();
     
     }
 }

@@ -41,6 +41,7 @@ global using SupervisorMobility.Client.Services.BreadcrumsService;
 global using SupervisorMobility.Client.Services.HCIService;
 global using SupervisorMobility.Client.Services.SOS_Data_Service;
 global using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
+global using SupervisorMobility.Client.Services.IS_Services.LogbookAppearanceService;
 global using System.Text.Json;
 global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 global using SupervisorMobility.Client.Services.IS_Services.PartService;
@@ -102,6 +103,9 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
+builder.Services.AddScoped<IAppearanceService, AppearanceService>();
+builder.Services.AddScoped<ILogbookAppearanceService, LogbookAppearanceService>();
+builder.Services.AddScoped<IPartServices, PartServices>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();

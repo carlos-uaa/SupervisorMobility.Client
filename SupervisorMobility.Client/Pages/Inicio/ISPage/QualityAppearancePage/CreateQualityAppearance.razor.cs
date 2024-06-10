@@ -1,9 +1,11 @@
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.IS;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using SupervisorMobility.Client.Services.SignatureImageService;
+using System.Globalization;
 using static SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage.CreateQualityAppearance;
 
 namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
@@ -22,8 +24,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         public bool isHeader = false;
         public int userType = 0;
 
-        string partName = "FR DOOR INR RH";
-        string partNumber = "A2477221001D";
+        string partNumber = "";
+        string partModel = "";
         string programmed = "500";
         string inspector = "A. GARCIA";
         string hour = "22:45";
@@ -32,6 +34,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         string ssvImage = string.Empty;
         string svImage = string.Empty;
         string operatorImage = string.Empty;
+
+        public string hour1 { get; set; }
+        TimeSpan? startHour = new TimeSpan(00, 00, 00);
+        DateTime newDate1;
 
         public class ItemModel
         {
@@ -69,6 +75,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         List<Product> _products { get; set; } = new();
 
         int productId = 0;
+        int partId = 0;
 
         List<User> _seniorSupervisors { get; set; } = new();
         List<User> _allSSVs { get; set; } = new();
@@ -80,8 +87,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
         int supervisorId = 0;
         int operatorId = 0;
 
+        public List<Part> _Parts { get; set; } = new();
+
         protected async override Task OnInitializedAsync()
         {
+
             _links = new List<BreadcrumbItem>
                 {
                     new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -124,8 +134,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 
             Console.WriteLine($"specificationValues count: {specificationValues.Count}");
             AddItem();
-            _products = await ProductsService.GetProducts();
-            _products = _products.OrderBy(p => p.Description).ToList();
+            _Parts = await PartsServices.GetAllParts(includeModel: true);
+            _Parts = _Parts.OrderBy(p => p.PartName).ToList();
+
             _dataPanelsCategories = await DataPanelServices.GetAllDataPanels();
 
             _seniorSupervisors = new();
@@ -134,6 +145,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
 
             _seniorSupervisors = _allSSVs;
             _appearance.Observations = new List<Commentary>();
+            var response = await LogbookAppearanceServices.GetAllLogbookAppearances();
             StateHasChanged();
         }
 
@@ -144,6 +156,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
             _appearance.ApproverUserId = ssvId;
             _appearance.ReviewerId = supervisorId;
             _appearance.ManufacturerId = operatorId;
+            FormatDate();
+
 
             if (!(items == null || !items.Any()))
             {
@@ -296,6 +310,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.ISPage.QualityAppearancePage
                 case 3: signatureUser = "Operator Signature"; break;
             }
             StateHasChanged();
+        }
+
+        public void FormatDate()
+        {
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var formatedStartDate = _appearance.CreatedDate;
+
+                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                _appearance.CreatedDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+                hour1 = _appearance.CreatedDate?.ToShortDateString() + $" {startHour}";
+
+                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    Console.WriteLine("Unable to parse '{0}'", hour1);
+
+
+
+                _appearance.CreatedDate = newDate1;
+            }
+            else
+            {
+                hour1 = _appearance.CreatedDate?.ToShortDateString() + $" {startHour}";
+
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                    _appearance.CreatedDate = newDate1;
+            }
         }
     }
 }

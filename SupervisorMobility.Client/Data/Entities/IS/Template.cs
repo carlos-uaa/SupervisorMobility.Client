@@ -12,11 +12,11 @@ namespace SupervisorMobility.Client.Data.Entities.IS
         public Part? Part { get; set; }
 
         //Item de la categoria
-        public ICollection<Checkpoint>? CheckpointItems { get; set; }
+        public List<Checkpoint>? CheckpointItems { get; set; }
           = new List<Checkpoint>();
         //specificacion de la categoria
-        public ICollection<CheckpointNorm>? CheckpointNormItems { get; set; }
-          = new List<CheckpointNorm>();
+        //public ICollection<CheckpointNorm>? CheckpointNormItems { get; set; }
+        //  = new List<CheckpointNorm>();
 
 
         public DateTime? CreatedDate { get; set; }
