@@ -1,13 +1,183 @@
 ﻿@page "/TestDialog"
+@using System.Net.Http.Headers
 @inject IDialogService DialogService
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject ITestService TestService
 <MudButton OnClick="OpenDialog" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4">OpenDialog</MudButton>
+
+<MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="UploadFiles" Accept=".mp4, .mov, .wmv, .avi, .mkv, .flv, .webm">
+    <ButtonTemplate Context="fileContext">
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Info"
+                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                   for="@fileContext">
+            <MudText>Files</MudText>
+        </MudButton>
+    </ButtonTemplate>
+</MudFileUpload>
+
+@foreach (var item in MediaUris)
+{
+    @if (MediaUris != null || MediaUris.Count != 0)
+    {
+        <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+            @*@file.Name <code>@file.Size bytes</code>*@
+            @if (item.Value.Item1.StartsWith("image/"))
+            {
+                <MudImage ObjectFit="ObjectFit.Cover" Height="200" Width="400" Src="@(item.Value.Item2)" Elevation="25" Class="rounded-lg" />
+            }
+            else if (item.Value.Item1.StartsWith("video/"))
+            {
+                <video width="400" height="200" controls>
+                    <source src="@item.Value.Item2">
+                    Your browser does not support the video tag.
+                </video>
+            }
+            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(()=>MediaUris.Remove(item.Key))"></MudIconButton>
+        </MudListItem>
+    }
+}
+
+<MudButton OnClick=@(async () => await Submit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Class="mr-2" Disabled=@DisabledFinish>
+    @if (DisabledFinish)
+    {
+        <MudText>Loading</MudText>
+        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+    }
+    else
+    {
+        <MudText>Upload</MudText>
+    }
+</MudButton>
+
 @* <Component1/> *@
 @code {
     private DialogOptions options = new DialogOptions() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
+    //To store file: from left to right is file name, content type, b64 string
+    public Dictionary<string,(string,string)> MediaUris = new Dictionary<string, (string,string)>();
+    private bool DisabledFinish;
 
     private async void OpenDialog()
     {
-        var dialog = await DialogService.ShowAsync<Signature_dialog>("Sign", options);
-        var result = await dialog.Result;
+        // var dialog = await DialogService.ShowAsync<Signature_dialog>("Sign", options);
+        // var result = await dialog.Result;
+    }
+
+    private async void UploadFiles(InputFileChangeEventArgs e)
+    {
+        List<string[]> IgnoredFiles = new List<string[]>();
+        string message;
+
+        var files = e.GetMultipleFiles();
+        foreach (var file in files)
+        {
+            string contentType = "";
+
+            if (!file.ContentType.StartsWith("video/"))
+            {
+                IgnoredFiles.Add(new string[] { file.Name, "Wrong Type" });
+                continue;
+            }
+            //content.Clear();
+            //content = await GetDataTableFromExcel(file);
+            if (!MediaUris.Keys.Contains(file.Name))
+            {
+                using (Stream mediaStream = file.OpenReadStream(file.Size))
+                {
+                    MemoryStream ms = new();
+                    await mediaStream.CopyToAsync(ms);
+                    string MediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                    MediaUris.Add(file.Name,(file.ContentType,MediaUri));
+                }
+            }
+        }
+        //SetDragClass();
+        //ClearDragClass();
+        if (IgnoredFiles.Count != 0)
+        {
+            string confirmMessage = $"The following files where ignored: ";
+            foreach (string[] item in IgnoredFiles)
+            {
+                confirmMessage += $"\n Name: {item[0]} \n Reason: {item[1]}";
+            }
+            await JS.InvokeAsync<bool>("confirm", confirmMessage);
+        }
+
+        StateHasChanged();
+    }
+
+    public async Task Submit()
+    {
+        DisabledFinish = true;
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+        using var content = new MultipartFormDataContent();
+
+        foreach(var item in MediaUris)
+        {
+            string base64Data = item.Value.Item2.Split(',')[1];
+            if (string.IsNullOrEmpty(base64Data))
+            {
+                FileErrorMessage(item.Key);
+                continue;
+            }
+
+            try
+            {
+                var imageBytes = Convert.FromBase64String(base64Data);
+                var imageStream = new MemoryStream(imageBytes);
+                imageStream.Position = 0;
+                var fileContent = new StreamContent(imageStream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.Value.Item1);
+
+                content.Add(
+                    content: fileContent,
+                    name: "Files",
+                    fileName: item.Key);
+            }
+            catch (FormatException)
+            {
+                FileErrorMessage(item.Key);
+                continue;
+            }
+            catch (Exception)
+            {
+                Snackbar.Add($"Error converting video to uploadable data: {item.Key}", Severity.Error);
+            }
+
+        }
+
+        var response = await TestService.UploadVideoFiles(content);
+
+        switch (response.Item1)
+        {
+            case 500:
+                Snackbar.Add("Error uploading files ", Severity.Error);
+                Console.WriteLine(response.Item2);
+                break;
+            case 400:
+                Snackbar.Add("Error uploading some files ", Severity.Warning);
+                Console.WriteLine(response.Item2);
+                break;
+            case 200:
+                Snackbar.Add("Success uploading files ", Severity.Success);
+                Console.WriteLine(response.Item2);
+                break;
+        }
+        DisabledFinish = false;
+        //PirService.CreatePIR(pir);
+
+        //NotiService.CreateNotification(notification);
+    }
+
+    private void FileErrorMessage(string file)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        Snackbar.Add($"File: {file} has invalid video data", Severity.Error);
     }
 }
