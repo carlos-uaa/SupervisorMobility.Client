@@ -2,37 +2,40 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
     public partial class CreateHOE
     {
         private List<BreadcrumbItem> _links;
-        Appearance _appearance { get; set; } = new();
-        public List<DataPanel> _dataPanelsCategories { get; set; } = new();
+
         //User
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
 
-        public string signatureUser = string.Empty;
-        public bool isHeader = false;
         public int userType = 0;
+        public string otherInformation = "In case of doubt contact supervisor or leader and stop, call and wait." +
+            "Use bare hands or lint free gloves when attaching the rubber gasket. Do not re-use the water pump gasket." +
+            " Do not use dropped gaskets.";
 
-        string partNumber = "";
-        string partModel = "";
-        string programmed = "500";
-        string inspector = "A. GARCIA";
-        string hour = "22:45";
-        string date = "14/02/24";
+        private string analysis = string.Empty;
+        private List<Segment> segments = new List<Segment>();
 
-        string ssvImage = string.Empty;
-        string svImage = string.Empty;
-        string operatorImage = string.Empty;
+        public class Segment
+        {
+            public string MainPoint { get; set; }
+            public List<string> CriticalPoints { get; set; } = new List<string>();
+        }
 
-        public string hour1 { get; set; }
-        TimeSpan? startHour = new TimeSpan(00, 00, 00);
-        DateTime newDate1;
+        private bool visibleSteps = false;
+
+        void CloseSteps()
+        {
+            visibleSteps = false;
+        }
+        private DialogOptions dialogStepsOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
 
         protected async override Task OnInitializedAsync()
@@ -54,10 +57,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 NavigationManager.NavigateTo($"/");
             }
 
-
-
-
-   
             StateHasChanged();
         }
 
@@ -85,10 +84,38 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
 
 
+        public void AnalyzeText()
+        {
+            segments.Clear();
+
+            // Split the analysis text by '-' to get each segment
+            var segmentTexts = analysis.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var segmentText in segmentTexts)
+            {
+                var segment = new Segment();
+
+                var regex = new Regex(@"\*(.*?)\*");
+                var matches = regex.Matches(segmentText);
+
+                foreach (Match match in matches)
+                {
+                    if (match.Success)
+                    {
+                        segment.CriticalPoints.Add(match.Groups[1].Value);
+                    }
+                }
+
+                segment.MainPoint = regex.Replace(segmentText, string.Empty).Trim();
+                segments.Add(segment);
+            }
+        }
 
 
-
-
+        public void ShowStepsDialog()
+        {
+            visibleSteps = true;
+        }
 
     }
 }
