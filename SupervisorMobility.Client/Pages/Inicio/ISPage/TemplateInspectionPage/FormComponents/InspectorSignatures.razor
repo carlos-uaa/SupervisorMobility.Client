@@ -1,32 +1,55 @@
-﻿<tr>
+﻿@inject IStringLocalizer<Resource> Localizer
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+<tr>
     <td rowspan="4" colspan="3" style="width:16.25vw; text-align:center;">
         <MudText Typo="Typo.h6">INSPECTOR</MudText>
     </td>
 </tr>
 <tr>
     <td class="CheckElement" style="width:13.75vw;">NOMBRE</td>
-    @for (int i = 0; i < 7; i++)
+    @foreach (var column in ColumnAnswers.Select((value, i)=> new { i, value }))
     {
-        <td>
-            <MudInput T="string" Clearable=true Placeholder="Ingresa tu nombre" Variant="Variant.Text"/>
-        </td>
+        Console.WriteLine(column.i);
+        @if (string.IsNullOrEmpty(SignatureImages[column.i]))
+        {
+            <td rowspan="3">
+                <MudIcon Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Size="Size.Small">
+                    @Localizer["unsigned"]
+                </MudIcon>
+                <MudButton StartIcon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" Size="Size.Small" @onclick="(() => SignAppearance(column.i))">@Localizer["sign"]</MudButton>
+            </td>
+        }
+        else
+        {
+            <td>
+                <MudInput T="string" Clearable=true Placeholder="Ingresa tu nombre" Variant="Variant.Text" @bind-Value="@_User.Name" ReadOnly/>
+            </td>
+        }
     }
 </tr>
 <tr>
     <td class="CheckElement" style="width:13.75vw;">FIRMA</td>
-    @for (int i = 0; i < 7; i++)
+    @foreach (var column in ColumnAnswers.Select((value, i) => new { i, value }))
     {
-        <td>
-        </td>
+        @if (!string.IsNullOrEmpty(SignatureImages[column.i]))
+        {
+            <td>
+                <MudImage Src="@SignatureImages[column.i]" Height="20" Width="50"></MudImage>
+            </td>
+        }
     }
 </tr>
 <tr>
     <td class="CheckElement" style="width:13.75vw;">OBSERVACIONES / COMENTARIOS</td>
-    @for (int i = 0; i < 7; i++)
+    @foreach (var column in ColumnAnswers.Select((value, i) => new { i, value }))
     {
-        <td>
-            <MudInput T="string" Clearable=true Variant="Variant.Text" Lines="5" @bind-Value="@ColumnAnswers[i].InspectorObservations.Comment"/>
-        </td>
+        @if (!string.IsNullOrEmpty(SignatureImages[column.i]))
+        {
+            <td>
+                <MudInput T="string" Clearable=true Variant="Variant.Text" Lines="5" @bind-Value="column.value.InspectorObservations.Comment"/>
+            </td>
+        }
     }
 </tr>
 
@@ -34,4 +57,61 @@
     [Parameter]
     public List<CheckpointAnswerColumn> ColumnAnswers { get; set; }
 
+    private string json = string.Empty;
+    public User _User { get; set; }
+
+    public List<string> SignatureImages { get; set; }
+
+    private DialogOptions options = new DialogOptions() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
+
+    protected async override Task OnInitializedAsync()
+    {
+        //Put code to get images here
+        SignatureImages ??= new();
+
+        int limit = 7;
+        if (!SignatureImages.Any())
+        {
+            limit -= SignatureImages.Count;
+        }
+
+        int i = 0;
+        while (i < limit)
+        {
+            SignatureImages.Add(string.Empty);
+            i++;
+        }
+        await GetUserAsync();
+    }
+
+    private async void SignAppearance(int idx)
+    {
+        var dialog = await DialogService.ShowAsync<FormComponents.Signature_Dialog>($"Signature for the RAN {ColumnAnswers[idx].RAN}", options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            SignatureImages[idx] = (string)result.Data;
+        }
+        StateHasChanged();
+    }
+
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            _User = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            _User = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 }

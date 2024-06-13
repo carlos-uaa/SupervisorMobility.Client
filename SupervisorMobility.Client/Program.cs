@@ -46,6 +46,9 @@ global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 global using SupervisorMobility.Client.Services.IS_Services.PartService;
 global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService;
 global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
+
+global using SupervisorMobility.Client.Services.TestServices;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -56,6 +59,7 @@ using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using System.ComponentModel;
 using System.Net.Http;
+using SupervisorMobility.Client.Services.TestServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -102,6 +106,9 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
+
+//For testing video uploads
+builder.Services.AddScoped<ITestService, TestService>();
 
 //IS Apariencia Plantilla
 builder.Services.AddScoped<IDataPanelService, DataPanelService>();
