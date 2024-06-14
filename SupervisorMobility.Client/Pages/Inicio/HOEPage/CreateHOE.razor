@@ -13,6 +13,7 @@
 @inject ILogbookAppearanceService LogbookAppearanceServices
 @inject SignatureImageService _signatureImageService
 @inject IPartServices PartsServices
+@inject IFileUploadAndDownloadService FilesServices
 
 <style>
 
@@ -81,10 +82,7 @@
                                     <td>
                                     <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
                                         Edit Steps
-                                        @if (segments.Count > 0)
-                                        {
-                                            <span>(@segments.Count)</span>
-                                        }
+                                        <span>&nbsp;(@segments.Count)</span>
                                     </MudButton>
                                     </td>
                                 </tr>
@@ -93,7 +91,10 @@
                                         <MudText>Images</MudText>
                                     </td>
                                     <td>
-                                        <MudButton Variant="Variant.Filled">Edit Images (2)</MudButton>
+                                    <MudButton Variant="Variant.Filled" OnClick="ShowImagesDialog">
+                                        Edit Images
+                                        <span>&nbsp;(@capturedImages.Count)</span>
+                                    </MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -173,7 +174,7 @@
                                         <MudText>Created</MudText>
                                     </td>
                                     <td>
-                                    <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" />
+                                    <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="createdDateTime" />
                                 </td>
                                 </tr>
                                 <tr>
@@ -189,8 +190,8 @@
                                         <MudText>Modified</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" />
-                                    </td>
+                                    <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="modifiedDateTime" />
+                                </td>
                                 </tr>
                                 <tr>
                                     <td>
@@ -224,7 +225,7 @@
         </MudItem>
     </MudGrid>
 
-<MudDialog @bind-IsVisible="visibleSteps" Options="dialogStepsOptions">
+<MudDialog @bind-IsVisible="visibleStepsDialog" Options="dialogStepsOptions">
     <TitleContent>
         <div class="d-flex" style="align-items: center; justify-content:center;">
             <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
@@ -253,10 +254,153 @@
         </MudTable>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="CloseSteps" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton OnClick="CloseStepsDialog" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
     </DialogActions>
 </MudDialog>
 
 
+<MudDialog @bind-IsVisible="visibleImagesDialog" Options="dialogImagesOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Images"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+            <InputFile id="previousEvidence" OnChange="@( (e) => UploadFiles(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                       HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Image"
+                       for="previousEvidence">
+                Load picture
+            </MudButton>
+            @if (capturedImages.Count == 0)
+            {
+                <MudItem>
+                    <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                        Open Camera
+                    </MudButton>
+                </MudItem>
+            }
+            else if (capturedImages.Count > 0)
+            {
+                <MudItem>
+                    <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                </MudItem>
+            }
+        </MudItem>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
+            @if (capturedImages.Count > 0)
+            {
+                <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+
+                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                        {
+                            <MudItem Class=" mr-8 mb-4">
+                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                    </MudTooltip>
+                                </MudItem>
+                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index, 0)" />
+                            </MudItem>
+                        }
+                    </MudItem>
+
+                </div>
+            }
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseImagesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+
+@*Evidence Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+    <DialogContent>
+        <MudPaper Elevation="0">
+            @if (capturedImages.Count() > 0)
+            {
+                <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                    <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                        </MudAvatar>
+                    </PreviousButtonTemplate>
+                    <NextButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                    </NextButtonTemplate>
+                    <ChildContent>
+                        @foreach (var evidence in capturedImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            }
+            else
+            {
+                <MudItem Style="height: 75vh">
+                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                        @Localizer["there is no previous evidence :)"]
+                    </MudAlert>
+                </MudItem>
+            }
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@*Camera Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+    <TitleContent>
+        <MudItem>
+            <MudText Typo="Typo.h6" Style="text-align:center">Kaizen Evidence</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <CameraStreamer @ref=CameraStreamerReference
+                                Width=1280
+                                Height=720
+                                OnRendered=OnRenderedHandler
+                                OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                                CameraID=@cameraId
+                                        Autostart />
+                <MudItem style="text-align: center">
+                    @if (frameCount > 0)
+                    {
+                        <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                            Take photo
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
+                        Take photo
+                    </MudButton>
+                    }
+                </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
 
 
