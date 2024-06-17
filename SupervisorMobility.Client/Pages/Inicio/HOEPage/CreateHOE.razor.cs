@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using System;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -37,12 +38,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private bool visibleStepsDialog = false;
         private bool visibleImagesDialog = false;
+        private bool visibleVideosDialog = false;
 
 
         private DialogOptions dialogStepsOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         
         private DialogOptions dialogImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogVideosOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
+
+        //Videos
+        public Dictionary<string, (string, string)> MediaUris = new Dictionary<string, (string, string)>();
+        private bool DisabledFinish;
 
         protected async override Task OnInitializedAsync()
         {
@@ -346,6 +353,157 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         }
 
+        //Videos
+        public void ShowVideosDialog()
+        {
+            visibleVideosDialog = true;
+        }
+
+        void CloseVideosDialog()
+        {
+            visibleVideosDialog = false;
+        }
+
+        private async void UploadFiles(InputFileChangeEventArgs e)
+        {
+            List<string[]> IgnoredFiles = new List<string[]>();
+            string message;
+
+            var files = e.GetMultipleFiles();
+            foreach (var file in files)
+            {
+                string contentType = "";
+
+                if (!file.ContentType.StartsWith("video/"))
+                {
+                    IgnoredFiles.Add(new string[] { file.Name, "Wrong Type" });
+                    continue;
+                }
+                //content.Clear();
+                //content = await GetDataTableFromExcel(file);
+                if (!MediaUris.Keys.Contains(file.Name))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string MediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        MediaUris.Add(file.Name, (file.ContentType, MediaUri));
+                    }
+                }
+            }
+            //SetDragClass();
+            //ClearDragClass();
+            if (IgnoredFiles.Count != 0)
+            {
+                string confirmMessage = $"The following files where ignored: ";
+                foreach (string[] item in IgnoredFiles)
+                {
+                    confirmMessage += $"\n Name: {item[0]} \n Reason: {item[1]}";
+                }
+                await JSRuntime.InvokeAsync<bool>("confirm", confirmMessage);
+            }
+
+            StateHasChanged();
+        }
+
+        public async Task Submit()
+        {
+            DisabledFinish = true;
+
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+            using var content = new MultipartFormDataContent();
+
+            foreach (var item in MediaUris)
+            {
+                string base64Data = item.Value.Item2.Split(',')[1];
+                if (string.IsNullOrEmpty(base64Data))
+                {
+                    FileErrorMessage(item.Key);
+                    continue;
+                }
+
+                try
+                {
+                    var imageBytes = Convert.FromBase64String(base64Data);
+                    var imageStream = new MemoryStream(imageBytes);
+                    imageStream.Position = 0;
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.Value.Item1);
+
+                    content.Add(
+                        content: fileContent,
+                        name: "Files",
+                        fileName: item.Key);
+                }
+                catch (FormatException)
+                {
+                    FileErrorMessage(item.Key);
+                    continue;
+                }
+                catch (Exception)
+                {
+                    Snackbar.Add($"Error converting video to uploadable data: {item.Key}", Severity.Error);
+                }
+
+            }
+
+            var response = await TestService.UploadVideoFiles(content);
+
+            switch (response.Item1)
+            {
+                case 500:
+                    Snackbar.Add("Error uploading files ", Severity.Error);
+                    Console.WriteLine(response.Item2);
+                    break;
+                case 400:
+                    Snackbar.Add("Error uploading some files ", Severity.Warning);
+                    Console.WriteLine(response.Item2);
+                    break;
+                case 200:
+                    Snackbar.Add("Success uploading files ", Severity.Success);
+                    Console.WriteLine(response.Item2);
+                    break;
+            }
+            DisabledFinish = false;
+            //PirService.CreatePIR(pir);
+
+            //NotiService.CreateNotification(notification);
+        }
+
+        private void FileErrorMessage(string file)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"File: {file} has invalid video data", Severity.Error);
+        }
+
+        private void DeleteItem(string key)
+        {
+            Console.WriteLine("Before deletion:");
+            foreach (var uri in MediaUris)
+            {
+                Console.WriteLine($"{uri.Key}");
+            }
+
+            if (MediaUris.ContainsKey(key))
+            {
+                MediaUris.Remove(key);
+                Console.WriteLine($"Deleted: {key}");
+                StateHasChanged();
+            }
+
+            Console.WriteLine("After deletion:");
+            foreach (var uri in MediaUris)
+            {
+                Console.WriteLine($"{uri.Key}");
+            }
+
+            // Forzar renderizado
+            InvokeAsync(StateHasChanged);
+        }
 
     }
 }

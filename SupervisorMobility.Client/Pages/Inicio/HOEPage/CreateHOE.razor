@@ -14,6 +14,7 @@
 @inject SignatureImageService _signatureImageService
 @inject IPartServices PartsServices
 @inject IFileUploadAndDownloadService FilesServices
+@inject ITestService TestService
 
 <style>
 
@@ -99,10 +100,12 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <MudText>Videos</MudText>
+                                    <MudText>Videos</MudText>
                                     </td>
                                     <td>
-                                        <MudButton Variant="Variant.Filled">Edit Videos (0)</MudButton>
+                                    <MudButton Variant="Variant.Filled" OnClick="ShowVideosDialog">Edit Videos 
+                                        <span>&nbsp;(@MediaUris.Count)</span>
+                                    </MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -323,6 +326,72 @@
     </DialogActions>
 </MudDialog>
 
+
+<MudDialog @bind-IsVisible="visibleVideosDialog" Options="dialogVideosOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Videos"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="UploadFiles" Accept=".mp4, .mov, .wmv, .avi, .mkv, .flv, .webm">
+                <ButtonTemplate Context="fileContext">
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="@fileContext">
+                        <MudText>Files</MudText>
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+            @if (MediaUris.Count != 0)
+            {
+                <MudButton OnClick=@(async () => await Submit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Class="mr-2" Disabled=@DisabledFinish>
+                    @if (DisabledFinish)
+                    {
+                        <MudText>Loading</MudText>
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <MudText>Upload</MudText>
+                    }
+                </MudButton>
+            }
+        </MudItem>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
+            @if (MediaUris != null && MediaUris.Count > 0)
+            {
+                @foreach (var item in MediaUris.ToList())
+                {
+                    <MudItem Class="mr-4 mb-4">
+                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => DeleteItem(item.Key))"></MudIcon>
+                            </MudTooltip>
+                        </MudItem>
+                        <video width="300" height="150" controls>
+                            <source src="@item.Value.Item2">
+                            Your browser does not support the video tag.
+                        </video>
+                    </MudItem>
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">No media available.</MudAlert>
+            }
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseVideosDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 
