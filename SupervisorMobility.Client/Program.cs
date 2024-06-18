@@ -50,6 +50,7 @@ global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
 
 global using SupervisorMobility.Client.Services.TestServices;
 
+global using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -119,6 +120,9 @@ builder.Services.AddScoped<IDataPanelService, DataPanelService>();
 builder.Services.AddScoped<IPartServices, PartServices>();
 builder.Services.AddScoped<IProblemDefectServices, ProblemDefectServices>();
 builder.Services.AddScoped<ICheckPointService, CheckpointService>();
+
+//Sos services
+builder.Services.AddScoped<ISOSHubService, SOSHubService>();
 
 
 // Connection to API
