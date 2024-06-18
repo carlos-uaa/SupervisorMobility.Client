@@ -81,6 +81,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 
             return Checkpoint;
         }
+      
         public async Task<bool> UpdatePanelSequence(int Checkpoint_Id, Checkpoint Checkpoint)
         {
             var response = await _http.PutAsJsonAsync($"IS/Template/Checkpoints/sequence/{Checkpoint_Id}", Checkpoint);
@@ -143,6 +144,21 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
             var CheckpointNorm = JsonSerializer.Deserialize<CheckpointNorm>(content, _options);
 
             return CheckpointNorm;
+        }
+
+        public async Task<CheckpointNorm> UpdatecheckpointNorm(CheckpointNorm checkpointNorm)
+        {
+            var response = await _http.PutAsJsonAsync($"IS/Template/Checkpoints/Norms/{checkpointNorm.CheckpointNormId}", checkpointNorm);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var Checkpoint = JsonSerializer.Deserialize<CheckpointNorm>(content, _options);
+
+            return Checkpoint;
         }
 
         //public async Task<bool> UpdatecheckpointNormSequence(int Checkpoint_Id, CheckpointNorm datacheckpointNorm)
