@@ -15,16 +15,21 @@
 @inject IPartServices PartsServices
 @inject IFileUploadAndDownloadService FilesServices
 @inject ITestService TestService
+@inject IProductService ProductsServices
 
 <style>
 
     .custom-table td:first-child{
         background-color: #f5f5f6;
     }
+    .comments-table td:first-child{
+        background-color: white;
+    }
 
 </style>
 
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
+    <EditForm Model="_sosHub" OnValidSubmit="CreateNewSOSHub">
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="8" md="10" sm="10" xs="12">
             <MudExpansionPanels Elevation="5" MultiExpansion="true">
@@ -47,7 +52,7 @@
                                     <td>
 @*                                    <MudTextField Margin="Margin.Dense" Value="@("Pr1960 Install Water Pump Housing And Gasket - Install Gasktet to Water Pump Housing")" Lines="2" />
 *@
-                                    <MudTextField @bind-Value="analysis" Margin="Margin.Dense" Lines="2" />
+                                    <MudTextField @bind-Value="_sosHub.OperationDescription" Margin="Margin.Dense" Lines="2" />
                                     <MudButton OnClick="AnalyzeText">Generate Steps</MudButton>
                                     
                                     </td>
@@ -57,7 +62,27 @@
                                         <MudText>Process Sheet</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("PR1960-1 (PRk0)")" />
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.ProcessSheet" />
+                                        <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Comments</MudText>
+                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                            <tbody>
+                                                @foreach (var item in items)
+                                                {
+                                                    <tr>
+                                                        <td width="90%">
+                                                            <MudTextField @bind-Value="@item.Commentary" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                        </td>
+                                                        @if (items.IndexOf(item) > 0)
+                                                        {
+                                                            <td width="10%">
+                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </MudSimpleTable>
+                                        <MudButton OnClick="AddItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add Commentary</MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -73,7 +98,15 @@
                                         <MudText>Applied Models</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("PRk0")" />
+                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" OpenIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                                            @foreach (var type in _products)
+                                            {
+                                                <MudSelectItem Value="type.ProductId">
+                                                    @type.Code
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
                                     </td>
                                 </tr>
                                 <tr>
@@ -217,7 +250,11 @@
                                         <MudText>Status</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("[Approved]")" />
+                                        <MudSelect Margin="Margin.Dense" T="string"  Variant="Variant.Text" @bind-Value="_sosHub.Status">
+                                            <MudSelectItem Value="@("Pending")" />
+                                            <MudSelectItem Value="@("Approved")" />
+                                            <MudSelectItem Value="@("Rejected")" />
+                                        </MudSelect>
                                     </td>
                                 </tr>
                             </tbody>
@@ -225,8 +262,14 @@
                     </ChildContent>
                 </MudExpansionPanel>
             </MudExpansionPanels>
+            <MudCardActions>
+                <MudItem Class="ml-auto mt-4">
+                    <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4">@Localizer["createHOE"]</MudButton>
+                </MudItem>
+            </MudCardActions>
         </MudItem>
     </MudGrid>
+</EditForm>
 
 <MudDialog @bind-IsVisible="visibleStepsDialog" Options="dialogStepsOptions">
     <TitleContent>
@@ -375,7 +418,7 @@
                                 <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => DeleteItem(item.Key))"></MudIcon>
                             </MudTooltip>
                         </MudItem>
-                        <video width="300" height="150" controls>
+                        <video width="300" height="150" controls @key="item.Key">
                             <source src="@item.Value.Item2">
                             Your browser does not support the video tag.
                         </video>
@@ -471,5 +514,4 @@
         </MudContainer>
     </DialogContent>
 </MudDialog>
-
 

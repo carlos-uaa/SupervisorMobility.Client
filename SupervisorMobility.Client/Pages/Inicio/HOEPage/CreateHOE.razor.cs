@@ -1,8 +1,13 @@
 using BlazorCameraStreamer;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 using System;
 using System.Globalization;
 using System.Net.Http.Headers;
@@ -13,10 +18,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
     public partial class CreateHOE
     {
+
+        private SOSHub _sosHub = new();
+
         private List<BreadcrumbItem> _links;
         private DateTime? createdDateTime = DateTime.Now;
         private DateTime? modifiedDateTime = DateTime.Now;
 
+        public string hour1 { get; set; }
+        TimeSpan? startHour = new TimeSpan(00, 00, 00);
+        DateTime newDate1;
         //User
         private string json = string.Empty;
         public User user = new();
@@ -27,9 +38,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             "Use bare hands or lint free gloves when attaching the rubber gasket. Do not re-use the water pump gasket." +
             " Do not use dropped gaskets.";
 
-        private string analysis = string.Empty;
         private List<Segment> segments = new List<Segment>();
+        private List<Product> _products = new List<Product>();
 
+        public int productId = 0;
         public class Segment
         {
             public string MainPoint { get; set; }
@@ -51,6 +63,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         public Dictionary<string, (string, string)> MediaUris = new Dictionary<string, (string, string)>();
         private bool DisabledFinish;
 
+        //Commentaries
+        public class ItemModel
+        {
+            public string Commentary { get; set; }
+        }
+
+        List<ItemModel> items = new List<ItemModel>();
+
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -69,6 +90,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
             }
+
+            _products = await ProductsServices.GetProducts();
+            AddItem();
 
             StateHasChanged();
         }
@@ -100,8 +124,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         {
             segments.Clear();
 
-            // Split the analysis text by '-' to get each segment
-            var segmentTexts = analysis.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var segmentText in segmentTexts)
             {
@@ -501,9 +524,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 Console.WriteLine($"{uri.Key}");
             }
 
-            // Forzar renderizado
             InvokeAsync(StateHasChanged);
         }
+
+
+        //Commentaries
+        void AddItem()
+        {
+            items.Add(new ItemModel());
+        }
+
+        void RemoveItem(ItemModel item)
+        {
+            if (items.Count > 1)
+            {
+                items.Remove(item);
+            }
+
+        }
+
+        private async Task CreateNewSOSHub()
+        {
+
+            _sosHub.AppliedModelId = productId;
+
+            if (!(items == null || !items.Any()))
+            {
+                foreach (var item in items)
+                {
+                    var processSheetCommentary = new Commentary
+                    {
+                        ComentaryId = 0,
+                        Comment = item.Commentary,
+                        IsActive = true
+                    };
+                    _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
+                }
+            }
+
+            //var result = await SOSServices.CreateSOSHub(_sosHub);
+
+            //if (result != null)
+            //{
+            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //    Snackbar.Add($"SOS Created", Severity.Info);
+
+            //    _sosHub = result;
+            //    _ = await UploadEvidence();
+
+            //    NavigationManager.NavigateTo("/sosHub");
+            //}
+            //else
+            //    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+
+        }
+
 
     }
 }
