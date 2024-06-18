@@ -36,7 +36,6 @@ else
                         <CardHeaderContent>
                         </CardHeaderContent>
                         <CardHeaderActions>
-                            <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
                         </CardHeaderActions>
                     </MudCardHeader>
                     <MudCardContent Style="justify-content:center">
@@ -57,20 +56,144 @@ else
                         }
                     </MudCardContent>
                 </MudCard>
-            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; scroll-behavior: smooth; justify-content: center;">
-
-                @foreach (var (image, index) in CheckpointImages.Select((image, index) => (image, index)))
-                {
-                    <MudItem Class="mr-8 mb-2">
-                        <MudImage ObjectFit="ObjectFit.Cover" Style="cursor:pointer; height:100%; width: 100%" Src=@image.src Alt="Sketch" Elevation="25" Class="rounded-lg" @onclick="() => OpenSketchDialog(index, 0)" />
-                    </MudItem>
-                }
-
-            </MudItem>
+        
         </MudItem>
         @*Related questions*@
         <MudItem xs="12" sm="6" md="9">
-            
+            <EditForm Model="_CheckpointNorm" OnValidSubmit="SubmitOperations">
+                <DataAnnotationsValidator />
+                <MudGrid>
+
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    @switch (pageType)
+                                    {
+                                        case PageType.Create:
+                                            <MudText Typo="Typo.h6">@Localizer["CheckpointNormCreate"]</MudText>
+                                            break;
+                                        case PageType.Update:
+                                            <MudText Typo="Typo.h6">@Localizer["CheckpointNormUpdate"]</MudText>
+                                            break;
+                                        case PageType.Details:
+                                            <MudText Typo="Typo.h6">@Localizer["CheckpointNormDetails"]</MudText>
+                                            break;
+                                    }
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    @switch (pageType)
+                                    {
+                                        case PageType.Details:
+
+                                            <MudChip Variant="Variant.Text" Color="Color.Success" OnClick="() => CheckpointNormUpdate((int)Norm_Id)" @ontouchstart="() => CheckpointNormUpdate((int)Norm_Id)">
+                                                @Localizer["edit"]
+                                                <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
+                                            </MudChip>
+                                            break;
+                                        case PageType.Create:
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["create"]</MudChip>
+                                            break;
+                                        case PageType.Update:
+                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["update"]</MudChip>
+                                            break;
+                                    }
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudTextField Label="@Localizer1["CheckpointNormStandar"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_CheckpointNorm.Standard" For="@(() => _CheckpointNorm.Standard)" />
+
+
+                                @if (user.UserType == 1)
+                                {
+                                    <MudSwitch Class="mt-3" Label="Is active?" ReadOnly="@(pageType == PageType.Details)" @bind-Checked="_CheckpointNorm.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                                }
+
+                                <MudItem>
+
+                                    @if (pageType != PageType.Details)
+                                    {
+
+                                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+                                            <InputFile id="previousSketch" OnChange="@( (e) => UploadFiles(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+                                            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                                                       HtmlTag="label"
+                                                       Variant="Variant.Filled"
+                                                       Color="Color.Primary"
+                                                       StartIcon="@Icons.Material.Filled.Image"
+                                                       for="previousSketch">
+                                                Load picture
+                                            </MudButton>
+                                            @if (CheckpointImages.Count == 0)
+                                            {
+                                                <MudItem>
+                                                    <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                                                        Open Camera
+                                                    </MudButton>
+                                                </MudItem>
+                                            }
+                                            else if (CheckpointImages.Count > 0)
+                                            {
+                                                <MudItem>
+                                                    <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                                                </MudItem>
+                                            }
+                                        </MudItem>
+                                    }
+
+
+                                    <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+                                        @if (CheckpointImages.Count > 0 || tempCapturedImages.Count > 0)
+                                        {
+                                            <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+
+                                                    @foreach (var (image, index) in CheckpointImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class=" mr-8 mb-4">
+                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => OpenDeleteDialog(index, true, false, image.imgId)"></MudIcon>
+                                                                </MudTooltip>
+                                                            </MudItem>
+                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image.src Alt="Sketch" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenSketchDialog(index, 0)" />
+                                                        </MudItem>
+                                                    }
+
+                                                    @foreach (var (image, index) in tempCapturedImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class=" mr-8 mb-4">
+                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => OpenDeleteDialog(index, true, true)"></MudIcon>
+                                                                </MudTooltip>
+                                                            </MudItem>
+                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="80" Width="130" Src=@image Alt="Sketch" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenSketchDialog(index, 1)" />
+                                                        </MudItem>
+                                                    }
+                                                </MudItem>
+
+                                            </div>
+                                        }
+
+
+                                    </MudItem>
+                                </MudItem>
+                              
+                            </MudCardContent>
+                            <MudCardActions>
+                                @if (pageType != PageType.Details)
+                                {
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])</MudButton>
+                                }
+                                <MudButton @onclick="(() => CancelFunction())" @ontouchstart="(() => CancelFunction())" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+
 
 
         </MudItem>

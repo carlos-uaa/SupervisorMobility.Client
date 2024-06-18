@@ -1,6 +1,10 @@
 using BlazorCameraStreamer;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities.IS;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage.CheckpointNormPage
 {
@@ -151,26 +155,35 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage.Checkpo
                         case PageType.Update:
                             if (CheckpointId != null)
                             {
-                                _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId, false);
-                                //_Checkpoint
-                                _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
-                                _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/Checkpoint/", disabled: true));
+                                _CheckpointNorm = await _CheckPointServices.GetCheckpointNorm((int)Norm_Id, true);
+                                _Checkpoint = _CheckpointNorm.Checkpoint;
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
+                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                                _links.Add(new BreadcrumbItem(text: Localizer["UpdateStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
+                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars", disabled: true));
                             }
                             break;
                     }
 
-                    if (_Checkpoint.Sketches != null && _Checkpoint.Sketches.Count > 0)
-                    {
-                        foreach (var Sketch in _Checkpoint.Sketches)
-                        {
-                            var imageUrl = await _CheckPointServices.ShowImageCheckpoint(Sketch.FileUploadId);
-                            ImgDto tmpimgDto = new();
-                            tmpimgDto.src = imageUrl;
-                            tmpimgDto.imgId = Sketch.FileUploadId;
 
-                            CheckpointImages.Add(tmpimgDto);
+                    if (pageType != PageType.Create)
+                    {
+                        if (_CheckpointNorm.Sketches != null && _CheckpointNorm.Sketches.Count > 0)
+                        {
+                            foreach (var Sketch in _CheckpointNorm.Sketches)
+                            {
+                                var imageUrl = await _CheckPointServices.ShowImageCheckpointNorm(Sketch.FileUploadId);
+                                ImgDto tmpimgDto = new();
+                                tmpimgDto.src = imageUrl;
+                                tmpimgDto.imgId = Sketch.FileUploadId;
+
+                                CheckpointImages.Add(tmpimgDto);
+                            }
                         }
                     }
+
+
+
 
                     // if (pageType != PageType.Create)
                     // {
@@ -373,7 +386,193 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage.Checkpo
                 Snackbar.Add($"Failed to remove Sketch", Severity.Error);
             }
         }
+        void CheckpointNormUpdate(int CheckpointsId)
+        {
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{CheckpointId}/UpdateStandars/{CheckpointsId}", forceLoad: true);
+        }
+        private async void SubmitOperations()
+        {
+            switch (pageType)
+            {
+                case PageType.Create:
 
+                    var resultCreate = await _CheckPointServices.CreatecheckpointNorm(_CheckpointNorm);
+
+                    if (resultCreate != null)
+                    {
+                        _CheckpointNorm = resultCreate;
+                        await UploadCheckpointNormScketches(CheckpointImages.Select(img => img.src).ToList(), _CheckpointNorm.CheckpointNormId);
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Create Succes", Severity.Success);
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{CheckpointId}");
+
+                    }
+                    else
+                    {
+                        //suces create
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Create Fail", Severity.Error);
+                    }
+
+                    break;
+
+                case PageType.Update:
+
+                    CheckpointNorm? resultUpdate = await _CheckPointServices.UpdatecheckpointNorm(_CheckpointNorm);
+
+                    if (resultUpdate != null)
+                    {
+                        await UploadCheckpointNormScketches(tempCapturedImages, (int)CheckpointId);
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Update Succes", Severity.Success);
+                        NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{CheckpointId}");
+                    }
+                    else
+                    {
+                        //suces create
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Update Fail", Severity.Error);
+                    }
+                    break;
+            }
+        }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task UploadCheckpointNormScketches(List<string> images, int Checkpoint_Norm_id)
+        {
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "Sketch.png");
+
+
+                    var result = await _CheckPointServices.UploadSketchCheckpointNorm(content, Checkpoint_Norm_id);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to Checkpoint Item", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to Checkpoint Item", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
+
+        void CancelFunction()
+        {
+            NavigationManager.NavigateTo($"/configurationIS/CheckpointNorm/Details/{CheckpointId}");
+        }
+
+        private async Task UploadFiles(InputFileChangeEventArgs e, int type)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        switch (pageType)
+                        {
+                            case PageType.Create:
+                                ImgDto _tmpimg = new ImgDto();
+                                _tmpimg.src = mediaUri;
+                                    CheckpointImages.Add(_tmpimg);
+                                
+                                break;
+                            case PageType.Update:
+                                    tempCapturedImages.Add(mediaUri);
+                                break;
+
+                        }
+
+                    }
+                }
+            }
+        }
 
 
         /////

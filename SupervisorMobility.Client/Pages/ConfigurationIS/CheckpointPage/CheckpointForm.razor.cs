@@ -652,22 +652,40 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
             {
                 if (isTemporal)
                 {
-                    if (removeImageIndex < tempCapturedImages.Count)
+                    //temporal
+                    if (removeImageId != 0)
                     {
-                        tempCapturedImages.RemoveAt(removeImageIndex);
+                        //Imagen de Norm/standar
+                        tempStandarImages[removeImageId].RemoveAt(removeImageIndex);
                     }
+                    else
+                    {
+                        //imagen de Checkpoint
+                        if (removeImageIndex < tempCapturedImages.Count)
+                        {
+                            tempCapturedImages.RemoveAt(removeImageIndex);
+                        }
+                    }
+
+                      
                 }
                 else
                 {
+                    //existente
                     if (removeImageIndex < CheckpointImages.Count)
                     {
                         if(removeImageId != 0)
-                            RemoveSketch(removeImageId);
+                        {
+                            StandarImages[removeImageId].RemoveAt(removeImageIndex);
+                            RemoveNormSketch(removeImageIndex);
+                        }
+                        else
+                        {
 
-                        CheckpointImages.RemoveAt(removeImageIndex);
-                        //llamar funcion para eliminar imagen
+                            CheckpointImages.RemoveAt(removeImageIndex);
+                            RemoveSketch(removeImageIndex);
+                        }
                         visibleDelete = false;
-
                     }
                 }
             }
@@ -678,7 +696,26 @@ namespace SupervisorMobility.Client.Pages.ConfigurationIS.CheckpointPage
 
         private async Task RemoveSketch(int fileUploadId)
         {
-            var response = await _CheckPointServices.RemoveSketchCheckPoint((int)CheckpointId, fileUploadId);
+            var response = await _CheckPointServices.RemoveSketchCheckPoint(removeImageId, fileUploadId);
+            if (response)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Sketch removed", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Failed to remove Sketch", Severity.Error);
+            }
+        }
+
+
+        private async Task RemoveNormSketch(int fileUploadId)
+        {
+            var response = await _CheckPointServices.RemoveSketchCheckPointNorm((int)CheckpointId, fileUploadId);
             if (response)
             {
                 Snackbar.Clear();

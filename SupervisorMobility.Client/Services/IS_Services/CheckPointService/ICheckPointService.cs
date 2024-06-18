@@ -20,6 +20,7 @@ namespace SupervisorMobility.Client.Services.IS_Services.CheckpointService
 
         #region CheckpointNorm
         Task<CheckpointNorm> CreatecheckpointNorm(CheckpointNorm checkpointNorm);
+        Task<CheckpointNorm> UpdatecheckpointNorm(CheckpointNorm checkpointNorm);
         Task<CheckpointNorm> GetCheckpointNorm(int id_CheckpointNorm, bool includeSketches = false);
         //Task<bool> UpdatecheckpointNormSequence(int Checkpoint_Id, CheckpointNorm datacheckpointNorm);
         Task<CheckpointNorm> DeleteCheckpointNorm(int Checkpoint_Id);
