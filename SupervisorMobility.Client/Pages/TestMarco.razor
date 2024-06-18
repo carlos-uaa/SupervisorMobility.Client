@@ -1,0 +1,107 @@
+﻿@page "/highlighter"
+@using MudBlazor
+@using System.Globalization
+@using System.Text
+@using System.Text.RegularExpressions
+
+<MudTextField @bind-Value="BaseText" Label="BaseText" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+
+
+<MudText Typo="Typo.h5">
+    @((MarkupString)HighlightedText)
+</MudText>
+
+<MudPaper Class="pa-4" Style="margin-top: 20px;">
+    <MudList>
+        @foreach (var term in Terms)
+        {
+            <MudListItem>
+                <MudItem Style="display: flex; flex-direction: row;">
+                    <MudText @onclick="() => HighlightTerm(term)" Class="cursor-pointer">
+                        @term
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Edge="Edge.End" @onclick="() => RemoveTerm(term)" />
+                </MudItem>
+            </MudListItem>
+        }
+    </MudList>
+
+    <MudTextField @bind-Value="NewTerm" Label="Añadir nuevo término" Variant="Variant.Filled" Class="mb-2" />
+    <MudButton OnClick="AddTerm" Variant="Variant.Filled">Añadir</MudButton>
+</MudPaper>
+
+@code {
+    private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados. Me equivoco una y otra vez Y te puedo asegurar Que el paso de los años No impide que vuelva a tropezar Ni que me vuelva a romper Contra otro desengaño Volvería a mis adicciones Si acaso fuera Si fuera necesario Caeré en los mismos errores Si acaso fuera Si fuera necesario";   
+    private List<string> Terms = new List<string> { "texto", "ejemplo", "términos" };
+    private string HighlightedText => ApplyHighlights(BaseText, Terms, SelectedTerm);
+    private string SelectedTerm;
+    private string NewTerm;
+
+    private void HighlightTerm(string term)
+    {
+        SelectedTerm = term;
+    }
+
+    private void AddTerm()
+    {
+        if (!string.IsNullOrWhiteSpace(NewTerm) && !Terms.Contains(NewTerm, StringComparer.OrdinalIgnoreCase))
+        {
+            Terms.Add(NewTerm);
+            NewTerm = string.Empty;
+        }
+    }
+
+    private void RemoveTerm(string term)
+    {
+        Terms.Remove(term);
+    }
+
+    private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
+    {
+        if (string.IsNullOrEmpty(highlightTerm))
+        {
+            return text;
+        }
+
+        var normalizedText = Normalize(text);
+        var normalizedHighlightTerm = Normalize(highlightTerm);
+
+        var result = new StringBuilder(text);
+
+        foreach (var term in terms)
+        {
+            var normalizedTerm = Normalize(term);
+
+            if (normalizedTerm == normalizedHighlightTerm)
+            {
+                // Aplicar resaltado solo si coincide con el término seleccionado
+                result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>"));
+            }
+        }
+
+        return result.ToString();
+
+    }
+
+    private static string Normalize(string input)
+    {
+       
+        if (string.IsNullOrEmpty(input))
+        {
+            return string.Empty;
+        }
+
+        input = input.Normalize(NormalizationForm.FormD)
+                     .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                     .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
+                     .ToString()
+                     .ToLowerInvariant();
+
+        return input;
+    }
+
+    private static string ReplaceInsensitive(string text, string search, string replacement)
+    {
+        return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+}
