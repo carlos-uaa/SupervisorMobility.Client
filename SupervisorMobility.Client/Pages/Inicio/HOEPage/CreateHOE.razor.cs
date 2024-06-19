@@ -92,6 +92,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
 
             _products = await ProductsServices.GetProducts();
+            _sosHub.Plan = "[Current]";
+            _sosHub.SourcePlan = "[Current]";
             AddItem();
 
             StateHasChanged();
@@ -256,7 +258,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
         }
 
-        private async Task UploadImages(List<string> images, int kaizenId, bool isPrevious)
+        private async Task UploadImages(List<string> images, int sosHubId)
         {
 
             if (images.Count > 0)
@@ -311,22 +313,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                     content.Add(fileContent, "\"file\"", "evidence.png");
 
 
-                    //var result = isPrevious
-                    // ? await FilesServices.UploadEvidencesKaizenPrevious(content, kaizenId)
-                    // : await FilesServices.UploadEvidencesKaizenThen(content, kaizenId);
+                    var result = SOSHubServices.AddImageToSOSHub(content, sosHubId);
 
-                    //if (result is not null)
-                    //{
-                    //    Snackbar.Configuration.MaxDisplayedSnackbars = 10;
-                    //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    //    Snackbar.Add("Image Added to Kaizen", Severity.Info);
-                    //}
-                    //else
-                    //{
-                    //    Snackbar.Clear();
-                    //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    //    Snackbar.Add("Failed to upload Image to Kaizen", Severity.Error);
-                    //}
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to Kaizen", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to Kaizen", Severity.Error);
+                    }
 
                 }
 
@@ -337,7 +337,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private async Task<AsyncVoidMethodBuilder> UploadEvidence()
         {
-            //await UploadImages(capturedImages, _kaizen.KaizenId, true);
+            await UploadImages(capturedImages, _sosHub.SOSHubId);
             //await UploadImages(capturedImagesThen, _kaizen.KaizenId, false);
 
             return new AsyncVoidMethodBuilder();
@@ -547,6 +547,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         {
 
             _sosHub.AppliedModelId = productId;
+            _sosHub.IsActive = true;
 
             if (!(items == null || !items.Any()))
             {
@@ -562,20 +563,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 }
             }
 
-            //var result = await SOSServices.CreateSOSHub(_sosHub);
+            var result = await SOSHubServices.CreateSOScollection(_sosHub);
 
-            //if (result != null)
-            //{
-            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            //    Snackbar.Add($"SOS Created", Severity.Info);
+            if (result != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"SOS Created", Severity.Info);
 
-            //    _sosHub = result;
-            //    _ = await UploadEvidence();
+                _sosHub = result;
+                _ = await UploadEvidence();
 
-            //    NavigationManager.NavigateTo("/sosHub");
-            //}
-            //else
-            //    await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
+                NavigationManager.NavigateTo("/sosHub");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); 
 
         }
 
