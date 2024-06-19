@@ -58,6 +58,29 @@
 
     private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
     {
+        // if (string.IsNullOrEmpty(highlightTerm))
+        // {
+        //     return text;
+        // }
+
+        // var normalizedText = Normalize(text);
+        // var normalizedHighlightTerm = Normalize(highlightTerm);
+
+        // var result = new StringBuilder(text);
+
+        // foreach (var term in terms)
+        // {
+        //     var normalizedTerm = Normalize(term);
+
+        //     if (normalizedTerm == normalizedHighlightTerm)
+        //     {
+        //         // Aplicar resaltado solo si coincide con el término seleccionado
+        //         result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>"));
+        //     }
+        // }
+
+        // return result.ToString();
+
         if (string.IsNullOrEmpty(highlightTerm))
         {
             return text;
@@ -74,18 +97,27 @@
 
             if (normalizedTerm == normalizedHighlightTerm)
             {
-                // Aplicar resaltado solo si coincide con el término seleccionado
-                result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>"));
+                result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
             }
         }
 
         return result.ToString();
-
     }
 
     private static string Normalize(string input)
     {
-       
+        // if (string.IsNullOrEmpty(input))
+        // {
+        //     return string.Empty;
+        // }
+
+        // input = input.Normalize(NormalizationForm.FormD)
+        //              .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+        //              .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
+        //              .ToString()
+        //              .ToLowerInvariant();
+
+        // return input;
         if (string.IsNullOrEmpty(input))
         {
             return string.Empty;
@@ -100,8 +132,17 @@
         return input;
     }
 
-    private static string ReplaceInsensitive(string text, string search, string replacement)
+    private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
     {
-        return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        // return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        string normalizedText = Normalize(text);
+
+        return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+        {
+            // Encontrar la coincidencia en el texto original basado en el índice
+            int startIndex = m.Index;
+            string originalMatch = text.Substring(startIndex, search.Length);
+            return $"<mark>{originalMatch}</mark>";
+        }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     }
 }
