@@ -9,10 +9,12 @@ using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 using System;
+using System.Formats.Asn1;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
@@ -22,12 +24,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
-        private DateTime? createdDateTime = DateTime.Now;
-        private DateTime? modifiedDateTime = DateTime.Now;
+        private System.DateTime? createdDateTime = System.DateTime.Now;
+        private System.DateTime? modifiedDateTime = System.DateTime.Now;
 
         public string hour1 { get; set; }
         TimeSpan? startHour = new TimeSpan(00, 00, 00);
-        DateTime newDate1;
+        System.DateTime newDate1;
         //User
         private string json = string.Empty;
         public User user = new();
@@ -68,6 +70,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         {
             public string Commentary { get; set; }
         }
+
+        //Common direction
+        private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed py-2 mt-4 mud-width-full mud-height-full z-10";
+        private string DragClass = DefaultDragClass;
+
+        private List<FileToDisplay> fileNames = new List<FileToDisplay>();
+        private List<IBrowserFile> fileNames2 = new List<IBrowserFile>();
+        private int height = 10;
+
+        private bool upload = true;
+
+        private int maxAllowedFiles = 10;
+        private long maxFileSize = long.MaxValue;
+
+        private class FileToDisplay
+        {
+            public string name { get; set; }
+            public string ftype { get; set; }
+            public string message { get; set; }
+        }
+
 
         List<ItemModel> items = new List<ItemModel>();
 
@@ -585,6 +608,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             {
                 foreach (var item in items)
                 {
+                    if (string.IsNullOrEmpty(item.Commentary))
+                    {
+                        Snackbar.Add($"Write down the commentary first!", Severity.Warning);
+                        return;
+                    }
                     var processSheetCommentary = new Commentary
                     {
                         ComentaryId = 0,
@@ -610,6 +638,97 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); 
 
+        }
+
+
+        private void OnInputFileChanged(InputFileChangeEventArgs e)
+        {
+            ClearDragClass();
+            fileNames.Clear();
+            fileNames2.Clear();
+            foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+            {
+                fileNames2.Add(file);
+                fileNames.Add(new FileToDisplay() { name = file.Name, ftype = file.ContentType });
+            }
+            Console.WriteLine($"{fileNames2.Count}");
+
+            upload = false;
+
+            // Ajusta la altura sumando 5vh por cada archivo cargado
+            height = 10 + (fileNames.Count * 5);
+        }
+
+        private async Task Clear()
+        {
+            upload = true;
+            fileNames.Clear();
+            fileNames2.Clear();
+
+            ClearDragClass();
+            height = 10;
+            await Task.Delay(100);
+        }
+
+        private async Task Upload()
+        {
+            //Upload the files here
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            //call function upload files
+            Console.WriteLine($" en carga {fileNames2.Count}");
+
+
+            foreach (var file in fileNames2)
+            {
+                using var content = new MultipartFormDataContent();
+                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                content.Add(
+                         content: fileContent,
+                         name: "\"file\"",
+                fileName: file.Name);
+
+                //var result = await FilesServices.UploadEvidences(content, _sosHub.SOSHubId);
+                //if (result is not null)
+                //{
+                //    Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //    Snackbar.Add($"{file.Name} Added to Lup {LupId}", Severity.Info);
+                //}
+                //else
+                //{
+                //    Snackbar.Clear();
+                //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                //    Snackbar.Add($"Failed to upload Evidence to Lup", Severity.Error);
+                //    break;
+                //}
+            }
+
+            fileNames.Clear();
+            fileNames2.Clear();
+            //_lup = await LupServices.GetLupByIdWhitFile(LupId);
+            //foreach (var evidence in _lup.Evidences)
+            //{
+            //    if (evidence.ContentType == "image/png")
+            //    {
+            //        var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
+            //        imageUrls[evidence.FileUploadId] = imageUrl;
+            //    }
+            //}
+            StateHasChanged();
+
+            upload = true;
+        }
+
+        private void SetDragClass()
+        {
+            DragClass = $"{DefaultDragClass} mud-border-primary";
+        }
+
+        private void ClearDragClass()
+        {
+            DragClass = DefaultDragClass;
         }
 
 
