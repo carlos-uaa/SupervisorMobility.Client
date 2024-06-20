@@ -545,7 +545,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private async Task CreateNewSOSHub()
         {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
+            if (string.IsNullOrEmpty(_sosHub.OperationDescription))
+            {
+                Snackbar.Add($"Write down the Operation Description first", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
+            {
+                Snackbar.Add($"Write down the Process Sheet plan first", Severity.Warning);
+                return;
+            }
+            if (productId == new int())
+            {
+                Snackbar.Add($"First select a product!", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrEmpty(_sosHub.SourcePlan))
+            {
+                Snackbar.Add($"Write down the source plan first", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrEmpty(_sosHub.Plan))
+            {
+                Snackbar.Add($"Write down the plan first", Severity.Warning);
+                return;
+            }
+            if (string.IsNullOrEmpty(_sosHub.Status))
+            {
+                Snackbar.Add($"First select a status!", Severity.Warning);
+                return;
+            }
             _sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
 
