@@ -240,8 +240,38 @@
                                     <td>
                                         <MudText>Training time</MudText>
                                     </td>
-                                    <td>
-                                        <MudTimePicker @bind-Time="_sosHub.TrainingTime" TimeEditMode="TimeEditMode.Normal" Label="Select Time" Margin="Margin.Dense" />
+                                    <td style="display:flex;">
+                                            <MudAutocomplete T="int"
+                                                Label=@Localizer["Hours"]
+                                                Variant="Variant.Text"
+                                                AnchorOrigin="Origin.BottomCenter"
+                                                @bind-Value="hourId"
+                                                OpenIcon="@Icons.Material.Filled.AccessTime"
+                                                AdornmentColor="Color.Info"
+                                                Clearable
+                                                ResetValueOnEmptyText
+                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ToStringFunc="ReturnHours"
+                                                SearchFunc="SearchHour"
+                                                MaxItems="24">
+
+                                            </MudAutocomplete>
+                                            <MudAutocomplete T="int"
+                                                Class="ml-5"
+                                                Label=@Localizer["Minutes"]
+                                                Variant="Variant.Text"
+                                                AnchorOrigin="Origin.BottomCenter"
+                                                @bind-Value="minuteId"
+                                                OpenIcon="@Icons.Material.Filled.Timer"
+                                                AdornmentColor="Color.Info"
+                                                Clearable
+                                                ResetValueOnEmptyText
+                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ToStringFunc="ReturnMinutes"
+                                                SearchFunc="SearchMinute"
+                                                MaxItems="60">
+                                                
+                                            </MudAutocomplete>
                                     </td>
                                 </tr>
                                 <tr>
@@ -448,7 +478,7 @@
     <DialogContent>
         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
 
-            <InputFile id="previousEvidence" OnChange="@( (e) => UploadFiles(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+            <InputFile id="previousEvidence" OnChange="@( (e) => AddImages(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
             <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
                        HtmlTag="label"
                        Variant="Variant.Filled"
@@ -486,7 +516,7 @@
                                         <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
                                     </MudTooltip>
                                 </MudItem>
-                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index, 0)" />
+                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
                             </MudItem>
                         }
                     </MudItem>
@@ -512,7 +542,7 @@
     </TitleContent>
     <DialogContent>
         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="UploadFiles" Accept=".mp4, .mov, .wmv, .avi, .mkv, .flv, .webm">
+            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="AddVideos" Accept=".mp4, .mov, .wmv, .avi, .mkv, .flv, .webm">
                 <ButtonTemplate Context="fileContext">
                     <MudButton HtmlTag="label"
                                Variant="Variant.Filled"
@@ -523,20 +553,6 @@
                     </MudButton>
                 </ButtonTemplate>
             </MudFileUpload>
-            @if (MediaUris.Count != 0)
-            {
-                <MudButton OnClick=@(async () => await Submit()) ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Success" Class="mr-2" Disabled=@DisabledFinish>
-                    @if (DisabledFinish)
-                    {
-                        <MudText>Loading</MudText>
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                    }
-                    else
-                    {
-                        <MudText>Upload</MudText>
-                    }
-                </MudButton>
-            }
         </MudItem>
         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
             @if (MediaUris != null && MediaUris.Count > 0)

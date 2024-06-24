@@ -16,7 +16,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
     public partial class CreateHOE
     {
-
+        #region variables
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
@@ -103,6 +103,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         int supervisorOwnerId = 0;
         int supervisorEditorId = 0;
 
+        private readonly List<int> Hours = Enumerable.Range(1, 24).ToList();
+        private readonly List<int> Minutes = Enumerable.Range(1, 60).ToList();
+        int hourId = 0;
+        int minuteId = 0;
+
+
+
+        //Show Evidence 
+        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visibleEvidence = false;
+
+        private int photoIndex = 0;
+        private void OpenEvidenceDialog(int index)
+        {
+            photoIndex = index;
+            visibleEvidence = true;
+
+        }
+
+
+        #endregion
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -131,501 +154,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             StateHasChanged();
         }
 
-        public async void SetUserInfo()
-        {
-            if(user.UserType == 1)
-            {
-                _supervisors = await UsersService.GetUsersByType( 3, false, false);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-            }
-            if (user.UserType == 2)
-            {
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors.Add(sv);
-                }
-
-            }
-            else if (user.UserType == 3)
-            {
-                var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
-
-                supervisorOwnerId = user.UserId;
-                supervisorEditorId = user.UserId;
-
-                _supervisors.Add(user);
-            }
-            StateHasChanged();
-
-        }
-
-
-
-        //Local storage user
-        private async Task GetUserAsync()
-        {
-            if (!await TryGetAsync())
-                user = new();
-        }
-        private async Task<bool> TryGetAsync()
-        {
-            bool hasProperty = await HasPropertyAsync();
-            if (hasProperty)
-            {
-                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-                user = JsonSerializer.Deserialize<User>(json) ?? new();
-            }
-            return hasProperty;
-        }
-        private async Task<bool> HasPropertyAsync()
-            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
-
-
-
-        public void AnalyzeText()
-        {
-            segments.Clear();
-            allCriticalPoints.Clear();
-            BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
-
-            var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var segmentText in segmentTexts)
-            {
-                var segment = new Segment
-                {
-                    Analysis = segmentText
-                };
-
-                var mainPointRegex = new Regex(@"#(.*?)#");
-                var mainPointMatch = mainPointRegex.Match(segmentText);
-
-                if (mainPointMatch.Success)
-                {
-                    segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-                }
-                else
-                {
-                    segment.MainPoint = string.Empty;
-                }
-
-                var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-                var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-                foreach (Match match in criticalPointMatches)
-                {
-                    if (match.Success)
-                    {
-                        segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-                    }
-                }
-
-                segments.Add(segment);
-            }
-
-            allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-            StateHasChanged();
-        }
-
-        public void ShowStepsDialog()
-        {
-            visibleStepsDialog = true;
-        }
-
-        void CloseStepsDialog()
-        {
-            visibleStepsDialog = false;
-        }
-
-        public void ShowImagesDialog()
-        {
-            visibleImagesDialog = true;
-        }
-
-        void CloseImagesDialog()
-        {
-            visibleImagesDialog = false;
-        }
-
-        //Camera
-        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
-
-        private List<string> capturedImages = new List<string>();
-
-        private bool visibleCamera = false;
-        private int imageIndex = 0;
-
-        private void OpenCameraDialog(int index)
-        {
-            imageIndex = index;
-            visibleCamera = true;
-        }
-
-        private CameraStreamer CameraStreamerReference;
-
-        private string? cameraId = null;
-
-        private int frameCount;
-
-        private string imageData;
-
-        private async void OnRenderedHandler()
-        {
-            frameCount = 0;
-
-            if (await CameraStreamerReference.GetCameraAccessAsync())
-            {
-                await CameraStreamerReference.ReloadAsync();
-
-            }
-        }
-
-        private async void Stop()
-        {
-            await CameraStreamerReference.StopAsync();
-        }
-
-        private void OnFrameHandler(string _)
-        {
-            ++frameCount;
-        }
-
-        private async void GetCurrentFrame()
-        {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
-
-            if (!string.IsNullOrEmpty(imageData))
-            {
-                if (imageIndex == 1)
-                {
-                    capturedImages.Add(imageData);
-                }
-            }
-            visibleCamera = false;
-            StateHasChanged();
-            Stop();
-        }
-
-        private void RemoveImage(int index, int imgIndex)
-        {
-
-            if (index >= 0 && index < capturedImages.Count)
-            {
-                if (imgIndex == 1)
-                {
-                    capturedImages.RemoveAt(index);
-                }
-            }
-        }
-
-        private bool IsValidBase64String(string base64String)
-        {
-            if (string.IsNullOrEmpty(base64String))
-            {
-                return false;
-            }
-
-            try
-            {
-                Convert.FromBase64String(base64String);
-                return true;
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
-        }
-
-        private async Task UploadImages(List<string> images, int sosHubId)
-        {
-
-            if (images.Count > 0)
-            {
-                foreach (var imageData in images)
-                {
-                    if (string.IsNullOrEmpty(imageData))
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("No image data to upload", Severity.Warning);
-                        continue;
-                    }
-
-                    string base64Data = "";
-                    if (imageData.Contains("data:image/png;base64,"))
-                    {
-                        base64Data = imageData.Replace("data:image/png;base64,", "");
-                    }
-                    else if (imageData.Contains("data:image/jpeg;base64,"))
-                    {
-                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
-                    }
-                    else if (imageData.Contains("data:image/jpg;base64,"))
-                    {
-                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
-                    }
-                    else if (imageData.Contains("data:image/gif;base64,"))
-                    {
-                        base64Data = imageData.Replace("data:image/gif;base64,", "");
-                    }
-                    else if (imageData.Contains("data:image/svg+xml;base64,"))
-                    {
-                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
-                    }
-
-                    if (!IsValidBase64String(base64Data))
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Invalid image data", Severity.Error);
-                        continue;
-                    }
-
-                    var imageBytes = Convert.FromBase64String(base64Data);
-
-                    using var content = new MultipartFormDataContent();
-                    var imageStream = new MemoryStream(imageBytes);
-                    var fileContent = new StreamContent(imageStream);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                    content.Add(fileContent, "\"file\"", "evidence.png");
-
-
-                    var result = SOSHubServices.AddImageToSOSHub(content, sosHubId);
-
-                    if (result is not null)
-                    {
-                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Image Added to Kaizen", Severity.Info);
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Failed to upload Image to Kaizen", Severity.Error);
-                    }
-
-                }
-
-                images.Clear();
-            }
-
-        }
-
-        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
-        {
-            await UploadImages(capturedImages, _sosHub.SOSHubId);
-            //await UploadImages(capturedImagesThen, _kaizen.KaizenId, false);
-
-            return new AsyncVoidMethodBuilder();
-        }
-
-        private async Task UploadFiles(InputFileChangeEventArgs e, int type)
-        {
-            foreach (var file in e.GetMultipleFiles())
-            {
-                if (file.ContentType.StartsWith("image/"))
-                {
-                    using (Stream mediaStream = file.OpenReadStream(file.Size))
-                    {
-                        MemoryStream ms = new();
-                        await mediaStream.CopyToAsync(ms);
-                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
-
-                        if (type == 1)
-                        {
-                            capturedImages.Add(mediaUri);
-                        }
-                    }
-                }
-            }
-        }
-        //Show Evidence 
-        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-
-        private bool visibleEvidence = false;
-
-        private int photoIndex = 0;
-        private void OpenEvidenceDialog(int index, int evidenceIndex)
-        {
-            photoIndex = index;
-            visibleEvidence = true;
-
-        }
-
-        //Videos
-        public void ShowVideosDialog()
-        {
-            visibleVideosDialog = true;
-        }
-
-        void CloseVideosDialog()
-        {
-            visibleVideosDialog = false;
-        }
-
-        private async void UploadFiles(InputFileChangeEventArgs e)
-        {
-            List<string[]> IgnoredFiles = new List<string[]>();
-            string message;
-
-            var files = e.GetMultipleFiles();
-            foreach (var file in files)
-            {
-                string contentType = "";
-
-                if (!file.ContentType.StartsWith("video/"))
-                {
-                    IgnoredFiles.Add(new string[] { file.Name, "Wrong Type" });
-                    continue;
-                }
-                //content.Clear();
-                //content = await GetDataTableFromExcel(file);
-                if (!MediaUris.Keys.Contains(file.Name))
-                {
-                    using (Stream mediaStream = file.OpenReadStream(file.Size))
-                    {
-                        MemoryStream ms = new();
-                        await mediaStream.CopyToAsync(ms);
-                        string MediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
-
-                        MediaUris.Add(file.Name, (file.ContentType, MediaUri));
-                    }
-                }
-            }
-            //SetDragClass();
-            //ClearDragClass();
-            if (IgnoredFiles.Count != 0)
-            {
-                string confirmMessage = $"The following files where ignored: ";
-                foreach (string[] item in IgnoredFiles)
-                {
-                    confirmMessage += $"\n Name: {item[0]} \n Reason: {item[1]}";
-                }
-                await JSRuntime.InvokeAsync<bool>("confirm", confirmMessage);
-            }
-
-            StateHasChanged();
-        }
-
-        public async Task Submit()
-        {
-            DisabledFinish = true;
-
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
-            using var content = new MultipartFormDataContent();
-
-            foreach (var item in MediaUris)
-            {
-                string base64Data = item.Value.Item2.Split(',')[1];
-                if (string.IsNullOrEmpty(base64Data))
-                {
-                    FileErrorMessage(item.Key);
-                    continue;
-                }
-
-                try
-                {
-                    var imageBytes = Convert.FromBase64String(base64Data);
-                    var imageStream = new MemoryStream(imageBytes);
-                    imageStream.Position = 0;
-                    var fileContent = new StreamContent(imageStream);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.Value.Item1);
-
-                    content.Add(
-                        content: fileContent,
-                        name: "Files",
-                        fileName: item.Key);
-                }
-                catch (FormatException)
-                {
-                    FileErrorMessage(item.Key);
-                    continue;
-                }
-                catch (Exception)
-                {
-                    Snackbar.Add($"Error converting video to uploadable data: {item.Key}", Severity.Error);
-                }
-
-            }
-
-            var response = await TestService.UploadVideoFiles(content);
-
-            switch (response.Item1)
-            {
-                case 500:
-                    Snackbar.Add("Error uploading files ", Severity.Error);
-                    Console.WriteLine(response.Item2);
-                    break;
-                case 400:
-                    Snackbar.Add("Error uploading some files ", Severity.Warning);
-                    Console.WriteLine(response.Item2);
-                    break;
-                case 200:
-                    Snackbar.Add("Success uploading files ", Severity.Success);
-                    Console.WriteLine(response.Item2);
-                    break;
-            }
-            DisabledFinish = false;
-            //PirService.CreatePIR(pir);
-
-            //NotiService.CreateNotification(notification);
-        }
-
-        private void FileErrorMessage(string file)
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            Snackbar.Add($"File: {file} has invalid video data", Severity.Error);
-        }
-
-        private void DeleteItem(string key)
-        {
-            Console.WriteLine("Before deletion:");
-            foreach (var uri in MediaUris)
-            {
-                Console.WriteLine($"{uri.Key}");
-            }
-
-            if (MediaUris.ContainsKey(key))
-            {
-                MediaUris.Remove(key);
-                Console.WriteLine($"Deleted: {key}");
-                StateHasChanged();
-            }
-
-            Console.WriteLine("After deletion:");
-            foreach (var uri in MediaUris)
-            {
-                Console.WriteLine($"{uri.Key}");
-            }
-
-            InvokeAsync(StateHasChanged);
-        }
-
-
-        //Commentaries
-        void AddItem()
-        {
-            items.Add(new ItemModel());
-        }
-
-        void RemoveItem(ItemModel item)
-        {
-            if (items.Count > 1)
-            {
-                items.Remove(item);
-            }
-
-        }
 
         private async Task CreateNewSOSHub()
         {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
             if (string.IsNullOrEmpty(_sosHub.OperationDescription))
             {
@@ -692,10 +225,558 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 NavigationManager.NavigateTo("/sosHub");
             }
             else
-                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); 
+                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
 
         }
 
+        public async void SetUserInfo()
+        {
+            if(user.UserType == 1)
+            {
+                _supervisors = await UsersService.GetUsersByType( 3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            }
+            if (user.UserType == 2)
+            {
+                foreach (var sv in user.Subordinates.ToList())
+                {
+                    _supervisors.Add(sv);
+                }
+
+            }
+            else if (user.UserType == 3)
+            {
+                var plantId = (int)user.PlantId;
+                var areaId = (int)user.AreaId;
+
+                supervisorOwnerId = user.UserId;
+                supervisorEditorId = user.UserId;
+
+                _supervisors.Add(user);
+            }
+            StateHasChanged();
+
+        }
+
+        //Local storage user
+        #region localStorageUser
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+        #endregion
+
+        //Analize text and steps
+        #region Steps
+        public void AnalyzeText()
+        {
+            segments.Clear();
+            allCriticalPoints.Clear();
+            BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
+
+            var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var segmentText in segmentTexts)
+            {
+                var segment = new Segment
+                {
+                    Analysis = segmentText
+                };
+
+                var mainPointRegex = new Regex(@"#(.*?)#");
+                var mainPointMatch = mainPointRegex.Match(segmentText);
+
+                if (mainPointMatch.Success)
+                {
+                    segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
+                }
+                else
+                {
+                    segment.MainPoint = string.Empty;
+                }
+
+                var criticalPointsRegex = new Regex(@"\*(.*?)\*");
+                var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
+
+                foreach (Match match in criticalPointMatches)
+                {
+                    if (match.Success)
+                    {
+                        segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
+                    }
+                }
+
+                segments.Add(segment);
+            }
+
+            allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+            StateHasChanged();
+        }
+
+        public void ShowStepsDialog()
+        {
+            visibleStepsDialog = true;
+        }
+
+        void CloseStepsDialog()
+        {
+            visibleStepsDialog = false;
+        }
+
+        #endregion
+   
+        //Camera
+        #region Camera
+        private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
+        private List<string> capturedImages = new List<string>();
+
+        private bool visibleCamera = false;
+        private int imageIndex = 0;
+
+        private void OpenCameraDialog(int index)
+        {
+            imageIndex = index;
+            visibleCamera = true;
+        }
+
+        private CameraStreamer CameraStreamerReference;
+
+        private string? cameraId = null;
+
+        private int frameCount;
+
+        private string imageData;
+
+        private async void OnRenderedHandler()
+        {
+            frameCount = 0;
+
+            if (await CameraStreamerReference.GetCameraAccessAsync())
+            {
+                await CameraStreamerReference.ReloadAsync();
+
+            }
+        }
+
+        private async void Stop()
+        {
+            await CameraStreamerReference.StopAsync();
+        }
+
+        private void OnFrameHandler(string _)
+        {
+            ++frameCount;
+        }
+
+        private async void GetCurrentFrame()
+        {
+            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                if (imageIndex == 1)
+                {
+                    capturedImages.Add(imageData);
+                }
+            }
+            visibleCamera = false;
+            StateHasChanged();
+            Stop();
+        }
+
+
+        public void ShowImagesDialog()
+        {
+            visibleImagesDialog = true;
+        }
+
+        void CloseImagesDialog()
+        {
+            visibleImagesDialog = false;
+        }
+
+        #endregion
+
+        //Images
+        #region Images
+        private async Task AddImages(InputFileChangeEventArgs e, int type)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        if (type == 1)
+                        {
+                            capturedImages.Add(mediaUri);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RemoveImage(int index, int imgIndex)
+        {
+
+            if (index >= 0 && index < capturedImages.Count)
+            {
+                if (imgIndex == 1)
+                {
+                    capturedImages.RemoveAt(index);
+                }
+            }
+        }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        //Upload Images Videos
+        #region UploadEvidence
+        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
+        {
+            await UploadImages();
+            await UploadVideos();
+            await UploadFiles();
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+
+        private async Task UploadImages()
+        {
+
+            List<string> images = capturedImages;
+            int sosHubId = _sosHub.SOSHubId;
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "evidence.png");
+
+
+                    var result = await SOSHubServices.AddImageToSOSHub(content, sosHubId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to HOE", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to HOE", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
+        public async Task UploadVideos()
+        {
+            int sosHubId = _sosHub.SOSHubId;
+            DisabledFinish = true;
+
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+            using var content = new MultipartFormDataContent();
+            if(MediaUris.Count > 0)
+            {
+                foreach (var item in MediaUris)
+                {
+                    string base64Data = item.Value.Item2.Split(',')[1];
+                    if (string.IsNullOrEmpty(base64Data))
+                    {
+                        FileErrorMessage(item.Key);
+                        continue;
+                    }
+
+                    try
+                    {
+                        var imageBytes = Convert.FromBase64String(base64Data);
+                        var imageStream = new MemoryStream(imageBytes);
+                        imageStream.Position = 0;
+                        var fileContent = new StreamContent(imageStream);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.Value.Item1);
+
+                        content.Add(
+                            content: fileContent,
+                            name: "\"file\"",
+                            fileName: item.Key);
+                    }
+                    catch (FormatException)
+                    {
+                        FileErrorMessage(item.Key);
+                        continue;
+                    }
+                    catch (Exception)
+                    {
+                        Snackbar.Add($"Error converting video to uploadable data: {item.Key}", Severity.Error);
+                    }
+
+                    var result = await SOSHubServices.AddVideoToSOSHub(content, sosHubId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Video Added to HOE", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Video to HOE", Severity.Error);
+                    }
+
+                    DisabledFinish = false;
+                }
+                MediaUris.Clear();
+            }
+
+        }
+
+        private async Task UploadFiles()
+        {
+            int sosHubId = _sosHub.SOSHubId;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            Console.WriteLine($" en carga {fileNames2.Count}");
+
+            if(fileNames.Count > 0)
+            {
+                foreach (var file in fileNames2)
+                {
+                    using var content = new MultipartFormDataContent();
+                    var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                    content.Add(
+                             content: fileContent,
+                             name: "\"file\"",
+                    fileName: file.Name);
+
+                    var result = await SOSHubServices.AddCDToSOSHub(content, sosHubId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{file.Name} Added to HOE", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Failed to upload Evidence to HOE", Severity.Error);
+                        break;
+                    }
+                }
+
+                fileNames.Clear();
+                fileNames2.Clear();
+                StateHasChanged();
+
+                upload = true;
+            }
+        }
+
+        #endregion
+
+        //Videos Add and delete
+        #region videos
+        public void ShowVideosDialog()
+        {
+            visibleVideosDialog = true;
+        }
+
+        void CloseVideosDialog()
+        {
+            visibleVideosDialog = false;
+        }
+
+        private async void AddVideos(InputFileChangeEventArgs e)
+        {
+            List<string[]> IgnoredFiles = new List<string[]>();
+            string message;
+
+            var files = e.GetMultipleFiles();
+            foreach (var file in files)
+            {
+                string contentType = "";
+
+                if (!file.ContentType.StartsWith("video/"))
+                {
+                    IgnoredFiles.Add(new string[] { file.Name, "Wrong Type" });
+                    continue;
+                }
+
+                if (!MediaUris.Keys.Contains(file.Name))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string MediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        MediaUris.Add(file.Name, (file.ContentType, MediaUri));
+                    }
+                }
+            }
+
+            if (IgnoredFiles.Count != 0)
+            {
+                string confirmMessage = $"The following files where ignored: ";
+                foreach (string[] item in IgnoredFiles)
+                {
+                    confirmMessage += $"\n Name: {item[0]} \n Reason: {item[1]}";
+                }
+                await JSRuntime.InvokeAsync<bool>("confirm", confirmMessage);
+            }
+
+            StateHasChanged();
+        }
+
+
+        private void FileErrorMessage(string file)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"File: {file} has invalid video data", Severity.Error);
+        }
+
+        private void DeleteItem(string key)
+        {
+            Console.WriteLine("Before deletion:");
+            foreach (var uri in MediaUris)
+            {
+                Console.WriteLine($"{uri.Key}");
+            }
+
+            if (MediaUris.ContainsKey(key))
+            {
+                MediaUris.Remove(key);
+                Console.WriteLine($"Deleted: {key}");
+                StateHasChanged();
+            }
+
+            Console.WriteLine("After deletion:");
+            foreach (var uri in MediaUris)
+            {
+                Console.WriteLine($"{uri.Key}");
+            }
+
+            InvokeAsync(StateHasChanged);
+        }
+
+        #endregion
+
+        //Commentaries for process sheet
+        #region Commentaries
+        void AddItem()
+        {
+            items.Add(new ItemModel());
+        }
+
+        void RemoveItem(ItemModel item)
+        {
+            if (items.Count > 1)
+            {
+                items.Remove(item);
+            }
+
+        }
+
+        #endregion
+
+        //Highlight analysis text
+        #region Highlight
         private void HighlightTerm(string term)
         {
             visibleStepsDialog = false;
@@ -754,23 +835,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
         {
-            // return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             string normalizedText = Normalize(text);
             
             return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
             {
-                // Encontrar la coincidencia en el texto original basado en el índice
                 int startIndex = m.Index;
                 string originalMatch = text.Substring(startIndex, search.Length);
                 return $"<mark>{originalMatch}</mark>";
             }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
+        #endregion
+
+        //Common direction files
+        #region CommonDirection
 
         private void OnInputFileChanged(InputFileChangeEventArgs e)
         {
-            //ClearDragClass();
-            //fileNames.Clear();
-            //fileNames2.Clear();
             foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
             {
                 fileNames2.Add(file);
@@ -780,7 +860,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
             upload = false;
 
-            // Ajusta la altura sumando 5vh por cada archivo cargado
             height = 50 + (fileNames.Count * 33);
         }
 
@@ -795,57 +874,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             await Task.Delay(100);
         }
 
-        private async Task Upload()
-        {
-            //Upload the files here
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-            //call function upload files
-            Console.WriteLine($" en carga {fileNames2.Count}");
-
-
-            foreach (var file in fileNames2)
-            {
-                using var content = new MultipartFormDataContent();
-                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-
-                content.Add(
-                         content: fileContent,
-                         name: "\"file\"",
-                fileName: file.Name);
-
-                //var result = await FilesServices.UploadEvidences(content, _sosHub.SOSHubId);
-                //if (result is not null)
-                //{
-                //    Snackbar.Configuration.MaxDisplayedSnackbars = 10;
-                //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //    Snackbar.Add($"{file.Name} Added to Lup {LupId}", Severity.Info);
-                //}
-                //else
-                //{
-                //    Snackbar.Clear();
-                //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                //    Snackbar.Add($"Failed to upload Evidence to Lup", Severity.Error);
-                //    break;
-                //}
-            }
-
-            fileNames.Clear();
-            fileNames2.Clear();
-            //_lup = await LupServices.GetLupByIdWhitFile(LupId);
-            //foreach (var evidence in _lup.Evidences)
-            //{
-            //    if (evidence.ContentType == "image/png")
-            //    {
-            //        var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
-            //        imageUrls[evidence.FileUploadId] = imageUrl;
-            //    }
-            //}
-            StateHasChanged();
-
-            upload = true;
-        }
-
         private void SetDragClass()
         {
             DragClass = $"{DefaultDragClass} mud-border-primary";
@@ -854,6 +882,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         private void ClearDragClass()
         {
             DragClass = DefaultDragClass;
+        }
+
+        #endregion
+
+        //Training Time (Hour and minutes)
+        #region TrainingTime
+
+        private string ReturnHours(int hour)
+        {
+            if (hour == 1)
+            {
+                return $"{hour} hour";
+            }
+            else
+            {
+                return $"{hour} hours";
+            }
+        }
+
+        private string ReturnMinutes(int minute)
+        {
+            if (minute == 1)
+            {
+                return $"{minute} minute";
+            }
+            else
+            {
+                return $"{minute} minutes";
+            }
         }
 
 
@@ -875,5 +932,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             return Task.FromResult(result);
         }
 
+
+        private async Task<IEnumerable<int>> SearchHour(string searchString)
+        {
+            if (string.IsNullOrEmpty(searchString) || !int.TryParse(searchString, out var hour))
+            {
+                return Hours;
+            }
+            else
+            {
+                return Hours.Where(h => h == hour);
+            }
+        }
+
+        private async Task<IEnumerable<int>> SearchMinute(string searchString)
+        {
+            if (string.IsNullOrEmpty(searchString) || !int.TryParse(searchString, out var minute))
+            {
+                return Minutes;
+            }
+            else
+            {
+                return Minutes.Where(h => h == minute);
+            }
+        }
+
+        #endregion
     }
 }
