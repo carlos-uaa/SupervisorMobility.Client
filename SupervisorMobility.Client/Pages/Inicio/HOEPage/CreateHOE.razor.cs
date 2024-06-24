@@ -1,18 +1,14 @@
 using BlazorCameraStreamer;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
-using SupervisorMobility.Client.Pages.Configuration.PlantPage;
-using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 using System;
 using System.Formats.Asn1;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using static MudBlazor.FilterOperator;
 
@@ -42,6 +38,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private List<Segment> segments = new List<Segment>();
         private List<Product> _products = new List<Product>();
+
+        List<string> allCriticalPoints = new List<string>();
+        private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
+        private string HighlightedText;
+        private string SelectedTerm;
+
 
         public int productId = 0;
         public class Segment
@@ -184,6 +186,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         public void AnalyzeText()
         {
             segments.Clear();
+            allCriticalPoints.Clear();
+            BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
 
             var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -219,6 +223,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
                 segments.Add(segment);
             }
+
+            allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+            StateHasChanged();
         }
 
         public void ShowStepsDialog()
@@ -689,6 +696,75 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         }
 
+        private void HighlightTerm(string term)
+        {
+            visibleStepsDialog = false;
+            base.StateHasChanged();
+
+            SelectedTerm = term;
+            HighlightedText = ApplyHighlights(BaseText, allCriticalPoints, SelectedTerm);
+            visibleStepsDialog = true;
+            base.StateHasChanged();
+
+        }
+
+        private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
+        {
+
+            if (string.IsNullOrEmpty(highlightTerm))
+            {
+                StateHasChanged();
+                return text;
+            }
+
+            var normalizedText = Normalize(text);
+            var normalizedHighlightTerm = Normalize(highlightTerm);
+
+            var result = new StringBuilder(text);
+
+            foreach (var term in terms)
+            {
+                var normalizedTerm = Normalize(term);
+
+                if (normalizedTerm == normalizedHighlightTerm)
+                {
+                    result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
+                }
+            }
+            StateHasChanged();
+
+            return result.ToString();
+        }
+
+        private static string Normalize(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            input = input.Normalize(NormalizationForm.FormD)
+                         .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                         .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
+                         .ToString()
+                         .ToLowerInvariant();
+           
+            return input;
+        }
+
+        private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
+        {
+            // return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            string normalizedText = Normalize(text);
+            
+            return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+            {
+                // Encontrar la coincidencia en el texto original basado en el índice
+                int startIndex = m.Index;
+                string originalMatch = text.Substring(startIndex, search.Length);
+                return $"<mark>{originalMatch}</mark>";
+            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
 
         private void OnInputFileChanged(InputFileChangeEventArgs e)
         {

@@ -1,4 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿using DocumentFormat.OpenXml.Presentation;
+using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
@@ -88,39 +90,136 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubsRetorned;
         }
-        public Task<FileUpload> AddImageToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id)
+        public async Task<FileUpload> AddImageToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsync($"SOS/DataPool/Image/{SOS_DataPool_id}", contentfiles);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
         }
-        public Task<FileUpload> AddVideoToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id)
+        public async Task<FileUpload> AddVideoToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsync($"SOS/DataPool/Video/{SOS_DataPool_id}", contentfiles);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
         }
-        public Task<FileUpload> AddCDToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id)
+        public async Task<FileUpload> AddCDToSOSHub(MultipartFormDataContent? contentfile, int SOS_DataPool_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsync($"SOS/DataPool/CD/{SOS_DataPool_id}", contentfile);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+
+                return result;
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
+
+            return null;
         }
-        public Task<string> ShowImageSosHub(int idfile)
+        public  async Task<string> ShowImageSosHub(int idfile)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"SOS/DataPool/Image/{idfile}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
+
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
         }
         //Aun no se como hacer esto XD
         //Task<> ShowVideoSosHub(int idfile);
-        public Task DownloadFileCD(int idfile, string filename)
+        public async Task DownloadFileCD(int idfile, string filename)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"SOS/DataPool/CD/{idfile}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+
         }
-        public Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id)
+        public async Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"SOS/DataPool/Image/{SOS_DataPool_id}/remove/{ImageFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
         }
-        public Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
+        public  async  Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"SOS/DataPool/Video/{SOS_DataPool_id}/remove/{VideoFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
         }
-        public Task<bool> RemoveCDFromSOSData(int SOS_DataPool_id, int CDFile_id)
+        public async Task<bool> RemoveCDFromSOSData(int SOS_DataPool_id, int CDFile_id)
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"SOS/DataPool/CD/{SOS_DataPool_id}/remove/{CDFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
         }
 
     }

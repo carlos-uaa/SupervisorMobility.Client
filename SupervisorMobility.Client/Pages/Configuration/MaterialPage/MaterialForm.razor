@@ -1,0 +1,84 @@
+﻿@page "/Material/Create"
+@page "/Material/Update/{MaterialID:int?}"
+@page "/Material/Details/{MaterialID:int?}"
+
+@inject IMaterialService MaterialsServices
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
+
+<EditForm Model="_Material" class="mt-10" OnValidSubmit="ExectMaterialAsync">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6"> 
+                            @switch (PageState)
+                            {
+                                case 1:
+                                    @Localizer["create"]
+                                    break; 
+                                case 2:
+                                    @Localizer["details"]
+                                break; 
+                            case 3:
+                                    @Localizer["update"]
+                                break; 
+                            }&nbsp;
+                            @Localizer["Material"]</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudChip Variant="Variant.Text" Color="Color.Info"> @switch (PageState)
+                            {
+                                case 1:
+                                    @Localizer["create"]
+                                    break; 
+                                case 2:
+                                    @Localizer["details"]
+                                break; 
+                            case 3:
+                                    @Localizer["update"]
+                                break; 
+                            } &nbsp;
+                            @Localizer["Material"]</MudChip>
+                        </CardHeaderActions> 
+                    <CardHeaderActions>
+                          @switch (PageState)
+                            {
+                               
+                                case 2:
+                                <MudChip @onclick="()=>EditMaterial((int)MaterialID)" @ontouchstart="()=>EditMaterial((int)MaterialID)" Variant="Variant.Filled" Class="ml-auto mr-13 mb-10" Icon="@Icons.Material.Filled.Edit" Color="Color.Info">@Localizer["EditMaterial"]</MudChip>
+                                break; 
+                           
+                            }
+                    </CardHeaderActions>
+                        
+                    </MudCardHeader>
+                    <MudCardContent>
+                    <MudTextField Label=@Localizer["Code"] ReadOnly="@(PageState == 2)"
+                                  @bind-Value="_Material.MaterialCode" For="@(() => _Material.MaterialCode)" />
+
+                    <MudTextField Label=@Localizer["Name"] ReadOnly="@(PageState == 2)"
+                                  @bind-Value="_Material.MaterialName" For="@(() => _Material.MaterialName)" />
+                  
+                    @if (user.UserType == 1)
+                    {
+                        <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_Material.IsActive" ReadOnly="@(PageState == 2)" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    }
+                    </MudCardContent>
+                    <MudCardActions>
+                    @if (PageState != 2)
+                    {
+                        <MudButton ButtonType="ButtonType.Submit" Disabled="ExecBtnPress" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(PageState == 1 ? Localizer["create"] : Localizer["save"])</MudButton>
+                    }
+                    <MudButton Href="/Material" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
