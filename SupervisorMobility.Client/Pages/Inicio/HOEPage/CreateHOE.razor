@@ -1,4 +1,5 @@
 ﻿@page "/hoe/createHoe"
+@using System.Text.RegularExpressions
 
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -19,42 +20,72 @@
 @inject ISOSHubService SOSHubServices
 <style>
 
-    .custom-table td:first-child{
+    .custom-table td:first-child {
         background-color: #f5f5f6;
     }
-    .comments-table td:first-child{
+
+    .comments-table td:first-child {
         background-color: white;
     }
 
 </style>
 
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
-    <EditForm Model="_sosHub" OnValidSubmit="CreateNewSOSHub">
+<EditForm Model="_sosHub" OnValidSubmit="CreateNewSOSHub">
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="8" md="10" sm="10" xs="12">
             <MudExpansionPanels Elevation="5" MultiExpansion="true">
                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
-                <TitleContent>
-                    <div class="d-flex" style="align-items: center; justify-content:center;">
-                        <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
-                        <MudText Typo="Typo.h6" Style="text-align: center;">
-                            @Localizer["HOE / SOS"]
-                        </MudText>
-                    </div>
-                </TitleContent>
+                    <TitleContent>
+                        <div class="d-flex" style="align-items: center; justify-content:center;">
+                            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                            <MudText Typo="Typo.h6" Style="text-align: center;">
+                                @Localizer["HOE / SOS"]
+                            </MudText>
+                        </div>
+                    </TitleContent>
                     <ChildContent>
                         <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Class="custom-table">
                             <tbody>
                                 <tr>
-                                <td width="25%">
+                                    <td width="25%">
                                         <MudText>Operation Description</MudText>
                                     </td>
                                     <td>
-@*                                    <MudTextField Margin="Margin.Dense" Value="@("Pr1960 Install Water Pump Housing And Gasket - Install Gasktet to Water Pump Housing")" Lines="2" />
-*@
-                                    <MudTextField @bind-Value="_sosHub.OperationDescription" Margin="Margin.Dense" Lines="2" />
-                                    <MudButton OnClick="AnalyzeText">Generate Steps</MudButton>
-                                    
+                                        @*                                    <MudTextField Margin="Margin.Dense" Value="@("Pr1960 Install Water Pump Housing And Gasket - Install Gasktet to Water Pump Housing")" Lines="2" />
+                                        *@
+                                        <MudTextField @bind-Value="_sosHub.OperationDescription" Margin="Margin.Dense" Lines="2" />
+                                        <MudButton OnClick="AnalyzeText">Generate Steps</MudButton>
+                                        @* @if (visibleStepsDialog)
+                                        {
+                                            <div class="d-flex" style="align-items: center; justify-content:center;">
+                                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                                    @((MarkupString)HighlightedText)
+                                                </MudText>
+                                                <MudTable Items="@segments" Context="segmentscontext" Class="custom-table">
+                                                    <HeaderContent>
+                                                        <MudTh Style="font-weight:bold">Main Point</MudTh>
+                                                        <MudTh Style="font-weight:bold">Critical Points</MudTh>
+                                                    </HeaderContent>
+                                                    <RowTemplate>
+                                                        <MudTd>@segmentscontext.MainPoint</MudTd>
+                                                        <MudTd>
+                                                            <ul>
+                                                                @foreach (var point in segmentscontext.CriticalPoints)
+                                                                {
+
+                                                                    <li>
+                                                                        <MudText @onclick="() => HighlightTerm(point)" @ontouchstart="() => HighlightTerm(point)" Class="cursor-pointer">
+                                                                            @point
+                                                                        </MudText>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </MudTd>
+                                                    </RowTemplate>
+                                                </MudTable>
+                                            </div>
+                                        } *@
                                     </td>
                                 </tr>
                                 <tr>
@@ -114,10 +145,10 @@
                                         <MudText>Steps</MudText>
                                     </td>
                                     <td>
-                                    <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
-                                        Edit Steps
-                                        <span>&nbsp;(@segments.Count)</span>
-                                    </MudButton>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
+                                            Edit Steps
+                                            <span>&nbsp;(@segments.Count)</span>
+                                        </MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -125,20 +156,21 @@
                                         <MudText>Images</MudText>
                                     </td>
                                     <td>
-                                    <MudButton Variant="Variant.Filled" OnClick="ShowImagesDialog">
-                                        Edit Images
-                                        <span>&nbsp;(@capturedImages.Count)</span>
-                                    </MudButton>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowImagesDialog">
+                                            Edit Images
+                                            <span>&nbsp;(@capturedImages.Count)</span>
+                                        </MudButton>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    <MudText>Videos</MudText>
+                                        <MudText>Videos</MudText>
                                     </td>
                                     <td>
-                                    <MudButton Variant="Variant.Filled" OnClick="ShowVideosDialog">Edit Videos 
-                                        <span>&nbsp;(@MediaUris.Count)</span>
-                                    </MudButton>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowVideosDialog">
+                                            Edit Videos
+                                            <span>&nbsp;(@MediaUris.Count)</span>
+                                        </MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -146,7 +178,7 @@
                                         <MudText>Revised Items</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.RevisedItems"/>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.RevisedItems" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -210,8 +242,8 @@
                                         <MudText>Created</MudText>
                                     </td>
                                     <td>
-                                    <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="createdDateTime" />
-                                </td>
+                                        <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="createdDateTime" />
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>
@@ -226,8 +258,8 @@
                                         <MudText>Modified</MudText>
                                     </td>
                                     <td>
-                                    <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="modifiedDateTime" />
-                                </td>
+                                        <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="modifiedDateTime" />
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>
@@ -250,7 +282,7 @@
                                         <MudText>Status</MudText>
                                     </td>
                                     <td>
-                                        <MudSelect Margin="Margin.Dense" T="string"  Variant="Variant.Text" @bind-Value="_sosHub.Status">
+                                        <MudSelect Margin="Margin.Dense" T="string" Variant="Variant.Text" @bind-Value="_sosHub.Status">
                                             <MudSelectItem Value="@("Pending")" />
                                             <MudSelectItem Value="@("Approved")" />
                                             <MudSelectItem Value="@("Rejected")" />
@@ -278,6 +310,11 @@
             <MudText Typo="Typo.h6" Style="text-align: center;">
                 @Localizer["Steps"]
             </MudText>
+        </div>    
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+        <MudText Typo="Typo.h6" Style="text-align: center;">
+                @((MarkupString)HighlightedText)
+            </MudText>
         </div>
     </TitleContent>
     <DialogContent>
@@ -292,7 +329,12 @@
                     <ul>
                         @foreach (var point in context.CriticalPoints)
                         {
-                            <li>@point</li>
+
+                            <li>
+                                <MudText @onclick="() => HighlightTerm(point)" @ontouchstart="() => HighlightTerm(point)" Class="cursor-pointer">
+                                    @point
+                                </MudText>
+                               </li>
                         }
                     </ul>
                 </MudTd>
@@ -303,7 +345,7 @@
         <MudButton OnClick="CloseStepsDialog" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
     </DialogActions>
 </MudDialog>
-
+ 
 
 <MudDialog @bind-IsVisible="visibleImagesDialog" Options="dialogImagesOptions">
     <TitleContent>
@@ -495,7 +537,7 @@
                                 Style="max-height: 70vh; width: 100%; border-radius: 10px"
                                 Class="mud-elevation-4 rounded white"
                                 CameraID=@cameraId
-                                        Autostart />
+                                Autostart />
                 <MudItem style="text-align: center">
                     @if (frameCount > 0)
                     {
@@ -506,8 +548,8 @@
                     else
                     {
                         <MudButton StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
-                        Take photo
-                    </MudButton>
+                            Take photo
+                        </MudButton>
                     }
                 </MudItem>
             </MudPaper>

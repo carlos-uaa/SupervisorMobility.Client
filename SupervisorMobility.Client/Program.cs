@@ -4,7 +4,7 @@ global using SupervisorMobility.Client.Data.Entities.IS;
 global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
-global using SupervisorMobility.Client.Data.Entities.IS;
+global using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.JobStructureService;
 global using SupervisorMobility.Client.Services.DistributionService;
@@ -47,21 +47,18 @@ global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
 global using SupervisorMobility.Client.Services.IS_Services.PartService;
 global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService;
 global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
-
 global using SupervisorMobility.Client.Services.TestServices;
-
 global using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
+global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
+global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
+global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using DocumentFormat.OpenXml.Spreadsheet;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
-using System.ComponentModel;
-using System.Net.Http;
-using SupervisorMobility.Client.Services.TestServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -123,6 +120,9 @@ builder.Services.AddScoped<ICheckPointService, CheckpointService>();
 
 //Sos services
 builder.Services.AddScoped<ISOSHubService, SOSHubService>();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IToolService, ToolService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
 
 
 // Connection to API
