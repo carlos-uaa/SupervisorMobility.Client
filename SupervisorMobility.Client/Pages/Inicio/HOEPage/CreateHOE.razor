@@ -52,7 +52,7 @@
                                     <td>
 @*                                    <MudTextField Margin="Margin.Dense" Value="@("Pr1960 Install Water Pump Housing And Gasket - Install Gasktet to Water Pump Housing")" Lines="2" />
 *@
-                                    <MudTextField @bind-Value="_sosHub.OperationDescription" Margin="Margin.Dense" Lines="2" />
+                                    <MudTextField @bind-Value="_sosHub.OperationDescription" Margin="Margin.Dense" Lines="4" />
                                     <MudButton OnClick="AnalyzeText">Generate Steps</MudButton>
                                     
                                     </td>
@@ -63,14 +63,14 @@
                                     </td>
                                     <td>
                                         <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.ProcessSheet" Class="ml-4" />
-                                        <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Comments</MudText>
+                                        <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Revisión - Modificación</MudText>
                                         <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                                             <tbody>
                                                 @foreach (var item in items)
                                                 {
                                                     <tr>
                                                         <td width="90%">
-                                                            <MudTextField @bind-Value="@item.Commentary" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                            <MudTextField @bind-Value="@item.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
                                                         </td>
                                                         @if (items.IndexOf(item) > 0)
                                                         {
@@ -94,8 +94,8 @@
                                             <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
                                             @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
                                                 <ButtonTemplate Context="evidence">
-                                                    <MudPaper Height="@($"{height}vh")" Outlined="true" Class="@DragClass">
-                                                        <MudText Typo="Typo.h6" Class="ml-4"> @Localizer["dragAndDropEvidenceFilesHereOrClick"]</MudText>
+                                                    <MudPaper Height="@($"{height}px")" Outlined="true" Class="@DragClass">
+                                                        <MudText Style="font-weight:bold;" Class="ml-4"> @Localizer["dragAndDropEvidenceFilesHereOrClick"]</MudText>
                                                             @foreach (var file in fileNames)
                                                             {
                                                                 <MudItem Style="text-align:center;" Class="d-flex justify-center align-content-center align-center">
@@ -173,10 +173,8 @@
                                                     </MudPaper>
                                                 </ButtonTemplate>
                                             </MudFileUpload>
-                                            <MudToolBar DisableGutters="true" Class="gap-4">
-                                                <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Style="float: right"> @Localizer["clear"]</MudButton>
-                                            </MudToolBar>
                                         </MudStack>
+                                        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Style="float: right" Class="mt-3"> @Localizer["clear"]</MudButton>
                                     </td>
                                 </tr>
                                 <tr>
@@ -240,7 +238,7 @@
                                         <MudText>Training time</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("2 hours")" />
+                                        <MudTimePicker @bind-Time="_sosHub.TrainingTime" TimeEditMode="TimeEditMode.Normal" Label="Select Time" Margin="Margin.Dense" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -288,7 +286,24 @@
                                         <MudText>Owner</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("Tosha Nunley")" />
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudAutocomplete T="int"
+                                                Label=@Localizer["Supervisor"]
+                                                Variant="Variant.Text"
+                                                AnchorOrigin="Origin.BottomCenter"
+                                                @bind-Value="supervisorOwnerId"
+                                                OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                AdornmentColor="Color.Secondary"
+                                                Clearable
+                                                                                  ResetValueOnEmptyText
+                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                SearchFunc="SearchSupervisors">
+                                                
+                                            </MudAutocomplete>
+                                        }
+
                                     </td>
                                 </tr>
                                 <tr>
@@ -304,7 +319,22 @@
                                         <MudText>Editor</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("Tosha Nunley")" />
+                                        @if (_supervisors.Count > 0)
+                                        {
+                                            <MudAutocomplete T="int"
+                                                Label=@Localizer["Supervisor"]
+                                                Variant="Variant.Text"
+                                                AnchorOrigin="Origin.BottomCenter"
+                                                @bind-Value="supervisorEditorId"
+                                                OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                AdornmentColor="Color.Secondary"
+                                                Clearable
+                                                ResetValueOnEmptyText
+                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
@@ -369,10 +399,12 @@
     <DialogContent>
         <MudTable Items="@segments" Class="custom-table">
             <HeaderContent>
+                <MudTh Style="font-weight:bold; width: 50%">Analysis</MudTh>
                 <MudTh Style="font-weight:bold">Main Point</MudTh>
                 <MudTh Style="font-weight:bold">Critical Points</MudTh>
             </HeaderContent>
             <RowTemplate>
+                <MudTd>@context.Analysis</MudTd>
                 <MudTd>@context.MainPoint</MudTd>
                 <MudTd>
                     <ul>

@@ -46,6 +46,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         public int productId = 0;
         public class Segment
         {
+            public string Analysis { get; set; }
             public string MainPoint { get; set; }
             public List<string> CriticalPoints { get; set; } = new List<string>();
         }
@@ -55,7 +56,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         private bool visibleVideosDialog = false;
 
 
-        private DialogOptions dialogStepsOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogStepsOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         
         private DialogOptions dialogImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         private DialogOptions dialogVideosOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
@@ -77,7 +78,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private List<FileToDisplay> fileNames = new List<FileToDisplay>();
         private List<IBrowserFile> fileNames2 = new List<IBrowserFile>();
-        private int height = 10;
+        private int height = 50;
 
         private bool upload = true;
 
@@ -94,6 +95,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         List<ItemModel> items = new List<ItemModel>();
 
+
+        //Users
+        List<User> _supervisors { get; set; } = new();
+        int supervisorOwnerId = 0;
+        int supervisorEditorId = 0;
 
         protected async override Task OnInitializedAsync()
         {
@@ -118,8 +124,38 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _sosHub.Plan = "[Current]";
             _sosHub.SourcePlan = "[Current]";
             AddItem();
+            SetUserInfo();
 
             StateHasChanged();
+        }
+
+        public async void SetUserInfo()
+        {
+            if(user.UserType == 1)
+            {
+                _supervisors = await UsersService.GetUsersByType( 3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            }
+            if (user.UserType == 2)
+            {
+                foreach (var sv in user.Subordinates.ToList())
+                {
+                    _supervisors.Add(sv);
+                }
+
+            }
+            else if (user.UserType == 3)
+            {
+                var plantId = (int)user.PlantId;
+                var areaId = (int)user.AreaId;
+
+                supervisorOwnerId = user.UserId;
+                supervisorEditorId = user.UserId;
+
+                _supervisors.Add(user);
+            }
+            StateHasChanged();
+
         }
 
 
@@ -153,24 +189,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
             foreach (var segmentText in segmentTexts)
             {
-                var segment = new Segment();
+                var segment = new Segment
+                {
+                    Analysis = segmentText
+                };
 
-                var regex = new Regex(@"\*(.*?)\*");
-                var matches = regex.Matches(segmentText);
+                var mainPointRegex = new Regex(@"#(.*?)#");
+                var mainPointMatch = mainPointRegex.Match(segmentText);
 
-                foreach (Match match in matches)
+                if (mainPointMatch.Success)
+                {
+                    segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
+                }
+                else
+                {
+                    segment.MainPoint = string.Empty;
+                }
+
+                var criticalPointsRegex = new Regex(@"\*(.*?)\*");
+                var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
+
+                foreach (Match match in criticalPointMatches)
                 {
                     if (match.Success)
                     {
-                        segment.CriticalPoints.Add(match.Groups[1].Value);
+                        segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
                     }
                 }
 
-                segment.MainPoint = regex.Replace(segmentText, string.Empty).Trim();
                 segments.Add(segment);
             }
         }
-
 
         public void ShowStepsDialog()
         {
@@ -643,9 +692,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         private void OnInputFileChanged(InputFileChangeEventArgs e)
         {
-            ClearDragClass();
-            fileNames.Clear();
-            fileNames2.Clear();
+            //ClearDragClass();
+            //fileNames.Clear();
+            //fileNames2.Clear();
             foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
             {
                 fileNames2.Add(file);
@@ -656,7 +705,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             upload = false;
 
             // Ajusta la altura sumando 5vh por cada archivo cargado
-            height = 10 + (fileNames.Count * 5);
+            height = 50 + (fileNames.Count * 33);
         }
 
         private async Task Clear()
@@ -666,7 +715,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             fileNames2.Clear();
 
             ClearDragClass();
-            height = 10;
+            height = 50;
             await Task.Delay(100);
         }
 
@@ -731,6 +780,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             DragClass = DefaultDragClass;
         }
 
+
+        private Task<IEnumerable<int>> SearchSupervisors(string searchString)
+        {
+            IEnumerable<int> result;
+
+            if (string.IsNullOrEmpty(searchString))
+            {
+                result = _supervisors.Select(x => x.UserId);
+            }
+            else
+            {
+                result = _supervisors
+                    .Where(x => x.Name.Contains(searchString, StringComparison.InvariantCultureIgnoreCase))
+                    .Select(x => x.UserId);
+            }
+
+            return Task.FromResult(result);
+        }
 
     }
 }
