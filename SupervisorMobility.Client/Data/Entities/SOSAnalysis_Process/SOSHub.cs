@@ -20,7 +20,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public ICollection<FileUpload>? Videos { get; set; } = new List<FileUpload>();
         public string RevisedItems { get; set; }
 
-        public TimeSpan? TrainingTime { get; set; }
+        public string? TrainingTime { get; set; }
         public ICollection<Equipment>? SafetyEquipment { get; set; } = new List<Equipment>();
         public ICollection<Tool>? ToolsUsed { get; set; } = new List<Tool>();
         public ICollection<Material>? MaterialsUsed { get; set; } = new List<Material>();
@@ -30,7 +30,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public Plant? Plant { get; set; }
         public int? AreaId { get; set; }
         public Area? Area { get; set; }
-        public int? DepartamentId { get; set; }
+        public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
         public int? OwnerId { get; set; }
@@ -43,8 +43,6 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 
         public DateTime? ModifiedDate { get; set; }
 
-
-        //estos 3 podrian ser una entidad (pero la flojera)
         public string Plan { get; set; }
         public string SourcePlan { get; set; }
         public string Status { get; set; }

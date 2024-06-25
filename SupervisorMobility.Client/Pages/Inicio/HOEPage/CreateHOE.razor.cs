@@ -16,28 +16,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
     public partial class CreateHOE
     {
-        #region variables
+        #region Variables
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
         private System.DateTime? createdDateTime = System.DateTime.Now;
         private System.DateTime? modifiedDateTime = System.DateTime.Now;
 
-        public string hour1 { get; set; }
-        TimeSpan? startHour = new TimeSpan(00, 00, 00);
-        System.DateTime newDate1;
         //User
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
 
         public int userType = 0;
-        public string otherInformation = "In case of doubt contact supervisor or leader and stop, call and wait." +
-            "Use bare hands or lint free gloves when attaching the rubber gasket. Do not re-use the water pump gasket." +
-            " Do not use dropped gaskets.";
 
         private List<Segment> segments = new List<Segment>();
         private List<Product> _products = new List<Product>();
+
+        List<Plant> _plants { get; set; } = new();
+        List<Area> _areas = new();
+        List<Department> _departments = new();
+        int plantId = 0;
+        int areaId = 0;
+        int departmentId = 0;
+
 
         List<string> allCriticalPoints = new List<string>();
         private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
@@ -154,44 +156,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             StateHasChanged();
         }
 
+        private string ValidateSosHubForm()
+        {
+            if (string.IsNullOrEmpty(_sosHub.OperationDescription))
+            {
+                return "Write down the Operation Description first";
+            }
+            if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
+            {
+                return "Write down the Process Sheet plan first";
+            }
+            if (productId == new int())
+            {
+                return "First select a product!";
+            }
+            if (string.IsNullOrEmpty(_sosHub.SourcePlan))
+            {
+                return "Write down the source plan first";
+            }
+            if (string.IsNullOrEmpty(_sosHub.Plan))
+            {
+                return "Write down the plan first";
+            }
+            if (string.IsNullOrEmpty(_sosHub.Status))
+            {
+                return "First select a status!";
+            }
+            return string.Empty;
+        }
 
         private async Task CreateNewSOSHub()
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
-            if (string.IsNullOrEmpty(_sosHub.OperationDescription))
+            var validationMessage = ValidateSosHubForm();
+            if (!string.IsNullOrEmpty(validationMessage))
             {
-                Snackbar.Add($"Write down the Operation Description first", Severity.Warning);
-                return;
-            }
-            if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
-            {
-                Snackbar.Add($"Write down the Process Sheet plan first", Severity.Warning);
-                return;
-            }
-            if (productId == new int())
-            {
-                Snackbar.Add($"First select a product!", Severity.Warning);
-                return;
-            }
-            if (string.IsNullOrEmpty(_sosHub.SourcePlan))
-            {
-                Snackbar.Add($"Write down the source plan first", Severity.Warning);
-                return;
-            }
-            if (string.IsNullOrEmpty(_sosHub.Plan))
-            {
-                Snackbar.Add($"Write down the plan first", Severity.Warning);
-                return;
-            }
-            if (string.IsNullOrEmpty(_sosHub.Status))
-            {
-                Snackbar.Add($"First select a status!", Severity.Warning);
+                Snackbar.Add(validationMessage, Severity.Warning);
                 return;
             }
             _sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
+            _sosHub.OwnerId = supervisorOwnerId;
+            _sosHub.EditorId = supervisorEditorId;
+            _sosHub.TrainingTime = $"{hourId} {(hourId == 1 ? "hour" : "hours")}, {minuteId} {(minuteId == 1 ? "minute" : "minutes")}";
+            _sosHub.CreatedDate = createdDateTime;
+            _sosHub.ModifiedDate = modifiedDateTime;
+            _sosHub.DepartmentId = departmentId;
+            _sosHub.PlantId = plantId;
+            _sosHub.AreaId = areaId;
 
             if (!(items == null || !items.Any()))
             {
@@ -231,13 +245,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         public async void SetUserInfo()
         {
-            if(user.UserType == 1)
+            _plants = await PlantServices.GetPlants();
+            _plants = _plants.OrderBy(p => p.Description).ToList();
+
+            _departments = await DepartmentServices.GetDepartments();
+            _departments = _departments.OrderBy(d => d.Description).ToList();
+
+
+            if (user.UserType == 1)
             {
                 _supervisors = await UsersService.GetUsersByType( 3, false, false);
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
             }
             if (user.UserType == 2)
             {
+                plantId = (int)user.PlantId;
+                areaId = 0;
+
+                _areas = user.Areas.ToList();
                 foreach (var sv in user.Subordinates.ToList())
                 {
                     _supervisors.Add(sv);
@@ -249,6 +274,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 var plantId = (int)user.PlantId;
                 var areaId = (int)user.AreaId;
 
+                _areas = await AreaServices.GetAreas(plantId);
+                _areas = _areas.OrderBy(a => a.Description).ToList();
+
                 supervisorOwnerId = user.UserId;
                 supervisorEditorId = user.UserId;
 
@@ -258,8 +286,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         }
 
+        private async void ShowAreas()
+        {
+            areaId = 0;
+            _areas = await AreaServices.GetAreas(plantId);
+            _areas = _areas.OrderBy(a => a.Description).ToList();
+        }
+
         //Local storage user
-        #region localStorageUser
+        #region LocalStorageUser
         private async Task GetUserAsync()
         {
             if (!await TryGetAsync())
@@ -670,7 +705,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         #endregion
 
         //Videos Add and delete
-        #region videos
+        #region Videos
         public void ShowVideosDialog()
         {
             visibleVideosDialog = true;

@@ -6,7 +6,9 @@
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
 @inject IBreadcrumbService BreadcrumbServices
+@inject IPlantService PlantServices
 @inject IAreaService AreaServices
+@inject IDepartmentService DepartmentServices
 @inject IUserService UsersService
 @inject IProductService ProductsService
 @inject IDataPanelService DataPanelServices
@@ -18,6 +20,8 @@
 @inject ITestService TestService
 @inject IProductService ProductsServices
 @inject ISOSHubService SOSHubServices
+
+
 <style>
 
     .custom-table td:first-child {
@@ -33,7 +37,7 @@
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
 <EditForm Model="_sosHub" OnValidSubmit="CreateNewSOSHub">
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
-        <MudItem lg="8" md="10" sm="10" xs="12">
+        <MudItem lg="10" md="10" sm="10" xs="12">
             <MudExpansionPanels Elevation="5" MultiExpansion="true">
                 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
                     <TitleContent>
@@ -253,7 +257,8 @@
                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
                                                 ToStringFunc="ReturnHours"
                                                 SearchFunc="SearchHour"
-                                                MaxItems="24">
+                                                MaxItems="24"
+                                                >
 
                                             </MudAutocomplete>
                                             <MudAutocomplete T="int"
@@ -310,8 +315,88 @@
                                     <td>
                                         <MudText>Area</MudText>
                                     </td>
-                                    <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("Decherd: Nissan : Assembly : PR Assembly : Zone 1 : PR Zone 1")" />
+                                    <td class="d-flex">
+                                        <MudItem Class="mr-4">
+                                            <MudSelect T="int" Label=@Localizer["department"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
+                                                @foreach (var type in _departments)
+                                                {
+                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+                                        <MudItem Class="mr-4">
+
+                                            @if (user.UserType == 1)
+                                            {
+
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                                    @foreach (var type in _plants)
+                                                    {
+                                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                    @foreach (var type in _plants)
+                                                    {
+                                                        if (type.PlantId == user.PlantId)
+                                                        {
+                                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            }
+                                        </MudItem>
+                                        <MudItem>
+                                            @if (plantId != 0 && user.UserType == 1)
+                                            {
+                                                @*Mud select for Areas for Admin *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" >
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in _areas)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else if (plantId != 0 && user.UserType == 2)
+                                            {
+                                                @*Mud select for Areas for SSV *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" >
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in user.Areas)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else if (plantId != 0)
+                                            {
+                                                @*Mud select for Areas for SV *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in _areas)
+                                                    {
+                                                        if (type.AreaId == user.AreaId)
+                                                        {
+                                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                @*Mud select for Areas *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" >
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                                </MudSelect>
+                                            }
+                                        </MudItem>
+
                                     </td>
                                 </tr>
                                 <tr>
