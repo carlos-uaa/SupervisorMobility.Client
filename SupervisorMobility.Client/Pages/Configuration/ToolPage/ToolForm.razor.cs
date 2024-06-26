@@ -8,6 +8,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.ToolPage
     {
         [Parameter]
         public int? ToolID { get; set; }
+
+        [Parameter]
+        public string? ToolName { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> OnToolCreated { get; set; }
+
         int PageState = 0;
 
 
@@ -28,16 +35,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.ToolPage
 
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-            PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
-            
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
-            }
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
-            }
 
+            if(!string.IsNullOrEmpty(ToolName))
+            {
+                PageState = 1;
+            }
+            else
+            {
+
+                var currentUrl = NavigationManager.Uri;
+                PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+                }
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+                }
+
+            }
 
             await GetUserAsync();
             logged = await HasPropertyAsync();
@@ -65,6 +81,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.ToolPage
                 case 1:
                     _Tool = new Tool();
                     _Tool.IsActive =  true;
+                    if (!string.IsNullOrEmpty(ToolName))
+                    {
+                        _Tool.ToolName = ToolName;
+                    }
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;
                 case 2:
@@ -118,10 +138,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.ToolPage
 
                     if (result != null)
                     {
-                        NavigationManager.NavigateTo($"Tool");
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["ToolCreateSucces"]}", Severity.Info);
+                        if (!string.IsNullOrEmpty(ToolName))
+                        {
+                            await OnToolCreated.InvokeAsync(true);
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"{Localizer1["ToolCreateSucces"]}", Severity.Info);
+                            NavigationManager.NavigateTo($"Tool");
+                        }
                     }
                     else
                     {

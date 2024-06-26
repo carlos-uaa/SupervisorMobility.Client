@@ -5,6 +5,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 @inject IBreadcrumbService BreadcrumbServices
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
@@ -20,6 +21,7 @@
 @inject ITestService TestService
 @inject IProductService ProductsServices
 @inject ISOSHubService SOSHubServices
+@inject IToolService ToolsServices
 
 
 <style>
@@ -271,7 +273,8 @@
                                                 AdornmentColor="Color.Info"
                                                 Clearable
                                                 ResetValueOnEmptyText
-                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ShowProgressIndicator="true" 
+                                                ProgressIndicatorColor="Color.Info"
                                                 ToStringFunc="ReturnMinutes"
                                                 SearchFunc="SearchMinute"
                                                 MaxItems="60">
@@ -292,7 +295,55 @@
                                         <MudText>Tools Used</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("N/A")" />
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedToolName"
+                                            Label="Buscar herramienta"
+                                            SearchFunc="SearchTools"
+                                            Placeholder="Buscar herramienta..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Info"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Build">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingTool)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedTool" Disabled="@(string.IsNullOrWhiteSpace(selectedToolName))">
+                                                Agregar tool
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedToolName))
+                                        {
+                                            string title = "Tools";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear tool
+                                            </MudButton>
+                                        }
+
+                                            @if (_toolsIds.Count > 0)
+                                            {
+                                                <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                    @foreach (var toolId in _toolsIds)
+                                                    {
+                                                        <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                                        <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                                @(_tools.FirstOrDefault(t => t.ToolId == toolId)?.ToolName)
+                                                            </MudChip>
+
+                                                            <MudTooltip Text="Delete Tool" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveTool(toolId))"></MudIconButton>
+                                                            </MudTooltip>
+                                                        </MudButton>
+                                                    }
+                                                </MudItem>
+                                            }
                                     </td>
                                 </tr>
                                 <tr>
@@ -747,3 +798,22 @@
     </DialogContent>
 </MudDialog>
 
+@*Resources*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleResources" Options="dialogResourcesOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @resourceType
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="height: 50vh">
+            <SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm ToolName="@newToolName" OnToolCreated="HandleToolCreated"></SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm>
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseResourcesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>

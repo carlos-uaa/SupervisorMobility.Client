@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
 using System.Formats.Asn1;
 using System.Globalization;
@@ -68,7 +69,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         //Videos
         public Dictionary<string, (string, string)> MediaUris = new Dictionary<string, (string, string)>();
-        private bool DisabledFinish;
 
         //Commentaries
         public class ItemModel
@@ -84,7 +84,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         private List<IBrowserFile> fileNames2 = new List<IBrowserFile>();
         private int height = 50;
 
-        private bool upload = true;
 
         private int maxAllowedFiles = 10;
         private long maxFileSize = long.MaxValue;
@@ -126,6 +125,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         }
 
 
+        //Tools, materials and equipment
+
+        private string resourceType = "";
+
+        List<Material> _materials { get; set; } = new();
+        List<int> _materialIds = new();
+        List<Equipment> _equipment = new();
+        List<int> _equipmentIds = new();
+
+        private List<Tool> _tools = new();
+        private List<Tool> _filteredTools = new();
+
+        private List<int> _toolsIds = new();
+        private string selectedToolName;
+        private string newToolName;
+
+        private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+
+        private bool visibleResources = false;
+
         #endregion
 
         protected async override Task OnInitializedAsync()
@@ -150,10 +169,91 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _products = await ProductsServices.GetProducts();
             _sosHub.Plan = "[Current]";
             _sosHub.SourcePlan = "[Current]";
+            _tools = await ToolsServices.GetTools();
+            _tools = _tools.OrderBy(d => d.ToolName).ToList();
+            _filteredTools = new List<Tool>(_tools);
+
             AddItem();
             SetUserInfo();
 
             StateHasChanged();
+        }
+
+        private async Task<IEnumerable<string>> SearchTools(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return _filteredTools.Select(t => t.ToolName);
+
+            return _filteredTools.Where(x => x.ToolName.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(t => t.ToolName);
+        }
+
+        private bool IsExistingTool => _filteredTools.Any(t => t.ToolName.Equals(selectedToolName, StringComparison.OrdinalIgnoreCase));
+
+        private void AddSelectedTool()
+        {
+            if (!string.IsNullOrWhiteSpace(selectedToolName))
+            {
+                var tool = _filteredTools.FirstOrDefault(t => t.ToolName.Equals(selectedToolName, StringComparison.OrdinalIgnoreCase));
+                if (tool != null && !_toolsIds.Contains(tool.ToolId))
+                {
+                    _toolsIds.Add(tool.ToolId);
+                    _filteredTools.Remove(tool); 
+                    
+                    selectedToolName = string.Empty;
+                }
+            }
+        }
+
+        private void RemoveTool(int toolId)
+        {
+            var tool = _tools.FirstOrDefault(t => t.ToolId == toolId);
+            if (tool != null)
+            {
+                _toolsIds.Remove(toolId);
+                _filteredTools.Add(tool);
+                _filteredTools = _filteredTools.OrderBy(d => d.ToolName).ToList();
+
+            }
+        }
+
+        private void OpenResourceModal(string title)
+        {
+            newToolName = selectedToolName;
+            selectedToolName = string.Empty;
+            visibleResources = true;
+            resourceType = title;
+        }
+
+        private void CloseResourcesDialog()
+        {
+            newToolName = string.Empty;
+            visibleResources = false;
+            resourceType = "";
+        }
+
+        private async void HandleToolCreated(bool isCreated)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (isCreated)
+            {
+                newToolName = string.Empty;
+                visibleResources = false;
+                resourceType = "";
+                _tools = await ToolsServices.GetTools();
+                _tools = _tools.OrderBy(d => d.ToolName).ToList();
+
+                _filteredTools = new List<Tool>(_tools);
+                _filteredTools.RemoveAll(tool => _toolsIds.Contains(tool.ToolId));
+                _filteredTools = _filteredTools.OrderBy(d => d.ToolName).ToList();
+
+                Snackbar.Add($"{Localizer1["ToolCreateSucces"]}", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer1["ToolCreateError"]}", Severity.Error);
+            }
         }
 
         private string ValidateSosHubForm()
@@ -206,6 +306,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _sosHub.DepartmentId = departmentId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
+            //_sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
 
             if (!(items == null || !items.Any()))
             {
@@ -597,7 +698,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         public async Task UploadVideos()
         {
             int sosHubId = _sosHub.SOSHubId;
-            DisabledFinish = true;
 
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
@@ -651,7 +751,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                         Snackbar.Add("Failed to upload Video to HOE", Severity.Error);
                     }
 
-                    DisabledFinish = false;
                 }
                 MediaUris.Clear();
             }
@@ -698,7 +797,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 fileNames2.Clear();
                 StateHasChanged();
 
-                upload = true;
             }
         }
 
@@ -893,14 +991,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
             Console.WriteLine($"{fileNames2.Count}");
 
-            upload = false;
 
             height = 50 + (fileNames.Count * 33);
         }
 
         private async Task Clear()
         {
-            upload = true;
             fileNames.Clear();
             fileNames2.Clear();
 
