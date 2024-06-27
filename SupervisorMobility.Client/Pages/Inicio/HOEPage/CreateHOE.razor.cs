@@ -62,7 +62,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
 
         private DialogOptions dialogStepsOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-        
+
         private DialogOptions dialogImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         private DialogOptions dialogVideosOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
@@ -130,13 +130,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         private string resourceType = "";
 
         List<Material> _materials { get; set; } = new();
-        List<int> _materialIds = new();
+        private List<Material> _filteredMaterials = new();
+        List<int> _materialsIds = new();
+        private string selectedMaterialName;
+        private string newMaterialName;
+
         List<Equipment> _equipment = new();
+        private List<Equipment> _filteredEquipment = new();
         List<int> _equipmentIds = new();
+        private string selectedEquipmentName;
+        private string newEquipmentName;
 
         private List<Tool> _tools = new();
         private List<Tool> _filteredTools = new();
-
         private List<int> _toolsIds = new();
         private string selectedToolName;
         private string newToolName;
@@ -166,18 +172,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 NavigationManager.NavigateTo($"/");
             }
 
-            _products = await ProductsServices.GetProducts();
-            _sosHub.Plan = "[Current]";
-            _sosHub.SourcePlan = "[Current]";
-            _tools = await ToolsServices.GetTools();
-            _tools = _tools.OrderBy(d => d.ToolName).ToList();
-            _filteredTools = new List<Tool>(_tools);
+
 
             AddItem();
             SetUserInfo();
 
             StateHasChanged();
         }
+
+        #region Tools
 
         private async Task<IEnumerable<string>> SearchTools(string value)
         {
@@ -197,8 +200,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 if (tool != null && !_toolsIds.Contains(tool.ToolId))
                 {
                     _toolsIds.Add(tool.ToolId);
-                    _filteredTools.Remove(tool); 
-                    
+                    _filteredTools.Remove(tool);
+
                     selectedToolName = string.Empty;
                 }
             }
@@ -214,21 +217,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 _filteredTools = _filteredTools.OrderBy(d => d.ToolName).ToList();
 
             }
-        }
-
-        private void OpenResourceModal(string title)
-        {
-            newToolName = selectedToolName;
-            selectedToolName = string.Empty;
-            visibleResources = true;
-            resourceType = title;
-        }
-
-        private void CloseResourcesDialog()
-        {
-            newToolName = string.Empty;
-            visibleResources = false;
-            resourceType = "";
         }
 
         private async void HandleToolCreated(bool isCreated)
@@ -256,6 +244,184 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
         }
 
+
+        #endregion
+
+        #region Material
+
+        private async Task<IEnumerable<string>> SearchMaterials(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return _filteredMaterials.Select(t => t.MaterialName);
+
+            return _filteredMaterials.Where(x => x.MaterialName.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(t => t.MaterialName);
+        }
+
+        private bool IsExistingMaterial => _filteredMaterials.Any(t => t.MaterialName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
+
+        private void AddSelectedMaterial()
+        {
+            if (!string.IsNullOrWhiteSpace(selectedMaterialName))
+            {
+                var material = _filteredMaterials.FirstOrDefault(t => t.MaterialName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
+                if (material != null && !_materialsIds.Contains(material.MaterialId))
+                {
+                    _materialsIds.Add(material.MaterialId);
+                    _filteredMaterials.Remove(material);
+
+                    selectedMaterialName = string.Empty;
+                }
+            }
+        }
+
+        private void RemoveMaterial(int materialId)
+        {
+            var material = _materials.FirstOrDefault(t => t.MaterialId == materialId);
+            if (material != null)
+            {
+                _materialsIds.Remove(materialId);
+                _filteredMaterials.Add(material);
+                _filteredMaterials = _filteredMaterials.OrderBy(d => d.MaterialName).ToList();
+
+            }
+        }
+
+        private async void HandleMaterialCreated(bool isCreated)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (isCreated)
+            {
+                newMaterialName = string.Empty;
+                visibleResources = false;
+                resourceType = "";
+                _materials = await MaterialsServices.GetMaterials();
+                _materials = _materials.OrderBy(d => d.MaterialName).ToList();
+
+                _filteredMaterials = new List<Material>(_materials);
+                _filteredMaterials.RemoveAll(material => _materialsIds.Contains(material.MaterialId));
+                _filteredMaterials = _filteredMaterials.OrderBy(d => d.MaterialName).ToList();
+
+                Snackbar.Add($"{Localizer1["MaterialCreateSucces"]}", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer1["MaterialCreateError"]}", Severity.Error);
+            }
+        }
+
+
+        #endregion
+
+        #region Equipment
+
+        private async Task<IEnumerable<string>> SearchEquipment(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return _filteredEquipment.Select(t => t.EquipmentName);
+
+            return _filteredEquipment.Where(x => x.EquipmentName.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(t => t.EquipmentName);
+        }
+
+        private bool IsExistingEquipment => _filteredEquipment.Any(t => t.EquipmentName.Equals(selectedEquipmentName, StringComparison.OrdinalIgnoreCase));
+
+        private void AddSelectedEquipment()
+        {
+            if (!string.IsNullOrWhiteSpace(selectedEquipmentName))
+            {
+                var equipment = _filteredEquipment.FirstOrDefault(t => t.EquipmentName.Equals(selectedEquipmentName, StringComparison.OrdinalIgnoreCase));
+                if (equipment != null && !_equipmentIds.Contains(equipment.EquipmentId))
+                {
+                    _equipmentIds.Add(equipment.EquipmentId);
+                    _filteredEquipment.Remove(equipment);
+
+                    selectedEquipmentName = string.Empty;
+                }
+            }
+        }
+
+        private void RemoveEquipment(int equipmentId)
+        {
+            var equipment = _equipment.FirstOrDefault(t => t.EquipmentId == equipmentId);
+            if (equipment != null)
+            {
+                _equipmentIds.Remove(equipmentId);
+                _filteredEquipment.Add(equipment);
+                _filteredEquipment = _filteredEquipment.OrderBy(d => d.EquipmentName).ToList();
+
+            }
+        }
+
+        private async void HandleEquipmentCreated(bool isCreated)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (isCreated)
+            {
+                newEquipmentName = string.Empty;
+                visibleResources = false;
+                resourceType = "";
+                _equipment = await EquipmentsServices.GetEquipments();
+                _equipment = _equipment.OrderBy(d => d.EquipmentName).ToList();
+
+                _filteredEquipment = new List<Equipment>(_equipment);
+                _filteredEquipment.RemoveAll(equipment => _equipmentIds.Contains(equipment.EquipmentId));
+                _filteredEquipment = _filteredEquipment.OrderBy(d => d.EquipmentName).ToList();
+
+                Snackbar.Add($"{Localizer1["EquipmentCreateSucces"]}", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer1["EquipmentCreateError"]}", Severity.Error);
+            }
+        }
+
+
+        #endregion
+
+        private void OpenResourceModal(string title)
+        {
+            resourceType = title;
+            if(resourceType == "Tools")
+            {
+                newToolName = selectedToolName;
+                selectedToolName = string.Empty;
+            }
+            else if(resourceType == "Equipment")
+            {
+                newEquipmentName = selectedEquipmentName;
+                selectedEquipmentName = string.Empty;
+            }
+            else if(resourceType == "Materials")
+            {
+                newMaterialName = selectedMaterialName;
+                selectedMaterialName = string.Empty;
+            }
+            visibleResources = true;
+        }
+
+        private void CloseResourcesDialog()
+        {
+            if (resourceType == "Tools")
+            {
+                newToolName = string.Empty;
+            }
+            else if (resourceType == "Equipment")
+            {
+                newEquipmentName = string.Empty;
+            }
+            else if (resourceType == "Materials")
+            {
+                newMaterialName = string.Empty;
+            }
+            visibleResources = false;
+            resourceType = "";
+        }
+    
+        //Create SOS HUB and validations
+        #region Create SOSHUB
         private string ValidateSosHubForm()
         {
             if (string.IsNullOrEmpty(_sosHub.OperationDescription))
@@ -346,6 +512,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         public async void SetUserInfo()
         {
+            _products = await ProductsServices.GetProducts();
+            _sosHub.Plan = "[Current]";
+            _sosHub.SourcePlan = "[Current]";
+
+            _tools = await ToolsServices.GetTools();
+            _tools = _tools.OrderBy(t => t.ToolName).ToList();
+            _filteredTools = new List<Tool>(_tools);
+
+            _equipment = await EquipmentsServices.GetEquipments();
+            _equipment = _equipment.OrderBy(e => e.EquipmentName).ToList();
+            _filteredEquipment = new List<Equipment>(_equipment);
+
+            _materials = await MaterialsServices.GetMaterials();
+            _materials = _materials.OrderBy(m => m.MaterialName).ToList();
+            _filteredMaterials = new List<Material>(_materials);
+
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();
 
@@ -387,12 +569,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         }
 
-        private async void ShowAreas()
+        #endregion
+
+        //Show areas
+        #region Areas
+            private async void ShowAreas()
         {
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
         }
+        #endregion
 
         //Local storage user
         #region LocalStorageUser

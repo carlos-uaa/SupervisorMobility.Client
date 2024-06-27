@@ -22,6 +22,8 @@
 @inject IProductService ProductsServices
 @inject ISOSHubService SOSHubServices
 @inject IToolService ToolsServices
+@inject IEquipmentService EquipmentsServices
+@inject IMaterialService MaterialsServices
 
 
 <style>
@@ -287,7 +289,55 @@
                                         <MudText>Safety Equipment</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("Leather Shoes, Safety Glasses, Gloves")" />
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedEquipmentName"
+                                            Label="Buscar equipamiento"
+                                            SearchFunc="SearchEquipment"
+                                            Placeholder="Buscar equipamiento..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Warning"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Engineering">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingEquipment)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedEquipment" Disabled="@(string.IsNullOrWhiteSpace(selectedEquipmentName))">
+                                                Agregar equipamiento
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedEquipmentName))
+                                        {
+                                            string title = "Equipment";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear equipamiento
+                                            </MudButton>
+                                        }
+
+                                        @if (_equipmentIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                @foreach (var equipmentId in _equipmentIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Warning" Variant="Variant.Outlined">
+                                                        <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_equipment.FirstOrDefault(t => t.EquipmentId == equipmentId)?.EquipmentName)
+                                                        </MudChip>
+
+                                                        <MudTooltip Text="Delete Equipment" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveEquipment(equipmentId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
@@ -326,24 +376,24 @@
                                             </MudButton>
                                         }
 
-                                            @if (_toolsIds.Count > 0)
-                                            {
-                                                <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+                                        @if (_toolsIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
 
-                                                    @foreach (var toolId in _toolsIds)
-                                                    {
-                                                        <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
-                                                        <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
-                                                                @(_tools.FirstOrDefault(t => t.ToolId == toolId)?.ToolName)
-                                                            </MudChip>
+                                                @foreach (var toolId in _toolsIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                                    <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_tools.FirstOrDefault(t => t.ToolId == toolId)?.ToolName)
+                                                        </MudChip>
 
-                                                            <MudTooltip Text="Delete Tool" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveTool(toolId))"></MudIconButton>
-                                                            </MudTooltip>
-                                                        </MudButton>
-                                                    }
-                                                </MudItem>
-                                            }
+                                                        <MudTooltip Text="Delete Tool" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveTool(toolId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
@@ -351,7 +401,55 @@
                                         <MudText>Materials Used</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" Value="@("Water Pump Housing, Water Pump Housing Gasket")" />
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedMaterialName"
+                                            Label="Buscar herramienta"
+                                            SearchFunc="SearchMaterials"
+                                            Placeholder="Buscar material..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Primary"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Work">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingMaterial)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedMaterial" Disabled="@(string.IsNullOrWhiteSpace(selectedMaterialName))">
+                                                Agregar material
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedMaterialName))
+                                        {
+                                            string title = "Materials";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear material
+                                            </MudButton>
+                                        }
+
+                                        @if (_materialsIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                @foreach (var materialId in _materialsIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Primary" Variant="Variant.Outlined">
+                                                        <MudChip Color="Color.Primary" Icon="@Icons.Material.Filled.Work" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_materials.FirstOrDefault(t => t.MaterialId == materialId)?.MaterialName)
+                                                        </MudChip>
+
+                                                        <MudTooltip Text="Delete Material" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveMaterial(materialId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
@@ -809,9 +907,21 @@
         </div>
     </TitleContent>
     <DialogContent>
-        <MudItem Style="height: 50vh">
-            <SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm ToolName="@newToolName" OnToolCreated="HandleToolCreated"></SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm>
-        </MudItem>
+        @if(resourceType == "Equipment"){
+            <MudItem Style="height: 50vh">
+                <SupervisorMobility.Client.Pages.Configuration.EquipmentPage.EquipmentForm EquipmentName="@newEquipmentName" OnEquipmentCreated="HandleEquipmentCreated"></SupervisorMobility.Client.Pages.Configuration.EquipmentPage.EquipmentForm>
+            </MudItem>
+        }
+        else if(resourceType == "Tools"){
+            <MudItem Style="height: 50vh">
+                <SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm ToolName="@newToolName" OnToolCreated="HandleToolCreated"></SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm>
+            </MudItem>
+        }
+        else if(resourceType == "Materials"){
+                <MudItem Style="height: 50vh">
+                    <SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm MaterialName="@newMaterialName" OnMaterialCreated="HandleMaterialCreated"></SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm>
+            </MudItem>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseResourcesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
