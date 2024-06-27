@@ -73,7 +73,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.ToolPage
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-                new BreadcrumbItem(text: Localizer["Tools"], href: "Tools")
+                new BreadcrumbItem(text: Localizer["Tools"], href: "Tool")
             };
 
             switch (PageState)

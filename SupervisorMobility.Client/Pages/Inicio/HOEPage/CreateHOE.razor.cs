@@ -306,7 +306,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _sosHub.DepartmentId = departmentId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
-            //_sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
+            _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
 
             if (!(items == null || !items.Any()))
             {
@@ -337,7 +337,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                 _sosHub = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/sosHub");
+                NavigationManager.NavigateTo("/hoe");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
