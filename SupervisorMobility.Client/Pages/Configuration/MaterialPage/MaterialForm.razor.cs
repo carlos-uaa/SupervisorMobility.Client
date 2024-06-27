@@ -8,6 +8,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.MaterialPage
     {
         [Parameter]
         public int? MaterialID { get; set; }
+
+        [Parameter]
+        public string? MaterialName { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> OnMaterialCreated { get; set; }
+
         int PageState = 0;
 
 
@@ -28,16 +35,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.MaterialPage
 
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-            PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
-            
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+            if (!string.IsNullOrEmpty(MaterialName))
+            {
+                PageState = 1;
             }
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
-            }
+            else
+            {
 
+                var currentUrl = NavigationManager.Uri;
+                PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+                }
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+                }
+
+            }
 
             await GetUserAsync();
             logged = await HasPropertyAsync();
@@ -65,6 +80,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.MaterialPage
                 case 1:
                     _Material = new Material();
                     _Material.IsActive =  true;
+                    if (!string.IsNullOrEmpty(MaterialName))
+                    {
+                        _Material.MaterialName = MaterialName;
+                    }
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;
                 case 2:
@@ -111,17 +130,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.MaterialPage
         {
             ExecBtnPress = true;
             switch (PageState)
-                            {
-                                case 1:
+            {
+                case 1:
 
                     var result = await MaterialsServices.CreateMaterial(_Material);
 
                     if (result != null)
                     {
-                        NavigationManager.NavigateTo($"Material");
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["MaterialCreateSucces"]}", Severity.Info);
+                        if (!string.IsNullOrEmpty(MaterialName))
+                        {
+                            await OnMaterialCreated.InvokeAsync(true);
+                        }
+                        else
+                        {
+                            NavigationManager.NavigateTo($"Material");
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"{Localizer1["MaterialCreateSucces"]}", Severity.Info);
+                        }
                     }
                     else
                     {

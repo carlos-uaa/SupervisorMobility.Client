@@ -8,6 +8,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.EquipmentPage
     {
         [Parameter]
         public int? EquipmentID { get; set; }
+
+        [Parameter]
+        public string? EquipmentName { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> OnEquipmentCreated { get; set; }
+
         int PageState = 0;
 
 
@@ -28,14 +35,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.EquipmentPage
 
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-            PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
-            
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+
+            if (!string.IsNullOrEmpty(EquipmentName))
+            {
+                PageState = 1;
             }
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+            else
+            {
+                var currentUrl = NavigationManager.Uri;
+                PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+                }
+                if (PageState == 0) { 
+                    PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+                }
             }
 
 
@@ -65,6 +80,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.EquipmentPage
                 case 1:
                     _Equipment = new Equipment();
                     _Equipment.IsActive =  true;
+                    if (!string.IsNullOrEmpty(EquipmentName))
+                    {
+                        _Equipment.EquipmentName = EquipmentName;
+                    }
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;
                 case 2:
@@ -111,17 +130,24 @@ namespace SupervisorMobility.Client.Pages.Configuration.EquipmentPage
         {
             ExecBtnPress = true;
             switch (PageState)
-                            {
-                                case 1:
+            {
+                case 1:
 
                     var result = await EquipmentsServices.CreateEquipment(_Equipment);
 
                     if (result != null)
                     {
-                        NavigationManager.NavigateTo($"Equipment");
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["EquipmentCreateSucces"]}", Severity.Info);
+                        if (!string.IsNullOrEmpty(EquipmentName))
+                        {
+                            await OnEquipmentCreated.InvokeAsync(true);
+                        }
+                        else { 
+                            NavigationManager.NavigateTo($"Equipment");
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"{Localizer1["EquipmentCreateSucces"]}", Severity.Info);
+                        
+                        }
                     }
                     else
                     {
