@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubReturned;
         }
-        public async Task<IEnumerable<SOSHub>> GetAllSOSHub(bool includeImages = false, bool includeVideos = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)
+        public async Task<List<SOSHub>> GetAllSOSHub(bool includeImages = false, bool includeVideos = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)
         {
             var response = await _http.GetAsync($"SOS/DataPool?includeImages={includeImages}&includeVideos={includeVideos}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}");
             var content = await response.Content.ReadAsStringAsync();
@@ -76,9 +76,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubUpdated;
         }
-        public  async Task<SOSHub> DeleteSOSHub(SOSHub SosEntity)
+        public  async Task<SOSHub> DeleteSOSHub(int SosEntity_id)
         {
-            var response = await _http.DeleteAsync($"SOS/DataPool/{SosEntity.SOSHubId}");
+            var response = await _http.DeleteAsync($"SOS/DataPool/{SosEntity_id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
