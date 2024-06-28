@@ -448,6 +448,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             {
                 return "First select a status!";
             }
+            if (string.IsNullOrEmpty(_sosHub.OtherInformation))
+            {
+                return "First write down Other information first!";
+            }
+            if (departmentId == new int())
+            {
+                return "First select a Department!";
+            }
+            if (plantId == new int())
+            {
+                return "First select a Plant!";
+            }
+            if (areaId == new int())
+            {
+                return "First select a Area!";
+            }
+            if (supervisorOwnerId == new int())
+            {
+                return "First select a Owner!";
+            }
+            if (supervisorEditorId == new int())
+            {
+                return "First select a Editor!";
+            }
             return string.Empty;
         }
 
