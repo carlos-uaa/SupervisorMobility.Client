@@ -14,8 +14,8 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<FileUpload> AddVideoToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id);
         Task<FileUpload> AddCDToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id);
         Task<string> ShowImageSosHub(int idfile);
-        //Aun no se como hacer esto XD
-        //Task<> ShowVideoSosHub(int idfile);
+
+        Task<string> ShowVideoSosHub(int idfile);
         Task DownloadFileCD(int idfile, string filename);
         Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id);
         Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id);

@@ -49,6 +49,7 @@ global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
 global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
 global using SupervisorMobility.Client.Services.TestServices;
 global using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices;
 global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
@@ -120,6 +121,7 @@ builder.Services.AddScoped<ICheckPointService, CheckpointService>();
 
 //Sos services
 builder.Services.AddScoped<ISOSHubService, SOSHubService>();
+builder.Services.AddScoped<ISOSAnaysisService, SOSAnaysisService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IToolService, ToolService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();

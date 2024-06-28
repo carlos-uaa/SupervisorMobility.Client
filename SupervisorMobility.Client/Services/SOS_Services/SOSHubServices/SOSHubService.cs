@@ -168,7 +168,23 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             }
         }
         //Aun no se como hacer esto XD
-        //Task<> ShowVideoSosHub(int idfile);
+        public async Task<string> ShowVideoSosHub(int idfile)
+        {
+            var response = await _http.GetAsync($"SOS/DataPool/Video/{idfile}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
+
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
         public async Task DownloadFileCD(int idfile, string filename)
         {
             var response = await _http.GetAsync($"SOS/DataPool/CD/{idfile}");
