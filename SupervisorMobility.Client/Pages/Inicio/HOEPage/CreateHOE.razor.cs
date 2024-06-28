@@ -473,6 +473,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
             _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
+            _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
+            _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
             if (!(items == null || !items.Any()))
             {
