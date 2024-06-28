@@ -6,9 +6,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
     {
         Task<SOSHub> CreateSOScollection(SOSHub SOS_EntityToCreate);
         Task<SOSHub> GetSOSHub(int HubId, bool includeImages = false, bool includeVideos = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
-        Task<IEnumerable<SOSHub>> GetAllSOSHub(bool includeImages = false, bool includeVideos = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
+        Task<List<SOSHub>> GetAllSOSHub(bool includeImages = false, bool includeVideos = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
         Task<SOSHub> UpdateSOSHub(SOSHub SosEntity);
-        Task<SOSHub> DeleteSOSHub(SOSHub SosEntity);
+        Task<SOSHub> DeleteSOSHub(int SosEntity_id);
 
         Task<FileUpload> AddImageToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id);
         Task<FileUpload> AddVideoToSOSHub(MultipartFormDataContent? contentfiles, int SOS_DataPool_id);
