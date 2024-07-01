@@ -1,85 +1,120 @@
-﻿@page "/highlighter"
+﻿@page "/TestMarco"
 @using MudBlazor
 @using System.Globalization
 @using System.Text
 @using System.Text.RegularExpressions
 
-<MudTextField @bind-Value="BaseText" Label="BaseText" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
+<MudButton OnClick="AddSection" Variant="Variant.Filled">Añadir Sección</MudButton>
 
+<MudSimpleTable>
+    <MudTr>
+        <MudTh>Sección</MudTh>
+        <MudTh>Análisis</MudTh>
+        <MudTh>Pasos</MudTh>
+        <MudTh>Punto Crítico</MudTh>
+    </MudTr>
 
-<MudText Typo="Typo.h5">
-    @((MarkupString)HighlightedText)
-</MudText>
+    @foreach (var (section, indexSection) in Sections.Select((section, indexSection) => (section, indexSection)))
+    {
 
-<MudPaper Class="pa-4" Style="margin-top: 20px;">
-    <MudList>
-        @foreach (var term in Terms)
-        {
-            <MudListItem>
-                <MudItem Style="display: flex; flex-direction: row;">
-                    <MudText @onclick="() => HighlightTerm(term)" Class="cursor-pointer">
-                        @term
-                    </MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Edge="Edge.End" @onclick="() => RemoveTerm(term)" />
-                </MudItem>
-            </MudListItem>
-        }
-    </MudList>
+        <MudTr>
+            <MudTd colspan="4">
+                @indexSection
+                <MudButton OnClick="() => AddAnalisis(indexSection)" Variant="Variant.Filled">Añadir Análisis</MudButton>
+            </MudTd>
+        </MudTr>
+        <MudTr>
+            <MudTd>
+            </MudTd>
+            <MudTd>
+                @foreach (var (analisis, indexAnalisis) in section.Analisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                {
+                    <MudTextField @bind-Value="Sections[indexSection].Analisis[indexAnalisis].Text" Label="Añadir Análisis" Variant="Variant.Filled" Class="mb-2" />
 
-    <MudTextField @bind-Value="NewTerm" Label="Añadir nuevo término" Variant="Variant.Filled" Class="mb-2" />
-    <MudButton OnClick="AddTerm" Variant="Variant.Filled">Añadir</MudButton>
-</MudPaper>
+                }
+
+            </MudTd>
+            <MudTd>
+                @if (section.Analisis.Any())
+                {
+                    <MudButton OnClick="() => AddPaso(indexSection)" Variant="Variant.Filled">Añadir Paso</MudButton>
+                }
+                @foreach (var (paso, indexPaso) in section.Pasos.Select((paso, indexPaso) => (paso, indexPaso)))
+                {
+                    <MudTextField @bind-Value="Sections[indexSection].Pasos[indexPaso]" Label="Paso" Variant="Variant.Filled" Class="mb-2" />
+                }
+
+            </MudTd>
+            <MudTd>
+                @if (section.Pasos.Any())
+                {
+
+                    @foreach (var (analisis, indexAnalisis) in section.Analisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                    {
+                        @if (!string.IsNullOrEmpty(Sections[indexSection].Analisis[indexAnalisis].PuntoCritico))
+                        {
+
+                            <MudText Typo="Typo.subtitle1">
+                                <MudHighlighter Text="@(GetAnalisisText(indexSection, indexAnalisis))" HighlightedText="@(GetHighlightedText(indexSection, indexAnalisis))" />
+                            </MudText>
+                        }
+
+                        <MudTextField @bind-Value="Sections[indexSection].Analisis[indexAnalisis].PuntoCritico" Label="Punto Crítico" Variant="Variant.Filled" Class="mb-2" @onchange="(e) => ApplyHighlights(indexSection, indexAnalisis)" />
+                        <MudTextField @bind-Value="Sections[indexSection].Analisis[indexAnalisis].Razon" Label="Razón" Variant="Variant.Filled" Class="mb-2" />
+                    }
+                }
+            </MudTd>
+
+        </MudTr>
+    }
+</MudSimpleTable>
 
 @code {
-    private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados. Me equivoco una y otra vez Y te puedo asegurar Que el paso de los años No impide que vuelva a tropezar Ni que me vuelva a romper Contra otro desengaño Volvería a mis adicciones Si acaso fuera Si fuera necesario Caeré en los mismos errores Si acaso fuera Si fuera necesario";   
-    private List<string> Terms = new List<string> { "texto", "ejemplo", "términos" };
-    private string HighlightedText => ApplyHighlights(BaseText, Terms, SelectedTerm);
-    private string SelectedTerm;
-    private string NewTerm;
+    public List<Section> Sections { get; set; } = new List<Section>();
 
-    private void HighlightTerm(string term)
+    public class Section
     {
-        SelectedTerm = term;
+        public List<Analisis> Analisis { get; set; } = new List<Analisis>();
+        public List<string> Pasos { get; set; } = new List<string>();
     }
 
-    private void AddTerm()
+    public class Analisis
     {
-        if (!string.IsNullOrWhiteSpace(NewTerm) && !Terms.Contains(NewTerm, StringComparer.OrdinalIgnoreCase))
-        {
-            Terms.Add(NewTerm);
-            NewTerm = string.Empty;
-        }
+        public string Text { get; set; }
+        public string PuntoCritico { get; set; } = string.Empty;
+        public string Razon { get; set; }
     }
 
-    private void RemoveTerm(string term)
+
+
+    private void AddSection()
     {
-        Terms.Remove(term);
+        Sections.Add(new Section());
     }
 
-    private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
+    private void AddAnalisis(int sectionIndex)
     {
-       
-        if (string.IsNullOrEmpty(highlightTerm))
+        Sections[sectionIndex].Analisis.Add(new Analisis());
+    }
+
+    private void AddPaso(int sectionIndex)
+    {
+        Sections[sectionIndex].Pasos.Add("");
+    }
+
+    private void ApplyHighlights(int sectionIndex, int analisisIndex)
+    {
+        var analisis = Sections[sectionIndex].Analisis[analisisIndex];
+        var text = analisis.Text;
+        var term = analisis.PuntoCritico;
+
+        if (string.IsNullOrEmpty(term))
         {
-            return text;
+            return;
         }
 
-        var normalizedText = Normalize(text);
-        var normalizedHighlightTerm = Normalize(highlightTerm);
-
-        var result = new StringBuilder(text);
-
-        foreach (var term in terms)
-        {
-            var normalizedTerm = Normalize(term);
-
-            if (normalizedTerm == normalizedHighlightTerm)
-            {
-                result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
-            }
-        }
-
-        return result.ToString();
+        var highlightedText = ReplaceInsensitive(text, term);
+        analisis.Text = highlightedText;
     }
 
     private static string Normalize(string input)
@@ -89,26 +124,40 @@
             return string.Empty;
         }
 
-        input = input.Normalize(NormalizationForm.FormD)
-                     .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                     .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
-                     .ToString()
-                     .ToLowerInvariant();
-
-        return input;
+        return input.Normalize(NormalizationForm.FormD)
+            .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
+            .ToString()
+            .ToLowerInvariant();
     }
 
-    private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
+    private static string ReplaceInsensitive(string text, string search)
     {
-        // return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        string normalizedText = Normalize(text);
-
-        return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+        if (string.IsNullOrEmpty(search))
         {
-            // Encontrar la coincidencia en el texto original basado en el índice
-            int startIndex = m.Index;
+            return text;
+        }
+
+        string normalizedText = Normalize(text);
+        string normalizedSearch = Normalize(search);
+
+        var result = Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+        {
+            int startIndex = normalizedText.IndexOf(m.Value, m.Index, StringComparison.OrdinalIgnoreCase);
             string originalMatch = text.Substring(startIndex, search.Length);
             return $"<mark>{originalMatch}</mark>";
         }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        return result;
+    }
+
+    private string GetAnalisisText(int sectionIndex, int analisisIndex)
+    {
+        return Sections[sectionIndex].Analisis[analisisIndex].Text;
+    }
+
+    private string GetHighlightedText(int sectionIndex, int analisisIndex)
+    {
+        return Sections[sectionIndex].Analisis[analisisIndex].PuntoCritico;
     }
 }
