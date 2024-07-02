@@ -15,9 +15,12 @@ using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
-    public partial class CreateHOE
+    public partial class HoeDetails
     {
         #region Variables
+        [Parameter]
+        public int SOSHubId { get; set; }
+
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
@@ -108,7 +111,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         int cycleId = 0;
 
 
-
         //Show Evidence 
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
@@ -157,7 +159,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _links = new List<BreadcrumbItem>
                 {
                     new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "", disabled: true)
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/sosHub"),
+                    new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true)
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();
@@ -172,10 +175,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
 
 
-            AddItem();
             SetUserInfo();
 
-            StateHasChanged();
         }
 
         #region Tools
@@ -473,72 +474,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             return string.Empty;
         }
 
-        private async Task CreateNewSOSHub()
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
-            var validationMessage = ValidateSosHubForm();
-            if (!string.IsNullOrEmpty(validationMessage))
-            {
-                Snackbar.Add(validationMessage, Severity.Warning);
-                return;
-            }
-            _sosHub.AppliedModelId = productId;
-            _sosHub.IsActive = true;
-            _sosHub.OwnerId = supervisorOwnerId;
-            _sosHub.EditorId = supervisorEditorId;
-            _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
-            _sosHub.CreatedDate = createdDateTime;
-            _sosHub.ModifiedDate = modifiedDateTime;
-            _sosHub.DepartmentId = departmentId;
-            _sosHub.PlantId = plantId;
-            _sosHub.AreaId = areaId;
-            _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
-            _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
-            _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
-
-            if (!(items == null || !items.Any()))
-            {
-                foreach (var item in items)
-                {
-                    if (string.IsNullOrEmpty(item.Commentary))
-                    {
-                        Snackbar.Add($"Write down the commentary first!", Severity.Warning);
-                        return;
-                    }
-                    var processSheetCommentary = new Commentary
-                    {
-                        ComentaryId = 0,
-                        Comment = item.Commentary,
-                        IsActive = true
-                    };
-                    _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
-                }
-            }
-
-            var result = await SOSHubServices.CreateSOScollection(_sosHub);
-
-            if (result != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"SOS Created", Severity.Info);
-
-                _sosHub = result;
-                _ = await UploadEvidence();
-
-                NavigationManager.NavigateTo("/hoe");
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
-
-        }
 
         public async void SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
-            _sosHub.Plan = "[Current]";
-            _sosHub.SourcePlan = "[Current]";
 
             _tools = await ToolsServices.GetTools();
             _tools = _tools.OrderBy(t => t.ToolName).ToList();
@@ -558,16 +497,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
+            StateHasChanged();
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
+
+            //if(_sosHub.Images.Count > 0)
+            //{
+
+            //    foreach(var sosImage in _sosHub.Images)
+            //    {
+            //        var image = await SOSHubServices.
+            //        capturedImages = image.
+            //    }
+            //}
+
+            if (_sosHub.PlantId != null)
+            {
+                plantId = (int)_sosHub.PlantId;
+            }
 
             if (user.UserType == 1)
             {
+                if(plantId != new int())
+                {
+                    _areas = await AreaServices.GetAreas(plantId);
+                    _areas = _areas.OrderBy(a => a.Description).ToList();
+                }
                 _supervisors = await UsersService.GetUsersByType( 3, false, false);
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
             }
             if (user.UserType == 2)
             {
-                plantId = (int)user.PlantId;
-                areaId = 0;
 
                 _areas = user.Areas.ToList();
                 foreach (var sv in user.Subordinates.ToList())
@@ -578,26 +537,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
             else if (user.UserType == 3)
             {
-                var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
-
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
-                supervisorOwnerId = user.UserId;
-                supervisorEditorId = user.UserId;
-
                 _supervisors.Add(user);
             }
+
+
+
+            areaId = (int)_sosHub.AreaId;
+            departmentId = (int)_sosHub.DepartmentId;
+            productId = (int)_sosHub.AppliedModelId;
+
+            supervisorEditorId = (int)_sosHub.EditorId;
+            supervisorOwnerId = (int)_sosHub.OwnerId;
+
+            cycleId = GetCycleId(_sosHub.TrainingTime);
             StateHasChanged();
 
         }
+
+        public static int GetCycleId(string trainingTime)
+        {
+            string cycleIdString = trainingTime.Split(' ').First();
+
+            if (int.TryParse(cycleIdString, out int cycleId))
+            {
+                return cycleId;
+            }
+            else
+            {
+                throw new FormatException("El formato de TrainingTime no es válido.");
+            }
+        }
+
 
         #endregion
 
         //Show areas
         #region Areas
-            private async void ShowAreas()
+        private async void ShowAreas()
         {
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
