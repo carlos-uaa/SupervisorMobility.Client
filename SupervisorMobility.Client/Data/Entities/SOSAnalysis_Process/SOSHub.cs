@@ -7,6 +7,8 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 
         //Es el analisis
         public string OperationDescription { get; set; }
+        public ICollection<AnalysisBkup> AnalysesBkup { get; set; } = new List<AnalysisBkup>();
+        public ICollection<Section> Sections { get; set; } = new List<Section>();
         public string ProcessSheet { get; set; }
         public ICollection<Commentary>? ProcessSheetCommentary { get; set; } = new List<Commentary>();
         public ICollection<FileUpload>? CommonDirection { get; set; } = new List<FileUpload>();
