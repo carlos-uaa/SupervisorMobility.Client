@@ -15,9 +15,12 @@ using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 {
-    public partial class CreateHOE
+    public partial class HoeDetails
     {
         #region Variables
+        [Parameter]
+        public int SOSHubId { get; set; }
+
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
@@ -108,7 +111,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         int cycleId = 0;
 
 
-
         //Show Evidence 
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
@@ -157,7 +159,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _links = new List<BreadcrumbItem>
                 {
                     new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "", disabled: true)
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/sosHub"),
+                    new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true)
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();
@@ -172,11 +175,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
 
 
-            AddItem();
             SetUserInfo();
-            AddRawItem();
 
-            StateHasChanged();
         }
 
         #region Tools
@@ -421,136 +421,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
     
         //Create SOS HUB and validations
         #region Create SOSHUB
-        private string ValidateSosHubForm()
-        {
-            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
-            {
-                return "Write down at least one analysis first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
-            {
-                return "Write down the Process Sheet plan first";
-            }
-            if (productId == new int())
-            {
-                return "First select a product!";
-            }
-            if (string.IsNullOrEmpty(_sosHub.SourcePlan))
-            {
-                return "Write down the source plan first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.Plan))
-            {
-                return "Write down the plan first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.Status))
-            {
-                return "First select a status!";
-            }
-            if (string.IsNullOrEmpty(_sosHub.OtherInformation))
-            {
-                return "First write down Other information first!";
-            }
-            if (departmentId == new int())
-            {
-                return "First select a Department!";
-            }
-            if (plantId == new int())
-            {
-                return "First select a Plant!";
-            }
-            if (areaId == new int())
-            {
-                return "First select a Area!";
-            }
-            if (supervisorOwnerId == new int())
-            {
-                return "First select a Owner!";
-            }
-            if (supervisorEditorId == new int())
-            {
-                return "First select a Editor!";
-            }
-            return string.Empty;
-        }
-
-        private async Task CreateNewSOSHub()
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
-            var validationMessage = ValidateSosHubForm();
-            if (!string.IsNullOrEmpty(validationMessage))
-            {
-                Snackbar.Add(validationMessage, Severity.Warning);
-                return;
-            }
-            _sosHub.AppliedModelId = productId;
-            _sosHub.IsActive = true;
-            _sosHub.OwnerId = supervisorOwnerId;
-            _sosHub.EditorId = supervisorEditorId;
-            _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
-            _sosHub.CreatedDate = createdDateTime;
-            _sosHub.ModifiedDate = modifiedDateTime;
-            _sosHub.DepartmentId = departmentId;
-            _sosHub.PlantId = plantId;
-            _sosHub.AreaId = areaId;
-            _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
-            _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
-            _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
-
-            if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0)
-            {
-                foreach (var raw in RawAnalisis)
-                {
-                    AnalysisBkup analysisBkupToADD = new AnalysisBkup();
-                    analysisBkupToADD.Text = raw;
-                    analysisBkupToADD.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkupToADD);
-                }
-            }
-
-            if (!(items == null || !items.Any()))
-            {
-                foreach (var item in items)
-                {
-                    if (string.IsNullOrEmpty(item.Commentary))
-                    {
-                        Snackbar.Add($"Write down the commentary first!", Severity.Warning);
-                        return;
-                    }
-                    var processSheetCommentary = new Commentary
-                    {
-                        ComentaryId = 0,
-                        Comment = item.Commentary,
-                        IsActive = true
-                    };
-                    _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
-                }
-            }
-
-            var result = await SOSHubServices.CreateSOScollection(_sosHub);
-
-            if (result != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"SOS Created", Severity.Info);
-
-                _sosHub = result;
-                _ = await UploadEvidence();
-
-                NavigationManager.NavigateTo("/hoe");
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
-
-        }
 
         public async void SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
-            _sosHub.Plan = "[Current]";
-            _sosHub.SourcePlan = "[Current]";
 
             _tools = await ToolsServices.GetTools();
             _tools = _tools.OrderBy(t => t.ToolName).ToList();
@@ -570,16 +444,47 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
+            StateHasChanged();
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
+
+            if (_sosHub.Images != null && _sosHub.Images.Count > 0)
+            {
+
+                foreach (var sosImage in _sosHub.Images)
+                {
+                    Console.WriteLine(sosImage.FileUploadId);
+                    var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
+                    capturedImages.Add(image);
+                }
+            }
+
+            if (_sosHub.Videos != null && _sosHub.Videos.Count > 0)
+            {
+                foreach (var sosVideo in _sosHub.Videos)
+                {
+                    var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
+                    MediaUris.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
+                }
+            }
+
+
+            if (_sosHub.PlantId != null)
+            {
+                plantId = (int)_sosHub.PlantId;
+            }
 
             if (user.UserType == 1)
             {
+                if(plantId != new int())
+                {
+                    _areas = await AreaServices.GetAreas(plantId);
+                    _areas = _areas.OrderBy(a => a.Description).ToList();
+                }
                 _supervisors = await UsersService.GetUsersByType( 3, false, false);
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
             }
             if (user.UserType == 2)
             {
-                plantId = (int)user.PlantId;
-                areaId = 0;
 
                 _areas = user.Areas.ToList();
                 foreach (var sv in user.Subordinates.ToList())
@@ -590,26 +495,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             }
             else if (user.UserType == 3)
             {
-                var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
-
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
-                supervisorOwnerId = user.UserId;
-                supervisorEditorId = user.UserId;
-
                 _supervisors.Add(user);
             }
+
+
+
+            areaId = (int)_sosHub.AreaId;
+            departmentId = (int)_sosHub.DepartmentId;
+            productId = (int)_sosHub.AppliedModelId;
+
+            supervisorEditorId = (int)_sosHub.EditorId;
+            supervisorOwnerId = (int)_sosHub.OwnerId;
+
+            cycleId = GetCycleId(_sosHub.TrainingTime);
             StateHasChanged();
 
         }
+
+        public static int GetCycleId(string trainingTime)
+        {
+            string cycleIdString = trainingTime.Split(' ').First();
+
+            if (int.TryParse(cycleIdString, out int cycleId))
+            {
+                return cycleId;
+            }
+            else
+            {
+                throw new FormatException("El formato de TrainingTime no es válido.");
+            }
+        }
+
 
         #endregion
 
         //Show areas
         #region Areas
-            private async void ShowAreas()
+        private async void ShowAreas()
         {
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
@@ -641,50 +566,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         //Analize text and steps
         #region Steps
-        public void AnalyzeText()
-        {
-            //segments.Clear();
-            //allCriticalPoints.Clear();
-            //BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
-
-            //var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-
-            //foreach (var segmentText in segmentTexts)
-            //{
-            //    var segment = new Segment
-            //    {
-            //        Analysis = segmentText
-            //    };
-
-            //    var mainPointRegex = new Regex(@"#(.*?)#");
-            //    var mainPointMatch = mainPointRegex.Match(segmentText);
-
-            //    if (mainPointMatch.Success)
-            //    {
-            //        segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-            //    }
-            //    else
-            //    {
-            //        segment.MainPoint = string.Empty;
-            //    }
-
-            //    var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-            //    var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-            //    foreach (Match match in criticalPointMatches)
-            //    {
-            //        if (match.Success)
-            //        {
-            //            segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-            //        }
-            //    }
-
-            //    segments.Add(segment);
-            //}
-
-            //allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-            //StateHasChanged();
-        }
 
         public void ShowStepsDialog()
         {
@@ -893,7 +774,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
                     var fileContent = new StreamContent(imageStream);
                     fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
 
-                    content.Add(fileContent, "\"file\"", "evidenceSosHub.png");
+                    content.Add(fileContent, "\"file\"", "evidence.png");
 
 
                     var result = await SOSHubServices.AddImageToSOSHub(content, sosHubId);
@@ -924,11 +805,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
+            using var content = new MultipartFormDataContent();
             if(MediaUris.Count > 0)
             {
                 foreach (var item in MediaUris)
                 {
-                    var content = new MultipartFormDataContent();
                     string base64Data = item.Value.Item2.Split(',')[1];
                     if (string.IsNullOrEmpty(base64Data))
                     {
@@ -1131,6 +1012,77 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         #endregion
 
+        //Highlight analysis text
+        #region Highlight
+        private void HighlightTerm(string term)
+        {
+            visibleStepsDialog = false;
+            base.StateHasChanged();
+
+            SelectedTerm = term;
+            HighlightedText = ApplyHighlights(BaseText, allCriticalPoints, SelectedTerm);
+            visibleStepsDialog = true;
+            base.StateHasChanged();
+
+        }
+
+        private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
+        {
+
+            if (string.IsNullOrEmpty(highlightTerm))
+            {
+                StateHasChanged();
+                return text;
+            }
+
+            var normalizedText = Normalize(text);
+            var normalizedHighlightTerm = Normalize(highlightTerm);
+
+            var result = new StringBuilder(text);
+
+            foreach (var term in terms)
+            {
+                var normalizedTerm = Normalize(term);
+
+                if (normalizedTerm == normalizedHighlightTerm)
+                {
+                    result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
+                }
+            }
+            StateHasChanged();
+
+            return result.ToString();
+        }
+
+        private static string Normalize(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            input = input.Normalize(NormalizationForm.FormD)
+                         .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                         .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
+                         .ToString()
+                         .ToLowerInvariant();
+           
+            return input;
+        }
+
+        private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
+        {
+            string normalizedText = Normalize(text);
+            
+            return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+            {
+                int startIndex = m.Index;
+                string originalMatch = text.Substring(startIndex, search.Length);
+                return $"<mark>{originalMatch}</mark>";
+            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+        #endregion
+
         //Common direction files
         #region CommonDirection
 
@@ -1217,175 +1169,5 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
         }
 
         #endregion
-
-        //Analisis Steps Critical Points
-        [Inject]
-        private IDialogService DialogService { get; set; }
-        public List<string> RawAnalisis { get; set; } = new List<string>();
-        public List<string> RawAnalisisBk { get; set; } = new List<string>();
-
-        private IEnumerable<string> _selectedValues = new List<string>();
-      
-
-        public string stepName { get; set; } = "";
-        bool showAddStepDialog = false;
-       
-
-        private void ApplyHighlights(int sectionIndex, int analisisIndex)
-        {
-            var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            var text = analisis.Text;
-            var term = analisis.CriticalPoint;
-            if (string.IsNullOrEmpty(term))
-            {
-                return;
-            }
-
-            var highlightedText = ReplaceInsensitive(text, term);
-            analisis.Text = highlightedText;
-        }
-
-        private static string Normalize(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return string.Empty;
-            }
-
-            return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
-        }
-
-        private static string ReplaceInsensitive(string text, string search)
-        {
-            if (string.IsNullOrEmpty(search))
-            {   
-                return text;
-            }
-
-            string normalizedText = Normalize(text);
-            string normalizedSearch = Normalize(search);
-            var result = Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
-            {
-                int startIndex = normalizedText.IndexOf(m.Value, m.Index, StringComparison.OrdinalIgnoreCase);
-                string originalMatch = text.Substring(startIndex, search.Length);
-                return $"<mark>{originalMatch}</mark>";
-            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            return result;
-        }
-
-        private string GetAnalisisText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
-        }
-
-        private string GetHighlightedText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
-        }
-
-        void CreateBakup()
-        {
-            if (RawAnalisis.Count > 0)
-            {
-                RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
-                foreach(var raw in RawAnalisisBk) { 
-                    AnalysisBkup analysisBkup = new AnalysisBkup();
-                    analysisBkup.Text = raw;
-                    analysisBkup.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkup);
-                }
-            }
-        }
-        void RestoreBakup()
-        {
-            RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
-            _sosHub.Sections.Clear();
-            _sosHub.AnalysesBkup.Clear();
-        }
-        void AddRawItem()
-        {
-            RawAnalisis.Add("");
-        }
-
-        void RemoveRawItem(string item)
-        {
-            if (RawAnalisis.Count > 1)
-            {
-                RawAnalisis.Remove(item);
-            }
-        }
-        void RemoveSectionItem(Section item)
-        {
-
-            if (_sosHub.Sections.Count > 0)
-            {
-                // Obtener los textos de los análisis de la sección que se va a eliminar
-                var textsToReinsert = item.Analyses.Select(analisis => analisis.Text).ToList();
-
-                // Para cada texto, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
-                foreach (var text in textsToReinsert)
-                {
-                    int indexinsert = RawAnalisisBk.IndexOf(text);
-
-                    // Encontrar el índice donde insertar en RawAnalisis
-                    int insertPosition = RawAnalisis
-                        .Select((value, index) => new { Value = value, Index = index })
-                        .Where(x => RawAnalisisBk.IndexOf(x.Value) >= indexinsert)
-                        .Select(x => x.Index)
-                        .DefaultIfEmpty(RawAnalisis.Count)
-                        .First();
-
-                    // Insertar el texto en la posición correcta
-                    RawAnalisis.Insert(insertPosition, text);
-                }
-
-                // Eliminar la sección de Sections
-                _sosHub.Sections.Remove(item);
-            }
-        }
-
-        public void AddStep()
-        {
-            showAddStepDialog = true;
-        }
-
-        private void CloseStepDialog()
-        {
-            showAddStepDialog = false;
-        }
-        public async void confirmStep()
-        {
-
-            if (!string.IsNullOrEmpty(stepName))
-            {
-
-                Section SectiontoAdd = new Section();
-                foreach (string item in _selectedValues)
-                {
-                    Analysis ToAdd = new Analysis();
-                    ToAdd.Text = item;
-                    SectiontoAdd.Analyses.Add(ToAdd);
-                    RawAnalisis.Remove(item);
-                }
-
-                SectiontoAdd.Step = stepName;
-
-                _sosHub.Sections.Add(SectiontoAdd);
-
-                stepName = string.Empty;
-                _selectedValues = new List<string>();
-                CloseStepDialog();
-            }
-            else
-            {
-                bool? result = await DialogService.ShowMessageBox(
-                   "Warning",
-                    "Es necesario el texto!",
-                   yesText: "Ok!");
-                var state = result == null ? "Canceled" : "Deleted!";
-                StateHasChanged();
-            }
-
-        }
     }
 }
