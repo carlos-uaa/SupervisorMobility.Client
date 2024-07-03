@@ -1,114 +1,178 @@
-﻿@page "/highlighter"
+﻿@page "/TestMarco"
 @using MudBlazor
 @using System.Globalization
 @using System.Text
 @using System.Text.RegularExpressions
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 
-<MudTextField @bind-Value="BaseText" Label="BaseText" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2"></MudTextField>
 
 
-<MudText Typo="Typo.h5">
-    @((MarkupString)HighlightedText)
-</MudText>
+<MudTabs Color="@Color.Info" Position="Position.Left" Rounded="true" Border="true"
+         ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6">
+    <MudTabPanel Text="Analisis">
+        <MudContainer Style="display: flex; flex-direction: column;">
+            <MudItem>
+                <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
+            </MudItem>
+            <MudItem>
 
-<MudPaper Class="pa-4" Style="margin-top: 20px;">
-    <MudList>
-        @foreach (var term in Terms)
-        {
-            <MudListItem>
-                <MudItem Style="display: flex; flex-direction: row;">
-                    <MudText @onclick="() => HighlightTerm(term)" Class="cursor-pointer">
-                        @term
-                    </MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Edge="Edge.End" @onclick="() => RemoveTerm(term)" />
+                <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                    <tbody>
+                        @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                        {
+                            <tr>
+                                <td width="90%">
+                                    <MudTextField @bind-Value="@RawAnalisis[indexAnalisis]" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                </td>
+                                @if (RawAnalisis.IndexOf(analisis) > 0)
+                                {
+                                    <td width="10%">
+                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveRawItem(analisis)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <MudButton OnClick="AddRawItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add analisis</MudButton>
+            </MudItem>
+        </MudContainer>
+
+    </MudTabPanel>
+
+    @if (!string.IsNullOrEmpty(RawAnalisis.FirstOrDefault()) || Sections.Count > 0)
+    {
+        <MudTabPanel Text="Creacion de Pasos" OnClick="CreateBakup">
+
+            <MudContainer Style="display: flex; flex-direction: column;">
+                <MudItem>
+                    <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
                 </MudItem>
-            </MudListItem>
-        }
-    </MudList>
+                @if (RawAnalisis.Count > 0)
+                {
+                    <MudItem>
+                        <MudStack>
+                            <MudStack>
+                                <MudText>Multi Selection</MudText>
+                                <MudText>Values: @string.Join(", ", _selectedValues ?? new List<string>())</MudText>
+                                <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Color="Color.Secondary" CheckMark>
+                                 @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                    {
+                                        <MudToggleItem Value="@RawAnalisis[indexAnalisis]" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                                    }
+                                </MudToggleGroup>
+                            </MudStack>
+                        </MudStack>
 
-    <MudTextField @bind-Value="NewTerm" Label="Añadir nuevo término" Variant="Variant.Filled" Class="mb-2" />
-    <MudButton OnClick="AddTerm" Variant="Variant.Filled">Añadir</MudButton>
-</MudPaper>
+                        <MudButton OnClick="AddStep" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Generar Paso</MudButton>
+                    </MudItem>
+                }
 
-@code {
-    private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados. Me equivoco una y otra vez Y te puedo asegurar Que el paso de los años No impide que vuelva a tropezar Ni que me vuelva a romper Contra otro desengaño Volvería a mis adicciones Si acaso fuera Si fuera necesario Caeré en los mismos errores Si acaso fuera Si fuera necesario";   
-    private List<string> Terms = new List<string> { "texto", "ejemplo", "términos" };
-    private string HighlightedText => ApplyHighlights(BaseText, Terms, SelectedTerm);
-    private string SelectedTerm;
-    private string NewTerm;
+                @if (Sections.Count > 0)
+                {
+                    <MudItem>
+                        <MudText Typo="Typo.h5">Preview</MudText>
+                        <MudSimpleTable>
+                            <MudTr>
+                                <MudTh>Análisis</MudTh>
+                                <MudTh>Pasos</MudTh>
+                                <MudTh>Punto Crítico</MudTh>
+                                <MudTh></MudTh>
+                            </MudTr>
 
-    private void HighlightTerm(string term)
-    {
-        SelectedTerm = term;
+                            @foreach (var (section, indexSection) in Sections.Select((section, indexSection) => (section, indexSection)))
+                            {
+                                <MudTr>
+                                    <MudTd Style="width:60%">
+                                        @foreach (var (analisis, indexAnalisis) in section.Analisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                        {
+                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@Sections[indexSection].Analisis[indexAnalisis].Text</MudText>
+                                        }
+                                    </MudTd>
+                                    <MudTd Style="width:30%">
+                                        <MudTextField @bind-Value="Sections[indexSection].Paso" Label="Paso" Variant="Variant.Filled" Class="mb-2" />
+                                    </MudTd>
+                                    <MudTh></MudTh>
+
+                                    <MudTd Style="width:10%">
+                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveSectionItem(section)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                    </MudTd>
+                                </MudTr>
+                            }
+                        </MudSimpleTable>
+                    </MudItem>
+                }
+            </MudContainer>
+
+
+        </MudTabPanel>
     }
 
-    private void AddTerm()
+    @if (Sections.Count() > 0)
     {
-        if (!string.IsNullOrWhiteSpace(NewTerm) && !Terms.Contains(NewTerm, StringComparer.OrdinalIgnoreCase))
-        {
-            Terms.Add(NewTerm);
-            NewTerm = string.Empty;
-        }
+        <MudTabPanel Text="Identificacion Puntos Critos">
+
+
+            <MudSimpleTable Style="width:100%">
+                <MudTr>
+                    <MudTh>Análisis</MudTh>
+                    <MudTh>Pasos</MudTh>
+                    <MudTh>Punto Crítico</MudTh>
+                </MudTr>
+
+                @foreach (var (section, indexSection) in Sections.Select((section, indexSection) => (section, indexSection)))
+                {
+                    <MudTr>
+                        <MudTd Style="width:50%">
+                            @foreach (var (analisis, indexAnalisis) in section.Analisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                            {
+                                @if (!string.IsNullOrEmpty(Sections[indexSection].Analisis[indexAnalisis].PuntoCritico))
+                                {
+                                    <MudText Typo="Typo.subtitle1">
+                                        <MudHighlighter Text="@(GetAnalisisText(indexSection, indexAnalisis))" HighlightedText="@(GetHighlightedText(indexSection, indexAnalisis))" />
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2" >
+                                        @Sections[indexSection].Analisis[indexAnalisis].Text
+                                    </MudText>
+                                }
+                            }
+                        </MudTd>
+                        <MudTd Style="width:20%">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2" >
+                                @Sections[indexSection].Paso
+                                    </MudText>
+                        </MudTd>
+                        <MudTd Style="width:30%">
+                            @if (!string.IsNullOrEmpty(section.Paso))
+                            {
+                                @foreach (var (analisis, indexAnalisis) in section.Analisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                {
+
+                                    <MudTextField @bind-Value="Sections[indexSection].Analisis[indexAnalisis].PuntoCritico" Label="Punto Crítico" Variant="Variant.Filled" Class="mb-2" @onchange="(e) => ApplyHighlights(indexSection, indexAnalisis)" />
+                                    <MudTextField @bind-Value="Sections[indexSection].Analisis[indexAnalisis].Razon" Label="Razón" Variant="Variant.Filled" Class="mb-2" />
+                                }
+                            }
+                        </MudTd>
+
+                    </MudTr>
+                }
+            </MudSimpleTable>
+
+        </MudTabPanel>
     }
+</MudTabs>
 
-    private void RemoveTerm(string term)
-    {
-        Terms.Remove(term);
-    }
 
-    private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
-    {
-       
-        if (string.IsNullOrEmpty(highlightTerm))
-        {
-            return text;
-        }
+<MudDialog DisableSidePadding="false" @bind-IsVisible="showAddStepDialog" Options="dialogResourcesOptions">
+    <DialogContent>
+        <MudTextField @bind-Value="stepName" Label="Nombre - Paso Principal" Variant="Variant.Filled" Class="mb-2" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="confirmStep" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
 
-        var normalizedText = Normalize(text);
-        var normalizedHighlightTerm = Normalize(highlightTerm);
-
-        var result = new StringBuilder(text);
-
-        foreach (var term in terms)
-        {
-            var normalizedTerm = Normalize(term);
-
-            if (normalizedTerm == normalizedHighlightTerm)
-            {
-                result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
-            }
-        }
-
-        return result.ToString();
-    }
-
-    private static string Normalize(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-        {
-            return string.Empty;
-        }
-
-        input = input.Normalize(NormalizationForm.FormD)
-                     .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                     .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
-                     .ToString()
-                     .ToLowerInvariant();
-
-        return input;
-    }
-
-    private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
-    {
-        // return Regex.Replace(text, Regex.Escape(search), replacement, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        string normalizedText = Normalize(text);
-
-        return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
-        {
-            // Encontrar la coincidencia en el texto original basado en el índice
-            int startIndex = m.Index;
-            string originalMatch = text.Substring(startIndex, search.Length);
-            return $"<mark>{originalMatch}</mark>";
-        }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    }
-}
