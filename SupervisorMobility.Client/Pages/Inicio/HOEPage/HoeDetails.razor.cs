@@ -500,15 +500,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
 
-            //if(_sosHub.Images.Count > 0)
-            //{
+            if (_sosHub.Images != null && _sosHub.Images.Count > 0)
+            {
 
-            //    foreach(var sosImage in _sosHub.Images)
-            //    {
-            //        var image = await SOSHubServices.
-            //        capturedImages = image.
-            //    }
-            //}
+                foreach (var sosImage in _sosHub.Images)
+                {
+                    Console.WriteLine(sosImage.FileUploadId);
+                    var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
+                    capturedImages.Add(image);
+                }
+            }
+
+            if (_sosHub.Videos != null && _sosHub.Videos.Count > 0)
+            {
+                foreach (var sosVideo in _sosHub.Videos)
+                {
+                    var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
+                    MediaUris.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
+                }
+            }
+
 
             if (_sosHub.PlantId != null)
             {

@@ -912,11 +912,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
-            using var content = new MultipartFormDataContent();
             if(MediaUris.Count > 0)
             {
                 foreach (var item in MediaUris)
                 {
+                    var content = new MultipartFormDataContent();
                     string base64Data = item.Value.Item2.Split(',')[1];
                     if (string.IsNullOrEmpty(base64Data))
                     {
