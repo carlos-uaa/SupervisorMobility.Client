@@ -225,14 +225,14 @@ namespace SupervisorMobility.Client.Pages.Components
             //await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
         }
 
-        private async Task DownloadFileFromURL_CCP(string urlroute, string namefile)
+        private async Task DownloadFileFromURL_CCP(int urlroute, string namefile)
         {
             _ = await CDMSServices.GetDownloadLinkCCP(urlroute, namefile);
         }//end download file ccp
 
-        private async Task DownloadFileFromURL_GOS(string urlroute, string namefile)
+        private async Task DownloadFileFromURL_GOS(int ID, string namefile)
         {
-            _ = await CDMSServices.GetDownloadLinkGOS(urlroute, namefile);
+            _ = await CDMSServices.GetDownloadLinkGOS(ID, namefile);
         }//end download file gos
 
         private async Task<AsyncVoidMethodBuilder> SearchFunction()

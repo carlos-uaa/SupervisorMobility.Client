@@ -131,11 +131,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
         }
 
-        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(string URL, string namefile)
+        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(int ID, string namefile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "route", URL }
+                { "ID", ID.ToString() }
             };
 
             var json = JsonConvert.SerializeObject(parameters);
@@ -563,11 +563,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile)
+        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(int ID, string namefile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "route", URL }
+                { "ID", ID.ToString() }
             };
 
             var json = JsonConvert.SerializeObject(parameters);

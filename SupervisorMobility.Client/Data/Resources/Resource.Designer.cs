@@ -1870,6 +1870,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Home.
+        /// </summary>
+        public static string homeSOSHOE {
+            get {
+                return ResourceManager.GetString("homeSOSHOE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a ILU History Of Operations In User.
         /// </summary>
         public static string ILUHistoryOfOperationsInUser {

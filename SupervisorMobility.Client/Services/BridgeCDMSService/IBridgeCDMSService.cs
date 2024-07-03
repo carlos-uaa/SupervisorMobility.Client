@@ -14,10 +14,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         Task<CDMS_HOE_Archives> GetFilesHOE(string route);
         Task<CDMS_GOS_Archives> GetFilesGOS(string route);
 
-        Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(string URL, string namefile);
+        Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(int ID, string namefile);
         Task<CDMS_General> DeleteFileTempGOS(string FileName, string pathFile);
 
-        Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(string URL, string namefile);
+        Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(int ID, string namefile);
         Task<CDMS_General> DeleteFileTempCCP(string FileName, string pathFile);
 
         Task<AsyncVoidMethodBuilder> Download_DeleteFileTempHOE(string FileName, string pathFile);
