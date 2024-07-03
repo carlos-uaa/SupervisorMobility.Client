@@ -421,59 +421,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
     
         //Create SOS HUB and validations
         #region Create SOSHUB
-        private string ValidateSosHubForm()
-        {
-            if (string.IsNullOrEmpty(_sosHub.OperationDescription))
-            {
-                return "Write down the Operation Description first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
-            {
-                return "Write down the Process Sheet plan first";
-            }
-            if (productId == new int())
-            {
-                return "First select a product!";
-            }
-            if (string.IsNullOrEmpty(_sosHub.SourcePlan))
-            {
-                return "Write down the source plan first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.Plan))
-            {
-                return "Write down the plan first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.Status))
-            {
-                return "First select a status!";
-            }
-            if (string.IsNullOrEmpty(_sosHub.OtherInformation))
-            {
-                return "First write down Other information first!";
-            }
-            if (departmentId == new int())
-            {
-                return "First select a Department!";
-            }
-            if (plantId == new int())
-            {
-                return "First select a Plant!";
-            }
-            if (areaId == new int())
-            {
-                return "First select a Area!";
-            }
-            if (supervisorOwnerId == new int())
-            {
-                return "First select a Owner!";
-            }
-            if (supervisorEditorId == new int())
-            {
-                return "First select a Editor!";
-            }
-            return string.Empty;
-        }
-
 
         public async void SetUserInfo()
         {
@@ -619,50 +566,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HOEPage
 
         //Analize text and steps
         #region Steps
-        public void AnalyzeText()
-        {
-            segments.Clear();
-            allCriticalPoints.Clear();
-            BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
-
-            var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var segmentText in segmentTexts)
-            {
-                var segment = new Segment
-                {
-                    Analysis = segmentText
-                };
-
-                var mainPointRegex = new Regex(@"#(.*?)#");
-                var mainPointMatch = mainPointRegex.Match(segmentText);
-
-                if (mainPointMatch.Success)
-                {
-                    segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-                }
-                else
-                {
-                    segment.MainPoint = string.Empty;
-                }
-
-                var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-                var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-                foreach (Match match in criticalPointMatches)
-                {
-                    if (match.Success)
-                    {
-                        segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-                    }
-                }
-
-                segments.Add(segment);
-            }
-
-            allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-            StateHasChanged();
-        }
 
         public void ShowStepsDialog()
         {
