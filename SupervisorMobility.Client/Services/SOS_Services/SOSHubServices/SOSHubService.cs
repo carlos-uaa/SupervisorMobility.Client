@@ -238,5 +238,38 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return true;
         }
 
+        public async Task<bool> GenerateAnalysis(int SOS_DataPool_id, string side)
+        {
+            var response = await _http.GetAsync($"SOS/Analysis?SOSHubCollection_Id={SOS_DataPool_id}&side={side}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+
+            return true;
+        }
+
+        public Task<bool> GenerateCombination(int SOS_DataPool_id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> GenerateFlow(int SOS_DataPool_id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> GenerateDistribution(int SOS_DataPool_id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> GenerateSequence(int SOS_DataPool_id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -20,5 +20,12 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id);
         Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id);
         Task<bool> RemoveCDFromSOSData(int SOS_DataPool_id, int CDFile_id);
+
+        Task<bool> GenerateAnalysis(int SOS_DataPool_id, string side);
+        Task<bool> GenerateCombination(int SOS_DataPool_id);
+        Task<bool> GenerateFlow(int SOS_DataPool_id);
+        Task<bool> GenerateDistribution(int SOS_DataPool_id);
+        Task<bool> GenerateSequence(int SOS_DataPool_id);
+    
     }
 }
