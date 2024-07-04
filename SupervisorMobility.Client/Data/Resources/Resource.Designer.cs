@@ -1852,6 +1852,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Analysis.
+        /// </summary>
+        public static string HOESOSAnalysis {
+            get {
+                return ResourceManager.GetString("HOESOSAnalysis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Combination.
+        /// </summary>
+        public static string HOESOSCombination {
+            get {
+                return ResourceManager.GetString("HOESOSCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Distribution.
+        /// </summary>
+        public static string HOESOSDistribution {
+            get {
+                return ResourceManager.GetString("HOESOSDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Flow.
+        /// </summary>
+        public static string HOESOSFlow {
+            get {
+                return ResourceManager.GetString("HOESOSFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Sequence.
+        /// </summary>
+        public static string HOESOSSequence {
+            get {
+                return ResourceManager.GetString("HOESOSSequence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a HOE Time.
         /// </summary>
         public static string HOETime {
@@ -1866,6 +1911,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string home {
             get {
                 return ResourceManager.GetString("home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Appearance Inspection Home.
+        /// </summary>
+        public static string homeIS {
+            get {
+                return ResourceManager.GetString("homeIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS / HOE Home.
+        /// </summary>
+        public static string homeSOSHOE {
+            get {
+                return ResourceManager.GetString("homeSOSHOE", resourceCulture);
             }
         }
         
@@ -1965,6 +2028,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string InvalidImgData {
             get {
                 return ResourceManager.GetString("InvalidImgData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Inspection appearance home page and related information configuration module.
+        /// </summary>
+        public static string ISDescription {
+            get {
+                return ResourceManager.GetString("ISDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Inspection Appearance.
+        /// </summary>
+        public static string ISTitle {
+            get {
+                return ResourceManager.GetString("ISTitle", resourceCulture);
             }
         }
         
@@ -3616,11 +3697,29 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Administration module to manage the SOS HOE information and make or generate analysis, Combination, Distribution, Flow, Sequence..
+        /// </summary>
+        public static string SOSDescription {
+            get {
+                return ResourceManager.GetString("SOSDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SOS Program Review Plan Details.
         /// </summary>
         public static string sosDetails {
             get {
                 return ResourceManager.GetString("sosDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS HOE Home Page, Combination, Distribution, Flow, Sequence..
+        /// </summary>
+        public static string SOSHOEDescription {
+            get {
+                return ResourceManager.GetString("SOSHOEDescription", resourceCulture);
             }
         }
         

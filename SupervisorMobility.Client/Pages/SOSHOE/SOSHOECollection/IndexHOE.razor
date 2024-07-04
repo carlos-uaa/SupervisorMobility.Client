@@ -17,6 +17,7 @@
 @inject ITestService TestService
 @inject IProductService ProductsServices
 @inject ISOSHubService SOSHubServices
+@inject IDialogService DialogService
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["Hoe"]</PageTitle>
@@ -119,6 +120,7 @@ else
 
                             <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HoeDetails(context.SOSHubId))" @ontouchstart="(() => HoeDetails(context.SOSHubId))">Details</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHoe(context.SOSHubId))" @ontouchstart="(() => UpdateHoe(context.SOSHubId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => GenerateAnalysis(context.SOSHubId))" @ontouchstart="(() => GenerateAnalysis(context.SOSHubId))">Generate Analysis</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteHoe(context.SOSHubId))" @ontouchstart="(() => DeleteHoe(context.SOSHubId))">Delete </MudMenuItem>
                         </ChildContent>
                     </MudMenu>
@@ -127,6 +129,16 @@ else
         </RowTemplate>
     </MudTable>
 }
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowSideDialog" Options="dialogResourcesOptions">
+    <DialogContent>
+        <MudTextField @bind-Value="SideName" Label="Side" Variant="Variant.Filled" Class="mb-2" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="confirmSide" Variant="Variant.Filled">@Localizer["confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
 
 @code {
     // Breadcrumb links
@@ -140,6 +152,10 @@ else
     public User user = new();
     public bool logged = false;
 
+    //Side Dialog
+    private string SideName = string.Empty;
+    private int SosHubId = 0;
+    public bool ShowSideDialog = false;
     //Loading
     private IList<string> _sourceMsgLoading = new List<string>();
     private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -261,4 +277,44 @@ else
         NavigationManager.NavigateTo($"Hoe/Update/{HoeId}");
     }
 
+    void GenerateAnalysis(int hoeId)
+    {
+        SosHubId = hoeId;
+        ShowSideDialog = true;
+    }
+
+    private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+
+
+    public async void confirmSide()
+    {
+
+        if (!string.IsNullOrEmpty(SideName))
+        {
+            var GenAnalisys = await SOSHubServices.GenerateAnalysis(SosHubId, SideName);
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (GenAnalisys)
+            {
+                Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
+                SideName = "";
+                ShowSideDialog = false;
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+            }
+        }
+        else
+        {
+            bool? result = await DialogService.ShowMessageBox( "Warning", "Es necesario el Side!",yesText: "Ok!");
+            var state = result == null ? "Canceled" : "Deleted!";
+        }
+
+            StateHasChanged();
+    }
 }
+
+
+
