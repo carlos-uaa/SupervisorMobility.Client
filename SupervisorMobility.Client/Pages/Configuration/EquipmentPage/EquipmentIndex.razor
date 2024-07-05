@@ -1,0 +1,220 @@
+﻿@page "/Equipment"
+@inject IEquipmentService EquipmentsServices
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["Equipment"]</PageTitle>
+
+    @*Breadcrumb links*@
+    @* <MudBreadcrumbs Class="mb-10" Items="_links">
+    <ItemTemplate Context="item">
+        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
+    </ItemTemplate>
+</MudBreadcrumbs>
+ *@
+    @*Checklist categories table*@
+    <MudTable Items="_Equipments" Hover="true" T="Equipment" SortLabel="Sort By" Height="80vh"
+              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+              Filter="new Func<Equipment,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+
+                    <MudSpacer />
+                    <MudButton Href="/Equipment/Create">
+                        <MudText>@Localizer["newEquipment"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+        {
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x?.EquipmentId)">Equipment Id</MudTableSortLabel>
+            </MudTh>
+        }
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x?.EquipmentCode)">Code</MudTableSortLabel>
+        </MudTh>
+
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x?.EquipmentName)">Description</MudTableSortLabel>
+
+        </MudTh>
+        <MudTh>
+            <MudText Align="Align.Center">Actions</MudText>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="EquipmentId">
+            <MudText Align="Align.Center">@context.EquipmentId</MudText>
+            </MudTd>
+            <MudTd DataLabel="Code">
+                <MudText Align="Align.Center">@context.EquipmentCode</MudText>
+            </MudTd>
+            <MudTd DataLabel="Description">
+                <MudText Align="Align.Center">@context.EquipmentName</MudText>
+            </MudTd>
+
+
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => EquipmentDetails(context.EquipmentId))" @ontouchstart="(() => EquipmentDetails(context.EquipmentId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateEquipment(context.EquipmentId))" @ontouchstart="(() => UpdateEquipment(context.EquipmentId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteEquipment(context.EquipmentId))" @ontouchstart="(() => DeleteEquipment(context.EquipmentId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+
+
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    @code {
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    // Objects
+    public List<Equipment> _Equipments { get; set; } = new();
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+
+
+        _Equipments = await EquipmentsServices.GetEquipments();
+
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+        _links = new List<BreadcrumbItem>
+             {
+                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                 new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
+                            new BreadcrumbItem(text: Localizer["Equipments"], href: "", disabled: true)
+                        };
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string searchString = "";
+
+    private bool FilterFunc(Equipment element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.EquipmentId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.EquipmentCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.EquipmentName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private int selectedRowNumber = -1;
+    private MudTable<Equipment> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<Equipment> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(Equipment element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                EquipmentDetails(element.EquipmentId);
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    void EquipmentDetails(int EquipmentId)
+    {
+        NavigationManager.NavigateTo($"Equipment/Details/{EquipmentId}");
+    }
+
+    // Delete Equipment
+    async Task DeleteEquipment(int EquipmentId)
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Equipment?");
+
+        if (confirm)
+        {
+            _Equipments.RemoveAll(Equipment => Equipment.EquipmentId == EquipmentId);
+            await EquipmentsServices.DeleteEquipment(EquipmentId);
+        }
+    }
+
+    // Update Equipment
+    void UpdateEquipment(int EquipmentId)
+    {
+        NavigationManager.NavigateTo($"Equipment/Update/{EquipmentId}");
+    }
+
+}

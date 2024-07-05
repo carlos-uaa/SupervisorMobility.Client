@@ -19,23 +19,24 @@ window.downloadFileFromStream = async (fileName, contentStreamReference) => {
     URL.revokeObjectURL(url);
 }
 
-window.triggerFileDownloadAndWaitForConfirmation = (fileName, fileURL) => {
-    // Llame a la función de descarga de archivos existente
-    downloadFile(fileName, fileURL);
-
-    // Devuelve una promesa que se resuelve después de recibir la confirmación de descarga
-    return new Promise((resolve, reject) => {
-        // Establezca un intervalo para verificar si se recibió la confirmación de descarga
-        const intervalId = setInterval(() => {
-            // Si la confirmación de descarga está presente en el cuerpo de la página
-            if (document.body.textContent.includes("File downloaded successfully")) {
-                // Elimine el intervalo y resuelva la promesa con la cadena de confirmación
-                clearInterval(intervalId);
-                resolve("File downloaded successfully");
-            }
-        }, 500);
-    });
-}
+window.triggerFileDownloadAndWaitForConfirmation = async (fileName, fileBytes) => {
+    try {
+        const blob = new Blob([fileBytes], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.style.display = 'none';
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+        return "File downloaded successfully";
+    } catch (error) {
+        console.error(`Error during file download: ${error}`);
+        return "Error during file download";
+    }
+};
 
 window.triggerFileDownload = (fileName, url) => {
     const anchorElement = document.createElement('a');

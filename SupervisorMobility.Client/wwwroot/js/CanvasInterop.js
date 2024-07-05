@@ -38,6 +38,8 @@ window.clearCanvas = (canvasId) => {
     var canvas = document.getElementById(canvasId);
     if (canvas) {
         var context = canvas.getContext('2d');
+        context.strokeStyle = 'black';
+        context.lineWidth = 5;
         context.clearRect(0, 0, canvas.width, canvas.height);
     } else {
         console.error("Canvas with the provided ID was not found.");

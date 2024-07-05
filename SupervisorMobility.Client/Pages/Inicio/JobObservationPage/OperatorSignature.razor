@@ -13,7 +13,7 @@
             }
             else
             {
-                <canvas class="canvas-container" id="myCanvas" width="500" height="200"
+                <canvas class="canvas-container" id="myCanvas" width="500" height="200" @ref=canvasElement
                 @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
                 @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
             }
@@ -43,6 +43,9 @@
     [Parameter]
     public string? Image { get; set; } = null;
 
+    private ElementReference canvasElement;
+    private MudBlazor.Interop.BoundingClientRect? cnvs;
+
     private bool isDrawing = false;
     private double prevX;
     private double prevY;
@@ -54,6 +57,7 @@
         if (firstRender)
         {
             await JS.InvokeVoidAsync("initCanvas", "myCanvas");
+            cnvs = await canvasElement.MudGetBoundingClientRectAsync();
         }
     }
 
@@ -84,8 +88,14 @@
     {
         await JS.InvokeVoidAsync("disableScroll");
         isDrawing = true;
-        prevX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-        prevY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+        Console.WriteLine($"{e.Touches[0].ClientX} : {e.TargetTouches[0].ClientX} : {e.ChangedTouches[0].ClientX}");
+        Console.WriteLine($"{cnvs.X} : {cnvs.X} : {cnvs.ScrollX}");
+        //prevX = e.Touches[0].ClientX - await GetOffsetLeft("myCanvas");
+        //prevX = Math.Abs(e.Touches[0].ClientX - cnvs.X);
+        prevX = e.Touches[0].ClientX - cnvs.X;
+                                     //prevY = e.Touches[0].ClientY - await GetOffsetTop("myCanvas");
+        prevY = e.Touches[0].ClientY - cnvs.Y;
+        //prevY = Math.Abs(e.Touches[0].ClientY - cnvs.Y);
     }
 
     private void EndDrawingTouch(TouchEventArgs e)
@@ -100,8 +110,12 @@
     {
         if (isDrawing)
         {
-            var offsetX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-            var offsetY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+            //var offsetX = e.Touches[0].ClientX - await GetOffsetLeft("myCanvas");
+            var offsetX = Math.Abs(cnvs.X - e.Touches[0].ClientX);
+            //var offsetX = e.Touches[0].ClientX; //- cnvs.X;
+            //var offsetY = e.Touches[0].ClientY - await GetOffsetTop("myCanvas");
+            var offsetY = Math.Abs(cnvs.Y - e.Touches[0].ClientY);
+            //var offsetY = e.Touches[0].ClientY; //- cnvs.Y;
 
             await JS.InvokeVoidAsync("draw", "myCanvas", offsetX, offsetY, isDrawing, prevX, prevY);
             prevX = offsetX;
@@ -138,6 +152,20 @@
     private async Task<double> GetOffsetTop(string canvasId)
     {
         return await JS.InvokeAsync<double>("getOffsetTop", canvasId);
+    }
+
+    public int ViewportWidth { get; set; }
+    public int ViewportHeight { get; set; }
+
+    [JSInvokable]
+    public void OnResize(int width, int height)
+    {
+        if (ViewportWidth == width && ViewportHeight == height)
+            return;
+
+        ViewportWidth = width;
+        ViewportHeight = height;
+        StateHasChanged();
     }
 }
 

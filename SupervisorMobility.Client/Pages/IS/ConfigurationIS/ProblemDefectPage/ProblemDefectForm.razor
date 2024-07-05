@@ -1,0 +1,95 @@
+﻿@page "/configurationIS/ProblemDefect/Create"
+@page "/configurationIS/ProblemDefect/Details/{ProblemDefectId:int}"
+@page "/configurationIS/ProblemDefect/Update/{ProblemDefectId:int}"
+
+@inject IProblemDefectServices ProblemDefectsServices
+@inject IProductService ProductsServices
+@inject IFileUploadAndDownloadService FilesServices
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar Snackbar
+@inject IBreadcrumbService BreadcrumbService
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+
+    @*Form*@
+    <EditForm Model="_ProblemDefect" OnValidSubmit="SubmitOperations">
+        <DataAnnotationsValidator />
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            @switch (pageType)
+                            {
+                                case PageType.Create:
+                                    <MudText Typo="Typo.h6">@Localizer["ProblemDefectCreate"]</MudText>
+                                    break;
+                                case PageType.Update:
+                                    <MudText Typo="Typo.h6">@Localizer["ProblemDefectUpdate"]</MudText>
+                                    break;
+                                case PageType.Details:
+                                    <MudText Typo="Typo.h6">@Localizer["ProblemDefectDetails"]</MudText>
+                                    break;
+                            }
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            @switch (pageType)
+                            {
+                                case PageType.Details:
+
+                                    <MudChip Variant="Variant.Text" Color="Color.Success" OnClick="() => ProblemDefectUpdate((int)ProblemDefectId)" @ontouchstart="() => ProblemDefectUpdate((int)ProblemDefectId)">
+                                        @Localizer["edit"]
+                                        <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"></MudIcon>
+                                    </MudChip>
+                                    break;
+                                case PageType.Create:
+                                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["create"]</MudChip>
+                                    break;
+                                case PageType.Update:
+                                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["update"]</MudChip>
+                                    break;
+                            }
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTextField Label="@Localizer1["ProblemDefectDescription"]" ReadOnly="@(pageType == PageType.Details)" @bind-Value="_ProblemDefect.DefectDescription" For="@(() => _ProblemDefect.DefectDescription)" />
+                       
+
+                        @if (user.UserType == 1)
+                        {
+                            <MudSwitch Class="mt-3" Label="Is active?" ReadOnly="@(pageType == PageType.Details)" @bind-Checked="_ProblemDefect.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                        }
+
+                    </MudCardContent>
+                    <MudCardActions>
+                        @if (pageType != PageType.Details)
+                        {
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])</MudButton>
+                        }
+                        <MudButton Href="/configurationIS/ProblemDefects" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+}
+

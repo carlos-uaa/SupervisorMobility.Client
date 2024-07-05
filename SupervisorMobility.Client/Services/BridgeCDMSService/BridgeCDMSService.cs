@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.JSInterop;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities.CDMS;
 using System;
 using System.IO;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml.XPath;
 
 namespace SupervisorMobility.Client.Services.BridgeCDMSService
 {
@@ -24,8 +28,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-       
+
         //CCP
+        #region CCP
+
         public async Task<CDMS_CCP_Directory> GetFoldersCCP()
         {
            
@@ -127,29 +133,83 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
         }
 
-        public async Task<CDMS_DownloadFile> GetDownloadLinkCCP(string URL)
+        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(int ID, string namefile)
         {
-            var parameters = new Dictionary<string, string>
+            var parameters = new Dictionary<string, int>
             {
-                { "route", URL }
+                { "ID", ID }
             };
 
             var json = JsonConvert.SerializeObject(parameters);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
+
             try
             {
                 var response = await _http.PostAsync("BridgeCDMS/SMCcp/PostDownloadfileCcp", content);
 
+                string KeyDocument = "";
+                string PathDocument = "";
+
+                if (response.Headers.TryGetValues("KeyDocument", out IEnumerable<string> keyValue))
+                {
+                    string headerValue = keyValue.FirstOrDefault();
+                    KeyDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
+                }
+
+                if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
+                {
+                    string headerValue = pathValue.FirstOrDefault();
+                    PathDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
-                    return result;
+
+                    // Obtener el contenido de la respuesta como un Stream
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        // Leer los bytes del Stream
+                        byte[] fileBytes;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            fileBytes = memoryStream.ToArray();
+                        }
+
+                        var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", namefile, fileBytes);
+
+                        Console.WriteLine($"Download CCP - fileDownlaod Succes");
+                        if (result == "File downloaded successfully")
+                        {
+                            var DeleteTemp = await DeleteFileTempCCP(KeyDocument, PathDocument);
+                            if (DeleteTemp is not null)
+                            {
+                                Console.WriteLine($"Delete File TempCCP successfully");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error durante la descarga del archivo.");
+                        }
+
+
+                    }//end using
+
+                    return new AsyncVoidMethodBuilder();
                 }
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET LINK CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -161,14 +221,15 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            return null;
+            return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<CDMS_General> DeleteFileTempCCP(string FileName)
+        public async Task<CDMS_General> DeleteFileTempCCP(string FileName, string pathFile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "routeDelete", FileName }
+                { "routeDelete", FileName },
+                { "documentDelete", pathFile }
             };
 
             var json = JsonConvert.SerializeObject(parameters);
@@ -177,15 +238,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             try
             {
-               
-                var uri = new Uri(_http.BaseAddress, "BridgeCDMS/SMCcp/DeleteFileTempCcp");
-
-                var request = new HttpRequestMessage(HttpMethod.Delete, uri)
-                {
-                    Content = content
-                };
-
-                var response = await _http.SendAsync(request);
+                var response = await _http.PostAsync("BridgeCDMS/SMCcp/DeleteFileTempCcp", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -195,7 +248,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"DELETE TEMP CCP FILE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    Console.WriteLine($"DELETE TEMP CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
@@ -209,12 +262,15 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
+
+        #endregion
         //HOE
+        #region hoe
         public async Task<CDMS_HOE_Directory> GetFoldersHOE()
         {
             try
             {
-                var response = await _http.GetAsync("BridgeCDMS/SMHoe/GetDirectoryPaths");
+                var response = await _http.GetAsync("BridgeCDMS/SMHoe/GetDirectoryPathsHoe");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -310,38 +366,112 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        //public async Task<CDMS_DownloadFile> GetDownloadLinkHOE(string URL)
-        //{
-        //    var parameters = new Dictionary<string, string>
-        //    {
-        //        { "route", URL }
-        //    };
+        public async Task<AsyncVoidMethodBuilder> Download_DeleteFileTempHOE(string FileName, string pathFile)
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                { "route", pathFile }
+            };
 
-        //    var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        //    try
-        //    {
-        //        var response = await _http.PostAsync("SMGos/PostDownloadfileGos", content);
+            try
+            {
+                var response = await _http.PostAsync("BridgeCDMS/SMHoe/PostDownloadHOE", content);
 
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
-        //            return result;
-        //        }
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
-        //    }
-        //    catch (TaskCanceledException ex)
-        //    {
-        //        Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
-        //    }
+                string PathDocument = "";
 
-        //    return null;
-        //}
+                if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
+                {
+                    string headerValue = pathValue.FirstOrDefault();
+                    PathDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                }
 
+                if (response.IsSuccessStatusCode)
+                {
+
+                    // Obtener el contenido de la respuesta como un Stream
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        // Leer los bytes del Stream
+                        byte[] fileBytes;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            fileBytes = memoryStream.ToArray();
+                        }
+
+                        var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", FileName, fileBytes);
+
+                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        if (result == "File downloaded successfully")
+                        {
+                            var DELETEparameters = new Dictionary<string, string>
+                                {
+                                    { "documentDelete", PathDocument }
+                                };
+
+                            var deletejson = JsonConvert.SerializeObject(DELETEparameters);
+
+                            var deletecontent = new StringContent(deletejson, Encoding.UTF8, "application/json");
+
+                            try
+                            {
+                                var DeleteTemp = await _http.PostAsync("BridgeCDMS/SMHoe/DeleteFileTempHoe", deletecontent);
+
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    Console.WriteLine($"Delete File TempHOE successfully");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"DELETE TEMP hoe, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                                }
+                            }
+                            catch (HttpRequestException ex)
+                            {
+                                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                            }
+                            catch (TaskCanceledException ex)
+                            {
+                                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                            }
+                          
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error durante la descarga del archivo.");
+                        }
+
+                    }//end using
+
+                    return new AsyncVoidMethodBuilder();
+                }
+                else
+                {
+                    Console.WriteLine($"GET FILE HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+            }
+
+            return new AsyncVoidMethodBuilder();
+        }
+        #endregion
+
+        #region GOS
         //GOS
         public async Task<CDMS_GOS_Directory> GetFoldersGOS()
         {
@@ -441,11 +571,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             return null;
         }
 
-        public async Task<CDMS_DownloadFile> GetDownloadLinkGOS(string URL)
+        public async Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(int ID, string namefile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "route", URL }
+                { "ID", ID.ToString() }
             };
 
             var json = JsonConvert.SerializeObject(parameters);
@@ -456,10 +586,63 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             {
                 var response = await _http.PostAsync("BridgeCDMS/SMGos/PostDownloadfileGos", content);
 
+                string KeyDocument = "";
+                string PathDocument = "";
+
+                if (response.Headers.TryGetValues("KeyDocument", out IEnumerable<string> keyValue))
+                {
+                    string headerValue = keyValue.FirstOrDefault();
+                    KeyDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
+                }
+
+                if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
+                {
+                    string headerValue = pathValue.FirstOrDefault();
+                    PathDocument = headerValue;
+                }
+                else
+                {
+                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CDMS_DownloadFile>();
-                    return result;
+
+                    // Obtener el contenido de la respuesta como un Stream
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        // Leer los bytes del Stream
+                        byte[] fileBytes;
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            fileBytes = memoryStream.ToArray();
+                        }
+
+                        var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", namefile, fileBytes);
+
+                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        if (result == "File downloaded successfully")
+                        {
+                            var DeleteTemp = await DeleteFileTempGOS(KeyDocument, PathDocument);
+                            if (DeleteTemp is not null)
+                            {
+                                Console.WriteLine($"Delete File TempGOS successfully");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error durante la descarga del archivo.");
+                        }
+
+                      
+                    }//end using
+
+                    return new AsyncVoidMethodBuilder();
                 }
                 else
                 {
@@ -476,28 +659,24 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
-            return null;
+            return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<CDMS_General> DeleteFileTempGOS(string FileName)
+        public async Task<CDMS_General> DeleteFileTempGOS(string FileName, string pathFile)
         {
             var parameters = new Dictionary<string, string>
             {
-                { "routeDelete", FileName }
+                { "routeDelete", FileName },
+                { "documentDelete", pathFile }
             };
 
-            var content = new FormUrlEncodedContent(parameters);
+            var json = JsonConvert.SerializeObject(parameters);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
-                var uri = new Uri(_http.BaseAddress, "BridgeCDMS/SMGos/DeleteFileTempGos");
-
-                var request = new HttpRequestMessage(HttpMethod.Delete, uri)
-                {
-                    Content = content
-                };
-
-                var response = await _http.SendAsync(request);
+                var response = await _http.PostAsync("BridgeCDMS/SMGos/DeleteFileTempGos", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -521,7 +700,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
-
+        #endregion 
     }
 
 }

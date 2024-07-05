@@ -1,0 +1,51 @@
+﻿@using SupervisorMobility.Client.Shared.SignatureCanvas
+
+@inject SignatureImageService _signatureImageService
+
+<MudSimpleTable Elevation="0" Style="width:100%;" Outlined=true>
+    <tbody>
+        @if(CanSign){
+            <tr style="margin-top:15px;">
+                <td style="width:30%; text-align:center;">
+                    <MudText Typo="Typo.h6">SUPERVISOR<br />REVISÓ</MudText>
+                </td>
+                <td>
+                    <MudSimpleTable Elevation="0" Style="width:100%;">
+                        <tbody>
+                            <tr><MudTextField T="string" Clearable=true Label="NOMBRE" Placeholder="Nombre del supervisor" Variant="Variant.Text" /></tr>
+                            <tr>
+                                <SignatureCmpt OnSignatureSaved="HandleSupervisorSignatureSaved" Image="@supervisorSignature" ClearSignature="HandleSupervisorClearSignature" />
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    private string inspectorSignature { get; set; } = "";
+    private string supervisorSignature { get; set; } = "";
+    private bool CanSign { get; set; } = false;
+
+    private void HandleSignatureSaved()
+    {
+        inspectorSignature = _signatureImageService.GetImage();
+    }
+
+    private void HandleClearSignature()
+    {
+        inspectorSignature = "";
+    }
+
+    private void HandleSupervisorSignatureSaved()
+    {
+        supervisorSignature = _signatureImageService.GetImage();
+    }
+
+    private void HandleSupervisorClearSignature()
+    {
+        supervisorSignature = "";
+    }
+}

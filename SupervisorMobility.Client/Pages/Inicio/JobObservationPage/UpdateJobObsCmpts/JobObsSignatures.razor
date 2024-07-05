@@ -1,0 +1,138 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+<MudExpansionPanel Text=@title Style="min-width: 100%" IsInitiallyExpanded=true>
+    <MudSimpleTable Style="overflow-x: auto;" Dense=true Bordered=true Class="mb-6" Elevation="0">
+        <tbody>
+            <tr>
+                <th colspan="2">
+                    <MudText Style="text-align:center; font-weight:bold;">
+                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("SSV"))
+                        {
+                            Glosary word;
+                            word = _glosaryInfo["SSV"];
+                            <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                                <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                    <MudText Style="font-weight:bold">@word.Name</MudText>
+                                </MudBadge>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <span style="font-weight: bold">SSV </span>
+                        }
+                        @Localizer["comentaries"]
+                    </MudText>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    @if (user.UserType == 1 || user.UserType == 2)
+                    {
+                        <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                    }
+                    else
+                    {
+
+                        <MudTextField T="string" @bind-Value="_jobObservation.SsvCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" ReadOnly />
+                    }
+                </td>
+            </tr>
+        <th>
+            <MudText Style="text-align:center; font-weight:bold;">
+                    @Localizer["improvementIdeasAndOrCommentsFromTheOperator"]
+            </MudText>
+        </th>
+        <th>
+            <MudText Style="text-align:center; font-weight:bold;">
+                    @Localizer["signatureOfThe"]
+                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("SSV"))
+                    {
+                        Glosary word;
+                        word = _glosaryInfo["SSV"];
+                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                            <MudText Style="font-weight:bold">@word.Name</MudText>
+                        </MudBadge>
+                    </MudTooltip>
+                    }
+                    else
+                    {
+                    <span style="font-weight: bold"> SSV</span>
+                    }
+            </MudText>
+        </th>
+        <tr>
+            <td>
+                <MudTextField T="string" @bind-Value="_jobObservation.OperatorCommentary" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="4" />
+            </td>
+            <td>
+                    @*<MudTextField T="string" @bind-Value="_jobObservation.SsvSignature" Variant="Variant.Outlined" Margin="Margin.Dense" />*@
+                    @if ((_jobObservation.SsvSignature != "Signed" || _jobObservation.SsvSignature == null) && user.UserType == 1)
+                    {
+
+                    <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor" Color="Color.Info" @onclick="(() => OpenSignComment.InvokeAsync())">
+                            @Localizer["signIt"]
+                    </MudButton>
+                    }
+                    else if ((_jobObservation.SsvSignature != "Signed" || _jobObservation.SsvSignature == null) && user.UserType == 2)
+                    {
+                        @if (_jobObservation.Supervisor.SuperiorId == user.UserId)
+                        {
+                        <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor" Color="Color.Info" @onclick="(() => OpenSignComment.InvokeAsync())">
+                                @Localizer["signIt"]
+                        </MudButton>
+                        }
+                    }
+                    else if (_jobObservation.SsvSignature == "Signed")
+                    {
+                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Info" Variant="Variant.Text">
+                            @Localizer["signed"]
+                    </MudChip>
+                    }
+                    else
+                    {
+                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.AssignmentLate" Color="Color.Warning" Variant="Variant.Text">
+                            @Localizer["unsignedOnlySSVCanSignIt"]
+                    </MudChip>
+                    }
+                <MudText Style="text-align:center; font-weight:bold;">
+                        @Localizer["operatorPayroll"]
+                </MudText>
+                <MudTextField T="string" @bind-Value="_jobObservation.OperatorSignature" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </td>
+        </tr>
+            @if ((user.UserType == 1 || user.UserType == 5) && _jobObservation.Status == 6)
+            {
+            <tr>
+                <th colspan="2">
+                    <MudText Style="text-align:center; font-weight:bold;">
+                            @Localizer["addFeedback"]
+                    </MudText>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <MudTextField T="string" @bind-Value="_jobObservation.ReleasedFeedback" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" />
+                </td>
+            </tr>
+
+            }
+        </tbody>
+    </MudSimpleTable>
+</MudExpansionPanel>
+
+@code {
+    [Parameter]
+    public string title { get; set; } = "";
+    [Parameter]
+    public Dictionary<string, Glosary> _glosaryInfo { get; set; }
+
+    [Parameter]
+    public User user { get; set; } = new();
+    [Parameter]
+    public JobObservation _jobObservation { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OpenSignComment { get; set; }
+
+}

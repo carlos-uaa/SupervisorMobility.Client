@@ -1,8 +1,10 @@
 global using Microsoft.AspNetCore.Components;
 global using SupervisorMobility.Client.Data.Entities;
+global using SupervisorMobility.Client.Data.Entities.IS;
 global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
+global using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.JobStructureService;
 global using SupervisorMobility.Client.Services.DistributionService;
@@ -36,20 +38,32 @@ global using SupervisorMobility.Client.Services.ILUService;
 global using SupervisorMobility.Client.Services.SOSReviewService;
 global using SupervisorMobility.Client.Services.DepartmentService;
 global using SupervisorMobility.Client.Services.BreadcrumsService;
-global using SupervisorMobility.Client.Services.ProductsService;
 global using SupervisorMobility.Client.Services.HCIService;
 global using SupervisorMobility.Client.Services.SOS_Data_Service;
+global using SupervisorMobility.Client.Services.IS_Services.AppearanceService;
+global using SupervisorMobility.Client.Services.IS_Services.LogbookAppearanceService;
 global using System.Text.Json;
+global using SupervisorMobility.Client.Services.IS_Services.DataPanelService;
+global using SupervisorMobility.Client.Services.IS_Services.PartService;
+global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService;
+global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
+global using SupervisorMobility.Client.Services.TestServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSDistributionServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSFlowServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices;
+global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
+global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
+global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using SupervisorMobility.Client;
-using DocumentFormat.OpenXml.Spreadsheet;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
-using System.ComponentModel;
-using System.Net.Http;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -96,6 +110,30 @@ builder.Services.AddScoped<ISOSDataService, SOSDataService>();
 builder.Services.AddScoped<IFileUploadAndDownloadService, FileUploadAndDownloadService>();
 builder.Services.AddScoped<IKaizenService, KaizenService>();
 builder.Services.AddScoped<IHCIService, HCIService>();
+builder.Services.AddScoped<IAppearanceService, AppearanceService>();
+builder.Services.AddScoped<ILogbookAppearanceService, LogbookAppearanceService>();
+builder.Services.AddScoped<IPartServices, PartServices>();
+
+//For testing video uploads
+builder.Services.AddScoped<ITestService, TestService>();
+
+//IS Apariencia Plantilla
+builder.Services.AddScoped<IDataPanelService, DataPanelService>();
+builder.Services.AddScoped<IPartServices, PartServices>();
+builder.Services.AddScoped<IProblemDefectServices, ProblemDefectServices>();
+builder.Services.AddScoped<ICheckPointService, CheckpointService>();
+
+//Sos services
+builder.Services.AddScoped<ISOSHubService, SOSHubService>();
+builder.Services.AddScoped<ISOSAnalysisService, SOSAnalysisService>();
+builder.Services.AddScoped<ISOSCombinationService, SOSCombinationService>();
+builder.Services.AddScoped<ISOSDistributionService, SOSDistributionService>();
+builder.Services.AddScoped<ISOSFlowService, SOSFlowService>();
+builder.Services.AddScoped<ISOSSequenceService, SOSSequenceService>();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IToolService, ToolService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
+
 
 // Connection to API
 var env = builder.HostEnvironment;

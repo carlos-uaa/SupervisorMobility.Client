@@ -1,4 +1,5 @@
 ﻿using SupervisorMobility.Client.Data.Entities;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Services.BridgeCDMSService
 {
@@ -13,14 +14,13 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
         Task<CDMS_HOE_Archives> GetFilesHOE(string route);
         Task<CDMS_GOS_Archives> GetFilesGOS(string route);
 
-        Task<CDMS_DownloadFile> GetDownloadLinkGOS(string URL);
-        //HOE DESCARGA ULTIMA VERSION por ahora
-        //Task<CDMS_DownloadFile> GetDownloadLinkHOE(string URL);
-        Task<CDMS_DownloadFile> GetDownloadLinkCCP(string URL);
-        Task<CDMS_General> DeleteFileTempGOS(string FileName);
-        //Hoe No tiene este metodo
-        //Task<CDMS_General> DeleteFileTempHOE(string URL);
-        Task<CDMS_General> DeleteFileTempCCP(string FileName);
+        Task<AsyncVoidMethodBuilder> GetDownloadLinkGOS(int ID, string namefile);
+        Task<CDMS_General> DeleteFileTempGOS(string FileName, string pathFile);
+
+        Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(int ID, string namefile);
+        Task<CDMS_General> DeleteFileTempCCP(string FileName, string pathFile);
+
+        Task<AsyncVoidMethodBuilder> Download_DeleteFileTempHOE(string FileName, string pathFile);
 
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
+using System.Linq;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -69,6 +70,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int distribution_id { get; set; }
         private int operator_id { get; set; }
         private string ProgrammedStartDate { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -284,17 +286,74 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void AddILUClose()
         {
-            ShowTable = false;
-            AddILUVisibleDialog = false;
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+
 
             _newIlu.AcquisitionDate = DateTime.Now;
-            var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
-            if (result != null)
-            {
-                await PrepareDataTable();
+            var filteredDistributions = _distributions.Where(dist => dist.DistributionId == _newIlu.DistributionId);
 
-                Console.WriteLine("Se añadio");
-                //aqui un mensaje bonito
+            bool hasLeadersInDistribution = false;
+            var validLevelIds = new HashSet<int> { 3, 5, 7, 9, 10 };
+            string leaderName = "";
+
+            if (_newIlu?.ILULevelId is int iluLevelId && validLevelIds.Contains(iluLevelId))
+            {
+
+                foreach (var op in filteredDistributions)
+                {
+                    var leaders = _UserOfArea
+                        .Where(usr => ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context.Any())
+                        .Select(usr => new
+                        {
+                            User = usr,
+                            LatestContext = ILU_Matrix[(op.DistributionId, usr.UserId)]
+                                .OrderByDescending(c => c.AcquisitionDate)
+                                .FirstOrDefault()
+                        })
+                        .Where(x => x.LatestContext != null)
+                        .Select(x => new
+                        {
+                            x.User,
+                            ILULevelNumber = _LevelsILU
+                                .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
+                        })
+                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
+                        .ToList();
+
+                    var firstLeader = leaders.FirstOrDefault(x =>
+                                x.ILULevelNumber == "ILeader" ||
+                                x.ILULevelNumber == "LTraineeLeader" ||
+                                x.ILULevelNumber == "LLeader" ||
+                                x.ILULevelNumber == "ULeaderTrainee" ||
+                                x.ILULevelNumber == "ULeader");
+
+                    if (firstLeader != null)
+                    {
+                        leaderName = firstLeader.User.Name;
+                        hasLeadersInDistribution = true;
+                        break;
+                    }
+                }
+            }
+
+
+            if (!hasLeadersInDistribution)
+            {
+                ShowTable = false;
+                AddILUVisibleDialog = false;
+                var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
+                if (result != null)
+                {
+                    await PrepareDataTable();
+                    Snackbar.Add($"ILU Level Added", Severity.Success);
+                }
+
+            }
+            else
+            {
+                Snackbar.Add($"{leaderName} is already a Leader in this distribution!", Severity.Warning);
             }
 
         }
