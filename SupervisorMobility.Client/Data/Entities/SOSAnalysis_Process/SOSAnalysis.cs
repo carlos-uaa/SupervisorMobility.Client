@@ -7,8 +7,8 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public int SOSAnalysisId { get; set; }
 
         public string? InternalControlNumber { get; set; }
-        public string? ProcessNumber { get; set; }
-
+        public string? OperationName { get; set; }
+        public string? ProcessName { get; set; }
 
         public ICollection<SOSAnalysisLogbook>? AnalysisLogbooks { get; set; } = new List<SOSAnalysisLogbook>();
 

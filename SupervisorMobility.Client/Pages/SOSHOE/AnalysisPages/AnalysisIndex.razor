@@ -1,5 +1,250 @@
-﻿@page "/hoe/Analysis"
+﻿@page "/SOSHOE/Analysis"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IUserService UsersService
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject IDialogService DialogService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["SOSAnalysis"]</PageTitle>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else if (_Analises.Count == 0)
+{
+    <MudContainer>
+
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoAnalysisAnalysisCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton Href="/Analysis/createAnalysis">
+                <MudText>@Localizer["newAnalysisAnalysis"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+
+    <MudTable Items="_Analises" Hover="true" T="SOSAnalysis" SortLabel="Sort By" Height="80vh"
+              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+              Filter="new Func<SOSAnalysis,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/Analysis/createAnalysis">
+                        <MudText>@Localizer["newAnalysis"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<SOSAnalysis, object>(x=>x?.SOSAnalysisId)">Analysis Id</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSAnalysis, object>(x=>x?.InternalControlNumber)">Internal Control Number</MudTableSortLabel>
+            </MudTh>
+
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="AnalysisId">
+                    <MudText Align="Align.Center">@context.SOSAnalysisId</MudText>
+                </MudTd>
+            }
+            <MudTd DataLabel="InternalControlNumber">
+                <MudText Align="Align.Center">@context.InternalControlNumber</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => AnalysisDetails(context.SOSAnalysisId))" @ontouchstart="(() => AnalysisDetails(context.SOSAnalysisId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateAnalysis(context.SOSAnalysisId))" @ontouchstart="(() => UpdateAnalysis(context.SOSAnalysisId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteAnalysis(context.SOSAnalysisId))" @ontouchstart="(() => DeleteAnalysis(context.SOSAnalysisId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+
+
 
 @code {
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    // Objects
+    public List<SOSAnalysis> _Analises { get; set; } = new();
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    //Side Dialog
+    private string SideName = string.Empty;
+    private int SosAnalysisId = 0;
+    public bool ShowSideDialog = false;
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+
+        _Analises = await SOSAnalysisServices.GetAllSOSAnalysis();
+
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+        _links = new List<BreadcrumbItem>
+             {
+                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
+                 new BreadcrumbItem(text: Localizer["HOESOSAnalysisTitle"], href: "/SOSHOE/Analysis", disabled: true)
+                        };
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+        ShowLoading = false;
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string searchString = "";
+
+    private bool FilterFunc(SOSAnalysis element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        // if (element.AnalysisId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.AnalysisCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.AnalysisName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+        return false;
+    }
+
+    private int selectedRowNumber = -1;
+    private MudTable<SOSAnalysis> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<SOSAnalysis> tableRowClickEventArgs)
+    {
+    }
+
+    private string SelectedRowClassFunc(SOSAnalysis element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            {
+                AnalysisDetails(element.SOSAnalysisId);
+            }
+            return string.Empty;
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    void AnalysisDetails(int AnalysisId)
+    {
+        NavigationManager.NavigateTo($"Analysis/Details/{AnalysisId}");
+    }
+
+    // Delete Analysis
+    async Task DeleteAnalysis(int AnalysisId)
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Analysis?");
+
+        if (confirm)
+        {
+            _Analises.RemoveAll(Analysis => Analysis.SOSAnalysisId == AnalysisId);
+            await SOSAnalysisServices.DeleteSOSAnalysis(AnalysisId);
+        }
+    }
+
+    // Update Analysis
+    void UpdateAnalysis(int AnalysisId)
+    {
+        NavigationManager.NavigateTo($"Analysis/Update/{AnalysisId}");
+    }
 
 }
+
+
+

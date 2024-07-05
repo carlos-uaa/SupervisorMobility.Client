@@ -5,42 +5,28 @@ using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
-namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
+namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices
 {
-    public class SOSAnaysisService : ISOSAnaysisService
+    public class SOSAnalysisService : ISOSAnalysisService
     {
         private readonly HttpClient _http;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public SOSAnaysisService(HttpClient HttpClientService, IJSRuntime jSRuntime)
+        public SOSAnalysisService(HttpClient HttpClientService, IJSRuntime jSRuntime)
         {
             _http = HttpClientService;
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-      
 
-        public async Task<SOSAnalysis> CreateSOSAnalysis(SOSAnalysis SOS_EntityToCreate, string InternalControlNumber, string ProcessNumber)
-        {
-            var response = await _http.PostAsJsonAsync($"SOS/Analysis?InternalControlNumber={InternalControlNumber}&ProcessNumber={ProcessNumber}", SOS_EntityToCreate);
-            var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ApplicationException(content);
-            }
-
-            var SOSAnalysisCreated = JsonSerializer.Deserialize<SOSAnalysis>(content, _options);
-
-            return SOSAnalysisCreated;
-        }
 
         public async Task<List<SOSAnalysis>> GetAllSOSAnalysis(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
         {
-            var response = await _http.GetAsync($"SOS/Analysis?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
+            var response = await _http.GetAsync($"SOS/Analysis/all?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -65,10 +51,19 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
 
             return SOSAnalysissRetorned;
         }
-
-        public Task<SOSAnalysis> UpdateSOSAnalysis(SOSAnalysis SosEntity)
+        public async Task<SOSAnalysis> UpdateSOSAnalysis(SOSAnalysis SosEntity)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"SOS/Analysis/{SosEntity.SOSAnalysisId}", SosEntity);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var SOSAnalysisUpdated = JsonSerializer.Deserialize<SOSAnalysis>(content, _options);
+
+            return SOSAnalysisUpdated;
         }
 
 
@@ -87,7 +82,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
             return SOSHubsRetorned;
         }
 
-      
+
 
         public async Task<FileUpload> AddIllustrationToSOSAnalysis(MultipartFormDataContent? contentfiles, int SOS_SOSAnalysis_id)
         {
@@ -109,7 +104,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
 
             return null;
         }
-     
+
 
         public async Task<string> ShowIlustrationSOSAnalysis(int idfile)
         {
@@ -141,20 +136,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
             return true;
         }
 
-        //public async Task<SOSAnalysis> UpdateSOSAnalysis(SOSAnalysis SosEntity)
-        //{
-        //    var response = await _http.PutAsJsonAsync($"SOS/Analysis/{SosEntity.SOSAnalysisId}", SosEntity);
-        //    var content = await response.Content.ReadAsStringAsync();
 
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        return null;
-        //    }
-
-        //    var SOSAnalysisUpdated = JsonSerializer.Deserialize<SOSAnalysis>(content, _options);
-
-        //    return SOSAnalysisUpdated;
-        //}
         //public  async Task<SOSAnalysis> DeleteSOSAnalysis(int SosEntity_id)
         //{
         //    var response = await _http.DeleteAsync($"SOS/Analysis/{SosEntity_id}");

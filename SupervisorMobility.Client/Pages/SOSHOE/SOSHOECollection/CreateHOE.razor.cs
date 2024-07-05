@@ -156,8 +156,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _links = new List<BreadcrumbItem>
                 {
-                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "", disabled: true)
+                    new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub" ),
+                    new BreadcrumbItem(text: Localizer["create"], href: "", disabled:true )
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();

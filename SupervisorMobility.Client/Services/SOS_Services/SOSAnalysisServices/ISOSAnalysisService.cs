@@ -1,10 +1,10 @@
 ﻿using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 
-namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices
+namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices
 {
-    public interface ISOSAnaysisService
+    public interface ISOSAnalysisService
     {
-        Task<SOSAnalysis> CreateSOSAnalysis(SOSAnalysis SOS_EntityToCreate, string InternalControlNumber, string ProcessNumber);
+       
         Task<SOSAnalysis> GetSOSAnalysis(int SOSAnalysisId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<List<SOSAnalysis>> GetAllSOSAnalysis(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSAnalysis> UpdateSOSAnalysis(SOSAnalysis SosEntity);

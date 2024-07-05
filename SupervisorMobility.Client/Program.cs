@@ -49,7 +49,11 @@ global using SupervisorMobility.Client.Services.IS_Services.ProblemDefectService
 global using SupervisorMobility.Client.Services.IS_Services.CheckpointService;
 global using SupervisorMobility.Client.Services.TestServices;
 global using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
-global using SupervisorMobility.Client.Services.SOS_Services.SOSAnaysisServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSDistributionServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSFlowServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices;
 global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
@@ -121,7 +125,11 @@ builder.Services.AddScoped<ICheckPointService, CheckpointService>();
 
 //Sos services
 builder.Services.AddScoped<ISOSHubService, SOSHubService>();
-builder.Services.AddScoped<ISOSAnaysisService, SOSAnaysisService>();
+builder.Services.AddScoped<ISOSAnalysisService, SOSAnalysisService>();
+builder.Services.AddScoped<ISOSCombinationService, SOSCombinationService>();
+builder.Services.AddScoped<ISOSDistributionService, SOSDistributionService>();
+builder.Services.AddScoped<ISOSFlowService, SOSFlowService>();
+builder.Services.AddScoped<ISOSSequenceService, SOSSequenceService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IToolService, ToolService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
