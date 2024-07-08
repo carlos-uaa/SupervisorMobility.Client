@@ -118,6 +118,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private List<int> _toolsIds = new();
         private string selectedToolName;
 
+        int analysisTabsIndex = 0;
+
+
+        //Analysis
+        [Inject]
+        private IDialogService DialogService { get; set; }
+        public List<string> RawAnalisis { get; set; } = new List<string>();
+        public List<string> RawAnalisisBk { get; set; } = new List<string>();
+
+        private IEnumerable<string> _selectedValues = new List<string>();
+
+
+        public string stepName { get; set; } = "";
+        bool showAddStepDialog = false;
+
+
         #endregion
 
         protected async override Task OnInitializedAsync()
@@ -172,6 +188,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
 
+
+            if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
+            {
+                foreach (var backup in _sosHub.AnalysesBkup)
+                {
+                    RawAnalisisBk.Add(backup.Text);
+                    RawAnalisis.Add(backup.Text); 
+                }
+            }
 
             if (_sosHub.Images != null && _sosHub.Images.Count > 0)
             {
@@ -352,79 +377,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #endregion
 
-
-        //Highlight analysis text
-        #region Highlight
-        private void HighlightTerm(string term)
-        {
-            visibleStepsDialog = false;
-            base.StateHasChanged();
-
-            SelectedTerm = term;
-            HighlightedText = ApplyHighlights(BaseText, allCriticalPoints, SelectedTerm);
-            visibleStepsDialog = true;
-            base.StateHasChanged();
-
-        }
-
-        private string ApplyHighlights(string text, List<string> terms, string highlightTerm)
-        {
-
-            if (string.IsNullOrEmpty(highlightTerm))
-            {
-                StateHasChanged();
-                return text;
-            }
-
-            var normalizedText = Normalize(text);
-            var normalizedHighlightTerm = Normalize(highlightTerm);
-
-            var result = new StringBuilder(text);
-
-            foreach (var term in terms)
-            {
-                var normalizedTerm = Normalize(term);
-
-                if (normalizedTerm == normalizedHighlightTerm)
-                {
-                    result = new StringBuilder(ReplaceInsensitive(result.ToString(), term, $"<mark>{term}</mark>", normalizedTerm));
-                }
-            }
-            StateHasChanged();
-
-            return result.ToString();
-        }
-
-        private static string Normalize(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return string.Empty;
-            }
-
-            input = input.Normalize(NormalizationForm.FormD)
-                         .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                         .Aggregate(new StringBuilder(), (sb, c) => sb.Append(c))
-                         .ToString()
-                         .ToLowerInvariant();
-           
-            return input;
-        }
-
-        private static string ReplaceInsensitive(string text, string search, string replacement, string normalizedSearch)
-        {
-            string normalizedText = Normalize(text);
-            
-            return Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
-            {
-                int startIndex = m.Index;
-                string originalMatch = text.Substring(startIndex, search.Length);
-                return $"<mark>{originalMatch}</mark>";
-            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        }
-        #endregion
-
-
         //Training Time Cycles
         #region TrainingTime
 
@@ -472,6 +424,166 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
         }
 
+        #endregion
+
+
+        //Analysis Steps Critical Points
+        #region Analysis
+
+
+        private void ApplyHighlights(int sectionIndex, int analisisIndex)
+        {
+            var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
+            var text = analisis.Text;
+            var term = analisis.CriticalPoint;
+            if (string.IsNullOrEmpty(term))
+            {
+                return;
+            }
+
+            var highlightedText = ReplaceInsensitive(text, term);
+            analisis.Text = highlightedText;
+        }
+
+        private static string Normalize(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
+        }
+
+        private static string ReplaceInsensitive(string text, string search)
+        {
+            if (string.IsNullOrEmpty(search))
+            {
+                return text;
+            }
+
+            string normalizedText = Normalize(text);
+            string normalizedSearch = Normalize(search);
+            var result = Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+            {
+                int startIndex = normalizedText.IndexOf(m.Value, m.Index, StringComparison.OrdinalIgnoreCase);
+                string originalMatch = text.Substring(startIndex, search.Length);
+                return $"<mark>{originalMatch}</mark>";
+            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return result;
+        }
+
+        private string GetAnalisisText(int sectionIndex, int analisisIndex)
+        {
+            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
+        }
+
+        private string GetHighlightedText(int sectionIndex, int analisisIndex)
+        {
+            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
+        }
+
+        void CreateBakup()
+        {
+            if (RawAnalisis.Count > 0)
+            {
+                RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
+                foreach (var raw in RawAnalisisBk)
+                {
+                    AnalysisBkup analysisBkup = new AnalysisBkup();
+                    analysisBkup.Text = raw;
+                    analysisBkup.IsActive = true;
+                    _sosHub.AnalysesBkup.Add(analysisBkup);
+                }
+            }
+        }
+        void RestoreBakup()
+        {
+            RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
+            _sosHub.Sections.Clear();
+            _sosHub.AnalysesBkup.Clear();
+        }
+        void AddRawItem()
+        {
+            RawAnalisis.Add("");
+        }
+
+        void RemoveRawItem(string item)
+        {
+            if (RawAnalisis.Count > 1)
+            {
+                RawAnalisis.Remove(item);
+            }
+        }
+        void RemoveSectionItem(Section item)
+        {
+
+            if (_sosHub.Sections.Count > 0)
+            {
+                var textsToReinsert = item.Analyses.Select(analisis => analisis.Text).ToList();
+
+                foreach (var text in textsToReinsert)
+                {
+                    int indexinsert = RawAnalisisBk.IndexOf(text);
+
+                    int insertPosition = RawAnalisis
+                        .Select((value, index) => new { Value = value, Index = index })
+                        .Where(x => RawAnalisisBk.IndexOf(x.Value) >= indexinsert)
+                        .Select(x => x.Index)
+                        .DefaultIfEmpty(RawAnalisis.Count)
+                        .First();
+                    // Insertar el texto en la posición correcta
+                    RawAnalisis.Insert(insertPosition, text);
+                }
+
+                // Eliminar la sección de Sections
+                _sosHub.Sections.Remove(item);
+            }
+        }
+
+        public void AddStep()
+        {
+            showAddStepDialog = true;
+        }
+
+        private void CloseStepDialog()
+        {
+            showAddStepDialog = false;
+        }
+        public async void confirmStep()
+        {
+
+            if (!string.IsNullOrEmpty(stepName))
+            {
+
+                Section SectiontoAdd = new Section();
+                foreach (string item in _selectedValues)
+                {
+                    Analysis ToAdd = new Analysis();
+                    ToAdd.Text = item;
+                    SectiontoAdd.Analyses.Add(ToAdd);
+                    RawAnalisis.Remove(item);
+                }
+
+                SectiontoAdd.Step = stepName;
+
+                _sosHub.Sections.Add(SectiontoAdd);
+
+                stepName = string.Empty;
+                _selectedValues = new List<string>();
+                CloseStepDialog();
+            }
+            else
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                   "Warning",
+                    "Es necesario el texto!",
+                   yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+
+        }
         #endregion
     }
 }

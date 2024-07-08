@@ -2,6 +2,7 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
@@ -36,9 +37,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
+        List<Distribution> _distributions = new();
         List<Department> _departments = new();
         int plantId = 0;
         int areaId = 0;
+        int distributionId = 0;
         int departmentId = 0;
 
 
@@ -49,6 +52,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         public int productId = 0;
+        public string productSide = string.Empty;
         public class Segment
         {
             public string Analysis { get; set; }
@@ -149,10 +153,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private bool visibleResources = false;
 
+        int analysisTabsIndex = 0;
+
         #endregion
 
         protected async override Task OnInitializedAsync()
         {
+           
 
             _links = new List<BreadcrumbItem>
                 {
@@ -579,24 +586,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
 
-            if (user.UserType == 1)
-            {
-                _supervisors = await UsersService.GetUsersByType( 3, false, false);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-            }
-            if (user.UserType == 2)
-            {
-                plantId = (int)user.PlantId;
-                areaId = 0;
-
-                _areas = user.Areas.ToList();
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors.Add(sv);
-                }
-
-            }
-            else if (user.UserType == 3)
+            if (user.UserType == 3)
             {
                 var plantId = (int)user.PlantId;
                 var areaId = (int)user.AreaId;
@@ -613,17 +603,42 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
+        private async void ShowSupervisors()
+        {
+            supervisorOwnerId = 0;
+            supervisorEditorId = 0;
+            _supervisors.Clear();
+            if (user.UserType == 1)
+            {
+                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
+            }
+            else if (user.UserType == 2)
+            {
+                _supervisors = new();
+                _supervisors = await UsersService.GetSubordinates(user.UserId, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
+            }
+
+            _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
+            _distributions = _distributions.OrderBy(d => d.Description).ToList();
+
+            StateHasChanged();
+        }
+
         #endregion
 
         //Show areas
         #region Areas
-            private async void ShowAreas()
+        private async void ShowAreas()
         {
             areaId = 0;
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
         }
-        #endregion
+    #endregion
 
         //Local storage user
         #region LocalStorageUser
@@ -1226,7 +1241,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #endregion
 
-        //Analisis Steps Critical Points
+        //Analysis Steps Critical Points
+        #region Analysis
         [Inject]
         private IDialogService DialogService { get; set; }
         public List<string> RawAnalisis { get; set; } = new List<string>();
@@ -1395,5 +1411,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
 
         }
+        #endregion
     }
 }
