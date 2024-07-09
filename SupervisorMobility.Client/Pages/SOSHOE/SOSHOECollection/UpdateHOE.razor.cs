@@ -16,9 +16,13 @@ using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 {
-    public partial class CreateHOE
+    public partial class UpdateHOE
     {
         #region Variables
+
+        [Parameter]
+        public int SOSHubId { get; set; }
+
         private SOSHub _sosHub = new();
 
         private List<BreadcrumbItem> _links;
@@ -162,11 +166,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
            
 
             _links = new List<BreadcrumbItem>
-                {
-                    new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub" ),
-                    new BreadcrumbItem(text: Localizer["create"], href: "", disabled:true )
-                };
+            {
+                new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
+                new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub" ),
+                new BreadcrumbItem(text: Localizer["update"], href: "", disabled:true )
+            };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();
             logged = await HasPropertyAsync();
@@ -180,9 +184,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
 
-            AddItem();
             SetUserInfo();
-            AddRawItem();
 
             StateHasChanged();
         }
@@ -490,7 +492,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return string.Empty;
         }
 
-        private async Task CreateNewSOSHub()
+        private async Task UpdateSOSHub()
         {
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -511,7 +513,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.DepartmentId = departmentId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
-            _sosHub.DistributionId = distributionId;
             _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
             _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
@@ -538,7 +539,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                     var processSheetCommentary = new Commentary
                     {
-                        ComentaryId = 0,
                         Comment = item.Commentary,
                         IsActive = true
                     };
@@ -546,7 +546,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
             }
 
-            var result = await SOSHubServices.CreateSOScollection(_sosHub);
+            var result = await SOSHubServices.UpdateSOSHub(_sosHub);
 
             if (result != null)
             {
@@ -566,9 +566,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public async void SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
-            _sosHub.Plan = "[Current]";
-            _sosHub.SourcePlan = "[Current]";
-
             _tools = await ToolsServices.GetTools();
             _tools = _tools.OrderBy(t => t.ToolName).ToList();
             _filteredTools = new List<Tool>(_tools);
@@ -587,24 +584,115 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
+            StateHasChanged();
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
 
-            if (user.UserType == 3)
+
+            if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
-                var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
+                foreach (var backup in _sosHub.AnalysesBkup)
+                {
+                    RawAnalisisBk.Add(backup.Text);
+                    RawAnalisis.Add(backup.Text);
+                }
+            }
 
+            if (_sosHub.Images != null && _sosHub.Images.Count > 0)
+            {
+
+                foreach (var sosImage in _sosHub.Images)
+                {
+                    var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
+                    capturedImages.Add(image);
+                }
+            }
+
+            if (_sosHub.Videos != null && _sosHub.Videos.Count > 0)
+            {
+                foreach (var sosVideo in _sosHub.Videos)
+                {
+                    var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
+                    MediaUris.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
+                }
+            }
+
+            if (_sosHub.SafetyEquipment != null && _sosHub.SafetyEquipment.Count > 0)
+            {
+                _equipmentIds = _sosHub.SafetyEquipment.Select(s => s.EquipmentId).ToList();
+            }
+            if (_sosHub.ToolsUsed != null && _sosHub.ToolsUsed.Count > 0)
+            {
+                _toolsIds = _sosHub.ToolsUsed.Select(s => s.ToolId).ToList();
+            }
+            if (_sosHub.MaterialsUsed != null && _sosHub.MaterialsUsed.Count > 0)
+            {
+                _materialsIds = _sosHub.MaterialsUsed.Select(s => s.MaterialId).ToList();
+            }
+
+            _filteredTools = _filteredTools.Where(t => !_toolsIds.Contains(t.ToolId)).ToList();
+            _filteredEquipment = _filteredEquipment.Where(e => !_equipmentIds.Contains(e.EquipmentId)).ToList();
+            _filteredMaterials = _filteredMaterials.Where(m => !_materialsIds.Contains(m.MaterialId)).ToList();
+
+            if (_sosHub.PlantId != null)
+            {
+                plantId = (int)_sosHub.PlantId;
+            }
+
+            if (user.UserType == 1)
+            {
+                if (plantId != new int())
+                {
+                    _areas = await AreaServices.GetAreas(plantId);
+                    _areas = _areas.OrderBy(a => a.Description).ToList();
+                }
+                _supervisors = await UsersService.GetUsersByType(3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            }
+            if (user.UserType == 2)
+            {
+
+                _areas = user.Areas.ToList();
+                foreach (var sv in user.Subordinates.ToList())
+                {
+                    _supervisors.Add(sv);
+                }
+
+            }
+            else if (user.UserType == 3)
+            {
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
-                supervisorOwnerId = user.UserId;
-                supervisorEditorId = user.UserId;
-
                 _supervisors.Add(user);
             }
+
+
+
+            areaId = (int)_sosHub.AreaId;
+            departmentId = (int)_sosHub.DepartmentId;
+            productId = (int)_sosHub.AppliedModelId;
+
+            supervisorEditorId = (int)_sosHub.EditorId;
+            supervisorOwnerId = (int)_sosHub.OwnerId;
+
+            cycleId = GetCycleId(_sosHub.TrainingTime);
             StateHasChanged();
 
         }
 
+        public static int GetCycleId(string trainingTime)
+        {
+            string cycleIdString = trainingTime.Split(' ').First();
+
+            if (int.TryParse(cycleIdString, out int cycleId))
+            {
+                return cycleId;
+            }
+            else
+            {
+                throw new FormatException("El formato de TrainingTime no es válido.");
+            }
+        }
         private async void ShowSupervisors()
         {
             supervisorOwnerId = 0;

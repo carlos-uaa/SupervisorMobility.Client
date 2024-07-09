@@ -1,0 +1,1167 @@
+﻿@page "/SOSHOE/Hub/Update/{sosHubId:int}"
+@using System.Text.RegularExpressions
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IBreadcrumbService BreadcrumbServices
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionServices
+@inject IDepartmentService DepartmentServices
+@inject IUserService UsersService
+@inject IProductService ProductsService
+@inject IDataPanelService DataPanelServices
+@inject IAppearanceService AppearanceServices
+@inject ILogbookAppearanceService LogbookAppearanceServices
+@inject SignatureImageService _signatureImageService
+@inject IPartServices PartsServices
+@inject IFileUploadAndDownloadService FilesServices
+@inject ITestService TestService
+@inject IProductService ProductsServices
+@inject ISOSHubService SOSHubServices
+@inject IToolService ToolsServices
+@inject IEquipmentService EquipmentsServices
+@inject IMaterialService MaterialsServices
+
+
+<style>
+
+    .custom-table td:first-child {
+        background-color: #f5f5f6;
+    }
+
+    .comments-table td:first-child {
+        background-color: white;
+    }
+
+</style>
+
+<PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
+<EditForm Model="_sosHub" OnValidSubmit="UpdateSOSHub">
+    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+        <MudItem lg="10" md="10" sm="10" xs="12">
+            <MudExpansionPanels Elevation="5" MultiExpansion="true"  >
+                <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%;">
+                    <TitleContent>
+                        <div class="d-flex" style="align-items: center; justify-content:center;">
+                            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                            <MudText Typo="Typo.h6" Style="text-align: center;">
+                                @Localizer["HOE / SOS"]
+                            </MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Class="custom-table">
+                            <tbody>
+                                <tr>
+                                    <td width="20%">
+                                        <MudText>Folio</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.Folio" ReadOnly/>
+                                    </td>
+                                </tr> 
+                                <tr>
+                                    <td style="padding: 0px">
+                                        <MudTabs Color="Color.Tertiary" Position="Position.Left" Rounded="true" Border="true" SliderColor="Color.Dark" @bind-ActivePanelIndex="analysisTabsIndex"
+                                                 ApplyEffectsToContainer="true">
+                                            <MudTabPanel Text="Capture of analysis" Style="color:#424242; width: 15vw;" >
+                                            </MudTabPanel>
+
+                                            @if (!string.IsNullOrEmpty(RawAnalisis.FirstOrDefault()) || _sosHub.Sections.Count > 0)
+                                            {
+                                                <MudTabPanel Text="Step capture" OnClick="CreateBakup" Style="color:#424242;  width: 15vw;">
+                                                </MudTabPanel>
+                                            }
+
+                                            @if (_sosHub.Sections.Count() > 0)
+                                            {
+                                                <MudTabPanel Text="Critical Point Capture" Style="color:#424242;  width: 15vw;">
+                                                </MudTabPanel>
+                                            }
+                                        </MudTabs>
+                                       
+
+                                    </td>
+                                    <td> 
+                                        @if(analysisTabsIndex == 0)
+                                        {
+                                            <MudContainer Style="display: flex; flex-direction: column;">
+
+                                            @if (RawAnalisis.Count == 0)
+                                            {
+                                                <MudItem>
+                                                    <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
+                                                </MudItem>
+                                                <MudItem>
+
+                                                    <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                        <tbody>
+                                                            @foreach (var (analisis, indexAnalisis) in RawAnalisisBk.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                            {
+                                                                <tr>
+                                                                    <td width="90%">
+                                                                        <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis]</MudText>
+                                                                    </td>
+
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </MudSimpleTable>
+                                                </MudItem>
+                                            }
+                                            else
+                                            {
+                                                <MudItem>
+
+                                                    <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                        <tbody>
+                                                            @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                            {
+                                                                <tr>
+                                                                    <td width="90%">
+                                                                        <MudTextField @bind-Value="@RawAnalisis[indexAnalisis]" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                                    </td>
+                                                                    @if (RawAnalisis.IndexOf(analisis) > 0)
+                                                                    {
+                                                                        <td width="10%">
+                                                                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveRawItem(analisis)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                                        </td>
+                                                                    }
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </MudSimpleTable>
+                                                    <MudButton OnClick="AddRawItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add analisis</MudButton>
+                                                </MudItem>
+                                            }
+
+
+                                        </MudContainer>
+
+                                        }
+                                        else if(analysisTabsIndex == 1){
+                                            <MudContainer Style="display: flex; flex-direction: column;">
+                                                <MudItem>
+                                                    <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
+                                                </MudItem>
+                                                @if (RawAnalisis.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        <MudStack>
+                                                            <MudStack>
+                                                                <MudText>Multi Selection</MudText>
+                                                                <MudText>Values: @string.Join(", ", _selectedValues ?? new List<string>())</MudText>
+                                                                <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Color="Color.Secondary" CheckMark>
+                                                                    @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                    {
+                                                                        <MudToggleItem Value="@RawAnalisis[indexAnalisis]" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                                                                    }
+                                                                </MudToggleGroup>
+                                                            </MudStack>
+                                                        </MudStack>
+
+                                                        <MudButton OnClick="AddStep" Color="Color.Primary" Disabled="@(_selectedValues.Count() == 0 ? true : false)" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Generar Paso</MudButton>
+                                                    </MudItem>
+                                                }
+
+                                                @if (_sosHub.Sections.Count > 0)
+                                                {
+                                                    <MudItem>
+                                                        <MudText Typo="Typo.h5">Preview</MudText>
+                                                        <MudSimpleTable Elevation="0">
+                                                            <MudTr>
+                                                                <MudTh>Análisis</MudTh>
+                                                                <MudTh>Pasos</MudTh>
+                                                                <MudTh>Punto Crítico</MudTh>
+                                                                <MudTh></MudTh>
+                                                            </MudTr>
+
+                                                            @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
+                                                            {
+                                                                <MudTr>
+                                                                    <MudTd Style="width:60%; background-color: white">
+                                                                        @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                        {
+                                                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text</MudText>
+                                                                        }
+                                                                    </MudTd>
+                                                                    <MudTd Style="width:30%">
+                                                                        <MudTextField @bind-Value="_sosHub.Sections[indexSection].Step" Label="Paso" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
+                                                                    </MudTd>
+                                                                    <MudTh></MudTh>
+
+                                                                    <MudTd Style="width:10%">
+                                                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveSectionItem(section)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                                    </MudTd>
+                                                                </MudTr>
+                                                            }
+                                                        </MudSimpleTable>
+                                                    </MudItem>
+                                                }
+                                            </MudContainer>
+
+                                        }
+                                        else if (analysisTabsIndex == 2)
+                                        {
+                                            <MudSimpleTable Style="width:100%; " Elevation="0">
+                                                <MudTr>
+                                                    <MudTh>Análisis</MudTh>
+                                                    <MudTh>Pasos</MudTh>
+                                                    <MudTh>Punto Crítico</MudTh>
+                                                </MudTr>
+
+                                                @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
+                                                {
+                                                    <MudTr>
+                                                        <MudTd Style="width:50%; background-color: white;">
+                                                            @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                            {
+                                                                @if (!string.IsNullOrEmpty(_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoint))
+                                                                {
+                                                                    <MudText Typo="Typo.subtitle1">
+                                                                        <MudHighlighter Text="@(GetAnalisisText(indexSection, indexAnalisis))" HighlightedText="@(GetHighlightedText(indexSection, indexAnalisis))" />
+                                                                    </MudText>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                        @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
+                                                                    </MudText>
+                                                                }
+                                                            }
+                                                        </MudTd>
+                                                        <MudTd Style="width:20%">
+                                                            <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                @_sosHub.Sections[indexSection].Step
+                                                            </MudText>
+                                                        </MudTd>
+                                                        <MudTd Style="width:30%">
+                                                            @if (!string.IsNullOrEmpty(section.Step))
+                                                            {
+                                                                @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                {
+                                                                    <MudTextField @bind-Value="_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoint" Label="Punto Crítico" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" @onchange="(e) => ApplyHighlights(indexSection, indexAnalisis)" />
+                                                                    <MudTextField @bind-Value="_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reason" Label="Razón" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
+                                                                }
+                                                            }
+                                                        </MudTd>
+
+                                                    </MudTr>
+                                                }
+                                            </MudSimpleTable>
+
+                                        }
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Process Sheet</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.ProcessSheet" Class="ml-4" />
+                                        <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Revisión - Modificación</MudText>
+                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                            <tbody>
+                                                @foreach (var item in items)
+                                                {
+                                                    <tr>
+                                                        <td width="90%">
+                                                            <MudTextField @bind-Value="@item.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                        </td>
+                                                        @if (items.IndexOf(item) > 0)
+                                                        {
+                                                            <td width="10%">
+                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </MudSimpleTable>
+                                        <MudButton OnClick="AddItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add Commentary</MudButton>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Common Direction</MudText>
+                                    </td>
+                                    <td>
+                                        <MudStack Style="width: 100%">
+                                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                                            @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+                                                <ButtonTemplate Context="evidence">
+                                                    <MudPaper Height="@($"{height}px")" Outlined="true" Class="@DragClass">
+                                                        <MudText Style="font-weight:bold;" Class="ml-4"> @Localizer["dragAndDropEvidenceFilesHereOrClick"]</MudText>
+                                                            @foreach (var file in fileNames)
+                                                            {
+                                                                <MudItem Style="text-align:center;" Class="d-flex justify-center align-content-center align-center">
+                                                                    <MudText Typo="Typo.h6">@file.message</MudText>
+                                                                @switch (file.ftype)
+                                                                {
+                                                                    case "application/pdf":
+                                                                        <img src="Images/pdf.png" Height="25" Width="25" />
+                                                                        break;
+
+                                                                    case "application/msword":
+                                                                        // Para documentos Word con extensión .doc
+                                                                        <img src="Images/doc.png" Height="25" Width="25" />
+
+                                                                        break;
+
+                                                                    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                                                                        <img src="Images/docx.png" Height="25" Width="25" />
+
+                                                                        // Para documentos Word con extensión .docx
+                                                                        break;
+
+                                                                    case "application/vnd.ms-powerpoint":
+                                                                        <img src="Images/ppt.png" Height="25" Width="25" />
+                                                                        // Para presentaciones PowerPoint con extensión .ppt
+                                                                        break;
+
+                                                                    case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                                                                        <img src="Images/pptx.png" Height="25" Width="25" />
+
+                                                                        // Para presentaciones PowerPoint con extensión .pptx
+                                                                        break;
+
+                                                                    case "application/vnd.ms-excel":
+                                                                        // Para hojas de cálculo Excel con extensión .xls
+                                                                        <img src="Images/xls.png" Height="25" Width="25" />
+                                                                        break;
+
+                                                                    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                                                                        // Para hojas de cálculo Excel con extensión .xlsx
+                                                                        <img src="Images/xlsx.png" Height="25" Width="25" />
+
+                                                                        break;
+
+                                                                    case "image/jpeg":
+                                                                        <img src="Images/jpg.png" Height="25" Width="25" />
+
+                                                                        // Para imágenes JPEG con extensión .jpg o .jpeg
+                                                                        break;
+
+                                                                    case "image/png":
+                                                                        // Para imágenes PNG con extensión .png
+                                                                        <img src="Images/png.png" Height="25" Width="25" />
+
+                                                                        break;
+
+                                                                    case "image/gif":
+                                                                        // Para imágenes GIF con extensión .gif
+                                                                        <img src="Images/gif.png" Height="25" Width="25" />
+                                                                        break;
+
+                                                                    default:
+                                                                        <img src="Images/error.png" Height="25" Width="25" />
+                                                                        break;
+                                                                }
+                                                                    <MudButton Target="_blank"
+                                                                               Variant="Variant.Text"
+                                                                               Color="Color.Secondary"
+                                                                               Style="text-transform:none; font-size: 12px;">
+                                                                            
+                                                                        @file.name
+                                                                    </MudButton>
+                                                                </MudItem>
+                                                            }
+                                                    </MudPaper>
+                                                </ButtonTemplate>
+                                            </MudFileUpload>
+                                        </MudStack>
+                                        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Style="float: right" Class="mt-3"> @Localizer["clear"]</MudButton>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Applied Models</MudText>
+                                    </td>
+                                    <td class="d-flex">
+                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" OpenIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                                            @foreach (var type in _products)
+                                            {
+                                                <MudSelectItem Value="type.ProductId">
+                                                    @type.Code
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        @if(productId != 0)
+                                        {
+                                            <MudSelect Class="ml-4" T="string" Label="Side" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
+                                                <MudSelectItem Value="@("L")" />
+                                                <MudSelectItem Value="@("R")" />
+                                            </MudSelect>
+
+                                        }
+                                        else
+                                        {
+                                            <MudSelect Class="ml-4" T="string" Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
+                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["firstSelectAProduct"]</MudSelectItem>
+                                            </MudSelect>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Steps</MudText>
+                                    </td>
+                                    <td>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
+                                            Edit Steps
+                                            <span>&nbsp;(@segments.Count)</span>
+                                        </MudButton>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Images</MudText>
+                                    </td>
+                                    <td>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowImagesDialog">
+                                            Edit Images
+                                            <span>&nbsp;(@capturedImages.Count)</span>
+                                        </MudButton>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Videos</MudText>
+                                    </td>
+                                    <td>
+                                        <MudButton Variant="Variant.Filled" OnClick="ShowVideosDialog">
+                                            Edit Videos
+                                            <span>&nbsp;(@MediaUris.Count)</span>
+                                        </MudButton>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Revised Items</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.RevisedItems" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Training time</MudText>
+                                    </td>
+                                    <td style="display:flex;">
+                                            <MudAutocomplete T="int"
+                                                Label=@Localizer["Cycles"]
+                                                Variant="Variant.Text"
+                                                AnchorOrigin="Origin.BottomCenter"
+                                                @bind-Value="cycleId"
+                                                OpenIcon="@Icons.Material.Filled.AccessTime"
+                                                AdornmentColor="Color.Info"
+                                                Clearable
+                                                ResetValueOnEmptyText
+                                                ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                ToStringFunc="ReturnCycles"
+                                                SearchFunc="SearchCycles"
+                                                MaxItems="10"
+                                                >
+
+                                            </MudAutocomplete>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Safety Equipment</MudText>
+                                    </td>
+                                    <td>
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedEquipmentName"
+                                            Label="Buscar equipamiento"
+                                            SearchFunc="SearchEquipment"
+                                            Placeholder="Buscar equipamiento..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Warning"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Engineering">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingEquipment)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedEquipment" Disabled="@(string.IsNullOrWhiteSpace(selectedEquipmentName))">
+                                                Agregar equipamiento
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedEquipmentName))
+                                        {
+                                            string title = "Equipment";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear equipamiento
+                                            </MudButton>
+                                        }
+
+                                        @if (_equipmentIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                @foreach (var equipmentId in _equipmentIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Warning" Variant="Variant.Outlined">
+                                                        <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_equipment.FirstOrDefault(t => t.EquipmentId == equipmentId)?.EquipmentName)
+                                                        </MudChip>
+
+                                                        <MudTooltip Text="Delete Equipment" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveEquipment(equipmentId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Tools Used</MudText>
+                                    </td>
+                                    <td>
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedToolName"
+                                            Label="Buscar herramienta"
+                                            SearchFunc="SearchTools"
+                                            Placeholder="Buscar herramienta..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Info"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Build">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingTool)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedTool" Disabled="@(string.IsNullOrWhiteSpace(selectedToolName))">
+                                                Agregar tool
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedToolName))
+                                        {
+                                            string title = "Tools";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear tool
+                                            </MudButton>
+                                        }
+
+                                        @if (_toolsIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                @foreach (var toolId in _toolsIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                                    <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_tools.FirstOrDefault(t => t.ToolId == toolId)?.ToolName)
+                                                        </MudChip>
+
+                                                        <MudTooltip Text="Delete Tool" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveTool(toolId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Materials Used</MudText>
+                                    </td>
+                                    <td>
+                                        <MudAutocomplete T="string"
+                                            @bind-Value="selectedMaterialName"
+                                            Label="Buscar herramienta"
+                                            SearchFunc="SearchMaterials"
+                                            Placeholder="Buscar material..."
+                                            Variant="Variant.Text"
+                                            AnchorOrigin="Origin.BottomCenter"
+                                            AdornmentColor="Color.Primary"
+                                            ResetValueOnEmptyText
+                                            CoerceText="false"
+                                            CoerceValue="true"
+                                            Clearable
+                                            ShowProgressIndicator="true"
+                                            ProgressIndicatorColor="Color.Info"
+                                            OpenIcon="@Icons.Material.Filled.Work">
+                                        </MudAutocomplete>
+
+                                        @if (IsExistingMaterial)
+                                        {
+                                            <MudButton Color="Color.Primary" @onclick="AddSelectedMaterial" Disabled="@(string.IsNullOrWhiteSpace(selectedMaterialName))">
+                                                Agregar material
+                                            </MudButton>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(selectedMaterialName))
+                                        {
+                                            string title = "Materials";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear material
+                                            </MudButton>
+                                        }
+
+                                        @if (_materialsIds.Count > 0)
+                                        {
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                                                @foreach (var materialId in _materialsIds)
+                                                {
+                                                    <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Primary" Variant="Variant.Outlined">
+                                                        <MudChip Color="Color.Primary" Icon="@Icons.Material.Filled.Work" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                            @(_materials.FirstOrDefault(t => t.MaterialId == materialId)?.MaterialName)
+                                                        </MudChip>
+
+                                                        <MudTooltip Text="Delete Material" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="(() => RemoveMaterial(materialId))"></MudIconButton>
+                                                        </MudTooltip>
+                                                    </MudButton>
+                                                }
+                                            </MudItem>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Other information</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.OtherInformation" Lines="3" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Area / Plant</MudText>
+                                    </td>
+                                    <td class="d-flex">
+                                        <MudItem Class="mr-4">
+
+                                            @if (user.UserType == 1)
+                                            {
+
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                                    @foreach (var type in _plants)
+                                                    {
+                                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                    @foreach (var type in _plants)
+                                                    {
+                                                        if (type.PlantId == user.PlantId)
+                                                        {
+                                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            }
+                                        </MudItem>
+                                        <MudItem>
+                                            @if (plantId != 0 && user.UserType == 1)
+                                            {
+                                                @*Mud select for Areas for Admin *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSupervisors">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in _areas)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else if (plantId != 0 && user.UserType == 2)
+                                            {
+                                                @*Mud select for Areas for SSV *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in user.Areas)
+                                                    {
+                                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else if (plantId != 0)
+                                            {
+                                                @*Mud select for Areas for SV *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                                    @foreach (var type in _areas)
+                                                    {
+                                                        if (type.AreaId == user.AreaId)
+                                                        {
+                                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                @*Mud select for Areas *@
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" >
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                                </MudSelect>
+                                            }
+                                        </MudItem>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Distribution / Department</MudText>
+                                    </td>
+                                    <td class="d-flex">
+                                        @if (areaId != 0)
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId">
+                                                <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                                                @foreach (var type in _distributions)
+                                                {
+                                                    <MudSelectItem Value="type.DistributionId">
+                                                        @(
+                                                            $"{type.Code} - {type.Description}"
+                                                            )
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                            </MudSelect>
+                                        }
+                                        <MudItem Class="ml-4">
+                                            <MudSelect T="int" Label=@Localizer["department"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
+                                                @foreach (var type in _departments)
+                                                {
+                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Owner</MudText>
+                                    </td>
+                                    <td>
+                                        @if(areaId != 0)
+                                        {
+                                            @if (_supervisors.Count > 0)
+                                            {
+                                                <MudAutocomplete T="int"
+                                                    Label=@Localizer["Supervisor"]
+                                                    Variant="Variant.Text"
+                                                    AnchorOrigin="Origin.BottomCenter"
+                                                    @bind-Value="supervisorOwnerId"
+                                                    OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                    AdornmentColor="Color.Secondary"
+                                                    Clearable
+                                                    ResetValueOnEmptyText
+                                                    ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                    ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                    SearchFunc="SearchSupervisors">
+                                                
+                                                </MudAutocomplete>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnArea"]</MudAlert>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Created</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="createdDateTime" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Editor</MudText>
+                                    </td>
+                                    <td>
+                                        @if(areaId != 0)
+                                        {
+                                            @if (_supervisors.Count > 0)
+                                            {
+                                                <MudAutocomplete T="int"
+                                                    Label=@Localizer["Supervisor"]
+                                                    Variant="Variant.Text"
+                                                    AnchorOrigin="Origin.BottomCenter"
+                                                    @bind-Value="supervisorEditorId"
+                                                    OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                    AdornmentColor="Color.Secondary"
+                                                    Clearable
+                                                    ResetValueOnEmptyText
+                                                    ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                    ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                    SearchFunc="SearchSupervisors">
+                                                </MudAutocomplete>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnArea"]</MudAlert>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Modified</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField T="DateTime?" Format="s" Label="DateTimeLocal" InputType="InputType.DateTimeLocal" @bind-Value="modifiedDateTime" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Plan</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.Plan" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Source Plan</MudText>
+                                    </td>
+                                    <td>
+                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.SourcePlan" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText>Status</MudText>
+                                    </td>
+                                    <td>
+                                        <MudSelect Margin="Margin.Dense" T="string" Variant="Variant.Text" @bind-Value="_sosHub.Status">
+                                            <MudSelectItem Value="@("Pending")" />
+                                            <MudSelectItem Value="@("Approved")" />
+                                            <MudSelectItem Value="@("Rejected")" />
+                                        </MudSelect>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            <MudCardActions>
+                <MudItem Class="ml-auto mt-4">
+                    <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4">@Localizer["Update HOE"]</MudButton>
+                </MudItem>
+            </MudCardActions>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+<MudDialog @bind-IsVisible="visibleStepsDialog" Options="dialogStepsOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Steps"]
+            </MudText>
+        </div>    
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+        <MudText Typo="Typo.h6" Style="text-align: center;">
+                @((MarkupString)HighlightedText)
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTable Items="@segments" Class="custom-table">
+            <HeaderContent>
+                <MudTh Style="font-weight:bold; width: 50%">Analysis</MudTh>
+                <MudTh Style="font-weight:bold">Main Point</MudTh>
+                <MudTh Style="font-weight:bold">Critical Points</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Analysis</MudTd>
+                <MudTd>@context.MainPoint</MudTd>
+                <MudTd>
+                    <ul>
+                        @foreach (var point in context.CriticalPoints)
+                        {
+
+                            <li>
+                               
+                                    @point
+                               </li>
+                        }
+                    </ul>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseStepsDialog" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+    </DialogActions>
+</MudDialog>
+ 
+
+<MudDialog @bind-IsVisible="visibleImagesDialog" Options="dialogImagesOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Images"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+            <InputFile id="previousEvidence" OnChange="@( (e) => AddImages(e, 1))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                       HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Image"
+                       for="previousEvidence">
+                Load picture
+            </MudButton>
+            @if (capturedImages.Count == 0)
+            {
+                <MudItem>
+                    <MudButton @onclick="() => OpenCameraDialog(1)" Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.AddAPhoto">
+                        Open Camera
+                    </MudButton>
+                </MudItem>
+            }
+            else if (capturedImages.Count > 0)
+            {
+                <MudItem>
+                    <MudButton Variant="Variant.Filled" @onclick="() => OpenCameraDialog(1)" StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Info">Add photo</MudButton>
+                </MudItem>
+            }
+        </MudItem>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
+            @if (capturedImages.Count > 0)
+            {
+                <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+
+                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                        {
+                            <MudItem Class=" mr-8 mb-4">
+                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                    </MudTooltip>
+                                </MudItem>
+                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+                            </MudItem>
+                        }
+                    </MudItem>
+
+                </div>
+            }
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseImagesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudDialog @bind-IsVisible="visibleVideosDialog" Options="dialogVideosOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Videos"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="AddVideos" Accept=".mp4, .mov, .wmv, .avi, .mkv, .flv, .webm">
+                <ButtonTemplate Context="fileContext">
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="@fileContext">
+                        <MudText>Files</MudText>
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+        </MudItem>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
+            @if (MediaUris != null && MediaUris.Count > 0)
+            {
+                @foreach (var item in MediaUris.ToList())
+                {
+                    <MudItem Class="mr-4 mb-4">
+                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="@(() => DeleteItem(item.Key))"></MudIcon>
+                            </MudTooltip>
+                        </MudItem>
+                        <video width="300" height="150" controls @key="item.Key">
+                            <source src="@item.Value.Item2">
+                            Your browser does not support the video tag.
+                        </video>
+                    </MudItem>
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">No media available.</MudAlert>
+            }
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseVideosDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@*Evidence Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+    <DialogContent>
+        <MudPaper Elevation="0">
+            @if (capturedImages.Count() > 0)
+            {
+                <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                    <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                        </MudAvatar>
+                    </PreviousButtonTemplate>
+                    <NextButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                    </NextButtonTemplate>
+                    <ChildContent>
+                        @foreach (var evidence in capturedImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            }
+            else
+            {
+                <MudItem Style="height: 75vh">
+                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                        @Localizer["there is no previous evidence :)"]
+                    </MudAlert>
+                </MudItem>
+            }
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@*Camera Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCamera" Options="dialogCameraOptions">
+    <TitleContent>
+        <MudItem>
+            <MudText Typo="Typo.h6" Style="text-align:center">Kaizen Evidence</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 85vh; overflow-y: scroll text-align:center; justify-content: center; align-items:center;">
+            <MudPaper Elevation="0">
+                <CameraStreamer @ref=CameraStreamerReference
+                                Width=1280
+                                Height=720
+                                OnRendered=OnRenderedHandler
+                                OnFrame=OnFrameHandler
+                                Style="max-height: 70vh; width: 100%; border-radius: 10px"
+                                Class="mud-elevation-4 rounded white"
+                                CameraID=@cameraId
+                                Autostart />
+                <MudItem style="text-align: center">
+                    @if (frameCount > 0)
+                    {
+                        <MudButton @onclick=GetCurrentFrame Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4">
+                            Take photo
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.LinkedCamera" Color="Color.Info" Class="mt-2 mb-4" Disabled>
+                            Take photo
+                        </MudButton>
+                    }
+                </MudItem>
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+@*Resources*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleResources" Options="dialogResourcesOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @resourceType
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if(resourceType == "Equipment"){
+            <MudItem Style="height: 50vh">
+                <SupervisorMobility.Client.Pages.Configuration.EquipmentPage.EquipmentForm EquipmentName="@newEquipmentName" OnEquipmentCreated="HandleEquipmentCreated"></SupervisorMobility.Client.Pages.Configuration.EquipmentPage.EquipmentForm>
+            </MudItem>
+        }
+        else if(resourceType == "Tools"){
+            <MudItem Style="height: 50vh">
+                <SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm ToolName="@newToolName" OnToolCreated="HandleToolCreated"></SupervisorMobility.Client.Pages.Configuration.ToolPage.ToolForm>
+            </MudItem>
+        }
+        else if(resourceType == "Materials"){
+                <MudItem Style="height: 50vh">
+                    <SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm MaterialName="@newMaterialName" OnMaterialCreated="HandleMaterialCreated"></SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm>
+            </MudItem>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseResourcesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="showAddStepDialog" Options="dialogResourcesOptions">
+    <DialogContent>
+        <MudTextField @bind-Value="stepName" Label="Nombre - Paso Principal" Variant="Variant.Outlined" Class="mb-2" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="confirmStep" Variant="Variant.Filled">@Localizer["confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
