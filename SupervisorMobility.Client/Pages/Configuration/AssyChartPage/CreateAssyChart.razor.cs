@@ -192,6 +192,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             _newassychart.RoutesProductsAssyChart?.Clear();
             ProductSelected = new();
             _distributionValues = await DistributionServices.GetDistributionWithCollections(auxplant, auxarea, auxdistribution);
+
+
             StateHasChanged();
         }
 
@@ -506,7 +508,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
             SOSCodePath _newCodePathAssyChart = new();
             _newCodePathAssyChart.AssyChardId = _assychart.AssyChardId;
-            _newCodePathAssyChart.DistributionId = (int)_assychart.DistributionId;
+            _newCodePathAssyChart.DistributionId = auxdistribution;
 
             _newCodePathAssyChart.IsActive = true;
 

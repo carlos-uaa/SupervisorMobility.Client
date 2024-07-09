@@ -163,8 +163,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _links = new List<BreadcrumbItem>
                 {
-                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "", disabled: true)
+                    new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub" ),
+                    new BreadcrumbItem(text: Localizer["create"], href: "", disabled:true )
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();
@@ -434,14 +435,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "Write down at least one analysis first";
             }
-            if (string.IsNullOrEmpty(_sosHub.ProcessName))
+            if (string.IsNullOrEmpty(_sosHub.Folio))
             {
-                return "Write down the Process Name first";
+                return "Write down the Folio Name first";
             }
-            if (string.IsNullOrEmpty(_sosHub.OperationName))
-            {
-                return "Write down the Operation Name first";
-            }
+            //if (string.IsNullOrEmpty(_sosHub.OperationName))
+            //{
+            //    return "Write down the Operation Name first";
+            //}
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {
                 return "Write down the Process Sheet plan first";

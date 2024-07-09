@@ -5,8 +5,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
     {
         public int SOSHubId { get; set; }
 
-        public string? OperationName { get; set; }
-        public string? ProcessName { get; set; }
+        public string? Folio { get; set; }
         //Es el analisis
         public List<AnalysisBkup> AnalysesBkup { get; set; } = new List<AnalysisBkup>();
         public List<Section> Sections { get; set; } = new List<Section>();

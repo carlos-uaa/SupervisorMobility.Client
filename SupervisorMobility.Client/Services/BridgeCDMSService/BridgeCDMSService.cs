@@ -28,8 +28,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-       
+
         //CCP
+        #region CCP
+
         public async Task<CDMS_CCP_Directory> GetFoldersCCP()
         {
            
@@ -133,9 +135,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
         public async Task<AsyncVoidMethodBuilder> GetDownloadLinkCCP(int ID, string namefile)
         {
-            var parameters = new Dictionary<string, string>
+            var parameters = new Dictionary<string, int>
             {
-                { "ID", ID.ToString() }
+                { "ID", ID }
             };
 
             var json = JsonConvert.SerializeObject(parameters);
@@ -260,12 +262,15 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
+
+        #endregion
         //HOE
+        #region hoe
         public async Task<CDMS_HOE_Directory> GetFoldersHOE()
         {
             try
             {
-                var response = await _http.GetAsync("BridgeCDMS/SMHoe/GetDirectoryPaths");
+                var response = await _http.GetAsync("BridgeCDMS/SMHoe/GetDirectoryPathsHoe");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -464,8 +469,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return new AsyncVoidMethodBuilder();
         }
-            //GOS
-            public async Task<CDMS_GOS_Directory> GetFoldersGOS()
+        #endregion
+
+        #region GOS
+        //GOS
+        public async Task<CDMS_GOS_Directory> GetFoldersGOS()
         {
 
             try
@@ -692,7 +700,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
             return null;
         }
-
+        #endregion 
     }
 
 }
