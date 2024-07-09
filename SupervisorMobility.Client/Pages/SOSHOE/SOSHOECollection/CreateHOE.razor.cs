@@ -428,14 +428,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "Write down at least one analysis first";
             }
-            if (string.IsNullOrEmpty(_sosHub.ProcessName))
-            {
-                return "Write down the Process Name first";
-            }
-            if (string.IsNullOrEmpty(_sosHub.OperationName))
-            {
-                return "Write down the Operation Name first";
-            }
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {
                 return "Write down the Process Sheet plan first";
