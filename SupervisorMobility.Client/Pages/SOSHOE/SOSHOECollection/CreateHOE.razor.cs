@@ -181,8 +181,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
             AddItem();
-            SetUserInfo();
             AddRawItem();
+            SetUserInfo();
 
             StateHasChanged();
         }
@@ -1258,16 +1258,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private void ApplyHighlights(int sectionIndex, int analisisIndex)
         {
-            var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            var text = analisis.Text;
-            var term = analisis.CriticalPoint;
-            if (string.IsNullOrEmpty(term))
-            {
-                return;
-            }
+            //var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
+            //var text = analisis.Text;
+            //var term = analisis.CriticalPoint;
+            //if (string.IsNullOrEmpty(term))
+            //{
+            //    return;
+            //}
 
-            var highlightedText = ReplaceInsensitive(text, term);
-            analisis.Text = highlightedText;
+            //var highlightedText = ReplaceInsensitive(text, term);
+            //analisis.Text = highlightedText;
         }
 
         private static string Normalize(string input)
@@ -1298,14 +1298,49 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return result;
         }
 
-        private string GetAnalisisText(int sectionIndex, int analisisIndex)
+        private string GetFormatedAnalisisText(int sectionIndex, int analisisIndex)
         {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
+           string BaseText = Regex.Replace(_sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text, @"\*", "").ToString();
+
+           return BaseText;
         }
 
-        private string GetHighlightedText(int sectionIndex, int analisisIndex)
+
+        private MarkupString GenerateHighlightedText(string text, List<string> criticalPoints)
         {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
+            if (string.IsNullOrEmpty(text) || criticalPoints == null || criticalPoints.Count == 0)
+            {
+                return new MarkupString(text);
+            }
+
+            var normalizedText = Normalize(text);
+            var builder = new StringBuilder();
+            var currentIndex = 0;
+
+            foreach (var criticalPoint in criticalPoints)
+            {
+                var normalizedCriticalPoint = Normalize(criticalPoint);
+                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+                if (match.Success)
+                {
+                    var startIndex = match.Index;
+                    var endIndex = startIndex + criticalPoint.Length;
+
+                    // Agregar el texto normal antes del punto crítico
+                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
+
+                    // Agregar el punto crítico resaltado
+                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
+
+                    currentIndex = endIndex;
+                }
+            }
+
+            // Agregar el texto normal después del último punto crítico
+            builder.Append(text.Substring(currentIndex));
+
+            return new MarkupString(builder.ToString());
         }
 
         void CreateBakup()
@@ -1330,6 +1365,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         void AddRawItem()
         {
             RawAnalisis.Add("");
+            StateHasChanged();
         }
 
         void RemoveRawItem(string item)
@@ -1383,12 +1419,54 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (!string.IsNullOrEmpty(stepName))
             {
-
                 Section SectiontoAdd = new Section();
                 foreach (string item in _selectedValues)
                 {
+                    segments.Clear();
                     Analysis ToAdd = new Analysis();
                     ToAdd.Text = item;
+                    
+                    BaseText = Regex.Replace(item, @"\*", "").ToString();
+
+                    //start Procesed text
+                    var segmentTexts = item.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var segmentText in segmentTexts)
+                    {
+                        var segment = new Segment
+                        {
+                            Analysis = segmentText
+                        };
+
+                        var mainPointRegex = new Regex(@"#(.*?)#");
+                        var mainPointMatch = mainPointRegex.Match(segmentText);
+
+                        if (mainPointMatch.Success)
+                        {
+                            segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
+                        }
+                        else
+                        {
+                            segment.MainPoint = string.Empty;
+                        }
+
+                        var criticalPointsRegex = new Regex(@"\*(.*?)\*");
+                        var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
+
+                        foreach (Match match in criticalPointMatches)
+                        {
+                            if (match.Success)
+                            {
+                                segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
+                            }
+                        }
+
+                        segments.Add(segment);
+                    }
+
+                    ToAdd.CriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+                    ToAdd.Reasons = Enumerable.Repeat(string.Empty, ToAdd.CriticalPoints.Count).ToList();
+                    ///end Processed text
+
                     SectiontoAdd.Analyses.Add(ToAdd);
                     RawAnalisis.Remove(item);
                 }

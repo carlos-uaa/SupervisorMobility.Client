@@ -9,6 +9,54 @@
 @inject ISOSHubService SOSHubServices
 @inject IDialogService DialogService
 
+<style type="text/css">
+
+    .bounceIn {
+        opacity: 0;
+        animation-delay: 0.5s;
+        animation-duration: 0.5s;
+        animation-name: bounceIn;
+        animation-fill-mode: forwards;
+    }
+
+    .bounceOut {
+        animation-duration: 0.5s;
+        animation-name: bounceOut;
+        animation-fill-mode: forwards;
+    }
+
+    .backInDown {
+        opacity: 0;
+        animation-delay: 0.5s;
+        animation-duration: 0.5s;
+        animation-name: backInDown;
+        animation-fill-mode: forwards;
+    }
+
+    .backOutDown {
+        animation-duration: 0.5s;
+        animation-name: backOutDown;
+        animation-fill-mode: forwards;
+    }
+
+    .rotateIn {
+        opacity: 0;
+        animation-delay: 0.5s;
+        animation-duration: 0.5s;
+        animation-name: rotateIn;
+        animation-fill-mode: forwards;
+    }
+
+    .rotateOut {
+        animation-duration: 0.5s;
+        animation-name: rotateOut;
+        animation-fill-mode: forwards;
+    }
+
+
+
+</style>
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["HOESOSHubTitle"]</PageTitle>
 
@@ -60,6 +108,10 @@ else
                         <MudText>@Localizer["newHoe"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
                     </MudButton>
+                    <MudButton OnClick="() => Generate(SosHubId)">
+                        <MudText>@Localizer["Generate"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.GeneratingTokens" Color="Color.Primary"></MudIcon>
+                    </MudButton>
                     <MudSpacer />
                 </MudItem>
             </MudGrid>
@@ -73,6 +125,9 @@ else
             }
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.Folio)">Folio</MudTableSortLabel>
+            </MudTh> 
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.ProcessSheet)">ProcessSheet</MudTableSortLabel>
             </MudTh>
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.AppliedModelId)">AppliedModelId</MudTableSortLabel>
@@ -91,6 +146,9 @@ else
                     <MudText Align="Align.Center">@context.SOSHubId</MudText>
                 </MudTd>
             }
+            <MudTd DataLabel="Folio">
+                <MudText Align="Align.Center">@context.Folio</MudText>
+            </MudTd>  
             <MudTd DataLabel="ProcessSheet">
                 <MudText Align="Align.Center">@context.ProcessSheet</MudText>
             </MudTd>
@@ -107,10 +165,10 @@ else
                             <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                         </ActivatorContent>
                         <ChildContent>
-
+                          
                             <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HoeDetails(context.SOSHubId))" @ontouchstart="(() => HoeDetails(context.SOSHubId))">Details</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHoe(context.SOSHubId))" @ontouchstart="(() => UpdateHoe(context.SOSHubId))">Edit </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => GenerateAnalysis(context.SOSHubId))" @ontouchstart="(() => GenerateAnalysis(context.SOSHubId))">Generate Analysis</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => Generate(context.SOSHubId))" @ontouchstart="(() => Generate(context.SOSHubId))">Generate</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteHoe(context.SOSHubId))" @ontouchstart="(() => DeleteHoe(context.SOSHubId))">Delete </MudMenuItem>
                         </ChildContent>
                     </MudMenu>
@@ -120,13 +178,88 @@ else
     </MudTable>
 }
 
-<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowSideDialog" Options="dialogResourcesOptions">
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowGenerateDialog" Options="dialogResourcesOptions">
     <DialogContent>
-        <MudTextField @bind-Value="SideName" Label="Side" Variant="Variant.Filled" Class="mb-2" />
+        <MudCarousel @bind-SelectedIndex="selectedIndex" Class="mud-width-full" Style="min-height:45vh; max-height:60vh" TData="object" AutoCycle="false" ShowBullets="false" ShowArrows="false">
+            <MudCarouselItem CustomTransitionEnter="Transition.Slide">
+                <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <SupervisorMobility.Client.Pages.Components.CustomButton Color="#39FF14" Text="Analysis" OnClick="@(async () => selectedIndex = 1)" />
+                        <SupervisorMobility.Client.Pages.Components.CustomButton Color="#FF44CC" Text="Combination" OnClick="@(async () => selectedIndex = 2)"/>
+                        <SupervisorMobility.Client.Pages.Components.CustomButton Color="#0FF0FC" Text="Distribution" OnClick="@(async () => selectedIndex = 3)" />
+                        <SupervisorMobility.Client.Pages.Components.CustomButton Color="#8A2BE2" Text="Flow" OnClick="@(async () => selectedIndex = 4)" />
+                        <SupervisorMobility.Client.Pages.Components.CustomButton Color="#FF3131" Text="Sequence" OnClick="@(async () => selectedIndex = 5)" />
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+            <MudCarouselItem CustomTransitionEnter="Transition.Fade" CustomTransitionExit="backInDown">
+                <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <MudButton Style="float: left"  Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  selectedIndex = 0)" Color="Color.Primary">Back</MudButton>
+                    </MudItem>
+                    <MudItem>
+                            <MudCard>
+                                <MudCardHeader>
+                                <MudText Typo="Typo.h6">Folio: @_Hoes.Find(h => h.SOSHubId == SosHubId)?.Folio</MudText>
+                                <MudText Typo="Typo.h6">ProcessSheet: @_Hoes.Find(h => h.SOSHubId == SosHubId)?.ProcessSheet</MudText>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudTextField @bind-Value="InternalControlNumber" Label="Side" Variant="Variant.Filled" Class="mb-2" />
+                                    <MudTextField @bind-Value="ProcessName" Label="Side" Variant="Variant.Filled" Class="mb-2" />
+                                    <MudTextField @bind-Value="OperationName" Label="Side" Variant="Variant.Filled" Class="mb-2" />
+                                </MudCardContent>
+                                <MudCardActions>
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateAnalisys())" Color="Color.Primary">Generate</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+            <MudCarouselItem CustomTransitionEnter="bounceIn" CustomTransitionExit="bounceOut">
+                <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <MudButton Style="float: left" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  selectedIndex = 0)" Color="Color.Primary">Back</MudButton>
+                    </MudItem>
+                    <MudItem>
+
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+            <MudCarouselItem CustomTransitionEnter="backInDown" CustomTransitionExit="backOutDown">
+                <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <MudButton Style="float: left" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  selectedIndex = 0)" Color="Color.Primary">Back</MudButton>
+                    </MudItem>
+                    <MudItem>
+
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+            <MudCarouselItem CustomTransitionEnter="rotateIn" CustomTransitionExit="rotateOut">
+               <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <MudButton Style="float: left" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  selectedIndex = 0)" Color="Color.Primary">Back</MudButton>
+                    </MudItem>
+                    <MudItem>
+                            
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+            <MudCarouselItem CustomTransitionEnter="backInDown" CustomTransitionExit="Transition.Slide">
+                <div class="d-flex" style="height:100%">
+                    <MudItem>
+                        <MudButton Style="float: left" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  selectedIndex = 0)" Color="Color.Primary">Back</MudButton>
+                    </MudItem>
+                    <MudItem>
+
+                    </MudItem>
+                </div>
+            </MudCarouselItem>
+        </MudCarousel>
     </DialogContent>
-    <DialogActions>
+    @* <DialogActions>
         <MudButton OnClick="confirmSide" Variant="Variant.Filled">@Localizer["confirm"]</MudButton>
-    </DialogActions>
+    </DialogActions> *@
 </MudDialog>
 
 
@@ -150,6 +283,18 @@ else
     private IList<string> _sourceMsgLoading = new List<string>();
     private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
     public bool ShowLoading = true;
+
+    //Generation
+    private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    public bool ShowGenerateDialog = true;
+    private int selectedIndex = 0;
+
+    //Analisis
+    public string InternalControlNumber { get; set; } = "";
+    public string OperationName { get; set; } = "";
+    public string ProcessName { get; set; } = "";
+
+
 
     // Initialization
     protected async override Task OnInitializedAsync()
@@ -217,23 +362,29 @@ else
     private int selectedRowNumber = -1;
     private MudTable<SOSHub> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<SOSHub> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<SOSHub> args)
     {
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            HoeDetails(args.Item.SOSHubId);
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }
     }
 
     private string SelectedRowClassFunc(SOSHub element, int rowNumber)
     {
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                HoeDetails(element.SOSHubId);
-            }
-            return string.Empty;
+            SosHubId = element.SOSHubId;
+            return "selected"; // Mantener la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
+            SosHubId = element.SOSHubId;
             selectedRowNumber = rowNumber;
             return "selected";
         }
@@ -242,6 +393,7 @@ else
             return string.Empty;
         }
     }
+
 
     void HoeDetails(int HoeId)
     {
@@ -266,38 +418,44 @@ else
         NavigationManager.NavigateTo($"/SOSHOE/Hub/Update/{HoeId}");
     }
 
-    void GenerateAnalysis(int hoeId)
+    async void Generate(int hoeId = 0)
     {
-        SosHubId = hoeId;
-        ShowSideDialog = true;
-    }
-
-    private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
-
-
-    public async void confirmSide()
-    {
-
-        if (!string.IsNullOrEmpty(SideName))
+        if (hoeId == 0 || SosHubId == 0)
         {
-            var GenAnalisys = await SOSHubServices.GenerateAnalysis(SosHubId, SideName);
+            bool? result = await DialogService.ShowMessageBox("Warning", "Selecciona un elemento de la tabla!", yesText: "Ok!");
+            var state = result == null ? "Canceled" : "Deleted!";
+        }else{
+            SosHubId = hoeId;
+            selectedIndex = 0;
+            ShowGenerateDialog = true;
+        }
+    }
+    
+ 
+
+    public async void GenerateAnalisys()
+    {
+
+        if (!string.IsNullOrEmpty(InternalControlNumber) && !string.IsNullOrEmpty(ProcessName) && !string.IsNullOrEmpty(OperationName))
+        {
+            // var GenAnalisys = await SOSHubServices.GenerateAnalysis(SosHubId, SideName);
 
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            if (GenAnalisys)
-            {
+            // if (GenAnalisys)
+            // {
                 Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                 SideName = "";
                 ShowSideDialog = false;
-            }
-            else
-            {
-                Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
-            }
+            // }
+            // else
+            // {
+            //     Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+            // }
         }
         else
         {
-            bool? result = await DialogService.ShowMessageBox( "Warning", "Es necesario el Side!",yesText: "Ok!");
+            bool? result = await DialogService.ShowMessageBox( "Warning", "Es necesario completar los campos!",yesText: "Ok!");
             var state = result == null ? "Canceled" : "Deleted!";
         }
 
