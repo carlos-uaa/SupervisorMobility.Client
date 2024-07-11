@@ -36,7 +36,8 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public Distribution? Distribution { get; set; }
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
-
+        public int? StationId { get; set; }
+        public Station? Station { get; set; }
         public int? OwnerId { get; set; }
         public User? Owner { get; set; }
 
