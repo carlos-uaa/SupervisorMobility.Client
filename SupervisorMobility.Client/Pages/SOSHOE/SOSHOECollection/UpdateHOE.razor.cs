@@ -1400,20 +1400,51 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         public string stepName { get; set; } = "";
         bool showAddStepDialog = false;
-       
 
-        private void ApplyHighlights(int sectionIndex, int analisisIndex)
+
+        private string GetFormatedAnalisisText(int sectionIndex, int analisisIndex)
         {
-            var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            var text = analisis.Text;
-            var term = analisis.CriticalPoint;
-            if (string.IsNullOrEmpty(term))
+            string BaseText = Regex.Replace(_sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text, @"\*", "").ToString();
+
+            return BaseText;
+        }
+
+
+        private MarkupString GenerateHighlightedText(string text, List<string> criticalPoints)
+        {
+            if (string.IsNullOrEmpty(text) || criticalPoints == null || criticalPoints.Count == 0)
             {
-                return;
+                return new MarkupString(text);
             }
 
-            var highlightedText = ReplaceInsensitive(text, term);
-            analisis.Text = highlightedText;
+            var normalizedText = Normalize(text);
+            var builder = new StringBuilder();
+            var currentIndex = 0;
+
+            foreach (var criticalPoint in criticalPoints)
+            {
+                var normalizedCriticalPoint = Normalize(criticalPoint);
+                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+                if (match.Success)
+                {
+                    var startIndex = match.Index;
+                    var endIndex = startIndex + criticalPoint.Length;
+
+                    // Agregar el texto normal antes del punto crítico
+                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
+
+                    // Agregar el punto crítico resaltado
+                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
+
+                    currentIndex = endIndex;
+                }
+            }
+
+            // Agregar el texto normal después del último punto crítico
+            builder.Append(text.Substring(currentIndex));
+
+            return new MarkupString(builder.ToString());
         }
 
         private static string Normalize(string input)
@@ -1426,33 +1457,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
         }
 
-        private static string ReplaceInsensitive(string text, string search)
-        {
-            if (string.IsNullOrEmpty(search))
-            {   
-                return text;
-            }
-
-            string normalizedText = Normalize(text);
-            string normalizedSearch = Normalize(search);
-            var result = Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
-            {
-                int startIndex = normalizedText.IndexOf(m.Value, m.Index, StringComparison.OrdinalIgnoreCase);
-                string originalMatch = text.Substring(startIndex, search.Length);
-                return $"<mark>{originalMatch}</mark>";
-            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            return result;
-        }
-
-        private string GetAnalisisText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
-        }
-
-        private string GetHighlightedText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
-        }
+       
 
         void CreateBakup()
         {
