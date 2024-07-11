@@ -43,6 +43,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int areaId = 0;
         int distributionId = 0;
         int departmentId = 0;
+        int stationId = 0;
 
 
         List<string> allCriticalPoints = new List<string>();
@@ -111,6 +112,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private readonly List<int> Cycles = Enumerable.Range(1, 3000).ToList();
         int cycleId = 0;
 
+        //Station
+        List<Station> _stations { get; set; } = new();
 
 
         //Show Evidence 
@@ -435,14 +438,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "Write down at least one analysis first";
             }
-            if (string.IsNullOrEmpty(_sosHub.Folio))
-            {
-                return "Write down the Folio Name first";
-            }
-            //if (string.IsNullOrEmpty(_sosHub.OperationName))
-            //{
-            //    return "Write down the Operation Name first";
-            //}
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {
                 return "Write down the Process Sheet plan first";
@@ -470,6 +465,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (departmentId == new int())
             {
                 return "First select a Department!";
+            }
+            if (stationId == new int())
+            {
+                return "First select a Station!";
             }
             if (plantId == new int())
             {
@@ -509,6 +508,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
             _sosHub.DepartmentId = departmentId;
+            _sosHub.StationId = stationId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
             _sosHub.DistributionId = distributionId;
@@ -556,7 +556,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _sosHub = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/hoe");
+                NavigationManager.NavigateTo("/SOSHOE/Hub");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
@@ -587,6 +587,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
+            _stations = await StationServices.GetStations();
+            _stations = _stations.OrderBy(s => s.Description).ToList();
 
             if (user.UserType == 3)
             {
@@ -628,7 +630,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
-
+            GenerateFolio();
             StateHasChanged();
         }
 
@@ -646,6 +648,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _supervisors.Clear();
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
+            GenerateFolio();
         }
     #endregion
 
@@ -1235,6 +1238,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return Task.FromResult(result);
         }
 
+       
+
 
         private async Task<IEnumerable<int>> SearchCycles(string searchString)
         {
@@ -1499,5 +1504,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
         #endregion
+
+        #region Station
+        private async Task<IEnumerable<int>> SearchStation(string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return _stations.Select(t => t.StationId);
+
+            return _stations.Where(x => x.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Select(t => t.StationId);
+        }
+        #endregion
+
+        private void GenerateFolio()
+        {
+            //_sosHub.DepartmentId = departmentId;
+            //_sosHub.StationId = stationId;
+            //_sosHub.PlantId = plantId;
+            //_sosHub.AreaId = areaId;
+
+            string? areaCode = _areas.Find(a => a.AreaId == areaId)?.Code;
+            string? stationCode = _stations.Find(s => s.StationId == stationId)?.Code;
+            string? sideCode = productSide;
+            string? modelCode = _products.Find(p => p.ProductId == productId)?.Code;
+
+            _sosHub.Folio = string.Concat(areaCode,"-", stationCode, "-", sideCode, "-", modelCode);
+            StateHasChanged();
+        }
+
     }
 }
