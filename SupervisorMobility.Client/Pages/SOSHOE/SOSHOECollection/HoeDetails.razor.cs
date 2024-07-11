@@ -39,9 +39,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         List<Plant> _plants { get; set; } = new();
         List<Area> _areas = new();
+        List<Distribution> _distributions = new();
         List<Department> _departments = new();
         int plantId = 0;
         int areaId = 0;
+        int distributionId = 0;
         int departmentId = 0;
 
 
@@ -263,16 +265,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _supervisors.Add(user);
             }
 
+            if (plantId != 0 && areaId != 0)
+            {
+                _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
+                _distributions = _distributions.OrderBy(d => d.Description).ToList();
+            }
 
+            distributionId = _sosHub.DistributionId ?? distributionId;
+            areaId = _sosHub.AreaId ?? areaId;
+            departmentId = _sosHub.DepartmentId ?? departmentId;
+            productId = _sosHub.AppliedModelId ?? productId;
+            supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
+            supervisorOwnerId = _sosHub.OwnerId ?? supervisorOwnerId;
 
-            areaId = (int)_sosHub.AreaId;
-            departmentId = (int)_sosHub.DepartmentId;
-            productId = (int)_sosHub.AppliedModelId;
+            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
 
-            supervisorEditorId = (int)_sosHub.EditorId;
-            supervisorOwnerId = (int)_sosHub.OwnerId;
-
-            cycleId = GetCycleId(_sosHub.TrainingTime);
             StateHasChanged();
 
         }
@@ -287,7 +294,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else
             {
-                throw new FormatException("El formato de TrainingTime no es válido.");
+                return 0;
             }
         }
 

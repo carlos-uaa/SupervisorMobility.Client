@@ -81,8 +81,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //Commentaries
         public class ItemModel
         {
+            public int ComentaryId { get; set; }
             public string Commentary { get; set; }
+            public bool IsActive { get; set; } = true;
+
         }
+
+        List<ItemModel> items = new List<ItemModel>();
+        List<ItemModel> tempItems = new List<ItemModel>();
+
 
         //Common direction
         private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed py-2 mt-4 mud-width-full mud-height-full z-10";
@@ -102,9 +109,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             public string ftype { get; set; }
             public string message { get; set; }
         }
-
-
-        List<ItemModel> items = new List<ItemModel>();
 
 
         //Users
@@ -433,10 +437,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #region Create SOSHUB
         private string ValidateSosHubForm()
         {
-            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
-            {
-                return "Write down at least one analysis first";
-            }
+            //if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
+            //{
+            //    return "Write down at least one analysis first";
+            //}
             if (string.IsNullOrEmpty(_sosHub.Folio))
             {
                 return "Write down the Folio Name first";
@@ -513,38 +517,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.DepartmentId = departmentId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
+            _sosHub.DistributionId = distributionId;
             _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
             _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
-            if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0)
-            {
-                foreach (var raw in RawAnalisis)
-                {
-                    AnalysisBkup analysisBkupToADD = new AnalysisBkup();
-                    analysisBkupToADD.Text = raw;
-                    analysisBkupToADD.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkupToADD);
-                }
-            }
+            //if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0)
+            //{
+            //    foreach (var raw in RawAnalisis)
+            //    {
+            //        AnalysisBkup analysisBkupToADD = new AnalysisBkup();
+            //        analysisBkupToADD.Text = raw;
+            //        analysisBkupToADD.IsActive = true;
+            //        _sosHub.AnalysesBkup.Add(analysisBkupToADD);
+            //    }
+            //}
 
-            if (!(items == null || !items.Any()))
-            {
-                foreach (var item in items)
-                {
-                    if (string.IsNullOrEmpty(item.Commentary))
-                    {
-                        Snackbar.Add($"Write down the commentary first!", Severity.Warning);
-                        return;
-                    }
-                    var processSheetCommentary = new Commentary
-                    {
-                        Comment = item.Commentary,
-                        IsActive = true
-                    };
-                    _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
-                }
-            }
+            GenerateSOSHUBCommentaries();
 
             var result = await SOSHubServices.UpdateSOSHub(_sosHub);
 
@@ -560,6 +549,35 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
+
+        }
+
+        public void GenerateSOSHUBCommentaries()
+        {
+            _sosHub.ProcessSheetCommentary?.Clear();
+            foreach (var item in items)
+            {
+                var processSheetCommentary = new Commentary
+                {
+                    ComentaryId = item.ComentaryId,
+                    Comment = item.Commentary,
+                    IsActive = item.IsActive
+                };
+
+                _sosHub.ProcessSheetCommentary?.Add(processSheetCommentary);
+            }
+
+            foreach (var item in tempItems)
+            {
+                var processSheetCommentary = new Commentary
+                {
+                    ComentaryId = 0,
+                    Comment = item.Commentary,
+                    IsActive = true
+                };
+
+                _sosHub.ProcessSheetCommentary?.Add(processSheetCommentary);
+            }
 
         }
 
@@ -587,6 +605,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
 
+
+            if (_sosHub.ProcessSheetCommentary != null && _sosHub.ProcessSheetCommentary.Count > 0)
+            {
+                foreach (var comment in _sosHub.ProcessSheetCommentary)
+                {
+                    if (comment.IsActive != null && comment.IsActive == true)
+                    {
+                        var item = new ItemModel
+                        {
+                            ComentaryId = comment.ComentaryId,
+                            Commentary = comment.Comment,
+                        };
+                        items.Add(item);
+                    }
+                }
+            }
 
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
@@ -633,10 +667,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _filteredEquipment = _filteredEquipment.Where(e => !_equipmentIds.Contains(e.EquipmentId)).ToList();
             _filteredMaterials = _filteredMaterials.Where(m => !_materialsIds.Contains(m.MaterialId)).ToList();
 
-            if (_sosHub.PlantId != null)
-            {
-                plantId = (int)_sosHub.PlantId;
-            }
+            plantId = _sosHub.PlantId ?? plantId;
 
             if (user.UserType == 1)
             {
@@ -666,16 +697,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _supervisors.Add(user);
             }
 
+            areaId = _sosHub.AreaId ?? areaId;
+
+            if (plantId != 0 && areaId != 0)
+            {
+                _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
+                _distributions = _distributions.OrderBy(d => d.Description).ToList();
+            }
+
+            distributionId = _sosHub.DistributionId ?? distributionId;
+            departmentId = _sosHub.DepartmentId ?? departmentId;
+            productId = _sosHub.AppliedModelId ?? productId;
+            supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
+            supervisorOwnerId = _sosHub.OwnerId ?? supervisorOwnerId;
 
 
-            areaId = (int)_sosHub.AreaId;
-            departmentId = (int)_sosHub.DepartmentId;
-            productId = (int)_sosHub.AppliedModelId;
-
-            supervisorEditorId = (int)_sosHub.EditorId;
-            supervisorOwnerId = (int)_sosHub.OwnerId;
-
-            cycleId = GetCycleId(_sosHub.TrainingTime);
+            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
             StateHasChanged();
 
         }
@@ -1237,16 +1274,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #region Commentaries
         void AddItem()
         {
-            items.Add(new ItemModel());
+            tempItems.Add(new ItemModel());
         }
 
-        void RemoveItem(ItemModel item)
+        void RemoveItem(ItemModel item, bool isTemp)
         {
-            if (items.Count > 1)
+            Console.WriteLine(item.Commentary);
+            if (isTemp)
             {
-                items.Remove(item);
+                Console.WriteLine("a");
             }
+            if (isTemp)
+            {
+                tempItems.Remove(item);
+            }
+            else
+            {
+                int index = items.IndexOf(item);
 
+                if (index != -1)
+                {
+                    items[index].IsActive = false;
+                }
+            }
         }
 
         #endregion

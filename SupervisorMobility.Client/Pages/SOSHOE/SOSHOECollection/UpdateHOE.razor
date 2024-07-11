@@ -267,7 +267,7 @@
                                         <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Revisión - Modificación</MudText>
                                         <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                                             <tbody>
-                                                @foreach (var item in items)
+                                                @foreach (var item in items.Where(i => i.IsActive))
                                                 {
                                                     <tr>
                                                         <td width="90%">
@@ -276,7 +276,21 @@
                                                         @if (items.IndexOf(item) > 0)
                                                         {
                                                             <td width="10%">
-                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item, false)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                                @foreach (var tempItem in tempItems)
+                                                {
+                                                    <tr>
+                                                        <td width="90%">
+                                                            <MudTextField @bind-Value="@tempItem.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                        </td>
+                                                        @if (tempItems.IndexOf(tempItem) > 0 || items.Count() > 0)
+                                                        {
+                                                            <td width="10%">
+                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(tempItem, true)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
                                                             </td>
                                                         }
                                                     </tr>
@@ -659,7 +673,7 @@
                                             @if (user.UserType == 1)
                                             {
 
-                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas" FullWidth>
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
                                                     @foreach (var type in _plants)
                                                     {
@@ -669,7 +683,7 @@
                                             }
                                             else
                                             {
-                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas">
+                                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" SelectedValuesChanged="ShowAreas" FullWidth>
                                                     @foreach (var type in _plants)
                                                     {
                                                         if (type.PlantId == user.PlantId)
@@ -684,7 +698,7 @@
                                             @if (plantId != 0 && user.UserType == 1)
                                             {
                                                 @*Mud select for Areas for Admin *@
-                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSupervisors">
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="areaId" SelectedValuesChanged="ShowSupervisors" FullWidth>
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                                                     @foreach (var type in _areas)
                                                     {
@@ -695,7 +709,7 @@
                                             else if (plantId != 0 && user.UserType == 2)
                                             {
                                                 @*Mud select for Areas for SSV *@
-                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors">
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors" FullWidth>
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                                                     @foreach (var type in user.Areas)
                                                     {
@@ -706,7 +720,7 @@
                                             else if (plantId != 0)
                                             {
                                                 @*Mud select for Areas for SV *@
-                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors">
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" SelectedValuesChanged="ShowSupervisors" FullWidth>
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                                                     @foreach (var type in _areas)
                                                     {
@@ -720,7 +734,7 @@
                                             else
                                             {
                                                 @*Mud select for Areas *@
-                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" >
+                                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" FullWidth>
                                                     <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
                                                 </MudSelect>
                                             }
