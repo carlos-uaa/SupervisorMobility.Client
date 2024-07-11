@@ -440,16 +440,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private void ApplyHighlights(int sectionIndex, int analisisIndex)
         {
-            var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            var text = analisis.Text;
-            var term = analisis.CriticalPoint;
-            if (string.IsNullOrEmpty(term))
-            {
-                return;
-            }
+            //var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
+            //var text = analisis.Text;
+            //var term = analisis.CriticalPoint;
+            //if (string.IsNullOrEmpty(term))
+            //{
+            //    return;
+            //}
 
-            var highlightedText = ReplaceInsensitive(text, term);
-            analisis.Text = highlightedText;
+            //var highlightedText = ReplaceInsensitive(text, term);
+            //analisis.Text = highlightedText;
         }
 
         private static string Normalize(string input)
@@ -485,10 +485,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
         }
 
-        private string GetHighlightedText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
-        }
+        //private string GetHighlightedText(int sectionIndex, int analisisIndex)
+        //{
+        //    //return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
+        //}
 
         void CreateBakup()
         {
