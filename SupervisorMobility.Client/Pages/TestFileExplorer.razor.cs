@@ -33,7 +33,7 @@ using Color = MudBlazor.Color;
 
 namespace SupervisorMobility.Client.Pages
 {
-    public partial class TestPedro
+    public partial class TestFileExplorer
     {
 
         bool ShowLoading = true;
@@ -239,7 +239,7 @@ namespace SupervisorMobility.Client.Pages
 
         private string GetIcon(TreeItemData item)
         {
-            if (item.TreeItems.Count == 0)
+            if (!item.Is_Directory)
             {
                 return Icons.Material.Filled.InsertDriveFile;
             }
@@ -249,7 +249,7 @@ namespace SupervisorMobility.Client.Pages
 
         private Color GetIconColor(TreeItemData item)
         {
-            if (item.TreeItems.Count == 0) 
+            if (!item.Is_Directory) 
             {
                 return Color.Info;
             }
