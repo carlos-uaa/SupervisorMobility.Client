@@ -43,10 +43,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Department> _departments = new();
+        List<Station> _stations { get; set; } = new();
         int plantId = 0;
         int areaId = 0;
         int distributionId = 0;
-        int departmentId = 0;
+        int departmentId = 0; 
+        int stationId = 0;
 
 
         List<string> allCriticalPoints = new List<string>();
@@ -602,6 +604,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
+            _stations = await StationServices.GetStations();
+            _stations = _stations.OrderBy(s => s.Description).ToList();
+
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
 
@@ -622,12 +627,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
             }
 
+
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
                 foreach (var backup in _sosHub.AnalysesBkup)
                 {
                     RawAnalisisBk.Add(backup.Text);
-                    RawAnalisis.Add(backup.Text);
                 }
             }
 
@@ -771,6 +776,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _supervisors.Clear();
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
+            GenerateFolio();
+            StateHasChanged();
         }
     #endregion
 
@@ -1564,5 +1571,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
         #endregion
+
+        private void GenerateFolio()
+        {
+            
+            string? areaCode = _areas.Find(a => a.AreaId == areaId)?.Code;
+            string? stationCode = _stations.Find(s => s.StationId == stationId)?.Code;
+            string? sideCode = productSide;
+            string? modelCode = _products.Find(p => p.ProductId == productId)?.Code;
+
+            _sosHub.Folio = string.Concat(areaCode, "-", stationCode, "-", sideCode, "-", modelCode);
+            StateHasChanged();
+        }
     }
 }

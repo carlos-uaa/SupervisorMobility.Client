@@ -516,7 +516,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
-            if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0)
+
+            if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0 && _sosHub.AnalysesBkup.Count == 0)
             {
                 foreach (var raw in RawAnalisis)
                 {
@@ -1358,7 +1359,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void CreateBakup()
         {
-            if (RawAnalisis.Count > 0)
+            if (RawAnalisis.Count > 0 && RawAnalisis.Count > RawAnalisisBk.Count)
             {
                 RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
                 foreach(var raw in RawAnalisisBk) { 
