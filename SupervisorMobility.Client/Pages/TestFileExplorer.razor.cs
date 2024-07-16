@@ -276,6 +276,10 @@ namespace SupervisorMobility.Client.Pages
 
         private void OnNodeClick(TreeItemData clickedNode)
         {
+            foreach (var key in hoverStates.Keys.ToList())
+            {
+                hoverStates[key] = false;
+            }
             searchString = "";
             if (clickedNode.Is_Directory)
             {
@@ -296,6 +300,10 @@ namespace SupervisorMobility.Client.Pages
 
         private void RecreateFileExplorer()
         {
+            foreach (var key in hoverStates.Keys.ToList())
+            {
+                hoverStates[key] = false;
+            }
             searchString = "";
             openTabs = openTabs.Take(activeTabIndex + 1).ToList();
         }
