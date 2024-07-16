@@ -296,10 +296,7 @@ namespace SupervisorMobility.Client.Pages
         {
             LoadingContents = true;
             fileHoverStates.Clear();
-            foreach (var key in hoverStates.Keys.ToList())
-            {
-                hoverStates[key] = false;
-            }
+            hoverStates.Clear();
             searchString = "";
             if (clickedNode.Is_Directory)
             {
