@@ -66,28 +66,65 @@
                                                  Icon="@(openTabs.IndexOf(tab) == 0 ? Icons.Material.Filled.FolderOpen : null)">
                                         
                                         <MudPaper Elevation="0">
-                                            @if (tab.TreeItems.Count > 0)
+                                            @if (LoadingContents)
                                             {
-                                                <MudTable Items="tab.TreeItems" Dense>
-                                                    <RowTemplate>
-                                                        <MudTd 
-                                                            @onclick="() => OnNodeClick(context)"
-                                                            @onmouseover="() => OnMouseOver(context)"
-                                                            @onmouseout="() => OnMouseOut(context)"
-                                                            Class="mud-td-hover">
-                                                            <MudButton 
-                                                                Variant="Variant.Text"
-                                                                StartIcon="@GetIcon(context)"
-                                                                IconColor="@GetIconColor(context)"
-                                                                @onclick="() => OnNodeClick(context)"
-                                                                @onmouseover="() => OnMouseOver(context)"
-                                                                @onmouseout="() => OnMouseOut(context)"
-                                                                >
-                                                                @context.Name
-                                                            </MudButton>
-                                                        </MudTd>
-                                                    </RowTemplate>
-                                                </MudTable>
+                                                <MudItem class="d-flex flex-column justify-center align-self-center">
+                                                    <MudProgressCircular Color="Color.Info" Style="height:70px;width:70px;" Indeterminate="true" />
+                                                </MudItem>
+                                            }
+                                            else
+                                            {
+                                                @if (tab.TreeItems.Count > 0)
+                                                {
+                                                    <MudTable Items="tab.TreeItems" Dense>
+                                                        <RowTemplate>
+                                                            <MudTd @onclick="() => OnNodeClick(context)"
+                                                                   @onmouseover="() => OnMouseOver(context)"
+                                                                   @onmouseout="() => OnMouseOut(context)"
+                                                                   Class="mud-td-hover">
+                                                                <MudButton Variant="Variant.Text"
+                                                                           StartIcon="@GetIcon(context)"
+                                                                           IconColor="@GetIconColor(true)"
+                                                                           @onclick="() => OnNodeClick(context)"
+                                                                           @onmouseover="() => OnMouseOver(context)"
+                                                                           @onmouseout="() => OnMouseOut(context)">
+                                                                    @context.Name
+                                                                </MudButton>
+                                                            </MudTd>
+                                                        </RowTemplate>
+                                                    </MudTable>
+                                                }
+                                                else
+                                                {
+                                                    //switch(currentDirectory)
+                                                    //{
+                                                        //case 0:
+                                                        //break;
+                                                        //case 1:
+                                                            <MudTable Items="@GosFilesInFolder!.operation" Dense>
+                                                                <RowTemplate>
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                    ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                    @onmouseover="() => OnFileMouseOver(context)"
+                                                                    @onmouseout="() => OnFileMouseOut(context)"
+                                                                    Class="mud-td-hover">
+                                                                        <MudButton Variant="Variant.Text"
+                                                                        StartIcon="@GetFileIcon(context)"
+                                                                        IconColor="@GetIconColor(false)"
+                                                                        @onclick="() => OnFileNodeClick(context)"
+                                                                        @onmouseover="() => OnFileMouseOver(context)"
+                                                                        @onmouseout="() => OnFileMouseOut(context)">
+                                                                            @context.Nombre
+                                                                        </MudButton>
+                                                                    </MudTd> 
+                                                                </RowTemplate>
+                                                            </MudTable>
+                                                        //break;
+                                                        //case 2:
+                                                        //break;
+                                                    //}
+                                                }
                                             }
                                         </MudPaper>
                                     </MudTabPanel>

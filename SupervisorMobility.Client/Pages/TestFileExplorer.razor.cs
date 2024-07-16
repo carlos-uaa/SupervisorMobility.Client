@@ -37,6 +37,7 @@ namespace SupervisorMobility.Client.Pages
     {
 
         bool ShowLoading = true;
+        bool LoadingContents = false;
         bool Find_all_tree = false;
         bool Find_Product = false;
         bool ShowMoreInfo = false;
@@ -104,6 +105,9 @@ namespace SupervisorMobility.Client.Pages
         private string defaultIcon = Icons.Material.Filled.Folder;
 
         private Dictionary<TreeItemData, bool> hoverStates = new Dictionary<TreeItemData, bool>();
+        private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();//file, hover status, selected status
+        private List<object> finalFilesSelection = new List<object>();
+        private List<object> removeFilesSelection = new List<object>();
 
         //Tabs
         private List<TreeItemData> openTabs = new List<TreeItemData>();
@@ -237,19 +241,33 @@ namespace SupervisorMobility.Client.Pages
             hoverStates[item] = false;
         }
 
+        private void OnFileMouseOver(object item)
+        {
+            var temp = fileHoverStates[item];
+            temp.Item1 = true;
+            fileHoverStates[item] = temp;
+        }
+
+        private void OnFileMouseOut(object item)
+        {
+            var temp = fileHoverStates[item];
+            temp.Item1 = false;
+            fileHoverStates[item] = temp;
+        }
+
         private string GetIcon(TreeItemData item)
         {
-            if (!item.Is_Directory)
-            {
-                return Icons.Material.Filled.InsertDriveFile;
-            }
-
             return hoverStates.ContainsKey(item) && hoverStates[item] ? Icons.Material.Filled.FolderOpen : Icons.Material.Filled.Folder;
         }
 
-        private Color GetIconColor(TreeItemData item)
+        private string GetFileIcon(object key)
         {
-            if (!item.Is_Directory) 
+            return fileHoverStates.ContainsKey(key) && fileHoverStates[key].Item1 ? Icons.Material.Filled.InsertDriveFile : Icons.Material.Outlined.InsertDriveFile;
+        }
+
+        private Color GetIconColor(bool Is_Directory)
+        {
+            if (!Is_Directory) 
             {
                 return Color.Info;
             }
@@ -257,8 +275,10 @@ namespace SupervisorMobility.Client.Pages
             return Color.Warning;
         }
 
-        private void OnNodeClick(TreeItemData clickedNode)
+        private async void OnNodeClick(TreeItemData clickedNode)
         {
+            LoadingContents = true;
+            fileHoverStates.Clear();
             if (clickedNode.Is_Directory)
             {
                 int clickedNodeIndex = openTabs.IndexOf(clickedNode);
@@ -273,12 +293,60 @@ namespace SupervisorMobility.Client.Pages
 
                 activeTabIndex = openTabs.IndexOf(clickedNode);
 
+                if (!clickedNode.TreeItems.Any())
+                {
+                    //switch(currentDirectory)
+                    //{
+                      //case 0:
+                      //break;
+                      //case 1:
+                        GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
+                        foreach(var file in GosFilesInFolder.operation)
+                        {
+                            fileHoverStates.Add(file, (false, false));
+                        }
+                      //break;
+                      //case 2:
+                      //break;
+                    //}
+                }
             }
+            LoadingContents = false;
+            StateHasChanged();
+        }
+
+        private async void OnFileNodeClick(object clickedFile)
+        {
+            fileHoverStates[clickedFile] = fileHoverStates[clickedFile].Item2?(true, false):(true,true);
+        }
+
+        private Task HandleCheck(bool value, object item)
+        {
+            var temp = fileHoverStates[item];
+            temp.Item2 = value;
+            fileHoverStates[item] = temp;
+            return Task.CompletedTask;
+        }
+
+        private async void AddFilesToList()
+        {
+            if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
+
+            finalFilesSelection ??= new List<object>();
+            finalFilesSelection.AddRange(fileHoverStates.Where(p=>p.Value.Item2).Select(key => key.Key).ToList());
+        }
+
+        private async void RemoveFilesFromList(List<object> Files)
+        {
+            if (!removeFilesSelection.Any() && !finalFilesSelection.Any()) return;
+
+            finalFilesSelection.RemoveAll(item => removeFilesSelection.Contains(item));
         }
 
         private void RecreateFileExplorer()
         {
             openTabs = openTabs.Take(activeTabIndex + 1).ToList();
+            fileHoverStates.Clear();
         }
 
         public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)
