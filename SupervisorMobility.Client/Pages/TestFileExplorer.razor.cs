@@ -117,8 +117,7 @@ namespace SupervisorMobility.Client.Pages
         private int activeTabIndex = 0;
 
         private string searchString = "";
-        public bool showGOS { get; set; }
-
+        private bool isFinalPath = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -227,6 +226,7 @@ namespace SupervisorMobility.Client.Pages
 
         public void ChangeFileExplorer(bool toggled)
         {
+            isFinalPath = false;
             IsGOS = toggled;
             fileHoverStates.Clear();
             hoverStates.Clear();
@@ -255,15 +255,23 @@ namespace SupervisorMobility.Client.Pages
             StateHasChanged();
         }
 
-        private bool FilterFunc(TreeItemData element)
+        private bool FilterGOSFunc(GOSDocument element)
         {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             return false;
         }
 
+        private bool FilterCCPFunc(CCPDocument element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
 
         private void OnMouseOver(TreeItemData item)
         {
@@ -311,6 +319,7 @@ namespace SupervisorMobility.Client.Pages
 
         private async void OnNodeClick(TreeItemData clickedNode)
         {
+            isFinalPath = false;
             LoadingContents = true;
             fileHoverStates.Clear();
             hoverStates.Clear();
@@ -331,6 +340,7 @@ namespace SupervisorMobility.Client.Pages
 
                 if (!clickedNode.TreeItems.Any())
                 {
+                    isFinalPath = true;
                     if(IsGOS)
                     {
                         GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
@@ -383,6 +393,7 @@ namespace SupervisorMobility.Client.Pages
 
         private void RecreateFileExplorer()
         {
+            isFinalPath = false;
             foreach (var key in hoverStates.Keys.ToList())
             {
                 hoverStates[key] = false;

@@ -57,7 +57,9 @@
                         <span>@(IsGOS ? "Show GOS File Explorer" : "Show CCP File Explorer")</span>
                         @if (rootNodeGOS.TreeItems.Count > 0 || rootNodeCCP.TreeItems.Count > 0)
                         {
-                            <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            @if(isFinalPath){
+                                <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            }
                             <MudTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10">
                                 @foreach (var tab in openTabs)
                                 {
@@ -75,7 +77,7 @@
                                             {
                                                 @if (tab.TreeItems.Count > 0)
                                                 {
-                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Filter="new Func<TreeItemData,bool>(FilterFunc)" Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
                                                         <RowTemplate>
                                                             <MudTd 
                                                                 @onclick="() => OnNodeClick(context)"
@@ -100,7 +102,7 @@
                                                 {
                                                     if(IsGOS)
                                                     {
-                                                            <MudTable Items="@GosFilesInFolder!.operation" Dense>
+                                                        <MudTable Items="@GosFilesInFolder!.operation" Filter="new Func<GOSDocument,bool>(FilterGOSFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
                                                                 <RowTemplate>
                                                                     <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
                                                                     ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
@@ -122,7 +124,7 @@
                                                         }
                                                         else
                                                         {
-                                                            <MudTable Items="@CcpFilesInFolder!.operation" Dense>
+                                                        <MudTable Items="@CcpFilesInFolder!.operation" Filter="new Func<CCPDocument,bool>(FilterCCPFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
                                                                 <RowTemplate>
                                                                     <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
                                                                                  ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
