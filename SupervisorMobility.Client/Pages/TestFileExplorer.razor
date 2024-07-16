@@ -19,11 +19,12 @@
 <style>
     .mud-td-hover {
         transition: transform 0.3s ease-in-out;
+        cursor:pointer;
     }
 
-        .mud-td-hover:hover {
-            transform: translateY(-2px); 
-        }
+    .mud-td-hover:hover {
+        transform: translateY(-2px); 
+    }
 </style>
 
 <MudGrid>
@@ -47,9 +48,14 @@
                 }
                 else
                 {
-                    @if (GOSFolders != null)
+                    @if (GOSFolders != null || CCPFolders != null)
                     {
-                        @if (rootNodeGOS.TreeItems.Count > 0)
+                        <MudToggleIconButton  Toggled="@IsGOS" ToggledChanged="ChangeFileExplorer"
+                                             Icon="@Icons.Material.Filled.FolderCopy" Color="@Color.Error" 
+                                             ToggledIcon="@Icons.Material.Filled.FolderSpecial" ToggledColor="@Color.Success" />
+
+                        <span>@(IsGOS ? "Show GOS File Explorer" : "Show CCP File Explorer")</span>
+                        @if (rootNodeGOS.TreeItems.Count > 0 || rootNodeCCP.TreeItems.Count > 0)
                         {
                             <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
                             <MudTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10">
@@ -69,7 +75,7 @@
                                             {
                                                 @if (tab.TreeItems.Count > 0)
                                                 {
-                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Filter="new Func<TreeItemData,bool>(FilterFunc)" Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: 2px;">
+                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Filter="new Func<TreeItemData,bool>(FilterFunc)" Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
                                                         <RowTemplate>
                                                             <MudTd 
                                                                 @onclick="() => OnNodeClick(context)"
@@ -92,11 +98,8 @@
                                                 }
                                                 else
                                                 {
-                                                    //switch(currentDirectory)
-                                                    //{
-                                                        //case 0:
-                                                        //break;
-                                                        //case 1:
+                                                    if(IsGOS)
+                                                    {
                                                             <MudTable Items="@GosFilesInFolder!.operation" Dense>
                                                                 <RowTemplate>
                                                                     <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
@@ -116,10 +119,29 @@
                                                                     </MudTd> 
                                                                 </RowTemplate>
                                                             </MudTable>
-                                                        //break;
-                                                        //case 2:
-                                                        //break;
-                                                    //}
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudTable Items="@CcpFilesInFolder!.operation" Dense>
+                                                                <RowTemplate>
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                           @onmouseover="() => OnFileMouseOver(context)"
+                                                                           @onmouseout="() => OnFileMouseOut(context)"
+                                                                           Class="mud-td-hover">
+                                                                        <MudButton Variant="Variant.Text"
+                                                                                   StartIcon="@GetFileIcon(context)"
+                                                                                   IconColor="@GetIconColor(false)"
+                                                                                   @onclick="() => OnFileNodeClick(context)"
+                                                                                   @onmouseover="() => OnFileMouseOver(context)"
+                                                                                   @onmouseout="() => OnFileMouseOut(context)">
+                                                                            @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                        </MudButton>
+                                                                    </MudTd>
+                                                                </RowTemplate>
+                                                            </MudTable>
+                                                        }
                                                 }
                                             }
                                         </MudPaper>

@@ -36,6 +36,9 @@ namespace SupervisorMobility.Client.Pages
     public partial class TestFileExplorer
     {
 
+        [Parameter]
+        public bool IsGOS { get; set; } = true;
+
         bool ShowLoading = true;
         bool LoadingContents = false;
         bool Find_all_tree = false;
@@ -105,7 +108,7 @@ namespace SupervisorMobility.Client.Pages
         private string defaultIcon = Icons.Material.Filled.Folder;
 
         private Dictionary<TreeItemData, bool> hoverStates = new Dictionary<TreeItemData, bool>();
-        private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();//file, hover status, selected status
+        private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();
         private List<object> finalFilesSelection = new List<object>();
         private List<object> removeFilesSelection = new List<object>();
 
@@ -114,6 +117,8 @@ namespace SupervisorMobility.Client.Pages
         private int activeTabIndex = 0;
 
         private string searchString = "";
+        public bool showGOS { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -136,6 +141,7 @@ namespace SupervisorMobility.Client.Pages
                 new BreadcrumbItem(text: Localizer["PathsRoute"], href: "/PathsRoute"),
                 new BreadcrumbItem(text: Localizer["PathsRouteCreate"], href: "/PathsRoute", disabled: true),
             };
+
 
             try
             {
@@ -170,8 +176,10 @@ namespace SupervisorMobility.Client.Pages
                 {
                     folderGOSError = false;
                     rootNodeGOS = TreeServices.Make_Tree_GOS(GOSFolders.operation);
-                    openTabs.Add(rootNodeGOS);
-
+                    if (IsGOS)
+                    {
+                        openTabs.Add(rootNodeGOS);
+                    }
                 }
                 else
                 {
@@ -193,32 +201,17 @@ namespace SupervisorMobility.Client.Pages
                 {
                     folderCCPError = false;
                     rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
+                    if (!IsGOS)
+                    {
+                        openTabs.Add(rootNodeCCP);
+                    }
                 }
                 else
                 {
                     folderCCPError = true;
                 }
 
-                try
-                {
-                    HOEFolders = await CDMSServices.GetFoldersHOE();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error Get HOE Folder From CDMS");
-                    Console.WriteLine(ex.Message);
-                }
-                if (HOEFolders != null)
-                {
-                    folderHOEError = false;
-                    rootNodeHOE = TreeServices.Make_Tree_HOE(HOEFolders.operation);
 
-
-                }
-                else
-                {
-                    folderHOEError = true;
-                }
 
             }
             catch (Exception ex)
@@ -230,6 +223,30 @@ namespace SupervisorMobility.Client.Pages
                 ShowLoading = false;
             }
 
+        }
+
+        public void ChangeFileExplorer(bool toggled)
+        {
+            IsGOS = toggled;
+            fileHoverStates.Clear();
+            hoverStates.Clear();
+            searchString = "";
+            openTabs.Clear();
+            foreach (var key in hoverStates.Keys.ToList())
+            {
+                hoverStates[key] = false;
+            }
+
+            if (IsGOS)
+            {
+                openTabs.Add(rootNodeGOS);
+            }
+            else
+            {
+                openTabs.Add(rootNodeCCP);
+            }
+
+            StateHasChanged();
         }
 
         private void OnSearchStringChanged(string value)
@@ -314,20 +331,22 @@ namespace SupervisorMobility.Client.Pages
 
                 if (!clickedNode.TreeItems.Any())
                 {
-                    //switch(currentDirectory)
-                    //{
-                      //case 0:
-                      //break;
-                      //case 1:
+                    if(IsGOS)
+                    {
                         GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
                         foreach(var file in GosFilesInFolder.operation)
                         {
                             fileHoverStates.Add(file, (false, false));
                         }
-                      //break;
-                      //case 2:
-                      //break;
-                    //}
+                    }
+                    else
+                    {
+                        CcpFilesInFolder = await CDMSServices.GetFilesCCP(clickedNode.Path);
+                        foreach (var file in CcpFilesInFolder.operation)
+                        {
+                            fileHoverStates.Add(file, (false, false));
+                        }
+                    }
                 }
             }
             LoadingContents = false;
