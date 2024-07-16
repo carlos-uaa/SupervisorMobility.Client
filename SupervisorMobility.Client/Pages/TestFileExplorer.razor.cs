@@ -109,6 +109,7 @@ namespace SupervisorMobility.Client.Pages
         private List<TreeItemData> openTabs = new List<TreeItemData>();
         private int activeTabIndex = 0;
 
+        private string searchString = "";
 
         protected async override Task OnInitializedAsync()
         {
@@ -227,6 +228,22 @@ namespace SupervisorMobility.Client.Pages
 
         }
 
+        private void OnSearchStringChanged(string value)
+        {
+            searchString = value;
+            StateHasChanged();
+        }
+
+        private bool FilterFunc(TreeItemData element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
+
         private void OnMouseOver(TreeItemData item)
         {
             hoverStates[item] = true;
@@ -259,6 +276,7 @@ namespace SupervisorMobility.Client.Pages
 
         private void OnNodeClick(TreeItemData clickedNode)
         {
+            searchString = "";
             if (clickedNode.Is_Directory)
             {
                 int clickedNodeIndex = openTabs.IndexOf(clickedNode);
@@ -278,6 +296,7 @@ namespace SupervisorMobility.Client.Pages
 
         private void RecreateFileExplorer()
         {
+            searchString = "";
             openTabs = openTabs.Take(activeTabIndex + 1).ToList();
         }
 
