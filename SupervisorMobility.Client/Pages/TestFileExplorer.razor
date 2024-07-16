@@ -29,14 +29,6 @@
 <MudGrid>
     <MudItem xs="12">
         <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Path</MudText>
-                </CardHeaderContent>
-                <CardHeaderActions>
-                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["New"]</MudChip>
-                </CardHeaderActions>
-            </MudCardHeader>
             <MudCardContent>
 
                 @if (ShowLoading)
@@ -59,10 +51,11 @@
                     {
                         @if (rootNodeGOS.TreeItems.Count > 0)
                         {
+                            <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
                             <MudTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10">
                                 @foreach (var tab in openTabs)
                                 {
-                                    <MudTabPanel Text="@((openTabs.IndexOf(tab) == 0) ? "" : tab.Name)" @onclick="() => RecreateFileExplorer()" 
+                                    <MudTabPanel Text="@((openTabs.IndexOf(tab) == 0) ? "" : Regex.Replace(tab.Name, @"§", string.Empty))" @onclick="() => RecreateFileExplorer()" 
                                                  Icon="@(openTabs.IndexOf(tab) == 0 ? Icons.Material.Filled.FolderOpen : null)">
                                         
                                         <MudPaper Elevation="0">
@@ -76,19 +69,22 @@
                                             {
                                                 @if (tab.TreeItems.Count > 0)
                                                 {
-                                                    <MudTable Items="tab.TreeItems" Dense>
+                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Filter="new Func<TreeItemData,bool>(FilterFunc)" Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: 2px;">
                                                         <RowTemplate>
-                                                            <MudTd @onclick="() => OnNodeClick(context)"
-                                                                   @onmouseover="() => OnMouseOver(context)"
-                                                                   @onmouseout="() => OnMouseOut(context)"
-                                                                   Class="mud-td-hover">
-                                                                <MudButton Variant="Variant.Text"
-                                                                           StartIcon="@GetIcon(context)"
-                                                                           IconColor="@GetIconColor(true)"
-                                                                           @onclick="() => OnNodeClick(context)"
-                                                                           @onmouseover="() => OnMouseOver(context)"
-                                                                           @onmouseout="() => OnMouseOut(context)">
-                                                                    @context.Name
+                                                            <MudTd 
+                                                                @onclick="() => OnNodeClick(context)"
+                                                                @onmouseover="() => OnMouseOver(context)"
+                                                                @onmouseout="() => OnMouseOut(context)"
+                                                                Class="mud-td-hover">
+                                                                <MudButton 
+                                                                    Variant="Variant.Text"
+                                                                    StartIcon="@GetIcon(context)"
+                                                                    IconColor="@GetIconColor(context)"
+                                                                    @onclick="() => OnNodeClick(context)"
+                                                                    @onmouseover="() => OnMouseOver(context)"
+                                                                    @onmouseout="() => OnMouseOut(context)"
+                                                                    >
+                                                                    @Regex.Replace(context.Name, @"§", string.Empty)
                                                                 </MudButton>
                                                             </MudTd>
                                                         </RowTemplate>
@@ -115,7 +111,7 @@
                                                                         @onclick="() => OnFileNodeClick(context)"
                                                                         @onmouseover="() => OnFileMouseOver(context)"
                                                                         @onmouseout="() => OnFileMouseOut(context)">
-                                                                            @context.Nombre
+                                                                            @Regex.Replace(context.Nombre, @"§", string.Empty)
                                                                         </MudButton>
                                                                     </MudTd> 
                                                                 </RowTemplate>
