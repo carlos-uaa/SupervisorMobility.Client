@@ -376,12 +376,16 @@ namespace SupervisorMobility.Client.Pages
             return Task.CompletedTask;
         }
 
-        private async void AddFilesToList()
+        private async void AddToFinalSelection()
         {
             if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
+            var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.GetType().GetProperty("ID_DOC").GetValue(p)).ToList() : new List<int>();
 
             finalFilesSelection ??= new List<object>();
-            finalFilesSelection.AddRange(fileHoverStates.Where(p=>p.Value.Item2).Select(key => key.Key).ToList());
+            finalFilesSelection.AddRange(fileHoverStates.
+                Where(p=>p.Value.Item2 && !finalSel_ids.Contains((int)p.Key.GetType().GetProperty("ID_DOC").GetValue(p.Key)))
+                .Select(key => key.Key).ToList());
+            Console.WriteLine("Cool");
         }
 
         private async void RemoveFilesFromList(List<object> Files)
