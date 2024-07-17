@@ -153,6 +153,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private string newToolName;
 
         private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        private DialogOptions dialogFileExplorerOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        private bool IsGOS = false;
 
         private bool visibleResources = false;
 
@@ -1256,6 +1258,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #endregion
 
+
+        //File Explorer GOS / CCP
+        #region FileExplorer
+        bool showFileExplorer = false;
+
+        public void ShowFileExplorerDialog(bool isGos)
+        {
+            IsGOS = isGos;
+            showFileExplorer = true;
+        }
+
+        private void CloseFileExplorerDialog()
+        {
+            showFileExplorer = false;
+        }
+        #endregion
+
         //Analysis Steps Critical Points
         #region Analysis
         [Inject]
@@ -1268,6 +1287,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         public string stepName { get; set; } = "";
         bool showAddStepDialog = false;
+
        
 
         private void ApplyHighlights(int sectionIndex, int analisisIndex)
