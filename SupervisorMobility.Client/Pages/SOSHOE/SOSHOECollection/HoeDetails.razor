@@ -88,26 +88,26 @@
                                 <td>
                                     @if (analysisTabsIndex == 0)
                                     {
-                                        <MudContainer Style="display: flex; flex-direction: column; width: 80%">
+                                        <MudContainer Style="display: flex; flex-direction: column;">
 
-                                            @if (RawAnalisis.Count == 0)
+                                            @if (RawAnalisis.Count != RawAnalisisBk.Count && _sosHub.Sections.Count > 0)
                                             {
-                                                <MudItem>
+<MudItem>
 
-                                                    <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
-                                                        <tbody>
-                                                            @foreach (var (analisis, indexAnalisis) in RawAnalisisBk.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                            {
-                                                                <tr>
-                                                                    <td width="90%">
-                                                                        <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis]</MudText>
-                                                                    </td>
+                                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                            <tbody>
+                                                                @foreach (var (analisis, indexAnalisis) in RawAnalisisBk.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                {
+                                                                    <tr>
+                                                                        <td width="90%">
+                                                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis]</MudText>
+                                                                        </td>
 
-                                                                </tr>
-                                                            }
-                                                        </tbody>
-                                                    </MudSimpleTable>
-                                                </MudItem>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </MudSimpleTable>
+                                                    </MudItem>
                                             }
                                             else
                                             {
@@ -153,13 +153,43 @@
                                                                 <MudTd Style="width:60%; background-color: white">
                                                                     @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                                     {
-                                                                        <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text</MudText>
+                                                                        @if (analisis.CriticalPoints.Any())
+                                                                        {
+
+                                                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">
+                                                                                @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexAnalisis), analisis.CriticalPoints))
+                                                                            </MudText>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
+                                                                            </MudText>
+                                                                        }
                                                                     }
                                                                 </MudTd>
                                                                 <MudTd Style="width:30%">
-                                                                    <MudTextField @bind-Value="_sosHub.Sections[indexSection].Step" Label="Paso" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" ReadOnly/>
+                                                                    <MudTextField @bind-Value="_sosHub.Sections[indexSection].Step" Label="Paso" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" ReadOnly />
                                                                 </MudTd>
-                                                                <MudTh></MudTh>
+                                                                <MudTh>
+                                                                    @if (!string.IsNullOrEmpty(section.Step))
+                                                                    {
+                                                                        @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                        {
+                                                                            <MudItem>
+                                                                                @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                                                                {
+                                                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                        @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                                                    </MudText>
+                                                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                        @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]
+                                                                                    </MudText>
+                                                                                }
+                                                                            </MudItem>
+                                                                        }
+                                                                    }
+                                                                </MudTh>
                                                             </MudTr>
                                                         }
                                                     </MudSimpleTable>
@@ -177,24 +207,26 @@
                                                 <MudTh>Punto Crítico</MudTh>
                                             </MudTr>
 
+
                                             @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
                                             {
                                                 <MudTr>
                                                     <MudTd Style="width:50%; background-color: white;">
                                                         @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                         {
-                                                           @*  @if (!string.IsNullOrEmpty(_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoint))
+                                                            @if (analisis.CriticalPoints.Any())
                                                             {
-                                                                <MudText Typo="Typo.subtitle1">
-                                                                    <MudHighlighter Text="@(GetAnalisisText(indexSection, indexAnalisis))" HighlightedText="@(GetHighlightedText(indexSection, indexAnalisis))" />
+
+                                                                <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">
+                                                                    @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexAnalisis), analisis.CriticalPoints))
                                                                 </MudText>
                                                             }
                                                             else
-                                                            { *@
+                                                            {
                                                                 <MudText Typo="Typo.subtitle1" Class="mb-2">
                                                                     @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
                                                                 </MudText>
-                                                            @* } *@
+                                                            }
                                                         }
                                                     </MudTd>
                                                     <MudTd Style="width:20%">
@@ -210,16 +242,15 @@
                                                                 <MudItem>
                                                                     @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
                                                                     {
-                                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
-                                                                                @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
-                                                                            </MudText>
-                                                                            <MudText Typo="Typo.subtitle1" Class="mb-2">
-                                                                                @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]
-                                                                            </MudText>
+                                                                        <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                            @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                                        </MudText>
+                                                                        <MudTextField @bind-Value="_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]" Label="Razón" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" ReadOnly/>
+
                                                                     }
                                                                 </MudItem>
                                                             }
-                                                     }
+                                                        }
                                                     </MudTd>
 
                                                 </MudTr>

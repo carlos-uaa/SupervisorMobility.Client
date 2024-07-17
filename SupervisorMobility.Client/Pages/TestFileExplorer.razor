@@ -1,0 +1,286 @@
+﻿@page "/FileExplorer"
+@using SupervisorMobility.Client.Data.Entities.TreeStruct;
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@using System.Text.RegularExpressions;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IJobStructureService JobStructureCategoriesService
+@inject IAssyChartService AssyChartServices
+@inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
+@inject IProductService ProductsServices
+@inject IPlantService PlantsServices
+@inject IAreaService AreasServices
+@inject IDistributionService DistributionsServices
+@inject ITreeService TreeServices
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+
+<style>
+    .mud-td-hover {
+        transition: transform 0.3s ease-in-out;
+        cursor:pointer;
+    }
+
+    .mud-td-hover:hover {
+        transform: translateY(-2px); 
+    }
+</style>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardContent>
+
+                @if (ShowLoading)
+                {
+                    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                        <ItemTemplate>
+                            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                <MudItem class="d-flex flex-column justify-center align-self-center">
+                                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                </MudItem>
+                                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                            </div>
+                        </ItemTemplate>
+                    </MudCarousel>
+                }
+                else
+                {
+                    @if (GOSFolders != null || CCPFolders != null)
+                    {
+                        <MudToggleIconButton  Toggled="@IsGOS" ToggledChanged="ChangeFileExplorer"
+                                             Icon="@Icons.Material.Filled.FolderCopy" Color="@Color.Error" 
+                                             ToggledIcon="@Icons.Material.Filled.FolderSpecial" ToggledColor="@Color.Success" />
+
+                        <span>@(IsGOS ? "Show GOS File Explorer" : "Show CCP File Explorer")</span>
+                        @if (rootNodeGOS.TreeItems.Count > 0 || rootNodeCCP.TreeItems.Count > 0)
+                        {
+                            @if(isFinalPath){
+                                <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            }
+                            <MudTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10">
+                                @foreach (var tab in openTabs)
+                                {
+                                    <MudTabPanel Text="@((openTabs.IndexOf(tab) == 0) ? "" : Regex.Replace(tab.Name, @"§", string.Empty))" @onclick="() => RecreateFileExplorer()" 
+                                                 Icon="@(openTabs.IndexOf(tab) == 0 ? Icons.Material.Filled.FolderOpen : null)">
+                                        
+                                        <MudPaper Elevation="0">
+                                            @if (LoadingContents)
+                                            {
+                                                <MudItem class="d-flex flex-column justify-center align-self-center">
+                                                    <MudProgressCircular Color="Color.Info" Style="height:70px;width:70px;" Indeterminate="true" />
+                                                </MudItem>
+                                            }
+                                            else
+                                            {
+                                                @if (tab.TreeItems.Count > 0)
+                                                {
+                                                    <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                        <RowTemplate>
+                                                            <MudTd 
+                                                                @onclick="() => OnNodeClick(context)"
+                                                                @onmouseover="() => OnMouseOver(context)"
+                                                                @onmouseout="() => OnMouseOut(context)"
+                                                                Class="mud-td-hover">
+                                                                <MudButton 
+                                                                    Variant="Variant.Text"
+                                                                    StartIcon="@GetIcon(context)"
+                                                                    IconColor="@GetIconColor(true)"
+                                                                    @onclick="() => OnNodeClick(context)"
+                                                                    @onmouseover="() => OnMouseOver(context)"
+                                                                    @onmouseout="() => OnMouseOut(context)"
+                                                                    >
+                                                                    @Regex.Replace(context.Name, @"§", string.Empty)
+                                                                </MudButton>
+                                                            </MudTd>
+                                                        </RowTemplate>
+                                                    </MudTable>
+                                                }
+                                                else
+                                                {
+                                                    if(IsGOS)
+                                                    {
+                                                        <MudTable Items="@GosFilesInFolder!.operation" Filter="new Func<GOSDocument,bool>(FilterGOSFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                                <RowTemplate>
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                    ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                    @onmouseover="() => OnFileMouseOver(context)"
+                                                                    @onmouseout="() => OnFileMouseOut(context)"
+                                                                    Class="mud-td-hover">
+                                                                        <MudButton Variant="Variant.Text"
+                                                                        StartIcon="@GetFileIcon(context)"
+                                                                        IconColor="@GetIconColor(false)"
+                                                                        @onclick="() => OnFileNodeClick(context)"
+                                                                        @onmouseover="() => OnFileMouseOver(context)"
+                                                                        @onmouseout="() => OnFileMouseOut(context)">
+                                                                            @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                        </MudButton>
+                                                                    </MudTd> 
+                                                                </RowTemplate>
+                                                            </MudTable>
+                                                        }
+                                                        else
+                                                        {
+                                                        <MudTable Items="@CcpFilesInFolder!.operation" Filter="new Func<CCPDocument,bool>(FilterCCPFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                                <RowTemplate>
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                           @onmouseover="() => OnFileMouseOver(context)"
+                                                                           @onmouseout="() => OnFileMouseOut(context)"
+                                                                           Class="mud-td-hover">
+                                                                        <MudButton Variant="Variant.Text"
+                                                                                   StartIcon="@GetFileIcon(context)"
+                                                                                   IconColor="@GetIconColor(false)"
+                                                                                   @onclick="() => OnFileNodeClick(context)"
+                                                                                   @onmouseover="() => OnFileMouseOver(context)"
+                                                                                   @onmouseout="() => OnFileMouseOut(context)">
+                                                                            @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                        </MudButton>
+                                                                    </MudTd>
+                                                                </RowTemplate>
+                                                            </MudTable>
+                                                        }
+                                                }
+                                            }
+                                        </MudPaper>
+                                    </MudTabPanel>
+                                }
+                            </MudTabs>
+                        }
+                    }
+
+                    <MudItem Style="max-height: 70vh; min-width: 70vw; overflow-y: scroll;" Class="gap-4">
+
+
+                        <MudCard Elevation="0" Outlined="true">
+                            <MudCardContent Style="min-width: 70vw; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+
+                                <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px; flex: 0 0 calc(32% - 1rem);">
+                                    <MudCardHeader>
+                                        <CardHeaderActions>
+                                            <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning"> GOS</MudChip>
+                                            <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Warning" OnClick="@(() => DeleteGOSRoute())" />
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        @if (GOSFolders != null)
+                                        {
+                                            @if (rootNodeGOS.TreeItems.Count > 0)
+                                            {
+                                                <MudPaper Elevation="0">
+                                                    <MudTextField Label="@Localizer1["ACLabelGOSSelect"]" ReadOnly="true"
+                                                                  @bind-Value="@SosCode.GOS" For="@(() => @SosCode.GOS)" />
+                                                    <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeGOS" Context="GosContext" Items="rootNodeGOS.TreeItems">
+                                                        <ItemTemplate>
+                                                            <MudTreeViewItem Value="@GosContext" @onclick="@(() => { @SosCode.GOS = GosContext.Path; })" LoadingIconColor="Color.Info" CanExpand="@GosContext.Is_Directory" Text="@GosContext.Name" EndTextTypo="@Typo.caption" />
+                                                        </ItemTemplate>
+                                                    </MudTreeView>
+                                                </MudPaper>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACGOSDirectory"]</MudAlert>
+                                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (folderGOSError)
+                                            {
+                                                <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                            }
+                                        }
+
+                                    </MudCardContent>
+                                </MudCard>
+                                <MudCard Elevation="1" Class="mr-5" Style="min-width: 400px; flex: 0 0 calc(32% - 1rem);">
+                                    <MudCardHeader>
+                                        <CardHeaderActions>
+                                            <MudChip Icon="@Icons.Material.Filled.Folder" Color="Color.Warning">CCP</MudChip>
+                                            <MudIconButton Icon="@Icons.Material.Filled.FormatClear" Color="Color.Error" OnClick="@(() => DeleteCCPRoute())" />
+
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+
+                                        @if (CCPFolders != null)
+                                        {
+                                            @if (rootNodeCCP.TreeItems.Count > 0)
+                                            {
+                                                <MudPaper Elevation="0">
+                                                    <MudTextField Label="@Localizer1["ACLabelCCPSelect"]" ReadOnly="true"
+                                                                  @bind-Value="@SosCode.CCP" For="@(() => @SosCode.CCP)" />
+                                                    <MudTreeView ServerData="LoadServerData" Color="Color.Primary" @bind-SelectedValue="@SelectedNodeCCP" Context="CCPContext" Items="rootNodeCCP.TreeItems">
+                                                        <ItemTemplate>
+                                                            <MudTreeViewItem Value="@CCPContext" @onclick="@(() => { @SosCode.CCP = CCPContext.Path; })" LoadingIconColor="Color.Info" CanExpand="@CCPContext.Is_Directory" Text="@CCPContext.Name" EndTextTypo="@Typo.caption" />
+                                                        </ItemTemplate>
+                                                    </MudTreeView>
+                                                </MudPaper>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Style="text-align: center">@Localizer1["ACCCPDirectory"]</MudAlert>
+                                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (folderCCPError)
+                                            {
+                                                <MudAlert Severity="Severity.Warning" Style="text-align: center"> @Localizer["ServerNotResponse"] </MudAlert>
+                                            }
+                                        }
+                                    </MudCardContent>
+                                </MudCard>
+
+
+                            </MudCardContent>
+                        </MudCard>
+
+
+
+
+                    </MudItem>
+                }
+
+                @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_product.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+
+<MudMessageBox @ref="GOSmbox" Title="@Localizer["ACNoticeGOS"]">
+    <MessageContent>
+        @Localizer["ACProviderPath"] `@SosCode.GOS`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+<MudMessageBox @ref="CCPmbox" Title="@Localizer["ACNoticeCCP"]">
+    <MessageContent>
+        @Localizer["ACProviderPath"] `@SosCode.CCP`  @Localizer["ACFinalProvider"] <br>
+        <b><i>@Localizer["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="HOEmbox" Title="@Localizer1["ACNoticeHOE"]">
+    <MessageContent>
+        @Localizer1["ACProviderPath"] `@SosCode.HOE.Replace('§', ' ')`   @Localizer1["ACFinalProvider"] <br>
+        <b><i>@Localizer1["ACPleaseProvider"]</i></b>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CheckCircleOutline">Ok!</MudButton>
+    </YesButton>
+</MudMessageBox>
