@@ -1888,6 +1888,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Panel where all general information is centralized, allowing the collection, visualization and efficient management of Sos Collection..
+        /// </summary>
+        public static string HOESOSHubDescription {
+            get {
+                return ResourceManager.GetString("HOESOSHubDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a SOS Collection.
+        /// </summary>
+        public static string HOESOSHubTitle {
+            get {
+                return ResourceManager.GetString("HOESOSHubTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SOS / HOE Sequence.
         /// </summary>
         public static string HOESOSSequence {

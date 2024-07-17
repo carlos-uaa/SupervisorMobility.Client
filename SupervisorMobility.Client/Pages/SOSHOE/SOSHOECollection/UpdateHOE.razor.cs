@@ -166,10 +166,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int analysisTabsIndex = 0;
 
         #endregion
+        //Loading
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+        public bool ShowLoading = true;
 
         protected async override Task OnInitializedAsync()
         {
-           
+
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
 
             _links = new List<BreadcrumbItem>
             {
@@ -190,7 +206,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
 
-            SetUserInfo();
+            await SetUserInfo();
+
+            ShowLoading = false;
 
             StateHasChanged();
         }
@@ -547,7 +565,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _sosHub = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/hoe");
+                NavigationManager.NavigateTo("/SOSHOE/Hub");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
@@ -583,7 +601,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
-        public async void SetUserInfo()
+        public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
             _tools = await ToolsServices.GetTools();
@@ -715,11 +733,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             productId = _sosHub.AppliedModelId ?? productId;
             supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
             supervisorOwnerId = _sosHub.OwnerId ?? supervisorOwnerId;
+            stationId = _sosHub.StationId ?? stationId;
 
+            productSide = _sosHub.Folio.Split('-')[2] ?? productSide; 
 
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
             StateHasChanged();
 
+            return new AsyncVoidMethodBuilder();
         }
 
         public static int GetCycleId(string trainingTime)
@@ -737,6 +758,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
         private async void ShowSupervisors()
         {
+            GenerateFolio();
+
             supervisorOwnerId = 0;
             supervisorEditorId = 0;
             distributionId = 0;
@@ -763,7 +786,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
         #endregion
+        #region Station
+        private async Task<IEnumerable<int>> SearchStation(string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return _stations.Select(t => t.StationId);
 
+            return _stations.Where(x => x.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Select(t => t.StationId);
+        }
+        #endregion
         //Show areas
         #region Areas
         private async void ShowAreas()
@@ -776,7 +807,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _supervisors.Clear();
             _areas = await AreaServices.GetAreas(plantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
-            GenerateFolio();
             StateHasChanged();
         }
     #endregion
@@ -805,51 +835,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         //Analize text and steps
         #region Steps
-        public void AnalyzeText()
-        {
-            //segments.Clear();
-            //allCriticalPoints.Clear();
-            //BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
-
-            //var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-
-            //foreach (var segmentText in segmentTexts)
-            //{
-            //    var segment = new Segment
-            //    {
-            //        Analysis = segmentText
-            //    };
-
-            //    var mainPointRegex = new Regex(@"#(.*?)#");
-            //    var mainPointMatch = mainPointRegex.Match(segmentText);
-
-            //    if (mainPointMatch.Success)
-            //    {
-            //        segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-            //    }
-            //    else
-            //    {
-            //        segment.MainPoint = string.Empty;
-            //    }
-
-            //    var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-            //    var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-            //    foreach (Match match in criticalPointMatches)
-            //    {
-            //        if (match.Success)
-            //        {
-            //            segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-            //        }
-            //    }
-
-            //    segments.Add(segment);
-            //}
-
-            //allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-            //StateHasChanged();
-        }
-
+       
         public void ShowStepsDialog()
         {
             visibleStepsDialog = true;
