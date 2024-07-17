@@ -12,7 +12,7 @@
 @inject IDistributionService DistributionServices
 @inject IDepartmentService DepartmentServices
 @inject IUserService UsersService
-@inject IProductService ProductsService
+@inject IProductService ProductsServices
 @inject IDataPanelService DataPanelServices
 @inject IAppearanceService AppearanceServices
 @inject ILogbookAppearanceService LogbookAppearanceServices
@@ -20,7 +20,6 @@
 @inject IPartServices PartsServices
 @inject IFileUploadAndDownloadService FilesServices
 @inject ITestService TestService
-@inject IProductService ProductsServices
 @inject ISOSHubService SOSHubServices
 @inject IToolService ToolsServices
 @inject IEquipmentService EquipmentsServices
@@ -422,7 +421,7 @@
                                         <MudText>Applied Models</MudText>
                                     </td>
                                     <td class="d-flex">
-                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" OpenIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
+                                        <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" OpenIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" SelectedValuesChanged="GenerateFolio">
                                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
                                             @foreach (var type in _products)
                                             {
@@ -447,17 +446,7 @@
                                         }
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <MudText>Steps</MudText>
-                                    </td>
-                                    <td>
-                                        <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
-                                            Edit Steps
-                                            <span>&nbsp;(@segments.Count)</span>
-                                        </MudButton>
-                                    </td>
-                                </tr>
+                              
                                 <tr>
                                     <td>
                                         <MudText>Images</MudText>
@@ -689,7 +678,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <MudText>Area / Plant</MudText>
+                                        <MudText>Plant / Area / Distribution</MudText>
                                     </td>
                                     <td class="d-flex">
                                         <MudItem Class="mr-4">
@@ -763,15 +752,8 @@
                                                 </MudSelect>
                                             }
                                         </MudItem>
-
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <MudText>Distribution / Department</MudText>
-                                    </td>
-                                    <td class="d-flex">
-                                        @if (areaId != 0)
+                                        <MudItem>
+                                             @if (areaId != 0)
                                         {
                                             <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@distributionId">
                                                 <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
@@ -791,6 +773,38 @@
                                                 <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
                                             </MudSelect>
                                         }
+                                        </MudItem>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <MudText> Station / Department</MudText>
+                                    </td>
+                                    <td class="d-flex">
+                                        <MudItem>
+                                                @* <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Station"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="stationId"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _stations.FirstOrDefault(x => x.StationId == s)?.Code)"
+                                                                 SearchFunc="SearchStation" @onchange="GenerateFolio">
+                                                </MudAutocomplete> *@
+                                            <MudSelect T="int" Label=@Localizer["station"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="stationId" SelectedValuesChanged="GenerateFolio" FullWidth>
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnStation"]</MudSelectItem>
+                                                @foreach (var type in _stations)
+                                                {
+                                                    <MudSelectItem Value="type.StationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+
+
                                         <MudItem Class="ml-4">
                                             <MudSelect T="int" Label=@Localizer["department"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
                                                 <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
@@ -802,29 +816,7 @@
                                         </MudItem>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <MudText>Station</MudText>
-                                    </td>
-                                    <td>
-                                       
-                                                <MudAutocomplete T="int"
-                                                                 Label=@Localizer["Station"]
-                                                                 Variant="Variant.Text"
-                                                                 AnchorOrigin="Origin.BottomCenter"
-                                                                 @bind-Value="stationId"
-                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
-                                                                 AdornmentColor="Color.Secondary"
-                                                                 Clearable
-                                                                 ResetValueOnEmptyText
-                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                                                 ToStringFunc="@(s => _stations.FirstOrDefault(x => x.StationId == s)?.Code)"
-                                                                 SearchFunc="SearchStation" SelectedValuesChanged="GenerateFolio">
-
-                                                </MudAutocomplete>
-                                         
-                                    </td>
-                                </tr>                                <tr>
+                                                            <tr>
                                     <td>
                                         <MudText>Owner</MudText>
                                     </td>
