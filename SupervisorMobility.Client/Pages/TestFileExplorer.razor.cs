@@ -10,6 +10,16 @@ namespace SupervisorMobility.Client.Pages
         [Parameter]
         public bool IsGOS { get; set; } = true;
 
+        [Parameter]
+        public EventCallback<List<(object, string)>> OnFilesSelected { get; set; }
+
+        [Parameter]
+        public List<(object, string)> InitialFilesSelection { get; set; } = new List<(object, string)>();
+
+        [Parameter]
+        public Dictionary<object, (bool, bool)> FileHoverStates { get; set; } = new Dictionary<object, (bool, bool)>();
+
+
         bool ShowLoading = true;
         bool LoadingContents = false;
         bool Find_all_tree = false;
@@ -74,6 +84,14 @@ namespace SupervisorMobility.Client.Pages
                 new BreadcrumbItem(text: Localizer["File Explorer"], href: "/PathsRoute", disabled: true),
             };
 
+            if (InitialFilesSelection != null)
+            {
+                finalFilesSelection = InitialFilesSelection;
+                foreach (var file in finalFilesSelection)
+                {
+                    fileHoverStates[file.Item1] = (false, true);
+                }
+            }
 
             try
             {
@@ -330,15 +348,8 @@ namespace SupervisorMobility.Client.Pages
                     }
                 }
             }
+            OnFilesSelected.InvokeAsync(finalFilesSelection);
 
-            //if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
-            //var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.Item1.GetType().GetProperty("ID_DOC").GetValue(p.Item1)).ToList() : new List<int>();
-
-            //finalFilesSelection ??= new List<(object,string)>();
-            //finalFilesSelection.AddRange(fileHoverStates.
-            //    Where(p=>p.Value.Item2 && !finalSel_ids.Contains((int)p.Key.GetType().GetProperty("ID_DOC").GetValue(p.Key)))
-            //    .Select(key => (key.Key, finalPath)).ToList());
-            //Console.WriteLine("aaa");
         }
 
         private async void RemoveFilesFromList(List<object> Files)

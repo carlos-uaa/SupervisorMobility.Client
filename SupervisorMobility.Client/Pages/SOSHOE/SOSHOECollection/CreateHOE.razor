@@ -331,7 +331,30 @@
                                     <td>
                                         <MudButton @onclick="() => ShowFileExplorerDialog(true)" Color="Color.Primary" IconColor="Color.Warning" StartIcon="@Icons.Material.Filled.Folder" >GOS File Explorer</MudButton>
                                         <MudButton @onclick="() => ShowFileExplorerDialog(false)" Color="Color.Primary" IconColor="Color.Warning" StartIcon="@Icons.Material.Filled.FolderCopy">CCP File Explorer</MudButton>
+                                        @if (finalFilesSelection.Any())
+                                        {
+                                        <MudCard>
+                                            <MudPaper Elevation="0">
+                                                @foreach (var item in finalFilesSelection)
+                                                {
+                                                    var path = @Regex.Replace(item.Item2, @"§", string.Empty);
+                                                    <MudTooltip Text="@path">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="()=>ManipulateFinalList(item.Item1, false, true)" ></MudIconButton>
+                                                        <MudButton Variant="Variant.Text"
+                                                                   StartIcon="@Icons.Material.Filled.InsertDriveFile"
+                                                                   IconColor="@Color.Info"
+                                                                   >
+                                                            @Regex.Replace((string)item.Item1.GetType().GetProperty("Nombre").GetValue(item.Item1), @"§", string.Empty)
+                                                        </MudButton>
+                                                    </MudTooltip>
+
+                                                    <br />
+                                                }
+                                            </MudPaper>
+                                        </MudCard>
+                                        }
                                     </td>
+
                                 </tr>
                                 <tr>
                                     <td>
@@ -1143,7 +1166,7 @@
 <MudDialog DisableSidePadding="false" @bind-IsVisible="showFileExplorer" Options="dialogFileExplorerOptions">
     <DialogContent>
         <MudItem Style="height: 70vh">
-            <SupervisorMobility.Client.Pages.TestFileExplorer IsGOS="@IsGOS"></SupervisorMobility.Client.Pages.TestFileExplorer>
+            <TestFileExplorer IsGOS="@IsGOS" OnFilesSelected="HandleFinalFilesSelectionChanged" InitialFilesSelection="finalFilesSelection"></TestFileExplorer>
         </MudItem>
     </DialogContent>
     <DialogActions>

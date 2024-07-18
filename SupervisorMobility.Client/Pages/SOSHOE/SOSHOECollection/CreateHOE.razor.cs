@@ -155,6 +155,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
         private DialogOptions dialogFileExplorerOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
         private bool IsGOS = false;
+        private List<(object, string)> finalFilesSelection = new List<(object, string)>();
 
         private bool visibleResources = false;
 
@@ -1268,6 +1269,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             IsGOS = isGos;
             showFileExplorer = true;
         }
+
+        private void HandleFinalFilesSelectionChanged(List<(object, string)> finalFiles)
+        {
+            finalFilesSelection = finalFiles;
+            StateHasChanged();
+        }
+
+        private void ManipulateFinalList(object file, bool operation, bool isFinalList = false)
+        {
+
+            var currentId = (int)file.GetType().GetProperty("ID_DOC")!.GetValue(file)!;
+            finalFilesSelection.RemoveAll(p => (int)p.Item1.GetType().GetProperty("ID_DOC")!.GetValue(p.Item1)! == currentId);
+
+        }
+
 
         private void CloseFileExplorerDialog()
         {
