@@ -324,7 +324,10 @@ namespace SupervisorMobility.Client.Pages
                 if (isFinalList && fileHoverStates.Any())
                 {
                     var key = fileHoverStates.FirstOrDefault(p => (int)p.Key.GetType().GetProperty("ID_DOC")!.GetValue(p.Key)! == currentId).Key;
-                    fileHoverStates[key] = (false, false);
+                    if (key != null)
+                    {
+                        fileHoverStates[key] = (false, false);
+                    }
                 }
             }
 
