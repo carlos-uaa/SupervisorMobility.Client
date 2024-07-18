@@ -41,7 +41,7 @@ namespace SupervisorMobility.Client.Pages
         private string defaultIcon = Icons.Material.Filled.Folder;
 
         private Dictionary<TreeItemData, bool> hoverStates = new Dictionary<TreeItemData, bool>();
-        private Dictionary<object, (bool, bool, string)> fileHoverStates = new Dictionary<object, (bool, bool, string)>();
+        private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();
         private List<(object, string)> finalFilesSelection = new List<(object, string)>();
         private List<object> removeFilesSelection = new List<object>();
 
@@ -264,7 +264,14 @@ namespace SupervisorMobility.Client.Pages
                         GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
                         foreach(var file in GosFilesInFolder.operation)
                         {
-                            fileHoverStates.Add(file, (false, false, finalPath));
+                            if(finalFilesSelection.Any(p=>file.ID_DOC == (int)p.Item1.GetType().GetProperty("ID_DOC")!.GetValue(p.Item1)!))
+                            {
+                                fileHoverStates.Add(file, (true,true));
+                            }
+                            else
+                            {
+                                fileHoverStates.Add(file, (false, false));
+                            }
                         }
                     }
                     else
@@ -272,7 +279,14 @@ namespace SupervisorMobility.Client.Pages
                         CcpFilesInFolder = await CDMSServices.GetFilesCCP(clickedNode.Path);
                         foreach (var file in CcpFilesInFolder.operation)
                         {
-                            fileHoverStates.Add(file, (false, false, finalPath));
+                            if (finalFilesSelection.Any(p => file.ID_DOC == (int)p.Item1.GetType().GetProperty("ID_DOC")!.GetValue(p.Item1)!))
+                            {
+                                fileHoverStates.Add(file, (true, true));
+                            }
+                            else
+                            {
+                                fileHoverStates.Add(file, (false, false));
+                            }
                         }
                     }
                 }
@@ -283,7 +297,8 @@ namespace SupervisorMobility.Client.Pages
 
         private async void OnFileNodeClick(object clickedFile)
         {
-            fileHoverStates[clickedFile] = fileHoverStates[clickedFile].Item2?(true, false, finalPath) :(true,true, finalPath);
+            fileHoverStates[clickedFile] = fileHoverStates[clickedFile].Item2?(true, false) :(true, true);
+            ManipulateFinalList(clickedFile, fileHoverStates[clickedFile].Item2);
         }
 
         private Task HandleCheck(bool value, object item)
@@ -291,19 +306,36 @@ namespace SupervisorMobility.Client.Pages
             var temp = fileHoverStates[item];
             temp.Item2 = value;
             fileHoverStates[item] = temp;
+            ManipulateFinalList(item, value);
             return Task.CompletedTask;
         }
 
-        private async void AddToFinalSelection()
+        private void ManipulateFinalList(object file, bool operation, bool isFinalList = false)
         {
-            if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
-            var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.Item1.GetType().GetProperty("ID_DOC").GetValue(p.Item1)).ToList() : new List<int>();
+            if (operation)
+            {
+                finalFilesSelection.Add((file, finalPath));
+            }
+            else
+            {
+                var currentId = (int)file.GetType().GetProperty("ID_DOC")!.GetValue(file)!;
+                finalFilesSelection.RemoveAll(p=> (int)p.Item1.GetType().GetProperty("ID_DOC")!.GetValue(p.Item1)! == currentId);
 
-            finalFilesSelection ??= new List<(object,string)>();
-            finalFilesSelection.AddRange(fileHoverStates.
-                Where(p=>p.Value.Item2 && !finalSel_ids.Contains((int)p.Key.GetType().GetProperty("ID_DOC").GetValue(p.Key)))
-                .Select(key => ( key.Key, key.Value.Item3)).ToList());
-            Console.WriteLine("aaa");
+                if (isFinalList && fileHoverStates.Any())
+                {
+                    var key = fileHoverStates.FirstOrDefault(p => (int)p.Key.GetType().GetProperty("ID_DOC")!.GetValue(p.Key)! == currentId).Key;
+                    fileHoverStates[key] = (false, false);
+                }
+            }
+
+            //if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
+            //var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.Item1.GetType().GetProperty("ID_DOC").GetValue(p.Item1)).ToList() : new List<int>();
+
+            //finalFilesSelection ??= new List<(object,string)>();
+            //finalFilesSelection.AddRange(fileHoverStates.
+            //    Where(p=>p.Value.Item2 && !finalSel_ids.Contains((int)p.Key.GetType().GetProperty("ID_DOC").GetValue(p.Key)))
+            //    .Select(key => (key.Key, finalPath)).ToList());
+            //Console.WriteLine("aaa");
         }
 
         private async void RemoveFilesFromList(List<object> Files)
