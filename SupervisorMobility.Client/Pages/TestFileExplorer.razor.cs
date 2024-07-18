@@ -41,8 +41,8 @@ namespace SupervisorMobility.Client.Pages
         private string defaultIcon = Icons.Material.Filled.Folder;
 
         private Dictionary<TreeItemData, bool> hoverStates = new Dictionary<TreeItemData, bool>();
-        private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();
-        private List<object> finalFilesSelection = new List<object>();
+        private Dictionary<object, (bool, bool, string)> fileHoverStates = new Dictionary<object, (bool, bool, string)>();
+        private List<(object, string)> finalFilesSelection = new List<(object, string)>();
         private List<object> removeFilesSelection = new List<object>();
 
         //Tabs
@@ -51,6 +51,7 @@ namespace SupervisorMobility.Client.Pages
 
         private string searchString = "";
         private bool isFinalPath = false;
+        private string finalPath = "";
 
         protected async override Task OnInitializedAsync()
         {
@@ -208,6 +209,7 @@ namespace SupervisorMobility.Client.Pages
         private void OnFileMouseOut(object item)
         {
             var temp = fileHoverStates[item];
+            if (temp.Item2) { return; }
             temp.Item1 = false;
             fileHoverStates[item] = temp;
         }
@@ -255,13 +257,14 @@ namespace SupervisorMobility.Client.Pages
 
                 if (!clickedNode.TreeItems.Any())
                 {
+                    finalPath = clickedNode.Path;
                     isFinalPath = true;
                     if(IsGOS)
                     {
                         GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
                         foreach(var file in GosFilesInFolder.operation)
                         {
-                            fileHoverStates.Add(file, (false, false));
+                            fileHoverStates.Add(file, (false, false, finalPath));
                         }
                     }
                     else
@@ -269,7 +272,7 @@ namespace SupervisorMobility.Client.Pages
                         CcpFilesInFolder = await CDMSServices.GetFilesCCP(clickedNode.Path);
                         foreach (var file in CcpFilesInFolder.operation)
                         {
-                            fileHoverStates.Add(file, (false, false));
+                            fileHoverStates.Add(file, (false, false, finalPath));
                         }
                     }
                 }
@@ -280,7 +283,7 @@ namespace SupervisorMobility.Client.Pages
 
         private async void OnFileNodeClick(object clickedFile)
         {
-            fileHoverStates[clickedFile] = fileHoverStates[clickedFile].Item2?(true, false):(true,true);
+            fileHoverStates[clickedFile] = fileHoverStates[clickedFile].Item2?(true, false, finalPath) :(true,true, finalPath);
         }
 
         private Task HandleCheck(bool value, object item)
@@ -294,13 +297,13 @@ namespace SupervisorMobility.Client.Pages
         private async void AddToFinalSelection()
         {
             if (!fileHoverStates.Any(p=>p.Value.Item2 == true)) return;
-            var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.GetType().GetProperty("ID_DOC").GetValue(p)).ToList() : new List<int>();
+            var finalSel_ids = finalFilesSelection.Any() ? finalFilesSelection.Select(p => (int)p.Item1.GetType().GetProperty("ID_DOC").GetValue(p.Item1)).ToList() : new List<int>();
 
-            finalFilesSelection ??= new List<object>();
+            finalFilesSelection ??= new List<(object,string)>();
             finalFilesSelection.AddRange(fileHoverStates.
                 Where(p=>p.Value.Item2 && !finalSel_ids.Contains((int)p.Key.GetType().GetProperty("ID_DOC").GetValue(p.Key)))
-                .Select(key => key.Key).ToList());
-            Console.WriteLine("Cool");
+                .Select(key => ( key.Key, key.Value.Item3)).ToList());
+            Console.WriteLine("aaa");
         }
 
         private async void RemoveFilesFromList(List<object> Files)
