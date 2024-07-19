@@ -47,10 +47,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int departmentId = 0;
 
 
-        List<string> allCriticalPoints = new List<string>();
-        private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
         private string HighlightedText;
-        private string SelectedTerm;
 
 
         public int productId = 0;
@@ -623,5 +620,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
         #endregion
+
+        void HoeHistory()
+        {
+            NavigationManager.NavigateTo($"/SOSHOE/Hub/Details/{SOSHubId}/History");
+        }
     }
 }

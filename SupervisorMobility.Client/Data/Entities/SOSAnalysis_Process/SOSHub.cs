@@ -1,8 +1,11 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 {
     public class SOSHub
     {
+        public int SOSHubHistoryId { get; set; }
         public int SOSHubId { get; set; }
 
         public string? Folio { get; set; }
@@ -52,7 +55,34 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public string SourcePlan { get; set; }
         public string Status { get; set; }
 
+        private string? _versionChanges;
+
+        public string? VersionChanges
+        {
+            get => _versionChanges;
+            set
+            {
+                _versionChanges = value;
+                if (!string.IsNullOrEmpty(_versionChanges))
+                {
+                    DifferenceDetails = JsonConvert.DeserializeObject<List<DifferenceDetail>>(_versionChanges);
+                }
+                else
+                {
+                    DifferenceDetails = new List<DifferenceDetail>();
+                }
+            }
+        }
+
+        public List<DifferenceDetail> DifferenceDetails { get; private set; } = new List<DifferenceDetail>();
 
         public bool? IsActive { get; set; }
+    }
+
+    public class DifferenceDetail
+    {
+        public string Property { get; set; }
+        public string Before { get; set; }
+        public string After { get; set; }
     }
 }

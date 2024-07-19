@@ -27,5 +27,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<bool> GenerateDistribution(int SOS_DataPool_id);
         Task<bool> GenerateSequence(int SOS_DataPool_id);
     
+        //Histoy
+        Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
     }
 }
