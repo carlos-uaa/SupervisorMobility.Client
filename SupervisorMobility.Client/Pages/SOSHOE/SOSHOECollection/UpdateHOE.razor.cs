@@ -51,10 +51,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int stationId = 0;
 
 
-        List<string> allCriticalPoints = new List<string>();
-        private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
         private string HighlightedText;
-        private string SelectedTerm;
 
 
         public int productId = 0;
@@ -534,10 +531,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
-            _sosHub.DepartmentId = departmentId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
             _sosHub.DistributionId = distributionId;
+            _sosHub.StationId = stationId;
+            _sosHub.DepartmentId = departmentId;
             _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
             _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
@@ -1463,12 +1461,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     analysisBkup.IsActive = true;
                     _sosHub.AnalysesBkup.Add(analysisBkup);
                 }
+
+
             }
         }
         void RestoreBakup()
         {
             RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
-            _sosHub.Sections.Clear();
+            //_sosHub.Sections.Clear();
             _sosHub.AnalysesBkup.Clear();
         }
         void AddRawItem()
