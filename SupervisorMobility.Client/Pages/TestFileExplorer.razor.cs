@@ -352,11 +352,23 @@ namespace SupervisorMobility.Client.Pages
 
         }
 
-        private async void RemoveFilesFromList(List<object> Files)
+        private void DownloadDocument(object document)
         {
-            if (!removeFilesSelection.Any() && !finalFilesSelection.Any()) return;
-
-            finalFilesSelection.RemoveAll(item => removeFilesSelection.Contains(item));
+            //var id = (int)document.GetType().GetProperty("ID_DOC")!.GetValue(document)!;
+            switch (document)
+            {
+                case GOSDocument gosDoc:
+                    Console.WriteLine(gosDoc.ID_DOC);
+                    //Call gos download method
+                    break;
+                case CCPDocument ccpDoc:
+                    Console.WriteLine(ccpDoc.ID_DOC);
+                    //Call ccp download method
+                    break;
+                default:
+                    //fail mesage
+                    break;
+            }
         }
 
         private void RecreateFileExplorer()
