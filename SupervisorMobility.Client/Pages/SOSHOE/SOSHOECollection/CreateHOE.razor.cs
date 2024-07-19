@@ -1284,6 +1284,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
+        private void DownloadDocument(object document)
+        {
+            switch (document)
+            {
+                case GOSDocument gosDoc:
+                    CDMSServices.GetDownloadLinkGOS(gosDoc.ID_DOC, gosDoc.Nombre);
+                    break;
+
+                case CCPDocument ccpDoc:
+                    CDMSServices.GetDownloadLinkCCP(ccpDoc.ID_DOC, ccpDoc.Nombre); break;
+                default:
+                    //fail mesage
+                    break;
+            }
+        }
+
 
         private void CloseFileExplorerDialog()
         {
