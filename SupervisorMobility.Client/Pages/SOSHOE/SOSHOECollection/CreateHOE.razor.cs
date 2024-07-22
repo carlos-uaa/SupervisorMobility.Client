@@ -1322,20 +1322,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
        
 
-        private void ApplyHighlights(int sectionIndex, int analisisIndex)
-        {
-            //var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            //var text = analisis.Text;
-            //var term = analisis.CriticalPoint;
-            //if (string.IsNullOrEmpty(term))
-            //{
-            //    return;
-            //}
-
-            //var highlightedText = ReplaceInsensitive(text, term);
-            //analisis.Text = highlightedText;
-        }
-
+   
         private static string Normalize(string input)
         {
             if (string.IsNullOrEmpty(input))

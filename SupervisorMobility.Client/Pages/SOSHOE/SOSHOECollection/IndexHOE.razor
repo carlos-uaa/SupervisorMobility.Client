@@ -417,17 +417,63 @@ else
                         <MudItem>
                             <MudButton Style="float: left" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="@(() =>  ReturnToGenerateindex())" Color="Color.Primary">Back</MudButton>
                         </MudItem>
-                        <MudItem>
+                        <MudItem Class="ma-5">
 
-                            <MudText Typo="Typo.h6">Folio: @_Hoes.Find(h => h.SOSHubId == SosHubId)?.Folio</MudText>
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr>
+                                        <th colspan="3">Nombre de la Operación</th>
+                                        <th colspan="3">@_SelectedHoe.ProcessSheet</th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3">Equipo de Seguridad</th>
+                                        <th colspan="3">
+                                            @foreach (var equipment in _SelectedHoe.SafetyEquipment)
+                                            {
+                                                <MudText>@equipment.EquipmentName</MudText>
+                                            }
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3">Herramientas</th>
+                                        <th colspan="3">
+                                            @foreach (var tool in _SelectedHoe.ToolsUsed)
+                                            {
+                                                <MudText>@tool.ToolName</MudText>
+                                            }
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3">Modelo</th>
+                                        <th colspan="3"><MudText>@_SelectedHoe.AppliedModel?.Description</MudText></th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3">Tiempo de aprendizaje</th>
+                                        <th colspan="3">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Cycles"]
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             @bind-Value="cycleId"
+                                                             OpenIcon="@Icons.Material.Filled.AccessTime"
+                                                             AdornmentColor="Color.Info"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             MaxItems="10"
+                                                             ReadOnly>
+                                            </MudAutocomplete>
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                            <MudTextField @bind-Value="analisys.InternalControlNumber" Label="Internal Control Number" Variant="Variant.Filled" Class="mb-2" />
-                            <MudTextField @bind-Value="analisys.ProcessName" Label="Process Name" Variant="Variant.Filled" Class="mb-2" />
-                            <MudTextField @bind-Value="analisys.OperationName" Label="Operation Name" Variant="Variant.Filled" Class="mb-2" />
-
-                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateAnalisys())" Color="Color.Primary">Generate</MudButton>
+                            </MudSimpleTable>
+                            <MudItem Class="ma-3">
+                                <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateAnalisys())" Color="Color.Primary">Generate</MudButton>
+                            </MudItem>
 
                         </MudItem>
+
                     </div>
                     break;
                 case 2:
@@ -494,6 +540,7 @@ else
 
     // Objects
     public List<SOSHub> _Hoes { get; set; } = new();
+    public SOSHub _SelectedHoe { get; set; } = new();
 
     //User
     private string json = string.Empty;
@@ -511,14 +558,14 @@ else
 
     //Generation
     private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
-    private DialogOptions dialogPagesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    private DialogOptions dialogPagesOptions = new() { CloseOnEscapeKey = true, FullWidth = true, CloseButton = true };
     public bool ShowGenerateDialog = false;
     public bool ShowPagesGenerate = false;
     private int selectedIndexPageGenerate = 0;
 
+    int cycleId = 0;
     //Analisis
     SOSAnalysis analisys { get; set; } = new SOSAnalysis();
-
 
     // Initialization
     protected async override Task OnInitializedAsync()
@@ -603,11 +650,13 @@ else
     {
         if (selectedRowNumber == rowNumber)
         {
+            FindSelectedHoe(element.SOSHubId);
             SosHubId = element.SOSHubId;
             return "selected"; // Mantener la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
+            FindSelectedHoe(element.SOSHubId);
             SosHubId = element.SOSHubId;
             selectedRowNumber = rowNumber;
             return "selected";
@@ -617,7 +666,11 @@ else
             return string.Empty;
         }
     }
-
+    private async void FindSelectedHoe(int sosHuBiD)
+    {
+        _SelectedHoe = await SOSHubServices.GetSOSHub(sosHuBiD, includeModel: true, includeEquipments: true, includeTools: true, includeMaterials: true);
+        cycleId = _SelectedHoe.TrainingTime != null ? GetCycleId(_SelectedHoe.TrainingTime) : 0;
+    }
 
     void HoeDetails(int HoeId)
     {
@@ -651,7 +704,8 @@ else
         }
         else
         {
-            SosHubId = hoeId;
+            SosHubId = hoeId != 0 ? hoeId : SosHubId;
+            FindSelectedHoe(SosHubId);
             selectedIndexPageGenerate = 0;
             ShowGenerateDialog = true;
         }
@@ -664,6 +718,8 @@ else
         ShowPagesGenerate = true;
 
     }
+
+
     public void ReturnToGenerateindex()
     {
         selectedIndexPageGenerate = 0;
@@ -674,30 +730,37 @@ else
     public async void GenerateAnalisys()
     {
 
-        if (!string.IsNullOrEmpty(analisys.InternalControlNumber) && !string.IsNullOrEmpty(analisys.ProcessName) && !string.IsNullOrEmpty(analisys.OperationName))
-        {
-            var GenAnalisys = await SOSHubServices.GenerateAnalysis(SosHubId, analisys);
 
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            if (GenAnalisys)
-            {
-                Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
-                ShowGenerateDialog = false;
-                analisys = new SOSAnalysis();
-            }
-            else
-            {
-                Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
-            }
+        var GenAnalisys = await SOSHubServices.GenerateAnalysis(SosHubId, analisys);
+
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        if (GenAnalisys)
+        {
+            Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
+            ShowPagesGenerate = false;
+            analisys = new SOSAnalysis();
         }
         else
         {
-            bool? result = await DialogService.ShowMessageBox("Warning", "Es necesario completar los campos!", yesText: "Ok!");
-            var state = result == null ? "Canceled" : "Deleted!";
+            Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
         }
 
         StateHasChanged();
+    }
+
+    public static int GetCycleId(string trainingTime)
+    {
+        string cycleIdString = trainingTime.Split(' ').First();
+
+        if (int.TryParse(cycleIdString, out int cycleId))
+        {
+            return cycleId;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
 
