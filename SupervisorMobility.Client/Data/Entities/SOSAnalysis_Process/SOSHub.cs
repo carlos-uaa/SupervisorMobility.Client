@@ -11,7 +11,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public List<Section> Sections { get; set; } = new List<Section>();
         public string ProcessSheet { get; set; }
         public ICollection<Commentary>? ProcessSheetCommentary { get; set; } = new List<Commentary>();
-        public ICollection<FileUpload>? CommonDirection { get; set; } = new List<FileUpload>();
+        public ICollection<CommonDirection>? CommonDirection { get; set; } = new List<CommonDirection>();
         public int? AppliedModelId { get; set; }
         public Product? AppliedModel { get; set; }
 
