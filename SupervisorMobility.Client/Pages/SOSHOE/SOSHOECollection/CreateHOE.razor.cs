@@ -1312,6 +1312,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
+        private void DownloadDocument(object document)
+        {
+            switch (document)
+            {
+                case GOSDocument gosDoc:
+                    CDMSServices.GetDownloadLinkGOS(gosDoc.ID_DOC, gosDoc.Nombre);
+                    break;
+
+                case CCPDocument ccpDoc:
+                    CDMSServices.GetDownloadLinkCCP(ccpDoc.ID_DOC, ccpDoc.Nombre); break;
+                default:
+                    //fail mesage
+                    break;
+            }
+        }
+
 
         private void CloseFileExplorerDialog()
         {
@@ -1334,20 +1350,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
        
 
-        private void ApplyHighlights(int sectionIndex, int analisisIndex)
-        {
-            //var analisis = _sosHub.Sections[sectionIndex].Analyses[analisisIndex];
-            //var text = analisis.Text;
-            //var term = analisis.CriticalPoint;
-            //if (string.IsNullOrEmpty(term))
-            //{
-            //    return;
-            //}
-
-            //var highlightedText = ReplaceInsensitive(text, term);
-            //analisis.Text = highlightedText;
-        }
-
+   
         private static string Normalize(string input)
         {
             if (string.IsNullOrEmpty(input))

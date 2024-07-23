@@ -5,7 +5,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
     public interface ISOSHubService
     {
         Task<SOSHub> CreateSOScollection(SOSHub SOS_EntityToCreate);
-        Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
+        Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false);
         Task<List<SOSHub>> GetAllSOSHub( bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
         Task<SOSHub> UpdateSOSHub(SOSHub SosEntity);
         Task<SOSHub> DeleteSOSHub(int SosEntity_id);
@@ -27,5 +27,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<bool> GenerateDistribution(int SOS_DataPool_id);
         Task<bool> GenerateSequence(int SOS_DataPool_id);
     
+        //Histoy
+        Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
     }
 }

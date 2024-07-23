@@ -180,6 +180,7 @@ namespace SupervisorMobility.Client.Pages
                 openTabs.Add(rootNodeCCP);
             }
 
+
             StateHasChanged();
         }
 
@@ -359,12 +360,12 @@ namespace SupervisorMobility.Client.Pages
             {
                 case GOSDocument gosDoc:
                     Console.WriteLine(gosDoc.ID_DOC);
-                    //Call gos download method
+                    CDMSServices.GetDownloadLinkGOS(gosDoc.ID_DOC, gosDoc.Nombre);
                     break;
+
                 case CCPDocument ccpDoc:
                     Console.WriteLine(ccpDoc.ID_DOC);
-                    //Call ccp download method
-                    break;
+                    CDMSServices.GetDownloadLinkCCP(ccpDoc.ID_DOC, ccpDoc.Nombre); break;
                 default:
                     //fail mesage
                     break;
