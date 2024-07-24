@@ -5,7 +5,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices
     public interface ISOSAnalysisService
     {
        
-        Task<SOSAnalysis> GetSOSAnalysis(int SOSAnalysisId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
+        Task<SOSAnalysis> GetSOSAnalysis(int SOSAnalysisId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false);
         Task<List<SOSAnalysis>> GetAllSOSAnalysis(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSAnalysis> UpdateSOSAnalysis(SOSAnalysis SosEntity);
         Task<SOSAnalysis> DeleteSOSAnalysis(int SosEntity_id);
