@@ -20,8 +20,16 @@
         text-align: center !important;
     }
 
-    .border-table td{
-        border-color: #f5f5f6;
+    .border-left {
+        border-left: 2px solid #ababab;
+    }
+
+    .table-header td{
+        background-color: #f5f5f6;
+    }
+
+    .grey-background {
+        background-color: #f5f5f6;
     }
 
 </style>
@@ -42,9 +50,9 @@
 }
 else
 {
-    <MudSimpleTable Class="pb-10">
+    <MudSimpleTable Class="pb-10" Dense>
         <thead>
-            <tr>
+            <tr class="table-header">
                 <th rowspan="2" colspan="3">Nombre de la Operación</th>
                 <th rowspan="2" colspan="3">@_sosAnalysis.SOSHub.ProcessSheet</th>
                 <th colspan="3">No. De Revision</th>
@@ -64,10 +72,25 @@ else
             <tr>
                 <th rowspan="2" colspan="3">Equipo de Seguridad</th>
                 <th rowspan="2" colspan="3">
-                    @foreach (var equipment in _sosAnalysis.SOSHub.SafetyEquipment)
+                    @if (_sosAnalysis.SOSHub.SafetyEquipment.Any())
                     {
-                        <MudText>@equipment.EquipmentName</MudText>
+                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                            @foreach (var equipment in _sosAnalysis.SOSHub.SafetyEquipment)
+                            {
+                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Warning" Variant="Variant.Outlined">
+                                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                        @(equipment.EquipmentName)
+                                    </MudChip>
+                                </MudButton>
+                            }
+                        </MudItem>
                     }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there is no equipment.</MudAlert>
+                    }
+
                 </th>
 
                 <th colspan="3">Punto Revisado (Cambio)</th>
@@ -77,7 +100,8 @@ else
                 <th colspan="3"></th>
             </tr>
             <tr>
-                <th rowspan="7" colspan="1" class="vertical">Confirmado Por</th>
+                <th rowspan="7"  class="vertical">Confirmado Por</th>
+                <th colspan="3"></th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
@@ -86,9 +110,23 @@ else
             <tr>
                 <th rowspan="2" colspan="3">Herramientas</th>
                 <th rowspan="2" colspan="3">
-                    @foreach (var tool in _sosAnalysis.SOSHub.ToolsUsed)
+                    @if (_sosAnalysis.SOSHub.ToolsUsed.Any())
                     {
-                        <MudText>@tool.ToolName</MudText>
+                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
+
+                            @foreach (var tool in _sosAnalysis.SOSHub.ToolsUsed)
+                            {
+                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                    <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                        @(tool.ToolName)
+                                    </MudChip>
+                                </MudButton>
+                            }
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no tools.</MudAlert>
                     }
                 </th>
 
@@ -142,7 +180,7 @@ else
                     </MudAutocomplete>
                 </th>
 
-                <th colspan="3">Supervisor Gral (Aprovo)</th>
+                <th colspan="3">Supervisor Gral (Aprobó)</th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
@@ -150,7 +188,7 @@ else
             </tr>
             <tr>
 
-                <th colspan="3">Supervisor (Elaboro)</th>
+                <th colspan="3">Supervisor (Elaboró)</th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
                 <th colspan="3"></th>
@@ -158,8 +196,8 @@ else
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td colspan="1">No.</td>
+            <tr class="table-header">
+                <td colspan="1" >No.</td>
                 <td colspan="3">Análisis</td>
                 <td colspan="1">No.</td>
                 <td colspan="1">Pasos Principales</td>
@@ -172,11 +210,11 @@ else
             {
                 @foreach (var analysis in sect.Analyses)
                 {
-                    <tr class="border-table">
+                    <tr >
                         @if (sect == _sosAnalysis.SOSHub.Sections.Last())
                         {
                             <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@getAnalysisIndex()</td>
-                            <td colspan="3" style="border-top: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@analysis.Text</td>
+                            <td colspan="3" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@analysis.Text</td>
                         }
                         else if (analysis == sect.Analyses.First())
                         {
@@ -194,7 +232,10 @@ else
                             int TotalRowSpan = sect.Analyses.Count();
                             <td colspan="1" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab; " rowspan="@TotalRowSpan">@(indexSection + 1)</td>
                             <td colspan="1" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;" rowspan="@TotalRowSpan">@sect.Step</td>
-                            <td colspan="2" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;" rowspan="@TotalRowSpan">Tiempo Seccion @(indexSection + 1)</td>
+                            <td colspan="2" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;" rowspan="@TotalRowSpan">
+                                <MudInput Value="@($"Time {indexSection + 1}")" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+                            </td>
                         }
 
                         @if (sect == _sosAnalysis.SOSHub.Sections.Last())
