@@ -14,6 +14,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private List<string> capturedImages = new List<string>();
 
 
+        //Show evidence
+        private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visibleEvidence = false;
+
+        private int photoIndex = 0;
+
+
+        //Commentaries
+        private DialogOptions dialogCommentariesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        private bool visibleCommentaries = false;
+
         //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -95,5 +108,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
             return input;
         }
+
+        private void OpenEvidenceDialog(int index)
+        {
+            photoIndex = index;
+            visibleEvidence = true;
+
+        }
+
+        private void OpenCommentariesDialog()
+        {
+            visibleCommentaries = true;
+
+        }
+
+        private void CloseCommentariesDialog()
+        {
+            visibleCommentaries = false;
+        }
+
     }
 }
