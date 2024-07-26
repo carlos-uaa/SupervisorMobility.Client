@@ -76,7 +76,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         //Videos
+        public Dictionary<string, (string, string)> PreviousVideo = new Dictionary<string, (string, string)>();
         public Dictionary<string, (string, string)> MediaUris = new Dictionary<string, (string, string)>();
+        public List<int> OldVideoRemoved = new List<int>();
 
         //Commentaries
         public class ItemModel
@@ -127,8 +129,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private bool visibleEvidence = false;
 
         private int photoIndex = 0;
-        private void OpenEvidenceDialog(int index)
+        private void OpenEvidenceDialog(int index, bool OldImgOrigin = true)
         {
+            if (!OldImgOrigin) index += (PreviousImages.Count);
             photoIndex = index;
             visibleEvidence = true;
 
@@ -566,7 +569,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (result != null)
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"SOS Created", Severity.Info);
+                Snackbar.Add($"SOS Updated", Severity.Info);
 
                 _sosHub = result;
                 _ = await UploadEvidence();
@@ -666,7 +669,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 foreach (var sosImage in _sosHub.Images)
                 {
                     var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
-                    capturedImages.Add(image);
+                    PreviousImages.Add((sosImage.FileUploadId,image));
                 }
             }
 
@@ -675,7 +678,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 foreach (var sosVideo in _sosHub.Videos)
                 {
                     var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
-                    MediaUris.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
+                    PreviousVideo.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
                 }
             }
 
@@ -860,7 +863,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #region Camera
         private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
 
+        private List<(int,string)> PreviousImages = new List<(int,string)>();//id, b64 string
         private List<string> capturedImages = new List<string>();
+        private List<int> OldImageRemoved = new();
 
         private bool visibleCamera = false;
         private int imageIndex = 0;
@@ -991,6 +996,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             await UploadImages();
             await UploadVideos();
             await UploadFiles();
+            await UpdateRemovedFiles();
 
             return new AsyncVoidMethodBuilder();
         }
@@ -1179,6 +1185,64 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 StateHasChanged();
 
             }
+        }
+
+        private async Task UpdateRemovedFiles()
+        {
+            int failed = 0;
+            int status;
+            if (OldImageRemoved.Any())
+            {
+                foreach (var file in OldImageRemoved)
+                {
+                    var result = await SOSHubServices.RemoveImageFromSOSData(_sosHub.SOSHubId, file);
+                    if (!result)
+                    {
+                        failed++;
+                    }
+                }
+                status = failed == 0 ? 0 : failed < OldImageRemoved.Count ? 1 : 2;
+                RemoveMultiMediaSnackbarMessage("images", status);
+                failed = 0;
+            }
+            if (OldVideoRemoved.Any())
+            {
+                foreach (var file in OldVideoRemoved)
+                {
+                    var result = await SOSHubServices.RemoveVideoFromSOSData(_sosHub.SOSHubId, file);
+                    if (!result)
+                    {
+                        failed++;
+                    }
+                }
+                status = failed == 0 ? 0 : failed < OldVideoRemoved.Count ? 1 : 2;
+                RemoveMultiMediaSnackbarMessage("videos", status);
+            }
+        }
+
+        private void RemoveMultiMediaSnackbarMessage(string iov, int failed)
+        {
+            Severity color = Severity.Normal; string Msg2 = string.Empty;
+            switch (failed)
+            {
+                case 0: color = Severity.Success; Msg2 = $"Previous {iov} removed"; break;
+                case 1: color = Severity.Warning; Msg2 = $"Failed to remove some {iov}"; break;
+                case 2: color = Severity.Error; Msg2 = $"Failed to remove previous {iov}"; break;
+            }
+
+            Snackbar.Add(Msg2, color);
+        }
+
+        private void RemoveOldVideo(string Id)
+        {
+            int fileId = int.Parse(Id);
+            OldVideoRemoved.Add(fileId);
+            PreviousVideo.Remove(fileId.ToString());
+        }
+        private void RemoveOldImage(int fileId)
+        {
+            OldImageRemoved.Add(fileId);
+            PreviousImages.RemoveAll(p=>p.Item1 == fileId);
         }
 
         #endregion
