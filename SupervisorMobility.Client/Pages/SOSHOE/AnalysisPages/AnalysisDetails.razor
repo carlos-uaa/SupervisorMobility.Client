@@ -216,25 +216,40 @@ else
 
             @foreach (var (sect, indexSection) in _sosAnalysis.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
             {
+
                 @foreach (var analysis in sect.Analyses)
                 {
-                    ++indexAnalysis;
+                    string styleString = "";
+                    string styleString2 = "";
+                    string styleString3 = "";
                     <tr>
-                        @if (sect == _sosAnalysis.SOSHub.Sections.Last())
+                        @if(sect.Analyses.Count==1)
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@indexAnalysis</td>
-                            <td colspan="3" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@analysis.Text</td>
+                            styleString = "border-left: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;";
+                            styleString3 = "border-right: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;";
+                            styleString2 = "border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;";
                         }
-                        else if (analysis == sect.Analyses.First())
+                        else if(analysis == sect.Analyses.First())
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab;">@indexAnalysis</td>
-                            <td colspan="3" style="border-top: 2px solid #ababab; ">@analysis.Text</td>
+                            styleString = "border-left: 2px solid #ababab; border-top: 2px solid #ababab;";
+                            styleString3 = "border-right: 2px solid #ababab; border-top: 2px solid #ababab;";
+                            styleString2 = "border-top: 2px solid #ababab;";
+                        }
+                        else if (@* sect == _sosAnalysis.SOSHub.Sections.Last() && *@ analysis == sect.Analyses.Last())
+                        {
+                            styleString = "border-left: 2px solid #ababab; border-bottom: 2px solid #ababab;";
+                            styleString3 = "border-right: 2px solid #ababab; border-bottom: 2px solid #ababab;";
+                            styleString2 = "border-bottom: 2px solid #ababab;";
                         }
                         else
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-bottom: 2px solid #ababab;">@indexAnalysis</td>
-                            <td colspan="3">@analysis.Text</td>
+                            styleString = "border-left: 2px solid #ababab;";
+                            styleString3 = "border-right: 2px solid #ababab;";
+                            styleString2 = "";
                         }
+
+                        <td colspan="1" style="@styleString">@getAnalysisIndex()</td>
+                        <td colspan="3" style="@styleString2">@analysis.Text</td>
 
                         @if (analysis == sect.Analyses.First())
                         {
@@ -247,52 +262,18 @@ else
                             </td>
                         }
 
-                        @if (sect == _sosAnalysis.SOSHub.Sections.Last())
-                        {
-                            <td colspan="4" style=" border-top: 2px solid #ababab; border-right: 2px solid #ababab; border-bottom: 2px solid #ababab;">
+                        <td colspan="4" style="@styleString3">
 
-                                @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
-                                {
-                                    <MudItem>
-                                        <MudText>@cp</MudText>
-                                        <MudText>
-                                            @ReasonFormat(analysis.Reasons[cpIndex])
-                                        </MudText>
-                                    </MudItem>
-                                }
-                            </td>
-                        }
-                        else if (analysis == sect.Analyses.First())
-                        {
-                            <td colspan="4" style=" border-top: 2px solid #ababab; border-right: 2px solid #ababab;">
-
-                                @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
-                                {
-                                    <MudItem>
-                                        <MudText>@cp</MudText>
-                                        <MudText>
-                                            @ReasonFormat(analysis.Reasons[cpIndex])
-                                        </MudText>
-                                    </MudItem>
-                                }
-                            </td>
-                        }
-                        else
-                        {
-                            <td colspan="4" style="border-right: 2px solid #ababab; border-bottom: 2px solid #ababab;">
-
-                                @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
-                                {
-                                    <MudItem>
-                                        <MudText>@cp</MudText>
-                                        <MudText>
-                                            @ReasonFormat(analysis.Reasons[cpIndex])
-                                        </MudText>
-                                    </MudItem>
-                                }
-                            </td>
-                        }
-
+                            @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
+                            {
+                                <MudItem>
+                                    <MudText>@cp</MudText>
+                                    <MudText>
+                                        @ReasonFormat(analysis.Reasons[cpIndex])
+                                    </MudText>
+                                </MudItem>
+                            }
+                        </td>
 
                         @if (sect == _sosAnalysis.SOSHub.Sections.First() && analysis == sect.Analyses.First())
                         {
@@ -327,7 +308,7 @@ else
                                         </MudAlert>
                                     }
                                     @* Dummy images *@
-                                   @*  <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
                                         <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
                                             @for (int i = 0; i < 10; i++)
                                             {
@@ -338,7 +319,7 @@ else
                                                 </MudItem>
                                             }
                                         </MudItem>
-                                    </div> *@
+                                    </div>
                                 </MudItem>
                             </td>
                         }
