@@ -519,6 +519,34 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
+            var temp = new List<CommonDirection>();
+            foreach(var file in finalFilesSelection)
+            {
+                int id = 0;
+                string name = string.Empty;
+                int type = 0;
+                switch (file.Item1)
+                {
+                    case GOSDocument gosDoc:
+                        id = gosDoc.ID_DOC;
+                        name = gosDoc.Nombre;
+                        type = 1;
+                        break;
+                    case CCPDocument ccpDoc:
+                        id = ccpDoc.ID_DOC;
+                        name = ccpDoc.Nombre;
+                        type = 2;
+                        break;
+                    default:
+                        //ignore it
+                        break;
+                }
+                if (id != 0)
+                {
+                    temp.Add(new CommonDirection { DOC_ID=id, name = name, route = file.Item2, type = type });
+                }
+            }
+            _sosHub.CommonDirection = temp;
 
             if(_sosHub.Sections.Count == 0 && RawAnalisis.Count > 0 && _sosHub.AnalysesBkup.Count == 0)
             {

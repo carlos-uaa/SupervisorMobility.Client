@@ -185,7 +185,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _departments = _departments.OrderBy(d => d.Description).ToList();
 
             StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments:true);
 
 
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
@@ -279,6 +279,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             StateHasChanged();
 
+        }
+
+        private void DownloadDocument(CommonDirection document)
+        {
+            switch (document.type)
+            {
+                case 1:
+                    CDMSServices.GetDownloadLinkGOS(document.DOC_ID, document.name); break;
+                case 2:
+                    CDMSServices.GetDownloadLinkCCP(document.DOC_ID, document.name); break;
+                default:
+                    //fail mesage
+                    break;
+            }
         }
 
         public static int GetCycleId(string trainingTime)

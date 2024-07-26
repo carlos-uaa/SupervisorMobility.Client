@@ -53,7 +53,6 @@ namespace SupervisorMobility.Client.Pages
         private Dictionary<TreeItemData, bool> hoverStates = new Dictionary<TreeItemData, bool>();
         private Dictionary<object, (bool, bool)> fileHoverStates = new Dictionary<object, (bool, bool)>();
         private List<(object, string)> finalFilesSelection = new List<(object, string)>();
-        private List<object> removeFilesSelection = new List<object>();
 
         //Tabs
         private List<TreeItemData> openTabs = new List<TreeItemData>();

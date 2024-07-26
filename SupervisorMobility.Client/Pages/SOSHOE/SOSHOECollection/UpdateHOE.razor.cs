@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Pages.Inicio.LupPage;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
 using System.Formats.Asn1;
@@ -133,6 +134,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
+
+        private DialogOptions dialogFileExplorerOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        private bool IsGOS = false;
+        bool showFileExplorer = false;
+        private List<(object, string)> finalFilesSelection = new List<(object, string)>();
 
         //Tools, materials and equipment
 
@@ -449,7 +455,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             visibleResources = false;
             resourceType = "";
         }
-    
+
         //Create SOS HUB and validations
         #region Create SOSHUB
         private string ValidateSosHubForm()
@@ -551,6 +557,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             //    }
             //}
 
+            FinalizeList();
+
             GenerateSOSHUBCommentaries();
 
             var result = await SOSHubServices.UpdateSOSHub(_sosHub);
@@ -624,7 +632,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _stations = _stations.OrderBy(s => s.Description).ToList();
 
             StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true);
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments: true); ;
 
 
             if (_sosHub.ProcessSheetCommentary != null && _sosHub.ProcessSheetCommentary.Count > 0)
@@ -683,6 +691,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 _materialsIds = _sosHub.MaterialsUsed.Select(s => s.MaterialId).ToList();
             }
+
+            PopulateList();
 
             _filteredTools = _filteredTools.Where(t => !_toolsIds.Contains(t.ToolId)).ToList();
             _filteredEquipment = _filteredEquipment.Where(e => !_equipmentIds.Contains(e.EquipmentId)).ToList();
@@ -1294,40 +1304,94 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         //Common direction files
         #region CommonDirection
-
-        private void OnInputFileChanged(InputFileChangeEventArgs e)
+        public void PopulateList()
         {
-            foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+            _sosHub.CommonDirection ??= new List<CommonDirection>();
+            foreach(var item in _sosHub.CommonDirection)
             {
-                fileNames2.Add(file);
-                fileNames.Add(new FileToDisplay() { name = file.Name, ftype = file.ContentType });
+                switch (item.type)
+                {
+                    case 1://GOS
+                        GOSDocument tempGos = new GOSDocument { ID_DOC=item.DOC_ID, Nombre = item.name };
+                        finalFilesSelection.Add((tempGos, item.route));
+                        break;
+                    case 2://CCP
+                        CCPDocument tempCcp = new CCPDocument { ID_DOC = item.DOC_ID, Nombre = item.name };
+                        finalFilesSelection.Add((tempCcp, item.route));
+                        break;
+                }
             }
-            Console.WriteLine($"{fileNames2.Count}");
-
-
-            height = 50 + (fileNames.Count * 33);
         }
-
-        private async Task Clear()
+        public void FinalizeList()
         {
-            fileNames.Clear();
-            fileNames2.Clear();
-
-            ClearDragClass();
-            height = 50;
-            await Task.Delay(100);
+            foreach (var file in finalFilesSelection)
+            {
+                int id = 0;
+                string name = string.Empty;
+                int type = 0;
+                switch (file.Item1)
+                {
+                    case GOSDocument gosDoc:
+                        id = gosDoc.ID_DOC;
+                        name = gosDoc.Nombre;
+                        type = 1;
+                        break;
+                    case CCPDocument ccpDoc:
+                        id = ccpDoc.ID_DOC;
+                        name = ccpDoc.Nombre;
+                        type = 2;
+                        break;
+                    default:
+                        //ignore it
+                        break;
+                }
+                if (id != 0 && !_sosHub.CommonDirection.Where(p=> p.DOC_ID == id).Any())
+                {
+                    _sosHub.CommonDirection.Add(new CommonDirection { DOC_ID = id, name = name, route = file.Item2, type = type });
+                }
+            }
+            _sosHub.CommonDirection.Where(p => !finalFilesSelection.Where(j => (int)j.Item1.GetType().GetProperty("ID_DOC")!.GetValue(j.Item1)! == p.DOC_ID).Any()).ToList().ForEach(p => p.IsActive = false);
         }
-
-        private void SetDragClass()
+        public void ShowFileExplorerDialog(bool isGos)
         {
-            DragClass = $"{DefaultDragClass} mud-border-primary";
+            IsGOS = isGos;
+            showFileExplorer = true;
         }
 
-        private void ClearDragClass()
+        private void CloseFileExplorerDialog()
         {
-            DragClass = DefaultDragClass;
+            showFileExplorer = false;
         }
 
+        private void HandleFinalFilesSelectionChanged(List<(object, string)> finalFiles)
+        {
+            finalFilesSelection = finalFiles;
+            StateHasChanged();
+        }
+
+        private void ManipulateFinalList(object file, bool operation, bool isFinalList = false)
+        {
+
+            var currentId = (int)file.GetType().GetProperty("ID_DOC")!.GetValue(file)!;
+            finalFilesSelection.RemoveAll(p => (int)p.Item1.GetType().GetProperty("ID_DOC")!.GetValue(p.Item1)! == currentId);
+
+        }
+
+        private void DownloadDocument(object document)
+        {
+            switch (document)
+            {
+                case GOSDocument gosDoc:
+                    CDMSServices.GetDownloadLinkGOS(gosDoc.ID_DOC, gosDoc.Nombre);
+                    break;
+
+                case CCPDocument ccpDoc:
+                    CDMSServices.GetDownloadLinkCCP(ccpDoc.ID_DOC, ccpDoc.Nombre); break;
+                default:
+                    //fail mesage
+                    break;
+            }
+        }
         #endregion
 
         //Training Time Cycles

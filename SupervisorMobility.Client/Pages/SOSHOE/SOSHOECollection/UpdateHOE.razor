@@ -25,6 +25,7 @@
 @inject IEquipmentService EquipmentsServices
 @inject IMaterialService MaterialsServices
 @inject IStationService StationServices
+@inject IBridgeCDMSService CDMSServices
 
 
 <style>
@@ -362,91 +363,32 @@ else
                                         <MudText>Common Direction</MudText>
                                     </td>
                                     <td>
-                                        <MudStack Style="width: 100%">
-                                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
-                                            @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
-                                                <ButtonTemplate Context="evidence">
-                                                    <MudPaper Height="@($"{height}px")" Outlined="true" Class="@DragClass">
-                                                        <MudText Style="font-weight:bold;" Class="ml-4"> @Localizer["dragAndDropEvidenceFilesHereOrClick"]</MudText>
-                                                            @foreach (var file in fileNames)
-                                                            {
-                                                                <MudItem Style="text-align:center;" Class="d-flex justify-center align-content-center align-center">
-                                                                    <MudText Typo="Typo.h6">@file.message</MudText>
-                                                                @switch (file.ftype)
-                                                                {
-                                                                    case "application/pdf":
-                                                                        <img src="Images/pdf.png" Height="25" Width="25" />
-                                                                        break;
+                                        <MudButton @onclick="() => ShowFileExplorerDialog(true)" Color="Color.Primary" IconColor="Color.Warning" StartIcon="@Icons.Material.Filled.Folder">GOS File Explorer</MudButton>
+                                        <MudButton @onclick="() => ShowFileExplorerDialog(false)" Color="Color.Primary" IconColor="Color.Warning" StartIcon="@Icons.Material.Filled.FolderCopy">CCP File Explorer</MudButton>
+                                        @if (finalFilesSelection.Any())
+                                        {
+                                            <MudCard>
+                                                <MudPaper Elevation="0">
+                                                    @foreach (var item in finalFilesSelection)
+                                                    {
+                                                        var path = @Regex.Replace(item.Item2, @"§", string.Empty);
+                                                        <MudTooltip Text="@path" Arrow="true" Placement="Placement.Top">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="()=>ManipulateFinalList(item.Item1, false, true)"></MudIconButton>
+                                                            <MudButton Variant="Variant.Text"
+                                                                        Size="Size.Small"
+                                                                        StartIcon="@Icons.Material.Filled.InsertDriveFile"
+                                                                        IconColor="@Color.Info"
+                                                                        OnClick="()=>DownloadDocument(item.Item1)"
+                                                                        EndIcon="@Icons.Material.Filled.FileDownload">
+                                                                @Regex.Replace((string)item.Item1.GetType().GetProperty("Nombre").GetValue(item.Item1), @"§", string.Empty)
+                                                            </MudButton>
+                                                        </MudTooltip>
 
-                                                                    case "application/msword":
-                                                                        // Para documentos Word con extensión .doc
-                                                                        <img src="Images/doc.png" Height="25" Width="25" />
-
-                                                                        break;
-
-                                                                    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                                                                        <img src="Images/docx.png" Height="25" Width="25" />
-
-                                                                        // Para documentos Word con extensión .docx
-                                                                        break;
-
-                                                                    case "application/vnd.ms-powerpoint":
-                                                                        <img src="Images/ppt.png" Height="25" Width="25" />
-                                                                        // Para presentaciones PowerPoint con extensión .ppt
-                                                                        break;
-
-                                                                    case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-                                                                        <img src="Images/pptx.png" Height="25" Width="25" />
-
-                                                                        // Para presentaciones PowerPoint con extensión .pptx
-                                                                        break;
-
-                                                                    case "application/vnd.ms-excel":
-                                                                        // Para hojas de cálculo Excel con extensión .xls
-                                                                        <img src="Images/xls.png" Height="25" Width="25" />
-                                                                        break;
-
-                                                                    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                                                                        // Para hojas de cálculo Excel con extensión .xlsx
-                                                                        <img src="Images/xlsx.png" Height="25" Width="25" />
-
-                                                                        break;
-
-                                                                    case "image/jpeg":
-                                                                        <img src="Images/jpg.png" Height="25" Width="25" />
-
-                                                                        // Para imágenes JPEG con extensión .jpg o .jpeg
-                                                                        break;
-
-                                                                    case "image/png":
-                                                                        // Para imágenes PNG con extensión .png
-                                                                        <img src="Images/png.png" Height="25" Width="25" />
-
-                                                                        break;
-
-                                                                    case "image/gif":
-                                                                        // Para imágenes GIF con extensión .gif
-                                                                        <img src="Images/gif.png" Height="25" Width="25" />
-                                                                        break;
-
-                                                                    default:
-                                                                        <img src="Images/error.png" Height="25" Width="25" />
-                                                                        break;
-                                                                }
-                                                                    <MudButton Target="_blank"
-                                                                               Variant="Variant.Text"
-                                                                               Color="Color.Secondary"
-                                                                               Style="text-transform:none; font-size: 12px;">
-                                                                            
-                                                                        @file.name
-                                                                    </MudButton>
-                                                                </MudItem>
-                                                            }
-                                                    </MudPaper>
-                                                </ButtonTemplate>
-                                            </MudFileUpload>
-                                        </MudStack>
-                                        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any() )" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" Style="float: right" Class="mt-3"> @Localizer["clear"]</MudButton>
+                                                        <br />
+                                                    }
+                                                </MudPaper>
+                                            </MudCard>
+                                        }
                                     </td>
                                 </tr>
                                 <tr>
@@ -1252,5 +1194,16 @@ else
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="confirmStep" Variant="Variant.Filled">@Localizer["confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="showFileExplorer" Options="dialogFileExplorerOptions">
+    <DialogContent>
+        <MudItem Style="height: 70vh">
+            <TestFileExplorer IsGOS="@IsGOS" OnFilesSelected="HandleFinalFilesSelectionChanged" InitialFilesSelection="finalFilesSelection"></TestFileExplorer>
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseFileExplorerDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
