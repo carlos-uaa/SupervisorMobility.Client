@@ -204,7 +204,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         public async Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/Image/{SOS_DataPool_id}/remove/{ImageFile_id}");
-            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
@@ -216,7 +215,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         public  async  Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/Video/{SOS_DataPool_id}/remove/{VideoFile_id}");
-            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
