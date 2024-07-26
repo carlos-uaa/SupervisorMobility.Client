@@ -10,7 +10,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         SOSAnalysis _sosAnalysis { get; set; } = new();
         int cycleId = 0;
-        int IndexAnalysis { get; set; } = 0;
         private List<string> capturedImages = new List<string>();
 
 
@@ -81,13 +80,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 return 0;
             }
         }
+        //protected override void OnAfterRender(bool firstRender)
+        //{
+        //    IndexAnalysis = 0;
+        //}
 
-        public int getAnalysisIndex()
-        {
-            IndexAnalysis++;
-            int index = IndexAnalysis;
-            return index;
-        }
+        //protected override void OnParametersSet()
+        //{
+        //    IndexAnalysis = 0;
+        //}
+
 
         public static string ReasonFormat(string input)
         {
