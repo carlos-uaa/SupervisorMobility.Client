@@ -24,7 +24,11 @@
         border-left: 2px solid #ababab;
     }
 
-    .table-header td, th {
+    .table-header td {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray th {
         background-color: #f5f5f6;
     }
 
@@ -50,7 +54,7 @@
 }
 else
 {
-    <MudSimpleTable Class="pb-10" Dense>
+    <MudSimpleTable Class="pb-10" Dense Elevation="3">
         <thead>
             <tr class="table-header">
                 <th rowspan="2" colspan="3">Nombre de la Operación</th>
@@ -205,25 +209,30 @@ else
                 <td colspan="4">Punto Critico (Razon)</td>
                 <td colspan="10">Ilustracion, Notas operacion, otros</td>
             </tr>
+            @{
+                int indexAnalysis = 0;
+            }
+
 
             @foreach (var (sect, indexSection) in _sosAnalysis.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
             {
                 @foreach (var analysis in sect.Analyses)
                 {
+                    ++indexAnalysis;
                     <tr>
                         @if (sect == _sosAnalysis.SOSHub.Sections.Last())
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@getAnalysisIndex()</td>
+                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@indexAnalysis</td>
                             <td colspan="3" style="border-top: 2px solid #ababab; border-bottom: 2px solid #ababab;">@analysis.Text</td>
                         }
                         else if (analysis == sect.Analyses.First())
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab;">@getAnalysisIndex()</td>
+                            <td colspan="1" style="border-left: 2px solid #ababab; border-top: 2px solid #ababab;">@indexAnalysis</td>
                             <td colspan="3" style="border-top: 2px solid #ababab; ">@analysis.Text</td>
                         }
                         else
                         {
-                            <td colspan="1" style="border-left: 2px solid #ababab; border-bottom: 2px solid #ababab;">@getAnalysisIndex()</td>
+                            <td colspan="1" style="border-left: 2px solid #ababab; border-bottom: 2px solid #ababab;">@indexAnalysis</td>
                             <td colspan="3">@analysis.Text</td>
                         }
 
@@ -296,8 +305,8 @@ else
                             int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
                             <td colspan="10" rowspan="@TotalRowSpanImages" style="vertical-align: top">
                                 <MudItem Class="d-flex flex-column align-start">
-                                    <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton>
-                                    <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Commentaries</MudButton>
+                                    @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
+                                    <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0 ))</MudButton>
                                     @if (capturedImages.Any())
                                     {
                                         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -318,7 +327,7 @@ else
                                         </MudAlert>
                                     }
                                     @* Dummy images *@
-                                    @* <div style="display: flex; align-items: center; justify-content: space-between;">
+                                   @*  <div style="display: flex; align-items: center; justify-content: space-between;">
                                         <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
                                             @for (int i = 0; i < 10; i++)
                                             {
@@ -334,6 +343,7 @@ else
                             </td>
                         }
                     </tr>
+
                 }
             }
             <tr>
@@ -396,7 +406,7 @@ else
     <DialogContent>
         <MudSimpleTable Elevation="0" Dense>
             <thead>
-                <tr class="table-header">
+                <tr class="table-header-gray">
                     <th>SITUACIÓN ANORMAL O CASOS ESPECIALES</th>
                     <th>CLAVE</th>
                     <th>NOMBRE DE LA PARTE</th>
@@ -475,6 +485,31 @@ else
         </div>
     </TitleContent>
     <DialogContent>
+        <MudItem Style="height: 65vh">
+            <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                <tbody>
+                    @if (_sosAnalysis.Notes != null && _sosAnalysis.Notes.Any())
+                    {
+                        @foreach (var comment in _sosAnalysis.Notes)
+                        {
+                            <tr>
+                                <td width="90%">
+                                    <MudTextField ReadOnly @bind-Value="@comment.Comment" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <MudItem Style="height: 65vh">
+                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                @Localizer["There are no commentaries"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseCommentariesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
