@@ -562,7 +562,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             FinalizeList();
 
-            GenerateSOSHUBCommentaries();
+            await GenerateSOSHUBCommentaries();
 
             var result = await SOSHubServices.UpdateSOSHub(_sosHub);
 
@@ -581,7 +581,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
-        public void GenerateSOSHUBCommentaries()
+        public async Task<AsyncVoidMethodBuilder> GenerateSOSHUBCommentaries()
         {
             _sosHub.ProcessSheetCommentary?.Clear();
             foreach (var item in items)
@@ -608,6 +608,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _sosHub.ProcessSheetCommentary?.Add(processSheetCommentary);
             }
 
+            return new AsyncVoidMethodBuilder();
         }
 
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
