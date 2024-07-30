@@ -1,5 +1,8 @@
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using System.Text.RegularExpressions;
+using System.Text;
+using System.Globalization;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -21,10 +24,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private int photoIndex = 0;
 
 
-        //Commentaries
+        //Commentaries and Logbok
         private DialogOptions dialogCommentariesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        private DialogOptions dialogLogbookOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
 
         private bool visibleCommentaries = false;
+        private bool visibleLogbook = false;
 
         //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
@@ -136,6 +141,73 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             visibleCommentaries = false;
         }
+
+        private void OpenLogbookDialog()
+        {
+            visibleLogbook = true;
+
+        }
+
+        private void CloseLogbookDialog()
+        {
+            visibleLogbook = false;
+        }
+
+
+        //Highlight critical points
+
+        private string GetFormatedAnalisisText(int sectionIndex, int analisisIndex)
+        {
+            string BaseText = Regex.Replace(_sosAnalysis.SOSHub?.Sections[sectionIndex].Analyses[analisisIndex].Text, @"\*", "").ToString();
+
+            return BaseText;
+        }
+
+
+        private MarkupString GenerateHighlightedText(string text, List<string> criticalPoints)
+        {
+            if (string.IsNullOrEmpty(text) || criticalPoints == null || criticalPoints.Count == 0)
+            {
+                return new MarkupString(text);
+            }
+
+            var normalizedText = Normalize(text);
+            var builder = new StringBuilder();
+            var currentIndex = 0;
+
+            foreach (var criticalPoint in criticalPoints)
+            {
+                var normalizedCriticalPoint = Normalize(criticalPoint);
+                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+                if (match.Success)
+                {
+                    var startIndex = match.Index;
+                    var endIndex = startIndex + criticalPoint.Length;
+
+                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
+
+                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
+
+                    currentIndex = endIndex;
+                }
+            }
+
+            builder.Append(text.Substring(currentIndex));
+
+            return new MarkupString(builder.ToString());
+        }
+
+        private static string Normalize(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
+        }
+
 
     }
 }
