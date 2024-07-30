@@ -31,6 +31,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
         public bool ShowLoading = true;
 
+        // Dummy data
+        public List<SOSAnalysisLogbook> exampleLogbooks = new List<SOSAnalysisLogbook>
+                    {
+                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 29 de Enero", Date = new DateTime(2024, 1, 29) },
+                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 15 de Marzo", Date = new DateTime(2024, 3, 15) },
+                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 10 de Agosto", Date = new DateTime(2024, 8, 10) }
+                    };
+
         protected async override Task OnInitializedAsync()
         {
 
