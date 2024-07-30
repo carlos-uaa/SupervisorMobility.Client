@@ -1,0 +1,213 @@
+﻿@page "/analysis/detailsRds/{AnalysisId:int}"
+
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+<style>
+    .vertical {
+        writing-mode: tb-rl;
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+        /* white-space: nowrap;
+        display: block;
+        bottom: 0;
+        width: 20px;
+        height: 20px;
+        text-align: center !important; */
+    }
+
+    .border-left {
+        border-left: 2px solid #ababab;
+    }
+
+    .table-header td {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray th {
+        background-color: #f5f5f6;
+    }
+
+    .grey-background {
+        background-color: #f5f5f6;
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        padding: 12px 16px;
+        z-index: 1;
+    }
+
+    .divider {
+        border-left: 1px solid var(--mud-palette-table-lines);
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+</style>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody>
+                <tr>
+                    <th rowspan="2">Nombre de la Operación</th>
+                    <td rowspan="2" colspan="3">@_sosAnalysis.SOSHub.ProcessSheet</td>
+                    <th class="divider" colspan="2">No. de Revisión</th>
+                    @*
+                        Assuming the list of revitions is ordered from newest to oldest
+                    
+                    @{int i = 0;}
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td>@(_sosAnalysis.AnalysisLogbooks.Count()-i++)</td>
+                    }
+                    *@
+                    <td>N</td>
+                    <td>N-1</td>
+                    <td>N-2</td>
+                    <td rowspan="7" class="object-fill"><MudButton Class="vertical">See More</MudButton></td>
+                </tr>
+                <tr>
+                    <th class="divider" colspan="2">Fecha</th>
+@* 
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td>@(rev.Date)</td>
+                    }
+ *@
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th>Número de control interno</th>
+                    <td>@_sosAnalysis.InternalControlNumber</td>
+                    <th>Nombre del proceso</th>
+                    <td>@_sosAnalysis.ProcessName</td>
+                    <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
+@* 
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td rowspan="3">@(rev.RevisedItem)</td>
+                    }
+ *@
+                    <td rowspan="3"></td>
+                    <td rowspan="3"></td>
+                    <td rowspan="3"></td>
+                </tr>
+                <tr>
+                    <th>Equipo de seguridad</th>
+                    <td colspan="3">
+                        @if (_sosAnalysis.SOSHub.SafetyEquipment != null && _sosAnalysis.SOSHub.SafetyEquipment.Any()) {
+                            <div class="dropdown">
+                                <MudIcon Icon="@Icons.Material.Filled.Engineering" Color="Color.Warning" Size="Size.Small"></MudIcon>
+                                @_sosAnalysis.SOSHub.SafetyEquipment.First().EquipmentName
+                                <MudSpacer/><span>Show More</span>
+                                <div class="dropdown-content">
+                                    @foreach(var element in _sosAnalysis.SOSHub.SafetyEquipment)
+                                    {
+                                        <p>@element.EquipmentName</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Herramientas</th>
+                    <td colspan="3">
+                        @if (_sosAnalysis.SOSHub.ToolsUsed != null && _sosAnalysis.SOSHub.ToolsUsed.Any())
+                        {
+                            <div class="dropdown" style="width:100%">
+                                <span><MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Info" Size="Size.Small"></MudIcon>
+                                    @_sosAnalysis.SOSHub.ToolsUsed.First().ToolName
+                                </span>
+                                <MudSpacer /><span>Show More</span>
+                                <div class="dropdown-content">
+                                    @foreach (var element in _sosAnalysis.SOSHub.ToolsUsed)
+                                    {
+                                        <p>@element.ToolName</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Modelo</th>
+                    <td colspan="3">@_sosAnalysis.SOSHub.AppliedModel?.Description</td>
+                    <th rowspan="2" class="divider"><span class="vertical">Confirmado Por</span></th>
+                    <th>Supervisor Gral.<br />( Aprobó )</th>
+@* 
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td>@(rev.SeniorSupervisor.Name)</td>
+                    }
+ *@
+                    <td>ApN</td>
+                    <td>ApN-1</td>
+                    <td>ApN-2</td>
+                </tr>
+                <tr>
+                    <th>Tiempo de aprendizaje</th>
+                    <td colspan="3">
+                        <MudAutocomplete T="int"
+                                         Margin="Margin.Dense"
+                                         Label=@Localizer["Cycles"]
+                                         Variant="Variant.Text"
+                                         AnchorOrigin="Origin.BottomCenter"
+                                         @bind-Value="cycleId"
+                                         OpenIcon="@Icons.Material.Filled.AccessTime"
+                                         AdornmentColor="Color.Info"
+                                         Clearable
+                                         ResetValueOnEmptyText
+                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                         MaxItems="10"
+                                         ReadOnly>
+                        </MudAutocomplete>
+                    </td>
+                    <th>Supervisor<br />( Elaboró )</th>
+                    @*
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td>@(rev.Supervisor.Name)</td>
+                    }
+                *@
+                    <td>ApN</td>
+                    <td>ApN-1</td>
+                    <td>ApN-2</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+}
