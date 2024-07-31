@@ -46,10 +46,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int stationId = 0;
 
 
-        List<string> allCriticalPoints = new List<string>();
         private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
         private string HighlightedText;
-        private string SelectedTerm;
 
 
         public int productId = 0;
@@ -708,51 +706,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         //Analize text and steps
         #region Steps
-        public void AnalyzeText()
-        {
-            //segments.Clear();
-            //allCriticalPoints.Clear();
-            //BaseText = Regex.Replace(_sosHub.OperationDescription, @"\*", "").ToString();
-
-            //var segmentTexts = _sosHub.OperationDescription.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-
-            //foreach (var segmentText in segmentTexts)
-            //{
-            //    var segment = new Segment
-            //    {
-            //        Analysis = segmentText
-            //    };
-
-            //    var mainPointRegex = new Regex(@"#(.*?)#");
-            //    var mainPointMatch = mainPointRegex.Match(segmentText);
-
-            //    if (mainPointMatch.Success)
-            //    {
-            //        segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-            //    }
-            //    else
-            //    {
-            //        segment.MainPoint = string.Empty;
-            //    }
-
-            //    var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-            //    var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-            //    foreach (Match match in criticalPointMatches)
-            //    {
-            //        if (match.Success)
-            //        {
-            //            segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-            //        }
-            //    }
-
-            //    segments.Add(segment);
-            //}
-
-            //allCriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-            //StateHasChanged();
-        }
-
+   
         public void ShowStepsDialog()
         {
             visibleStepsDialog = true;
