@@ -532,7 +532,14 @@ else
     </DialogActions> *@
 </MudDialog>
 
-
+<MudMessageBox @ref="_DeleteMessage" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Hoe?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
 
 @code {
     // Breadcrumb links
@@ -563,6 +570,9 @@ else
     public bool ShowPagesGenerate = false;
     private int selectedIndexPageGenerate = 0;
 
+    private MudMessageBox _DeleteMessage;
+
+   
     int cycleId = 0;
     //Analisis
     SOSAnalysis analisys { get; set; } = new SOSAnalysis();
@@ -650,13 +660,11 @@ else
     {
         if (selectedRowNumber == rowNumber)
         {
-            FindSelectedHoe(element.SOSHubId);
             SosHubId = element.SOSHubId;
             return "selected"; // Mantener la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
-            FindSelectedHoe(element.SOSHubId);
             SosHubId = element.SOSHubId;
             selectedRowNumber = rowNumber;
             return "selected";
@@ -680,9 +688,11 @@ else
     // Delete Hoe
     async Task DeleteHoe(int HoeId)
     {
-        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Hoe?");
+         bool? result = await _DeleteMessage.Show();
+        var confirm = result is null ? "Canceled" : "Deleted!";
+        StateHasChanged();
 
-        if (confirm)
+        if (confirm == "Deleted!")
         {
             _Hoes.RemoveAll(Hoe => Hoe.SOSHubId == HoeId);
             await SOSHubServices.DeleteSOSHub(HoeId);
