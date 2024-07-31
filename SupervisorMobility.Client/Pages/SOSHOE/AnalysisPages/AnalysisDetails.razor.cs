@@ -36,6 +36,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
         public bool ShowLoading = true;
 
+
+        private double totalTime;
         // Dummy data
         public List<SOSAnalysisLogbook> exampleLogbooks = new List<SOSAnalysisLogbook>
                     {
@@ -74,7 +76,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 }
             }
             cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
-
+            totalTime = _sosAnalysis.SOSHub.Sections
+                .Select(sect =>
+                {
+                    double timeValue;
+                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                })
+                .Where(timeValue => timeValue.HasValue)
+                .Select(timeValue => timeValue.Value)
+                .DefaultIfEmpty(0)
+                .Sum();
             ShowLoading = false;
             StateHasChanged();
         }
