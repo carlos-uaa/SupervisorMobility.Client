@@ -1951,6 +1951,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Data Collector.
+        /// </summary>
+        public static string HubCollectionTitle {
+            get {
+                return ResourceManager.GetString("HubCollectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a ILU History Of Operations In User.
         /// </summary>
         public static string ILUHistoryOfOperationsInUser {
