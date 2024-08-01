@@ -67,7 +67,7 @@ else
                             <div class="d-flex" style="align-items: center; justify-content:center;">
                                 <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
                                 <MudText Typo="Typo.h6" Style="text-align: center;">
-                                    @Localizer["HOE / SOS"]
+                                    @Localizer["HubCollectionTitle"]
                                 </MudText>
                             </div>
                         </TitleContent>
@@ -89,7 +89,7 @@ else
                                                  <MudTabPanel Text="Capture of analysis" Style="color:#424242; width: 15vw;">
                                                  </MudTabPanel>
 
-                                                 @if (!string.IsNullOrEmpty(RawAnalisis.FirstOrDefault().Text) || _sosHub.Sections.Count > 0)
+                                                 @if (!string.IsNullOrEmpty(RawAnalisis?.FirstOrDefault()?.Text) || _sosHub.Sections.Count > 0)
                                                 {
                                                     <MudTabPanel Text="Step capture" OnClick="CreateBakup" Style="color:#424242;  width: 15vw;">
                                                     </MudTabPanel>
@@ -181,21 +181,21 @@ else
                                                     </MudItem>
                                                     @if (RawAnalisis.Count > 0)
                                                     {
-                                                         <MudItem>
-                                                        <MudStack>
-                                                            <MudText>Selection Values: @string.Join(", ", _selectedValues ?? new List<string>())</MudText>
-                                                            <MudStack Class="flex-wrap">
-                                                                <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
-                                                                    @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                                    {
-                                                                        <MudToggleItem Value="@RawAnalisis[indexAnalisis].Text" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
-                                                                    }
-                                                                </MudToggleGroup>
+                                                        <MudItem>
+                                                            <MudStack>
+                                                                <MudText>Selection Values: @string.Join(", ", _selectedValues ?? new List<string>())</MudText>
+                                                                <MudStack Class="flex-wrap">
+                                                                    <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
+                                                                         @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                        {
+                                                                            <MudToggleItem Value="@RawAnalisis[indexAnalisis].Text" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                                                                        }
+                                                                    </MudToggleGroup>
+                                                                </MudStack>
                                                             </MudStack>
-                                                        </MudStack>
 
-                                                        <MudButton OnClick="AddStep" Color="Color.Primary" Disabled="@(_selectedValues.Count() == 0 ? true : false)" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Generar Paso</MudButton>
-                                                    </MudItem>
+                                                            <MudButton OnClick="AddStep" Color="Color.Primary" Disabled="@(_selectedValues.Count() == 0 ? true : false)" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Generar Paso</MudButton>
+                                                        </MudItem>
                                                     }
 
                                                     @if (_sosHub.Sections.Count > 0)
@@ -213,45 +213,45 @@ else
                                                                 @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
                                                                 {
                                                                     <MudTr>
-                                                                         <MudTd Style="width:50%; background-color: white">
-                                                                        @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                                        {
-                                                                            @if (analisis.CriticalPoints.Any())
+                                                                        <MudTd Style="width:50%; background-color: white">
+                                                                            @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                                             {
+                                                                                @if (analisis.CriticalPoints.Any())
+                                                                                {
                                                                                     <MudText Typo="Typo.subtitle1" Label="Análisis" Variant="Variant.Filled" Class="mb-2">
-                                                                                    @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexAnalisis), analisis.CriticalPoints))
-                                                                                </MudText>
+                                                                                        @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexAnalisis), analisis.CriticalPoints))
+                                                                                    </MudText>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                        @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
+                                                                                    </MudText>
+                                                                                }
                                                                             }
-                                                                            else
-                                                                            {
-                                                                                <MudText Typo="Typo.subtitle1" Class="mb-2">
-                                                                                    @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
-                                                                                </MudText>
-                                                                            }
-                                                                        }
-                                                                    </MudTd>
+                                                                        </MudTd>
                                                                         <MudTd Style="width:20%">
                                                                             <MudTextField @bind-Value="_sosHub.Sections[indexSection].Step" Label="Paso" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
                                                                         </MudTd>
                                                                         <MudTh Style="width:20%">
-                                                                        @if (!string.IsNullOrEmpty(section.Step))
-                                                                        {
-                                                                            @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                            @if (!string.IsNullOrEmpty(section.Step))
                                                                             {
-                                                                                <MudItem>
-                                                                                    @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
-                                                                                    {
-                                                                                        <MudText Typo="Typo.subtitle1" Class="mb-2">
-                                                                                            @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
-                                                                                        </MudText>
-                                                                                        <MudText Typo="Typo.subtitle1" Class="mb-2">
-                                                                                            @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]
-                                                                                        </MudText>
-                                                                                    }
-                                                                                </MudItem>
+                                                                                @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                                {
+                                                                                    <MudItem>
+                                                                                        @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                                                                        {
+                                                                                            <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                                @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                                                            </MudText>
+                                                                                            <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                                                                @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]
+                                                                                            </MudText>
+                                                                                        }
+                                                                                    </MudItem>
+                                                                                }
                                                                             }
-                                                                        }
-                                                                    </MudTh>
+                                                                        </MudTh>
 
                                                                         <MudTd Style="width:10%">
                                                                             <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveSectionItem(section)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
@@ -291,7 +291,7 @@ else
                                                                             @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
                                                                         </MudText>
                                                                     }
-                                                                     @if (analisis != section.Analyses.Last())
+                                                                    @if (analisis != section.Analyses.Last())
                                                                     {
                                                                         <MudDivider DividerType="DividerType.Middle" Class="my-6" />
                                                                     }
@@ -318,9 +318,9 @@ else
                                                                             }
                                                                         </MudItem>
                                                                         @if (analisis != section.Analyses.Last())
-                                                                                {
-                                                                                    <MudDivider DividerType="DividerType.Middle" Class="my-6" />
-                                                                                }
+                                                                        {
+                                                                            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                                        }
                                                                     }
                                                                 }
                                                             </MudTd>
@@ -1001,33 +1001,33 @@ else
         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
             @*@if (capturedImages.Any > 0)
             {*@
-                <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
-                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
-                        @foreach (var (image,index) in PreviousImages.Select((image,index)=>(image,index)))
-                        {
-                            <MudItem Class=" mr-8 mb-4">
-                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveOldImage(image.Item1)"></MudIcon>
-                                    </MudTooltip>
-                                </MudItem>
-                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+            <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+                    @foreach (var (image, index) in PreviousImages.Select((image, index) => (image, index)))
+                    {
+                        <MudItem Class=" mr-8 mb-4">
+                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveOldImage(image.Item1)"></MudIcon>
+                                </MudTooltip>
                             </MudItem>
-                        }
-                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
-                        {
-                            <MudItem Class=" mr-8 mb-4">
-                                <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
-                                    </MudTooltip>
-                                </MudItem>
-                                <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index, false)" />
+                            <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+                        </MudItem>
+                    }
+                    @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                    {
+                        <MudItem Class=" mr-8 mb-4">
+                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                </MudTooltip>
                             </MudItem>
-                        }
-                    </MudItem>
+                            <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index, false)" />
+                        </MudItem>
+                    }
+                </MudItem>
 
-                </div>
+            </div>
             @* } *@
         </MudItem>
     </DialogContent>
@@ -1061,9 +1061,9 @@ else
             </MudFileUpload>
         </MudItem>
         <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
-            @if( PreviousVideo.Any() || MediaUris.Any())
+            @if (PreviousVideo.Any() || MediaUris.Any())
             {
-                @foreach(var item in PreviousVideo)
+                @foreach (var item in PreviousVideo)
                 {
                     <MudItem Class="mr-4 mb-4">
                         <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
@@ -1123,7 +1123,7 @@ else
                         </MudAvatar>
                     </NextButtonTemplate>
                     <ChildContent>
-                        @foreach(var evidence in PreviousImages)
+                        @foreach (var evidence in PreviousImages)
                         {
                             <MudCarouselItem Transition="Transition.Fade">
                                 <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
