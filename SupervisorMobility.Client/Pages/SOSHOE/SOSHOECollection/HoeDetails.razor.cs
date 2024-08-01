@@ -41,10 +41,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         List<Area> _areas = new();
         List<Distribution> _distributions = new();
         List<Department> _departments = new();
+        List<Station> _stations { get; set; } = new();
         int plantId = 0;
         int areaId = 0;
         int distributionId = 0;
-        int departmentId = 0;
+        int departmentId = 0; 
+        int stationId = 0;
 
 
         private string HighlightedText;
@@ -134,14 +136,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         #endregion
-
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+        public bool ShowLoading = true;
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
             _links = new List<BreadcrumbItem>
                 {
-                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "/sosHub"),
+                    new BreadcrumbItem(text: Localizer["home"], href: "/SOSHOE"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub"),
                     new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true)
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
@@ -157,15 +172,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
 
-            SetUserInfo();
-
+            await SetUserInfo();
+            ShowLoading = false;
         }
 
     
         //Create SOS HUB and validations
         #region Create SOSHUB
 
-        public async void SetUserInfo()
+        public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
 
@@ -183,7 +198,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _departments = await DepartmentServices.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
-
+            _stations = await StationServices.GetStations();
+            _stations = _stations.OrderBy(s => s.Description).ToList();
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments:true);
 
@@ -270,6 +286,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             distributionId = _sosHub.DistributionId ?? distributionId;
             areaId = _sosHub.AreaId ?? areaId;
+            stationId = _sosHub.StationId ?? stationId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
             productId = _sosHub.AppliedModelId ?? productId;
             supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
@@ -278,7 +295,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
 
             StateHasChanged();
-
+            return new AsyncVoidMethodBuilder();
         }
 
         private void DownloadDocument(CommonDirection document)
