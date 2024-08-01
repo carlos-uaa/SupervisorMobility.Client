@@ -7,6 +7,7 @@ using Microsoft.JSInterop;
 using static MudBlazor.Icons;
 using SupervisorMobility.Client.Data.Entities;
 using Microsoft.AspNetCore.Components.Web;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -37,6 +38,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private bool visibleCommentaries = false;
         private bool visibleLogbook = false;
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+        public bool logged = false;
+
+        public int userType = 0;
+
+        //Commentaries
+        public class ItemModel
+        {
+            public int ComentaryId { get; set; }
+            public string Commentary { get; set; }
+            public bool IsActive { get; set; } = true;
+
+        }
+
+        List<ItemModel> items = new List<ItemModel>();
+        List<ItemModel> tempItems = new List<ItemModel>();
+
         //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
@@ -60,46 +80,43 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
-            if (_sosAnalysis.AnalysisLogbooks != null)
-                mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
-            else
-                mostRecentLogs = new List<SOSAnalysisLogbook>();
-
-            #region Tests
-            //Use Example logbooks
-            mostRecentLogs = new List<SOSAnalysisLogbook>
+            await GetUserAsync();
+            logged = await HasPropertyAsync();
+            if (!logged)
             {
-                new SOSAnalysisLogbook { RevisedItem = "test", Date = new DateTime(2024, 1, 29), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
-                new SOSAnalysisLogbook { RevisedItem = "test2", Date = new DateTime(2024, 3, 15), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
-                new SOSAnalysisLogbook {RevisedItem = "test3", Date = new DateTime(2024, 8, 10), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" }}
-            };
-
-            #endregion
-            if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
-            {
-
-                foreach (var analysisImage in _sosAnalysis.Illustrations)
-                {
-                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
-                    capturedImages.Add(image);
-                }
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
             }
-            cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
-            totalTime = _sosAnalysis.SOSHub.Sections
-                .Select(sect =>
-                {
-                    double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
-                })
-                .Where(timeValue => timeValue.HasValue)
-                .Select(timeValue => timeValue.Value)
-                .DefaultIfEmpty(0)
-                .Sum();
+
+            await SetUserInfo();
             ShowLoading = false;
             StateHasChanged();
         }
 
+
+        //Local storage user
+        #region LocalStorageUser
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+                user = new();
+        }
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+            }
+            return hasProperty;
+        }
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+        #endregion
 
         public static int GetCycleId(string trainingTime)
         {
@@ -124,6 +141,60 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         //    IndexAnalysis = 0;
         //}
 
+        public async Task<AsyncVoidMethodBuilder> SetUserInfo()
+        {
+
+            _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
+            if (_sosAnalysis.AnalysisLogbooks != null)
+                mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
+            else
+                mostRecentLogs = new List<SOSAnalysisLogbook>();
+
+
+
+            if (_sosAnalysis.Notes?.Any() ?? false)
+            {
+                foreach (var comment in _sosAnalysis.Notes)
+                {
+                    if (comment.IsActive != null && comment.IsActive == true)
+                    {
+                        var item = new ItemModel
+                        {
+                            ComentaryId = comment.ComentaryId,
+                            Commentary = comment.Comment,
+                        };
+                        items.Add(item);
+                    }
+                }
+            }
+
+            AddItem();
+
+
+            if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
+            {
+
+                foreach (var analysisImage in _sosAnalysis.Illustrations)
+                {
+                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
+                    capturedImages.Add(image);
+                }
+            }
+            cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
+            totalTime = _sosAnalysis.SOSHub.Sections
+                .Select(sect =>
+                {
+                    double timeValue;
+                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                })
+                .Where(timeValue => timeValue.HasValue)
+                .Select(timeValue => timeValue.Value)
+                .DefaultIfEmpty(0)
+                .Sum();
+            StateHasChanged();
+
+            return new AsyncVoidMethodBuilder();
+        }
 
         public static string ReasonFormat(string input)
         {
@@ -270,6 +341,38 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
 
         }
+
+
+        //Commentaries
+        #region Commentaries
+        void AddItem()
+        {
+            tempItems.Add(new ItemModel());
+        }
+
+        void RemoveItem(ItemModel item, bool isTemp)
+        {
+            Console.WriteLine(item.Commentary);
+            if (isTemp)
+            {
+                Console.WriteLine("a");
+            }
+            if (isTemp)
+            {
+                tempItems.Remove(item);
+            }
+            else
+            {
+                int index = items.IndexOf(item);
+
+                if (index != -1)
+                {
+                    items[index].IsActive = false;
+                }
+            }
+        }
+
+        #endregion
 
     }
 }

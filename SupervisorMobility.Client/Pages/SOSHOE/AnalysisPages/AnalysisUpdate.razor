@@ -1,6 +1,9 @@
 ﻿@page "/Analysis/Update/{AnalysisId:int}"
 
+@inject NavigationManager NavigationManager
 @inject ISOSAnalysisService SOSAnalysisServices
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 
@@ -266,7 +269,7 @@ else
                                     <MudItem Class="d-flex flex-column align-start">
                                         @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
                                         <MudItem Class="d-flex">
-                                            <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show / Add Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
                                             @*                                             <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenLogbookDialog" Class="ml-3 mb-4" StartIcon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudButton>
                             *@
                                         </MudItem>
@@ -452,28 +455,37 @@ else
         <MudItem Style="height: 65vh">
             <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                 <tbody>
-                    @if (_sosAnalysis.Notes != null && _sosAnalysis.Notes.Any())
+                    @foreach (var item in items.Where(i => i.IsActive))
                     {
-                        @foreach (Commentary comment in _sosAnalysis.Notes)
-                        {
-                            <tr>
-                                <td width="90%">
-                                    <MudTextField ReadOnly @bind-Value="@comment.Comment" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                        <tr>
+                            <td width="90%">
+                                <MudTextField @bind-Value="@item.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                            </td>
+                            @if (items.IndexOf(item) > 0)
+                            {
+                                <td width="10%">
+                                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(item, false)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
                                 </td>
-                            </tr>
-                        }
+                            }
+                        </tr>
                     }
-                    else
+                    @foreach (var tempItem in tempItems)
                     {
-                        <MudItem Style="height: 65vh">
-                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                @Localizer["There are no commentaries"]
-                            </MudAlert>
-                        </MudItem>
+                        <tr>
+                            <td width="90%">
+                                <MudTextField @bind-Value="@tempItem.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                            </td>
+                            @if (tempItems.IndexOf(tempItem) > 0 || items.Count() > 0)
+                            {
+                                <td width="10%">
+                                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveItem(tempItem, true)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                </td>
+                            }
+                        </tr>
                     }
                 </tbody>
             </MudSimpleTable>
-
+            <MudButton OnClick="AddItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add Commentary</MudButton>
         </MudItem>
     </DialogContent>
     <DialogActions>
