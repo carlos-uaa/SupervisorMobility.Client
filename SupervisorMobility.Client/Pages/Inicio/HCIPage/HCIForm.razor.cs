@@ -271,7 +271,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         }
         public async void RemoveNote(int idx)
         {
-            if (comments[idx].ComentaryId == 0)
+            if (comments[idx].CommentaryId == 0)
             {
                 comments.RemoveAt(idx);
             }
@@ -302,7 +302,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             //}
             expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
             categories.RemoveAll(p=>p.ChosenCategoryDepartmentId == 0 && p.HCICategoryId == 0);
-            comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.ComentaryId == 0);
+            comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.CommentaryId == 0);
         }
 
 

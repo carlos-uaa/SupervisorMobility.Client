@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //Commentaries
         public class ItemModel
         {
-            public int ComentaryId { get; set; }
+            public int CommentaryId { get; set; }
             public string Commentary { get; set; }
             public bool IsActive { get; set; } = true;
 
@@ -604,7 +604,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 var processSheetCommentary = new Commentary
                 {
-                    ComentaryId = item.ComentaryId,
+                    CommentaryId = item.CommentaryId,
                     Comment = item.Commentary,
                     IsActive = item.IsActive
                 };
@@ -616,7 +616,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 var processSheetCommentary = new Commentary
                 {
-                    ComentaryId = 0,
+                    CommentaryId = 0,
                     Comment = item.Commentary,
                     IsActive = true
                 };
@@ -663,7 +663,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         var item = new ItemModel
                         {
-                            ComentaryId = comment.ComentaryId,
+                            CommentaryId = comment.CommentaryId,
                             Commentary = comment.Comment,
                         };
                         items.Add(item);
@@ -1739,6 +1739,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 var state = result == null ? "Canceled" : "Deleted!";
                 StateHasChanged();
             }
+        }
+
+        public static string ReasonFormat(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            if (!input.StartsWith("("))
+            {
+                input = "(" + input;
+            }
+
+            if (!input.EndsWith(")"))
+            {
+                input = input + ")";
+            }
+
+            return input;
         }
 
         private Analysis ProcessText(string text)

@@ -175,7 +175,7 @@ namespace SupervisorMobility.Client.Pages.IS.ISPages.QualityAppearancePage
                 {
                     var appeareanceCommentary = new Commentary
                     {
-                        ComentaryId = 0,
+                        CommentaryId = 0,
                         Comment = item.Commentary,
                         IsActive = true
                     };

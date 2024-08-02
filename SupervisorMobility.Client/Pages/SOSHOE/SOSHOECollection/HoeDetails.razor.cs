@@ -125,8 +125,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //Analysis
         [Inject]
         private IDialogService DialogService { get; set; }
-        public List<string> RawAnalisis { get; set; } = new List<string>();
-        public List<string> RawAnalisisBk { get; set; } = new List<string>();
+        public List<AnalysisBkup> RawAnalisis { get; set; } = new List<AnalysisBkup>();
 
         private IEnumerable<string> _selectedValues = new List<string>();
 
@@ -204,14 +203,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments:true);
 
 
+        
+
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
+                var listTextSections = _sosHub.Sections.SelectMany(section => section.Analyses).Select(analysis => analysis.Text).ToList();
+
                 foreach (var backup in _sosHub.AnalysesBkup)
                 {
-                    RawAnalisisBk.Add(backup.Text);
-                    RawAnalisis.Add(backup.Text); 
+                    if (!listTextSections.Contains(backup.Text))
+                    {
+                        RawAnalisis.Add(backup);
+                    }
                 }
             }
+
 
             if (_sosHub.Images != null && _sosHub.Images.Count > 0)
             {
@@ -521,135 +527,34 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
         }
 
-        private static string ReplaceInsensitive(string text, string search)
+
+    
+        public static string ReasonFormat(string input)
         {
-            if (string.IsNullOrEmpty(search))
+            if (string.IsNullOrEmpty(input))
             {
-                return text;
+                return input;
             }
 
-            string normalizedText = Normalize(text);
-            string normalizedSearch = Normalize(search);
-            var result = Regex.Replace(normalizedText, Regex.Escape(normalizedSearch), m =>
+            if (!input.StartsWith("("))
             {
-                int startIndex = normalizedText.IndexOf(m.Value, m.Index, StringComparison.OrdinalIgnoreCase);
-                string originalMatch = text.Substring(startIndex, search.Length);
-                return $"<mark>{originalMatch}</mark>";
-            }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            return result;
-        }
-
-        private string GetAnalisisText(int sectionIndex, int analisisIndex)
-        {
-            return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].Text;
-        }
-
-        //private string GetHighlightedText(int sectionIndex, int analisisIndex)
-        //{
-        //    //return _sosHub.Sections[sectionIndex].Analyses[analisisIndex].CriticalPoint;
-        //}
-
-        void CreateBakup()
-        {
-            if (RawAnalisis.Count > 0)
-            {
-                RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
-                foreach (var raw in RawAnalisisBk)
-                {
-                    AnalysisBkup analysisBkup = new AnalysisBkup();
-                    analysisBkup.Text = raw;
-                    analysisBkup.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkup);
-                }
+                input = "(" + input;
             }
-        }
-        void RestoreBakup()
-        {
-            RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
-            _sosHub.Sections.Clear();
-            _sosHub.AnalysesBkup.Clear();
-        }
-        void AddRawItem()
-        {
-            RawAnalisis.Add("");
-        }
 
-        void RemoveRawItem(string item)
-        {
-            if (RawAnalisis.Count > 1)
+            if (!input.EndsWith(")"))
             {
-                RawAnalisis.Remove(item);
+                input = input + ")";
             }
-        }
-        void RemoveSectionItem(Section item)
-        {
 
-            if (_sosHub.Sections.Count > 0)
-            {
-                var textsToReinsert = item.Analyses.Select(analisis => analisis.Text).ToList();
-
-                foreach (var text in textsToReinsert)
-                {
-                    int indexinsert = RawAnalisisBk.IndexOf(text);
-
-                    int insertPosition = RawAnalisis
-                        .Select((value, index) => new { Value = value, Index = index })
-                        .Where(x => RawAnalisisBk.IndexOf(x.Value) >= indexinsert)
-                        .Select(x => x.Index)
-                        .DefaultIfEmpty(RawAnalisis.Count)
-                        .First();
-                    // Insertar el texto en la posición correcta
-                    RawAnalisis.Insert(insertPosition, text);
-                }
-
-                // Eliminar la sección de Sections
-                _sosHub.Sections.Remove(item);
-            }
+            return input;
         }
 
-        public void AddStep()
-        {
-            showAddStepDialog = true;
-        }
-
+      
         private void CloseStepDialog()
         {
             showAddStepDialog = false;
         }
-        public async void confirmStep()
-        {
-
-            if (!string.IsNullOrEmpty(stepName))
-            {
-
-                Section SectiontoAdd = new Section();
-                foreach (string item in _selectedValues)
-                {
-                    Analysis ToAdd = new Analysis();
-                    ToAdd.Text = item;
-                    SectiontoAdd.Analyses.Add(ToAdd);
-                    RawAnalisis.Remove(item);
-                }
-
-                SectiontoAdd.Step = stepName;
-
-                _sosHub.Sections.Add(SectiontoAdd);
-
-                stepName = string.Empty;
-                _selectedValues = new List<string>();
-                CloseStepDialog();
-            }
-            else
-            {
-                bool? result = await DialogService.ShowMessageBox(
-                   "Warning",
-                    "Es necesario el texto!",
-                   yesText: "Ok!");
-                var state = result == null ? "Canceled" : "Deleted!";
-                StateHasChanged();
-            }
-
-        }
+     
         #endregion
 
         void HoeHistory()
