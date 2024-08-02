@@ -160,7 +160,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     {
                         var item = new ItemModel
                         {
-                            ComentaryId = comment.ComentaryId,
+                            ComentaryId = comment.CommentaryId,
                             Commentary = comment.Comment,
                         };
                         items.Add(item);
