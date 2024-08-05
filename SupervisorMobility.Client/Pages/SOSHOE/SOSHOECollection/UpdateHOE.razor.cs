@@ -260,7 +260,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         var item = new ItemModel
                         {
-                            ComentaryId = comment.ComentaryId,
+                            CommentaryId = comment.CommentaryId,
                             Commentary = comment.Comment,
                         };
                         items.Add(item);
