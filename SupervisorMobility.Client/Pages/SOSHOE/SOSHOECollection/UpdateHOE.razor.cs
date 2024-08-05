@@ -224,6 +224,159 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
         }
 
+        public async Task<AsyncVoidMethodBuilder> SetUserInfo()
+        {
+            _products = await ProductsServices.GetProducts();
+            _tools = await ToolsServices.GetTools();
+            _tools = _tools.OrderBy(t => t.ToolName).ToList();
+            _filteredTools = new List<Tool>(_tools);
+
+            _equipment = await EquipmentsServices.GetEquipments();
+            _equipment = _equipment.OrderBy(e => e.EquipmentName).ToList();
+            _filteredEquipment = new List<Equipment>(_equipment);
+
+            _materials = await MaterialsServices.GetMaterials();
+            _materials = _materials.OrderBy(m => m.MaterialName).ToList();
+            _filteredMaterials = new List<Material>(_materials);
+
+            _plants = await PlantServices.GetPlants();
+            _plants = _plants.OrderBy(p => p.Description).ToList();
+
+            _departments = await DepartmentServices.GetDepartments();
+            _departments = _departments.OrderBy(d => d.Description).ToList();
+
+            _stations = await StationServices.GetStations();
+            _stations = _stations.OrderBy(s => s.Description).ToList();
+
+            StateHasChanged();
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments: true);
+
+
+            if (_sosHub.ProcessSheetCommentary != null && _sosHub.ProcessSheetCommentary.Count > 0)
+            {
+                foreach (var comment in _sosHub.ProcessSheetCommentary)
+                {
+                    if (comment.IsActive != null && comment.IsActive == true)
+                    {
+                        var item = new ItemModel
+                        {
+                            ComentaryId = comment.ComentaryId,
+                            Commentary = comment.Comment,
+                        };
+                        items.Add(item);
+                    }
+                }
+            }
+
+
+
+
+            if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
+            {
+                var listTextSections = _sosHub.Sections.SelectMany(section => section.Analyses).Select(analysis => analysis.Text).ToList();
+
+                foreach (var backup in _sosHub.AnalysesBkup)
+                {
+                    if (!listTextSections.Contains(backup.Text))
+                    {
+                        RawAnalisis.Add(backup);
+                    }
+                    RawAnalisisBk.Add(backup);
+                }
+            }
+
+            if (_sosHub.Images != null && _sosHub.Images.Count > 0)
+            {
+
+                foreach (var sosImage in _sosHub.Images)
+                {
+                    var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
+                    PreviousImages.Add((sosImage.FileUploadId, image));
+                }
+            }
+
+            if (_sosHub.Videos != null && _sosHub.Videos.Count > 0)
+            {
+                foreach (var sosVideo in _sosHub.Videos)
+                {
+                    var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
+                    PreviousVideo.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
+                }
+            }
+
+            if (_sosHub.SafetyEquipment != null && _sosHub.SafetyEquipment.Count > 0)
+            {
+                _equipmentIds = _sosHub.SafetyEquipment.Select(s => s.EquipmentId).ToList();
+            }
+            if (_sosHub.ToolsUsed != null && _sosHub.ToolsUsed.Count > 0)
+            {
+                _toolsIds = _sosHub.ToolsUsed.Select(s => s.ToolId).ToList();
+            }
+            if (_sosHub.MaterialsUsed != null && _sosHub.MaterialsUsed.Count > 0)
+            {
+                _materialsIds = _sosHub.MaterialsUsed.Select(s => s.MaterialId).ToList();
+            }
+
+            PopulateList();
+
+            _filteredTools = _filteredTools.Where(t => !_toolsIds.Contains(t.ToolId)).ToList();
+            _filteredEquipment = _filteredEquipment.Where(e => !_equipmentIds.Contains(e.EquipmentId)).ToList();
+            _filteredMaterials = _filteredMaterials.Where(m => !_materialsIds.Contains(m.MaterialId)).ToList();
+
+            plantId = _sosHub.PlantId ?? plantId;
+
+            if (user.UserType == 1)
+            {
+                if (plantId != new int())
+                {
+                    _areas = await AreaServices.GetAreas(plantId);
+                    _areas = _areas.OrderBy(a => a.Description).ToList();
+                }
+                _supervisors = await UsersService.GetUsersByType(3, false, false);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            }
+            if (user.UserType == 2)
+            {
+
+                _areas = user.Areas.ToList();
+                foreach (var sv in user.Subordinates.ToList())
+                {
+                    _supervisors.Add(sv);
+                }
+
+            }
+            else if (user.UserType == 3)
+            {
+                _areas = await AreaServices.GetAreas(plantId);
+                _areas = _areas.OrderBy(a => a.Description).ToList();
+
+                _supervisors.Add(user);
+            }
+
+            areaId = _sosHub.AreaId ?? areaId;
+
+            if (plantId != 0 && areaId != 0)
+            {
+                _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
+                _distributions = _distributions.OrderBy(d => d.Description).ToList();
+            }
+
+            distributionId = _sosHub.DistributionId ?? distributionId;
+            departmentId = _sosHub.DepartmentId ?? departmentId;
+            productId = _sosHub.AppliedModelId ?? productId;
+            supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
+            supervisorOwnerId = _sosHub.OwnerId ?? supervisorOwnerId;
+            stationId = _sosHub.StationId ?? stationId;
+
+            productSide = _sosHub.Folio.Split('-')[2] ?? productSide;
+
+            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            StateHasChanged();
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+
         #region Tools
 
         private async Task<IEnumerable<string>> SearchTools(string value)
@@ -627,157 +780,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<AsyncVoidMethodBuilder> SetUserInfo()
-        {
-            _products = await ProductsServices.GetProducts();
-            _tools = await ToolsServices.GetTools();
-            _tools = _tools.OrderBy(t => t.ToolName).ToList();
-            _filteredTools = new List<Tool>(_tools);
-
-            _equipment = await EquipmentsServices.GetEquipments();
-            _equipment = _equipment.OrderBy(e => e.EquipmentName).ToList();
-            _filteredEquipment = new List<Equipment>(_equipment);
-
-            _materials = await MaterialsServices.GetMaterials();
-            _materials = _materials.OrderBy(m => m.MaterialName).ToList();
-            _filteredMaterials = new List<Material>(_materials);
-
-            _plants = await PlantServices.GetPlants();
-            _plants = _plants.OrderBy(p => p.Description).ToList();
-
-            _departments = await DepartmentServices.GetDepartments();
-            _departments = _departments.OrderBy(d => d.Description).ToList();
-
-            _stations = await StationServices.GetStations();
-            _stations = _stations.OrderBy(s => s.Description).ToList();
-
-            StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true,includeDocuments: true ); 
-
-
-            if (_sosHub.ProcessSheetCommentary != null && _sosHub.ProcessSheetCommentary.Count > 0)
-            {
-                foreach (var comment in _sosHub.ProcessSheetCommentary)
-                {
-                    if (comment.IsActive != null && comment.IsActive == true)
-                    {
-                        var item = new ItemModel
-                        {
-                            ComentaryId = comment.ComentaryId,
-                            Commentary = comment.Comment,
-                        };
-                        items.Add(item);
-                    }
-                }
-            }
-
-
-         
-
-            if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
-            {
-                var listTextSections = _sosHub.Sections.SelectMany(section => section.Analyses).Select(analysis => analysis.Text).ToList();
-
-                foreach (var backup in _sosHub.AnalysesBkup)
-                {
-                    if (!listTextSections.Contains(backup.Text))
-                    {
-                        RawAnalisis.Add(backup);
-                    }
-                    RawAnalisisBk.Add(backup);
-                }
-            }
-
-            if (_sosHub.Images != null && _sosHub.Images.Count > 0)
-            {
-
-                foreach (var sosImage in _sosHub.Images)
-                {
-                    var image = await SOSHubServices.ShowImageSosHub(sosImage.FileUploadId);
-                    PreviousImages.Add((sosImage.FileUploadId,image));
-                }
-            }
-
-            if (_sosHub.Videos != null && _sosHub.Videos.Count > 0)
-            {
-                foreach (var sosVideo in _sosHub.Videos)
-                {
-                    var video = await SOSHubServices.ShowVideoSosHub(sosVideo.FileUploadId);
-                    PreviousVideo.Add(sosVideo.FileUploadId.ToString(), (sosVideo.FileName, video));
-                }
-            }
-
-            if (_sosHub.SafetyEquipment != null && _sosHub.SafetyEquipment.Count > 0)
-            {
-                _equipmentIds = _sosHub.SafetyEquipment.Select(s => s.EquipmentId).ToList();
-            }
-            if (_sosHub.ToolsUsed != null && _sosHub.ToolsUsed.Count > 0)
-            {
-                _toolsIds = _sosHub.ToolsUsed.Select(s => s.ToolId).ToList();
-            }
-            if (_sosHub.MaterialsUsed != null && _sosHub.MaterialsUsed.Count > 0)
-            {
-                _materialsIds = _sosHub.MaterialsUsed.Select(s => s.MaterialId).ToList();
-            }
-
-            PopulateList();
-
-            _filteredTools = _filteredTools.Where(t => !_toolsIds.Contains(t.ToolId)).ToList();
-            _filteredEquipment = _filteredEquipment.Where(e => !_equipmentIds.Contains(e.EquipmentId)).ToList();
-            _filteredMaterials = _filteredMaterials.Where(m => !_materialsIds.Contains(m.MaterialId)).ToList();
-
-            plantId = _sosHub.PlantId ?? plantId;
-
-            if (user.UserType == 1)
-            {
-                if (plantId != new int())
-                {
-                    _areas = await AreaServices.GetAreas(plantId);
-                    _areas = _areas.OrderBy(a => a.Description).ToList();
-                }
-                _supervisors = await UsersService.GetUsersByType(3, false, false);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-            }
-            if (user.UserType == 2)
-            {
-
-                _areas = user.Areas.ToList();
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors.Add(sv);
-                }
-
-            }
-            else if (user.UserType == 3)
-            {
-                _areas = await AreaServices.GetAreas(plantId);
-                _areas = _areas.OrderBy(a => a.Description).ToList();
-
-                _supervisors.Add(user);
-            }
-
-            areaId = _sosHub.AreaId ?? areaId;
-
-            if (plantId != 0 && areaId != 0)
-            {
-                _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
-                _distributions = _distributions.OrderBy(d => d.Description).ToList();
-            }
-
-            distributionId = _sosHub.DistributionId ?? distributionId;
-            departmentId = _sosHub.DepartmentId ?? departmentId;
-            productId = _sosHub.AppliedModelId ?? productId;
-            supervisorEditorId = _sosHub.EditorId ?? supervisorEditorId;
-            supervisorOwnerId = _sosHub.OwnerId ?? supervisorOwnerId;
-            stationId = _sosHub.StationId ?? stationId;
-
-            productSide = _sosHub.Folio.Split('-')[2] ?? productSide; 
-
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
-            StateHasChanged();
-
-            return new AsyncVoidMethodBuilder();
-        }
 
         public static int GetCycleId(string trainingTime)
         {

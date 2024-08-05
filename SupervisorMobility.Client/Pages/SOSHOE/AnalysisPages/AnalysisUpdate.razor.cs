@@ -8,6 +8,9 @@ using static MudBlazor.Icons;
 using SupervisorMobility.Client.Data.Entities;
 using Microsoft.AspNetCore.Components.Web;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -20,8 +23,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         List<SOSAnalysisLogbook> mostRecentLogs { get; set; }
 
         int cycleId = 0;
+        private List<(int, string)> PreviousImages = new List<(int, string)>();//id, b64 string
         private List<string> capturedImages = new List<string>();
-
+        private List<int> OldImageRemoved = new();
 
         //Show evidence
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
@@ -34,7 +38,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         //Commentaries and Logbok
         private DialogOptions dialogCommentariesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private DialogOptions dialogLogbookOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        private DialogOptions dialogImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
+        private bool visibleImagesDialog = false;
         private bool visibleCommentaries = false;
         private bool visibleLogbook = false;
 
@@ -61,9 +67,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
         public bool ShowLoading = true;
+        public bool UpdateButton = false;
 
 
         private double totalTime;
+
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -151,6 +160,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 mostRecentLogs = new List<SOSAnalysisLogbook>();
 
 
+            if (_sosAnalysis.Illustrations?.Any() ?? false)
+            {
+
+                foreach (var analysisImage in _sosAnalysis.Illustrations)
+                {
+                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
+                    PreviousImages.Add((analysisImage.FileUploadId, image));
+                }
+            }
 
             if (_sosAnalysis.Notes?.Any() ?? false)
             {
@@ -170,16 +188,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
             AddItem();
 
-
-            if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
-            {
-
-                foreach (var analysisImage in _sosAnalysis.Illustrations)
-                {
-                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
-                    capturedImages.Add(image);
-                }
-            }
             cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
             totalTime = _sosAnalysis.SOSHub.Sections
                 .Select(sect =>
@@ -335,14 +343,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 .Sum();
         }
 
-        private async Task UpdateAnalysis()
-        {
-            Console.WriteLine("uddate");
-
-
-        }
-
-
         //Commentaries
         #region Commentaries
         void AddItem()
@@ -374,5 +374,209 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         #endregion
 
+
+        #region Analysis Images
+
+        private void RemoveOldImage(int fileId)
+        {
+            OldImageRemoved.Add(fileId);
+            PreviousImages.RemoveAll(p => p.Item1 == fileId);
+        }
+
+        private void OpenEvidenceDialog(int index, bool OldImgOrigin = true)
+        {
+            if (!OldImgOrigin) index += (PreviousImages.Count);
+            photoIndex = index;
+            visibleEvidence = true;
+
+        }
+
+        public void ShowImagesDialog()
+        {
+            visibleImagesDialog = true;
+        }
+
+        void CloseImagesDialog()
+        {
+            visibleImagesDialog = false;
+        }
+
+        private void RemoveImage(int index, int imgIndex)
+        {
+
+            if (index >= 0 && index < capturedImages.Count)
+            {
+                if (imgIndex == 1)
+                {
+                    capturedImages.RemoveAt(index);
+                }
+            }
+        }
+        #endregion
+
+
+        private async Task UpdateAnalysis()
+        {
+            UpdateButton = true;
+
+            var result = await SOSAnalysisServices.UpdateSOSAnalysis(_sosAnalysis);
+
+            if (result != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Analysis Updated! (y)", Severity.Info);
+
+                _sosAnalysis = result;
+                _ = await UploadEvidence();
+
+                NavigationManager.NavigateTo("/SOSHOE/Analysis");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
+            UpdateButton = false;
+
+
+        }
+
+        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
+        {
+            await UploadImages();
+            await UpdateRemovedFiles();
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+        private async Task UploadImages()
+        {
+
+            List<string> images = capturedImages;
+            int analysisId = _sosAnalysis.SOSAnalysisId;
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "evidenceSosHub.png");
+
+
+                    var result = await SOSAnalysisServices.AddIllustrationToSOSAnalysis(content, analysisId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to HOE", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to HOE", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task AddImages(InputFileChangeEventArgs e)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        capturedImages.Add(mediaUri);
+                    }
+                }
+            }
+        }
+
+        private async Task UpdateRemovedFiles()
+        {
+            Snackbar.Clear();
+            if (OldImageRemoved.Any())
+            {
+                foreach (var file in OldImageRemoved)
+                {
+                    var result = await SOSAnalysisServices.RemoveIlustrationFromSOSData(_sosAnalysis.SOSAnalysisId, file);
+                    if (result)
+                    {
+                        Snackbar.Add($"Error removing the image", Severity.Error);
+                    }
+                }
+            }
+
+        }
     }
 }

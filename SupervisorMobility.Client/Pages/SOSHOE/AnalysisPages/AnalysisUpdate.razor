@@ -265,22 +265,27 @@ else
                                 int totalSpecialCases = _sosAnalysis.SpecialCasesAbnormalSituations.Count();
 
                                 int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
-                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top">
+                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw" >
                                     <MudItem Class="d-flex flex-column align-start">
                                         @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
                                         <MudItem Class="d-flex">
-                                            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show / Add Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
-                                            @*                                             <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenLogbookDialog" Class="ml-3 mb-4" StartIcon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudButton>
-                            *@
+                                            <MudButton StartIcon="@Icons.Material.Filled.Image" Color="Color.Info" Variant="Variant.Filled" @onclick="() => ShowImagesDialog()" Class="mb-4 mr-4">Images (@(capturedImages.Count + PreviousImages.Count))</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
                                         </MudItem>
-                                        @if (capturedImages.Any())
+                                        @if (capturedImages.Any() || PreviousImages.Any())
                                         {
                                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                                 <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                                                    @foreach (var (image, index) in PreviousImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class="mb-2 mr-2">
+                                                            <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => ShowImagesDialog()" Style="cursor:pointer" />
+                                                        </MudItem>
+                                                    }
                                                     @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
                                                     {
                                                         <MudItem Class="mb-2 mr-2">
-                                                            <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
+                                                            <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => ShowImagesDialog()" Style="cursor:pointer" />
                                                         </MudItem>
                                                     }
                                                 </MudItem>
@@ -292,19 +297,7 @@ else
                                                 @Localizer["There are no images"]
                                             </MudAlert>
                                         }
-                                        @* Dummy images *@
-                                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
-                                                @for (int i = 0; i < 10; i++)
-                                                {
-                                                    <MudItem Class="mb-2 mr-2">
-                                                        <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260"
-                                                                  Src="https://www.ddhworld.com/wp-content/uploads/2021/02/Mercedes-Benz-C300-ddh-world.jpg"
-                                                                  Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(0)" Style="cursor:pointer" />
-                                                    </MudItem>
-                                                }
-                                            </MudItem>
-                                        </div>
+                                       
                                     </MudItem>
                                 </td>
                             }
@@ -351,17 +344,13 @@ else
     </MudPaper>
     <MudCardActions>
         <MudItem Class="ml-auto mt-2">
-            <MudButton OnClick="UpdateAnalysis" StartIcon="@Icons.Material.Filled.PlayCircle" Variant="Variant.Filled" Color="Color.Info" >@Localizer["Update HOE"]</MudButton>
+            <MudButton OnClick="UpdateAnalysis" StartIcon="@Icons.Material.Filled.PlayCircle" Disabled="UpdateButton" Variant="Variant.Filled" Color="Color.Info">@Localizer["Update HOE"]</MudButton>
         </MudItem>
     </MudCardActions>
 }
 
 
-
-
-
-@*Evidence Modal*@
-<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+<MudDialog @bind-IsVisible="visibleImagesDialog" Options="dialogImagesOptions">
     <TitleContent>
         <div class="d-flex" style="align-items: center; justify-content:center;">
             <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
@@ -405,9 +394,64 @@ else
                 }
             </tbody>
         </MudSimpleTable>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+
+            <InputFile id="previousEvidence" OnChange="@( (e) => AddImages(e))" hidden multiple accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+            <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                       HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Image"
+                       for="previousEvidence">
+                Load picture
+            </MudButton>
+        </MudItem>
+        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;  min-height: 50vh">
+            @*@if (capturedImages.Any > 0)
+            {*@
+            <div style="display: flex; align-items: center; justify-content: space-between;" class="mt-4">
+                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:50vh; scroll-behavior: smooth; justify-content: center;">
+                    @foreach (var (image, index) in PreviousImages.Select((image, index) => (image, index)))
+                    {
+                        <MudItem Class=" mr-8 mb-4">
+                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveOldImage(image.Item1)"></MudIcon>
+                                </MudTooltip>
+                            </MudItem>
+                            <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+                        </MudItem>
+                    }
+                    @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                    {
+                        <MudItem Class=" mr-8 mb-4">
+                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                </MudTooltip>
+                            </MudItem>
+                            <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index, false)" />
+                        </MudItem>
+                    }
+                </MudItem>
+
+            </div>
+            @* } *@
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseImagesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+
+@*Evidence Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+    <DialogContent>
         <MudPaper Elevation="0">
-            @if (capturedImages.Count() > 0)
-            {
+            @if (capturedImages.Any() || PreviousImages.Any())
+                {            
                 <MudCarousel Class="mud-width-full" Style="height: 65vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
                     <PreviousButtonTemplate>
                         <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
@@ -420,12 +464,19 @@ else
                         </MudAvatar>
                     </NextButtonTemplate>
                     <ChildContent>
-                        @foreach (var evidence in capturedImages)
-                        {
-                            <MudCarouselItem Transition="Transition.Fade">
-                                <MudImage ObjectFit="ObjectFit.Cover" Height="650" Width="1152" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 55vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
-                            </MudCarouselItem>
-                        }
+
+                            @foreach (var evidence in PreviousImages)
+                            {
+                                <MudCarouselItem Transition="Transition.Fade">
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                </MudCarouselItem>
+                            }
+                            @foreach (var evidence in capturedImages)
+                            {
+                                <MudCarouselItem Transition="Transition.Fade">
+                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                </MudCarouselItem>
+                            }
                     </ChildContent>
                 </MudCarousel>
             }
