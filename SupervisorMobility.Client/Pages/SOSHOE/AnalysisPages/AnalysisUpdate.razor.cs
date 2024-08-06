@@ -21,6 +21,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         SOSAnalysis _sosAnalysis { get; set; } = new();
         List<SOSAnalysisLogbook> mostRecentLogs { get; set; }
+        public int logCount = 0;
 
         int cycleId = 0;
         private List<(int, string)> PreviousImages = new List<(int, string)>();//id, b64 string
@@ -155,7 +156,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
             _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
             if (_sosAnalysis.AnalysisLogbooks != null)
+            {
+
                 mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
+                logCount = mostRecentLogs.Count;
+            }
             else
                 mostRecentLogs = new List<SOSAnalysisLogbook>();
 
@@ -417,14 +422,34 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         private async Task UpdateAnalysis()
         {
+            Snackbar.Clear();
             UpdateButton = true;
+            //await GenerateSOSHUBCommentaries();
+
+            foreach (Section sect in _sosAnalysis.SOSHub.Sections)
+            {
+                if (!string.IsNullOrEmpty(sect.Time) && !double.TryParse(sect.Time, out _))
+                {
+                    Snackbar.Add("The time field only accepts numbers.", Severity.Warning);
+                    UpdateButton = false;
+                    return;
+                }
+            }
+            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
+
+            if (resultSOS != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"SOS Updated!", Severity.Info);
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
 
             var result = await SOSAnalysisServices.UpdateSOSAnalysis(_sosAnalysis);
 
             if (result != null)
             {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Analysis Updated! (y)", Severity.Info);
+                Snackbar.Add($"Analysis Updated!", Severity.Info);
 
                 _sosAnalysis = result;
                 _ = await UploadEvidence();
@@ -436,6 +461,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             UpdateButton = false;
 
 
+        }
+
+        public async Task<AsyncVoidMethodBuilder> GenerateSOSHUBCommentaries()
+        {
+            _sosAnalysis.Notes?.Clear();
+            foreach (var item in items)
+            {
+                var processSheetCommentary = new Commentary
+                {
+                    ComentaryId = item.ComentaryId,
+                    Comment = item.Commentary,
+                    IsActive = item.IsActive
+                };
+
+                _sosAnalysis.Notes?.Add(processSheetCommentary);
+            }
+
+            foreach (var item in tempItems)
+            {
+                var processSheetCommentary = new Commentary
+                {
+                    ComentaryId = 0,
+                    Comment = item.Commentary,
+                    IsActive = true
+                };
+
+                _sosAnalysis.Notes?.Add(processSheetCommentary);
+            }
+
+            return new AsyncVoidMethodBuilder();
         }
 
         private async Task<AsyncVoidMethodBuilder> UploadEvidence()
@@ -510,13 +565,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     {
                         Snackbar.Configuration.MaxDisplayedSnackbars = 10;
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Image Added to HOE", Severity.Info);
+                        Snackbar.Add("Image Added to Analysis", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Failed to upload Image to HOE", Severity.Error);
+                        Snackbar.Add("Failed to upload Image to Analysis", Severity.Error);
                     }
 
                 }
