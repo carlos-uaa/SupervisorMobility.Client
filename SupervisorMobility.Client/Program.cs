@@ -58,6 +58,7 @@ global using SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
+global using SupervisorMobility.Client.Services.ExportationService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -65,6 +66,7 @@ using SupervisorMobility.Client;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using SupervisorMobility.Client.Services.ExportationService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -115,6 +117,7 @@ builder.Services.AddScoped<IHCIService, HCIService>();
 builder.Services.AddScoped<IAppearanceService, AppearanceService>();
 builder.Services.AddScoped<ILogbookAppearanceService, LogbookAppearanceService>();
 builder.Services.AddScoped<IPartServices, PartServices>();
+builder.Services.AddScoped<IExportationService, ExportationService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();

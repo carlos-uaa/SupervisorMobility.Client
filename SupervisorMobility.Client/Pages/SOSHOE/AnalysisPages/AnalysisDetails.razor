@@ -1,23 +1,17 @@
 ﻿@page "/Analysis/Details/{AnalysisId:int}"
 
+@inject ISOSAnalysisService SOSAnalysisServices
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
-@inject ISOSAnalysisService SOSAnalysisServices
 
 <style>
     .vertical {
         writing-mode: tb-rl;
-        -webkit-transform: rotate(0deg);
-        -moz-transform: rotate(0deg);
-        -o-transform: rotate(0deg);
-        -ms-transform: rotate(0deg);
-        transform: rotate(0deg);
-        white-space: nowrap;
-        display: block;
-        bottom: 0;
-        width: 20px;
-        height: 20px;
-        text-align: center !important;
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
     }
 
     .border-left {
@@ -32,8 +26,23 @@
         background-color: #f5f5f6;
     }
 
-    .grey-background {
-        background-color: #f5f5f6;
+    .table-header-gray td {
+        padding: 0px 1% !important;
+    }
+
+    .divider {
+        border-left: 1px solid var(--mud-palette-table-lines);
+    }
+
+    .images_cell {
+    }
+
+    .table-header-gray .images_cell {
+        padding: 1% 2% !important;
+    }
+
+    .section_divider {
+        border-top: 3px dashed var(--mud-palette-table-lines);
     }
 
 </style>
@@ -54,88 +63,85 @@
 }
 else
 {
-    <br />
-    <MudSimpleTable Dense Elevation="3">
-         <thead>
-             <tr class="table-header">
-                 <th rowspan="2" colspan="3" class="grey-background">Nombre de la Operación</th>
-                 <th rowspan="2" colspan="3">@_sosAnalysis.SOSHub.ProcessSheet</th>
-                 <th colspan="4" class="grey-background">No. De Revision</th>
-                 <th colspan="3" style="text-align: center">N</th>
-                 <th colspan="3" style="text-align: center">1</th>
-                 <th colspan="3" style="text-align: center">2</th>
-                 <th colspan="3" style="text-align: center"></th>
-             </tr>
-             <tr>
-
-                 <th colspan="4" class="grey-background">Fecha</th>
-                 @if (exampleLogbooks?.Any() ?? false)
-                {
-                    var logBooks = exampleLogbooks
-                    .OrderByDescending(logBook => logBook.Date)
-                    .Take(4)
-                    .ToList();
-                    var emptyColumnsNeeded = 4 - logBooks.Count;
-
-                    foreach (var logBook in logBooks)
-                    {
-                        <th colspan="3" style="text-align: center;">@logBook.Date?.ToShortDateString()</th>
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody class="table-header-gray">
+                <tr>
+                    <th rowspan="2">Nombre de la Operación</th>
+                    <td rowspan="2" colspan="3">@_sosAnalysis.SOSHub.ProcessSheet</td>
+                    <th class="divider" colspan="2">No. de Revisión</th>
+                    @*
+                Assuming the list of revitions is ordered from newest to oldest
+                *@
+                    @{
+                        int i = 0;
                     }
-
-                    for (int i = 0; i < emptyColumnsNeeded; i++)
+                    @foreach (var rev in mostRecentLogs)
                     {
-                        <th colspan="3"></th>
+                        <td style="width:15%">@(_sosAnalysis.AnalysisLogbooks.Count() - i++)</td>
                     }
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
+                    <td rowspan="7" style="padding:0px!important;"><MudButton Class="vertical" Style="padding:0px;" OnClick="OpenLogbookDialog">See More</MudButton></td>
+                </tr>
+                <tr>
+                    <th class="divider" colspan="2">Fecha</th>
+                    @foreach (var rev in mostRecentLogs)
                     {
-                        <th colspan="3"></th>
+                        <td style="width:15%">@(rev.Date?.ToShortDateString())</td>
                     }
-                }
-            </tr>
-            <tr>
-                <th rowspan="2" colspan="3" class="grey-background">Equipo de Seguridad</th>
-                <th rowspan="2" colspan="3">
-                    @if (_sosAnalysis.SOSHub.SafetyEquipment.Any())
+                </tr>
+                <tr>
+                    <th>Número de control interno</th>
+                    <td style="width:20%">@_sosAnalysis.InternalControlNumber</td>
+                    <th>Nombre del proceso</th>
+                    <td style="width:20%">@_sosAnalysis.ProcessName</td>
+                    <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
+                    @foreach (var rev in mostRecentLogs)
                     {
-                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
-
-                            @foreach (var equipment in _sosAnalysis.SOSHub.SafetyEquipment)
+                        <td rowspan="3" style="width:15%">@(rev.RevisedItem)</td>
+                    }
+                </tr>
+                <tr>
+                    <th>Equipo de seguridad</th>
+                    <td colspan="3">
+                        @if (_sosAnalysis.SOSHub.SafetyEquipment != null && _sosAnalysis.SOSHub.SafetyEquipment.Any())
+                        {
+                            @foreach (var element in _sosAnalysis.SOSHub.SafetyEquipment.Take(2).ToList())
                             {
-                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Warning" Variant="Variant.Outlined">
-                                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
-                                        @(equipment.EquipmentName)
-                                    </MudChip>
-                                </MudButton>
+                                <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
+                                    @element.EquipmentName
+                                </MudChip>
                             }
-                        </MudItem>
-                    }
-                    else
-                    {
-                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there is no equipment.</MudAlert>
-                    }
+                            @if (_sosAnalysis.SOSHub.SafetyEquipment.Count > 2)
+                            {
 
-                </th>
+                                <MudMenu Style="float:right" MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudChip Color="Color.Default" Icon="@Icons.Material.Filled.ExpandCircleDown" Size="Size.Small" Variant="Variant.Text">
+                                            Show more
+                                        </MudChip>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var element in _sosAnalysis.SOSHub.SafetyEquipment)
+                                        {
+                                            <MudMenuItem>
+                                                <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
+                                                    @element.EquipmentName
+                                                </MudChip>
+                                            </MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Herramientas</th>
+                    <td colspan="3">
+                        @if (_sosAnalysis.SOSHub.ToolsUsed != null && _sosAnalysis.SOSHub.ToolsUsed.Any())
+                        {
 
-                <th colspan="4" class="grey-background">Punto Revisado (Cambio)</th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-            </tr>
-            <tr>
-                <th rowspan="7" class="vertical grey-background">Confirmado Por</th>
-            </tr>
-            <tr>
-                <th rowspan="2" colspan="3" class="grey-background">Herramientas</th>
-                <th rowspan="2" colspan="3">
-                    @if (_sosAnalysis.SOSHub.ToolsUsed.Any())
-                    {
-                        <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: center; align-items: center;">
-
-                            @foreach (var tool in _sosAnalysis.SOSHub.ToolsUsed)
+                            @foreach (var element in _sosAnalysis.SOSHub.ToolsUsed.Take(2).ToList())
                             {
                                 <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
                                     <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
@@ -143,289 +149,197 @@ else
                                     </MudChip>
                                 </MudButton>
                             }
-                        </MudItem>
-                    }
-                    else
-                    {
-                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no tools.</MudAlert>
-                    }
-                </th>
 
-            </tr>
-            <tr>
-            </tr>
-            <tr>
-                <th rowspan="2" colspan="3" class="grey-background">Modelo</th>
-                <th rowspan="2" colspan="3"><MudText>@_sosAnalysis.SOSHub.AppliedModel?.Description</MudText></th>
-
-
-            </tr>
-            <tr>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-                <th colspan="3"></th>
-            </tr>
-            <tr>
-                <th rowspan="2" colspan="3" class="grey-background">Tiempo de aprendizaje</th>
-                <th rowspan="2" colspan="3">
-                    <MudAutocomplete T="int"
-                                     Label=@Localizer["Cycles"]
-                                     Variant="Variant.Text"
-                                     AnchorOrigin="Origin.BottomCenter"
-                    @bind-Value="cycleId"
-                                     OpenIcon="@Icons.Material.Filled.AccessTime"
-                                     AdornmentColor="Color.Info"
-                                                      Clearable
-                                                      ResetValueOnEmptyText
-                                      ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                      MaxItems="10"
-                                                      ReadOnly>
-                 </MudAutocomplete>
-             </th>
-
-             <th colspan="3">Supervisor Gral (Aprobó)</th>
-
-             @if (exampleLogbooks?.Any() ?? false)
-                {
-                    var logBooks = exampleLogbooks
-                    .OrderByDescending(logBook => logBook.Date)
-                    .Take(4)
-                    .ToList();
-                    var emptyColumnsNeeded = 4 - logBooks.Count;
-
-                    foreach (var logBook in logBooks)
-                    {
-                        <th colspan="3" style="text-align: center;">@* @logBook.SeniorSupervisor?.Name *@ @logBook.RevisedItem</th>
-                    }
-
-                    for (int i = 0; i < emptyColumnsNeeded; i++)
-                    {
-                        <th colspan="3"></th>
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        <th colspan="3"></th>
-                    }
-                }
-            </tr>
-            <tr>
-
-                <th colspan="3">Supervisor (Elaboró)</th>
-                @if (_sosAnalysis.AnalysisLogbooks?.Any() ?? false)
-                {
-                    var logBooks = _sosAnalysis.AnalysisLogbooks
-                    .OrderByDescending(logBook => logBook.Date)
-                    .Take(4)
-                    .ToList();
-                    var emptyColumnsNeeded = 4 - logBooks.Count;
-
-                    foreach (var logBook in logBooks)
-                    {
-                        <th colspan="3" style="text-align: center;">@logBook.Supervisor?.Name</th>
-                    }
-
-                    for (int i = 0; i < emptyColumnsNeeded; i++)
-                    {
-                        <th colspan="3"></th>
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        <th colspan="3"></th>
-                    }
-                }
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="table-header">
-                <td colspan="1">No.</td>
-                <td colspan="3">Análisis</td>
-                <td colspan="1">No.</td>
-                <td colspan="1">Pasos Principales</td>
-                <td colspan="2">Tiempo</td>
-                <td colspan="4">Punto Critico (Razon)</td>
-                <td colspan="10">Ilustracion, Notas operacion, otros</td>
-            </tr>
-            @{
-                int indexAnalysis = 0;
-            }
-
-
-            @foreach (var (sect, indexSection) in _sosAnalysis.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
-            {
-
-                @foreach (var (analysis, indexA) in sect.Analyses.Select((analysis, indexA) => (analysis, indexA)))
-                {
-                    ++indexAnalysis;
-                    string styleString = "";
-                    string styleString2 = "";
-                    string styleString3 = "";
-                    <tr>
-                        @if (sect.Analyses.Count == 1)
-                        {
-                            styleString = "border-left: 1px solid #ababab; border-top: 1px solid #ababab; border-bottom: 1px solid #ababab;";
-                            styleString3 = "border-right: 1px solid #ababab; border-top: 1px solid #ababab; border-bottom: 1px solid #ababab;";
-                            styleString2 = "border-top: 1px solid #ababab; border-bottom: 1px solid #ababab;";
-                        }
-                        else if (analysis == sect.Analyses.First())
-                        {
-                            styleString = "border-left: 1px solid #ababab; border-top: 1px solid #ababab;";
-                            styleString3 = "border-right: 1px solid #ababab; border-top: 1px solid #ababab;";
-                            styleString2 = "border-top: 1px solid #ababab;";
-                        }
-                        else if (@* sect == _sosAnalysis.SOSHub.Sections.Last() && *@ analysis == sect.Analyses.Last())
-                        {
-                            styleString = "border-left: 1px solid #ababab; border-bottom: 1px solid #ababab;";
-                            styleString3 = "border-right: 1px solid #ababab; border-bottom: 1px solid #ababab;";
-                            styleString2 = "border-bottom: 1px solid #ababab;";
-                        }
-                        else if (@* sect == _sosAnalysis.SOSHub.Sections.Last() && *@ analysis == sect.Analyses.Last())
-                        {
-                            styleString = "border-left: 2px solid #ababab; border-bottom: 2px solid #ababab;";
-                            styleString3 = "border-right: 2px solid #ababab; border-bottom: 2px solid #ababab;";
-                            styleString2 = "border-bottom: 2px solid #ababab;";
-                        }
-                        else
-                        {
-                            styleString = "border-left: 1px solid #ababab;";
-                            styleString3 = "border-right: 1px solid #ababab;";
-                            styleString2 = "";
-                        }
-
-                        <td colspan="1" style="@styleString">@indexAnalysis</td>
-                        <td colspan="3" style="@styleString2">
-                            @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexA), analysis.CriticalPoints))
-                        </td>
-
-                        @if (analysis == sect.Analyses.First())
-                        {
-                            int TotalRowSpan = sect.Analyses.Count();
-                            <td colspan="1" style="border-top: 1px solid #ababab; border-bottom: 1px solid #ababab; " rowspan="@TotalRowSpan">@(indexSection + 1)</td>
-                            <td colspan="1" style="border-top: 1px solid #ababab; border-bottom: 1px solid #ababab;" rowspan="@TotalRowSpan">@sect.Step</td>
-                            <td colspan="2" style="border-top: 1px solid #ababab; border-bottom: 1px solid #ababab;" rowspan="@TotalRowSpan">
-                                <MudInput Value="@($"{sect.Time}")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
-
-                             </td>
-                        }
-
-                        <td colspan="4" style="@styleString3">
-
-                            @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
+                            @if (_sosAnalysis.SOSHub.ToolsUsed.Count > 2)
                             {
-                                <MudItem>
-                                    <MudText>@cp</MudText>
-                                    <MudText>
-                                        @ReasonFormat(analysis.Reasons[cpIndex])
-                                    </MudText>
-                                </MudItem>
+
+
+                                <MudMenu Style="float:right" MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudChip Color="Color.Default" Icon="@Icons.Material.Filled.ExpandCircleDown" Size="Size.Small" Variant="Variant.Text">
+                                            Show more
+                                        </MudChip>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var element in _sosAnalysis.SOSHub.ToolsUsed)
+                                        {
+                                            <MudMenuItem>
+                                                <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Outlined">
+                                                    @element.ToolName
+                                                </MudChip>
+                                            </MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
                             }
-                        </td>
 
-                        @if (sect == _sosAnalysis.SOSHub.Sections.First() && analysis == sect.Analyses.First())
-                        {
-                            int totalAnalyses = _sosAnalysis.SOSHub.Sections.Sum(section => section.Analyses.Count());
-                            int totalCriticalPoints = _sosAnalysis.SOSHub.Sections
-                            .SelectMany(section => section.Analyses)
-                            .Sum(analysis => analysis.CriticalPoints.Count());
-                            int totalSpecialCases = _sosAnalysis.SpecialCasesAbnormalSituations.Count();
-
-                            int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
-                            <td colspan="10" rowspan="@TotalRowSpanImages" style="vertical-align: top">
-                                <MudItem Class="d-flex flex-column align-start">
-                                    @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
-                                    <MudItem Class="d-flex">
-                                        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
-                                        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenLogbookDialog" Class="ml-3 mb-4" StartIcon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudButton>
-                                    </MudItem>
-                                    @if (capturedImages.Any())
-                                    {
-                                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
-                                                @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
-                                                {
-                                                    <MudItem Class="mb-2 mr-2">
-                                                        <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
-                                                    </MudItem>
-                                                }
-                                            </MudItem>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                             @Localizer["There are no images"]
-                                         </MudAlert>
-                                    }
-                                    @* Dummy images *@
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
-                                            @for (int i = 0; i < 10; i++)
-                                            {
-                                                <MudItem Class="mb-2 mr-2">
-                                                    <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260"
-                                                              Src="https://www.ddhworld.com/wp-content/uploads/2021/02/Mercedes-Benz-C300-ddh-world.jpg"
-                                                              Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(0)" Style="cursor:pointer" />
-                                                </MudItem>
-                                            }
-                                        </MudItem>
-                                    </div>
-                                </MudItem>
-                            </td>
                         }
-                    </tr>
-
-                }
-            }
-            <tr>
-                <td colspan="5"></td>
-                <td>Total</td>
-                <td colspan="2">
-                    <MudInput Value="@totalTime.ToString()" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
-                 </td>
-                 <td colspan="14"></td>
-
-             </tr>
-             <tr class="table-header">
-                 <td colspan="4">SITUACIÓN ANORMAL O CASOS ESPECIALES</td>
-                 <td>CLAVE</td>
-                 <td colspan="3">NOMBRE DE LA PARTE</td>
-                 <td colspan="2">NO DE PARTE</td>
-                 <td colspan="2">CANTIDAD</td>
-             </tr>
-             @if (_sosAnalysis.SpecialCasesAbnormalSituations?.Any() ?? false)
-            {
-                @foreach (var part in _sosAnalysis.SpecialCasesAbnormalSituations)
-                {
-                    <tr>
-                        <td colspan="4"></td>
-                        <td>@part.key</td>
-                        <td colspan="3">@part.PartName</td>
-                        <td colspan="2">@part.PartNumber</td>
-                        <td colspan="2">@part.Quantity</td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="12">
-                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
                     </td>
                 </tr>
-            }
+                <tr>
+                    <th>Modelo</th>
+                    <td colspan="3">@_sosAnalysis.SOSHub.AppliedModel?.Description</td>
+                    <th rowspan="2" class="divider"><span class="vertical">Confirmado Por</span></th>
+                    <th>Supervisor Gral.<br />( Aprobó )</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td style="width:15%">@(rev.SeniorSupervisor.Name)</td>
+                    }
+                </tr>
+                <tr>
+                    <th>Tiempo de aprendizaje</th>
+                    <td colspan="3">
+                        <MudAutocomplete T="int"
+                                         Margin="Margin.Dense"
+                                         Label=@Localizer["Cycles"]
+                                         Variant="Variant.Text"
+                                         AnchorOrigin="Origin.BottomCenter"
+                                         @bind-Value="cycleId"
+                                         OpenIcon="@Icons.Material.Filled.AccessTime"
+                                         AdornmentColor="Color.Info"
+                                         Clearable
+                                         ResetValueOnEmptyText
+                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                         MaxItems="10"
+                                         ReadOnly>
+                        </MudAutocomplete>
+                    </td>
+                    <th>Supervisor<br />( Elaboró )</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td style="width:15%">@(rev.Supervisor.Name)</td>
+                    }
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody class="table-header-gray">
+                <tr>
+                    <th>No.</th>
+                    <th>Análisis</th>
+                    <th>No.</th>
+                    <th>Pasos Principales</th>
+                    <th>Tiempo</th>
+                    <th colspan="2">Punto Critico (Razon)</th>
+                    <th>Ilustracion, Notas operacion, otros</th>
+                </tr>
+                @{
+                    int indexAnalysis = 0;
+                }
+                @foreach (var (sect, indexSection) in _sosAnalysis.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
+                {
+                    @foreach (var (analysis, indexA) in sect.Analyses.Select((analysis, indexA) => (analysis, indexA)))
+                    {
+                        <tr class="@(indexSection != 0 && indexA==0?"section_divider":"")">
+                            <td>@(++indexAnalysis)</td>
+                            <td>
+                                @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexA), analysis.CriticalPoints))
+                            </td>
+                            @if (indexA == 0)
+                            {
+                                int TotalRowSpan = sect.Analyses.Count();
+                                <td rowspan="@TotalRowSpan">@(indexSection + 1)</td>
+                                <td rowspan="@TotalRowSpan">@sect.Step</td>
+                                <td rowspan="@TotalRowSpan">
+                                    <MudInput Value="@($"{sect.Time}")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                                </td>
+                            }
+                            <td colspan="2">
+                                @foreach (var (cp, cpIndex) in analysis.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
+                                {
+                                    <MudItem>
+                                        <MudText>@cp</MudText>
+                                        <MudText>
+                                            @ReasonFormat(analysis.Reasons[cpIndex])
+                                        </MudText>
+                                    </MudItem>
+                                }
+                            </td>
+                            @if (indexSection == 0 && indexA == 0)
+                            {
+                                int totalAnalyses = _sosAnalysis.SOSHub.Sections.Sum(section => section.Analyses.Count());
+                                int totalCriticalPoints = _sosAnalysis.SOSHub.Sections
+                                .SelectMany(section => section.Analyses)
+                                .Sum(analysis => analysis.CriticalPoints.Count());
+                                int totalSpecialCases = _sosAnalysis.SpecialCasesAbnormalSituations.Count();
 
-
-        </tbody>
-    </MudSimpleTable>
+                                int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
+                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top">
+                                    <MudItem Class="d-flex flex-column align-start">
+                                        @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
+                                        <MudItem Class="d-flex">
+                                            <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Notes (@(_sosAnalysis.Notes.Any() ? _sosAnalysis.Notes.Count() : 0))</MudButton>
+                                            @*                                             <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenLogbookDialog" Class="ml-3 mb-4" StartIcon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudButton>
+                            *@
+                                        </MudItem>
+                                        @if (capturedImages.Any())
+                                        {
+                                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                                                    @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                    {
+                                                        <MudItem Class="mb-2 mr-2">
+                                                            <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
+                                                        </MudItem>
+                                                    }
+                                                </MudItem>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                @Localizer["There are no images"]
+                                            </MudAlert>
+                                        }
+                                    </MudItem>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                <tr>
+                    <td colspan="3"></td>
+                    <td>Total</td>
+                    <td>
+                        <MudInput Value="@totalTime.ToString()" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">SITUACIÓN ANORMAL O CASOS ESPECIALES</th>
+                    <th>CLAVE</th>
+                    <th colspan="2">NOMBRE DE LA PARTE</th>
+                    <th>NO DE PARTE</th>
+                    <th>CANTIDAD</th>
+                </tr>
+                @if (_sosAnalysis.SpecialCasesAbnormalSituations?.Any() ?? false)
+                {
+                    @foreach (var part in _sosAnalysis.SpecialCasesAbnormalSituations)
+                    {
+                        <tr>
+                            <td colspan="2"></td>
+                            <td>@part.key</td>
+                            <td colspan="2">@part.PartName</td>
+                            <td>@part.PartNumber</td>
+                            <td>@part.Quantity</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7">
+                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
     <br />
 }
+
+
+
 
 
 @*Evidence Modal*@
@@ -501,9 +415,9 @@ else
             {
                 <MudItem Style="height: 65vh">
                     <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                         @Localizer["There are no images"]
-                     </MudAlert>
-                 </MudItem>
+                        @Localizer["There are no images"]
+                    </MudAlert>
+                </MudItem>
             }
         </MudPaper>
     </DialogContent>
@@ -530,17 +444,17 @@ else
                             <tr>
                                 <td width="90%">
                                     <MudTextField ReadOnly @bind-Value="@comment.Comment" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                                 </td>
-                             </tr>
+                                </td>
+                            </tr>
                         }
                     }
                     else
                     {
                         <MudItem Style="height: 65vh">
                             <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                 @Localizer["There are no commentaries"]
-                             </MudAlert>
-                         </MudItem>
+                                @Localizer["There are no commentaries"]
+                            </MudAlert>
+                        </MudItem>
                     }
                 </tbody>
             </MudSimpleTable>
@@ -590,10 +504,10 @@ else
                         <tr>
                             <td colspan="4">
                                 <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                     @Localizer["There is no analysis logbook"]
-                                 </MudAlert>
-                             </td>
-                         </tr>
+                                    @Localizer["There is no analysis logbook"]
+                                </MudAlert>
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </MudSimpleTable>

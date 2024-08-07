@@ -583,7 +583,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                     var processSheetCommentary = new Commentary
                     {
-                        ComentaryId = 0,
+                        CommentaryId = 0,
                         Comment = item.Commentary,
                         IsActive = true
                     };

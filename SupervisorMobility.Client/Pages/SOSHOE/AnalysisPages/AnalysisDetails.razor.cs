@@ -12,6 +12,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         public int? AnalysisId { get; set; }
 
         SOSAnalysis _sosAnalysis { get; set; } = new();
+        List<SOSAnalysisLogbook> mostRecentLogs { get; set; }
+
         int cycleId = 0;
         private List<string> capturedImages = new List<string>();
 
@@ -38,13 +40,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
 
         private double totalTime;
-        // Dummy data
-        public List<SOSAnalysisLogbook> exampleLogbooks = new List<SOSAnalysisLogbook>
-                    {
-                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 29 de Enero", Date = new DateTime(2024, 1, 29) },
-                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 15 de Marzo", Date = new DateTime(2024, 3, 15) },
-                        new SOSAnalysisLogbook { RevisedItem = "Jose Abdala 10 de Agosto", Date = new DateTime(2024, 8, 10) }
-                    };
 
         protected async override Task OnInitializedAsync()
         {
@@ -62,16 +57,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
             _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
-            Console.WriteLine("test");
+            if (_sosAnalysis.AnalysisLogbooks != null)
+                mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
+            else
+                mostRecentLogs = new List<SOSAnalysisLogbook>();
 
+            #region Tests
+            //Use Example logbooks
+            mostRecentLogs = new List<SOSAnalysisLogbook>
+            {
+                new SOSAnalysisLogbook { RevisedItem = "test", Date = new DateTime(2024, 1, 29), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
+                new SOSAnalysisLogbook { RevisedItem = "test2", Date = new DateTime(2024, 3, 15), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
+                new SOSAnalysisLogbook {RevisedItem = "test3", Date = new DateTime(2024, 8, 10), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" }}
+            };
+    
+            #endregion
             if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
             {
-                Console.WriteLine("aaa");
 
                 foreach (var analysisImage in _sosAnalysis.Illustrations)
                 {
                     var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
-                    Console.WriteLine("aaa");
                     capturedImages.Add(image);
                 }
             }

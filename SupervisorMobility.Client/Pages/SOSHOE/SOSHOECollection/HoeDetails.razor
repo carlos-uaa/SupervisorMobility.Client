@@ -111,58 +111,55 @@ else
                                         @if (_sosHub.Sections.Count() == 0)
                                         {
                                             <MudContainer Style="display: flex; flex-direction: column;">
-
-                                                @if (RawAnalisis.Count != RawAnalisisBk.Count && _sosHub.Sections.Count > 0)
-                                                {
-                                                    <MudItem>
-
-                                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
-                                                            <tbody>
-                                                                @foreach (var (analisis, indexAnalisis) in RawAnalisisBk.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                                {
-                                                                    <tr>
-                                                                        <td width="90%">
-                                                                            <MudText Typo="Typo.subtitle1" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis]</MudText>
-                                                                        </td>
-
-                                                                    </tr>
-                                                                }
-                                                            </tbody>
-                                                        </MudSimpleTable>
-                                                    </MudItem>
-                                                }
-                                                else
-                                                {
-                                                    <MudItem>
-
-                                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
-                                                            <tbody>
-                                                                @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                                {
-                                                                    <tr>
-                                                                        <td width="90%">
-                                                                            <MudTextField @bind-Value="@RawAnalisis[indexAnalisis]" ReadOnly="true" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense" ></MudTextField>
-                                                                        </td>
-                                                                    </tr>
-                                                                }
-                                                            </tbody>
-                                                        </MudSimpleTable>
-                                                    </MudItem>
-                                                }
-
-
+                                                <MudItem>
+                                                    <MudAlert Severity="Severity.Normal">Estos Análisis No Forman parte de un paso principal</MudAlert>
+                                                    <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                        <tbody>
+                                                            @foreach (var (analisis, indexAnalisis) in _sosHub.AnalysesBkup.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                            {
+                                                                <tr>
+                                                                    <td width="90%">
+                                                                        <MudText Typo="Typo.subtitle1" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@analisis.Text</MudText>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </MudSimpleTable>
+                                                </MudItem>
                                             </MudContainer>
 
                                         }
                                         else if (_sosHub.Sections.Count() > 0)
                                         {
-                                            <MudSimpleTable Style="width:100%; " Elevation="0">
-                                                <MudTr>
-                                                    <MudTh>Análisis</MudTh>
-                                                    <MudTh>Pasos</MudTh>
-                                                    <MudTh>Punto Crítico</MudTh>
-                                                </MudTr>
 
+                                            @if (RawAnalisis.Count > 0)
+                                            {
+                                                <MudAlert Severity="Severity.Normal">Estos Análisis No Forman parte de un paso principal</MudAlert>
+                                                <MudItem Class="mb-5">
+                                                    <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                        <tbody>
+                                                            @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                            {
+                                                                <tr>
+                                                                    <td width="90%">
+                                                                        <MudText Typo="Typo.subtitle1" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@analisis.Text</MudText>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </MudSimpleTable>
+                                                </MudItem>
+                                            }
+
+
+                                            <MudSimpleTable Style="width:100%;" Class="styled-table table-striped">
+                                                <thead>
+                                                    <MudTr>
+                                                        <MudTh>Análisis</MudTh>
+                                                        <MudTh>Pasos</MudTh>
+                                                        <MudTh>Punto Crítico</MudTh>
+                                                    </MudTr>
+                                                </thead>
 
                                                 @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
                                                 {
@@ -183,8 +180,8 @@ else
                                                                 else
                                                                 {
                                                                     <MudText Typo="Typo.subtitle1">
-                                                                            @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
-                                                                        </MudText>
+                                                                        @_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text
+                                                                    </MudText>
                                                                     @if (analisis != section.Analyses.Last())
                                                                     {
                                                                         <MudDivider DividerType="DividerType.Middle" Class="my-6" />
@@ -208,7 +205,9 @@ else
                                                                             <MudText Typo="Typo.subtitle1" Class="mb-2">
                                                                                 @_sosHub.Sections[indexSection].Analyses[indexAnalisis].CriticalPoints[indexPoints]
                                                                             </MudText>
-                                                                            <MudTextField @bind-Value="_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints]" Label="Razón" Variant="Variant.Text" Margin="Margin.Dense" Class="mb-2" ReadOnly />
+                                                                            <MudText>
+                                                                                @ReasonFormat(_sosHub.Sections[indexSection].Analyses[indexAnalisis].Reasons[indexPoints])
+                                                                            </MudText>
                                                                         }
                                                                     </MudItem>
                                                                     @if (analisis != section.Analyses.Last())
@@ -297,17 +296,7 @@ else
                                         </MudSelect>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <MudText>Steps</MudText>
-                                    </td>
-                                    <td>
-                                        <MudButton Variant="Variant.Filled" OnClick="ShowStepsDialog">
-                                            Show Steps
-                                            <span>&nbsp;(@segments.Count)</span>
-                                        </MudButton>
-                                    </td>
-                                </tr>
+
                                 <tr>
                                     <td>
                                         <MudText>Images</MudText>

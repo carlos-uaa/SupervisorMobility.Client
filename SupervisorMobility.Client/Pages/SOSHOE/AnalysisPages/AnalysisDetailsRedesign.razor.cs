@@ -206,5 +206,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             visibleLogbook = false;
         }
+
+        private async void DownloadExcel()
+        {
+            await Exportation.ExportAnalysisToExcel(AnalysisId.Value);
+        }
     }
 }
