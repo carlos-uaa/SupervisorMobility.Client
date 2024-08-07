@@ -191,7 +191,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _equipment = _equipment.OrderBy(e => e.EquipmentName).ToList();
 
             _materials = await MaterialsServices.GetMaterials();
-            _materials = _materials.OrderBy(m => m.MaterialName).ToList();
+            _materials = _materials.OrderBy(m => m.key).ToList();
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();

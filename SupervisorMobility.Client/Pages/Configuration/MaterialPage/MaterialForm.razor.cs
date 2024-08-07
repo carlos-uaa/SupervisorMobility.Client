@@ -82,7 +82,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.MaterialPage
                     _Material.IsActive =  true;
                     if (!string.IsNullOrEmpty(MaterialName))
                     {
-                        _Material.MaterialName = MaterialName;
+                        _Material.PartName = MaterialName;
                     }
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;

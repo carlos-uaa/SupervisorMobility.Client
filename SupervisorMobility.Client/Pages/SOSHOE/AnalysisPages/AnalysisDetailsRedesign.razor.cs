@@ -66,9 +66,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                         new SOSAnalysisLogbook { RevisedItem = "Test", Date = new DateTime(2024, 3, 15), SeniorSupervisor = new User { Name = "Test" }, Supervisor = new User { Name = "Test2" } },
                         new SOSAnalysisLogbook {RevisedItem = "Test", Date = new DateTime(2024, 8, 10), SeniorSupervisor = new User { Name = "Test" }, Supervisor = new User { Name = "Test2" }}
                     };
-            _sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool2" });
-            _sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool3" });
-            _sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool4" });
+            //_sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool2" });
+            //_sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool3" });
+            //_sosAnalysis.SOSHub.ToolsUsed.Add(new Tool { ToolName="tool4" });
             #endregion
 
             totalTools = _sosAnalysis.SOSHub?.ToolsUsed != null ? _sosAnalysis.SOSHub.ToolsUsed.Count : 0;
