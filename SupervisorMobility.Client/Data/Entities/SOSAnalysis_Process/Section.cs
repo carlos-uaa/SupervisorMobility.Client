@@ -1,5 +1,4 @@
-﻿using static SupervisorMobility.Client.Pages.TestMarco;
-
+﻿
 namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 {
     public class Section
