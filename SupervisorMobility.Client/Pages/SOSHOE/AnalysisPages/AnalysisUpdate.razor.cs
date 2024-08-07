@@ -55,7 +55,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         //Commentaries
         public class ItemModel
         {
-            public int ComentaryId { get; set; }
+            public int CommentaryId { get; set; }
             public string Commentary { get; set; }
             public bool IsActive { get; set; } = true;
 
@@ -183,7 +183,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     {
                         var item = new ItemModel
                         {
-                            ComentaryId = comment.CommentaryId,
+                            CommentaryId = comment.CommentaryId,
                             Commentary = comment.Comment,
                         };
                         items.Add(item);
@@ -470,7 +470,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             {
                 var processSheetCommentary = new Commentary
                 {
-                    ComentaryId = item.ComentaryId,
+                    CommentaryId = item.CommentaryId,
                     Comment = item.Commentary,
                     IsActive = item.IsActive
                 };
@@ -482,7 +482,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             {
                 var processSheetCommentary = new Commentary
                 {
-                    ComentaryId = 0,
+                    CommentaryId = 0,
                     Comment = item.Commentary,
                     IsActive = true
                 };
