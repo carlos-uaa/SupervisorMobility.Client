@@ -10,49 +10,51 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["Material"]</PageTitle>
 
-    @*Breadcrumb links*@
-    @* <MudBreadcrumbs Class="mb-10" Items="_links">
+@*Breadcrumb links*@
+@* <MudBreadcrumbs Class="mb-10" Items="_links">
     <ItemTemplate Context="item">
         <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
     </ItemTemplate>
 </MudBreadcrumbs>
  *@
-    @*Checklist categories table*@
-    <MudTable Items="_Materials" Hover="true" T="Material" SortLabel="Sort By" Height="80vh"
-              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
-              Filter="new Func<Material,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
-        <ToolBarContent>
-            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
-                <MudItem class="d-flex justify-center align-self-center ">
-                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
-                </MudItem>
-                <MudItem Class="d-flex">
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+@*Checklist categories table*@
+<MudTable Items="_Materials" Hover="true" T="Material" SortLabel="Sort By" Height="80vh"
+          RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+          Filter="new Func<Material,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+    <ToolBarContent>
+        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+            <MudItem class="d-flex justify-center align-self-center ">
+                <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+            </MudItem>
+            <MudItem Class="d-flex">
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
 
-                    <MudSpacer />
-                    <MudButton Href="/Material/Create">
-                        <MudText>@Localizer["newMaterial"]</MudText>
-                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
-                    </MudButton>
-                    <MudSpacer />
-                </MudItem>
-            </MudGrid>
-        </ToolBarContent>
-        <HeaderContent>
-            @if (user.UserType == 1)
+                <MudSpacer />
+                <MudButton Href="/Material/Create">
+                    <MudText>@Localizer["newMaterial"]</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                </MudButton>
+                <MudSpacer />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+    <HeaderContent>
+        @if (user.UserType == 1)
         {
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.MaterialId)">Material Id</MudTableSortLabel>
             </MudTh>
         }
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.MaterialCode)">Code</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.key)">Key</MudTableSortLabel>
         </MudTh>
 
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.MaterialName)">Description</MudTableSortLabel>
-
+            <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.PartName)">Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Material, object>(x=>x?.PartNumber)">Number</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudText Align="Align.Center">Actions</MudText>
@@ -61,35 +63,37 @@
     <RowTemplate>
         <MudTd DataLabel="MaterialId">
             <MudText Align="Align.Center">@context.MaterialId</MudText>
-            </MudTd>
-            <MudTd DataLabel="Code">
-                <MudText Align="Align.Center">@context.MaterialCode</MudText>
-            </MudTd>
-            <MudTd DataLabel="Description">
-                <MudText Align="Align.Center">@context.MaterialName</MudText>
-            </MudTd>
+        </MudTd>
+        <MudTd DataLabel="Key">
+            <MudText Align="Align.Center">@context.key</MudText>
+        </MudTd>
+        <MudTd DataLabel="Name">
+            <MudText Align="Align.Center">@context.PartName</MudText>
+        </MudTd>
+        <MudTd DataLabel="Number">
+            <MudText Align="Align.Center">@context.PartNumber</MudText>
+        </MudTd>
+
+        <MudTd>
+            <MudText Align="Align.Center">
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+
+                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => MaterialDetails(context.MaterialId))" @ontouchstart="(() => MaterialDetails(context.MaterialId))">Details</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateMaterial(context.MaterialId))" @ontouchstart="(() => UpdateMaterial(context.MaterialId))">Edit </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteMaterial(context.MaterialId))" @ontouchstart="(() => DeleteMaterial(context.MaterialId))">Delete </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
 
 
-            <MudTd>
-                <MudText Align="Align.Center">
-                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                        <ActivatorContent>
-                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                        </ActivatorContent>
-                        <ChildContent>
-
-                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => MaterialDetails(context.MaterialId))" @ontouchstart="(() => MaterialDetails(context.MaterialId))">Details</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateMaterial(context.MaterialId))" @ontouchstart="(() => UpdateMaterial(context.MaterialId))">Edit </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteMaterial(context.MaterialId))" @ontouchstart="(() => DeleteMaterial(context.MaterialId))">Delete </MudMenuItem>
-                        </ChildContent>
-                    </MudMenu>
-
-
-                </MudText>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-    @code {
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+@code {
     // Breadcrumb links
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
@@ -157,9 +161,11 @@
             return true;
         if (element.MaterialId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.MaterialCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.key.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.MaterialName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.PartName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.PartNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;

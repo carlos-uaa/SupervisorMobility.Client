@@ -2,18 +2,11 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
-using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
-using System;
-using System.Formats.Asn1;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static MudBlazor.FilterOperator;
-
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 {
     public partial class CreateHOE
@@ -210,12 +203,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 var tool = _filteredTools.FirstOrDefault(t => t.ToolName.Equals(selectedToolName, StringComparison.OrdinalIgnoreCase));
                 if (tool != null && !_toolsIds.Contains(tool.ToolId))
                 {
-                    _toolsIds.Add(tool.ToolId);
-                    _filteredTools.Remove(tool);
+                    //_toolsIds.Add(tool.ToolId);
 
+                    ToolUsed tooltoAdd = new ToolUsed();
+                    tooltoAdd.ToolId = tool.ToolId;
+                    tooltoAdd.Tool = tool;
+                    tooltoAdd.Quantity = 1;
+                    _sosHub.ToolsUsed?.Add(tooltoAdd);
+
+                    _filteredTools.Remove(tool);
                     selectedToolName = string.Empty;
                 }
             }
+
         }
 
         private void RemoveTool(int toolId)
@@ -223,7 +223,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             var tool = _tools.FirstOrDefault(t => t.ToolId == toolId);
             if (tool != null)
             {
-                _toolsIds.Remove(toolId);
+                var toolItem = _sosHub.ToolsUsed.FirstOrDefault(t => t.ToolId == toolId);
+                _sosHub.ToolsUsed.Remove(toolItem);
+
                 _filteredTools.Add(tool);
                 _filteredTools = _filteredTools.OrderBy(d => d.ToolName).ToList();
 
@@ -263,26 +265,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private async Task<IEnumerable<string>> SearchMaterials(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                return _filteredMaterials.Select(t => t.MaterialName);
+                return _filteredMaterials.Select(t => t.PartName);
 
-            return _filteredMaterials.Where(x => x.MaterialName.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(t => t.MaterialName);
+
+
+            return _filteredMaterials.Where(x => x.PartName.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(t => t.PartName);
         }
 
-        private bool IsExistingMaterial => _filteredMaterials.Any(t => t.MaterialName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
+        private bool IsExistingMaterial => _filteredMaterials.Any(t => t.PartName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
 
         private void AddSelectedMaterial()
         {
             if (!string.IsNullOrWhiteSpace(selectedMaterialName))
             {
-                var material = _filteredMaterials.FirstOrDefault(t => t.MaterialName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
-                if (material != null && !_materialsIds.Contains(material.MaterialId))
+                var material = _filteredMaterials.FirstOrDefault(t => t.PartName.Equals(selectedMaterialName, StringComparison.OrdinalIgnoreCase));
+                if (material != null && !_sosHub.MaterialsUsed.Select(m => m.MaterialId).Contains(material.MaterialId))
                 {
-                    _materialsIds.Add(material.MaterialId);
+                    //_materialsIds.Add(material.MaterialId);
+                    
+                    MaterialUsed materialToAdd = new MaterialUsed();
+
+                    materialToAdd.MaterialId = material.MaterialId;
+                    materialToAdd.Material = material;
+                    materialToAdd.Quantity = 1;
+                    _sosHub.MaterialsUsed?.Add(materialToAdd);
+
                     _filteredMaterials.Remove(material);
 
                     selectedMaterialName = string.Empty;
                 }
             }
+            StateHasChanged();
         }
 
         private void RemoveMaterial(int materialId)
@@ -290,9 +303,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             var material = _materials.FirstOrDefault(t => t.MaterialId == materialId);
             if (material != null)
             {
-                _materialsIds.Remove(materialId);
+                var materialItem = _sosHub.MaterialsUsed.FirstOrDefault(t => t.MaterialId == materialId);
+                _sosHub.MaterialsUsed.Remove(materialItem);
+
                 _filteredMaterials.Add(material);
-                _filteredMaterials = _filteredMaterials.OrderBy(d => d.MaterialName).ToList();
+                _filteredMaterials = _filteredMaterials.OrderBy(d => d.PartName).ToList();
 
             }
         }
@@ -307,11 +322,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 visibleResources = false;
                 resourceType = "";
                 _materials = await MaterialsServices.GetMaterials();
-                _materials = _materials.OrderBy(d => d.MaterialName).ToList();
+                _materials = _materials.OrderBy(d => d.PartName).ToList();
 
                 _filteredMaterials = new List<Material>(_materials);
                 _filteredMaterials.RemoveAll(material => _materialsIds.Contains(material.MaterialId));
-                _filteredMaterials = _filteredMaterials.OrderBy(d => d.MaterialName).ToList();
+                _filteredMaterials = _filteredMaterials.OrderBy(d => d.PartName).ToList();
 
                 Snackbar.Add($"{Localizer1["MaterialCreateSucces"]}", Severity.Info);
                 StateHasChanged();
@@ -513,8 +528,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
             _sosHub.DistributionId = distributionId;
-            _sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
-            _sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
+            //_sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
+            //_sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
             var temp = new List<CommonDirection>();
@@ -608,7 +623,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _filteredEquipment = new List<Equipment>(_equipment);
 
             _materials = await MaterialsServices.GetMaterials();
-            _materials = _materials.OrderBy(m => m.MaterialName).ToList();
+            _materials = _materials.OrderBy(m => m.key).ToList();
             _filteredMaterials = new List<Material>(_materials);
 
             _plants = await PlantServices.GetPlants();
@@ -634,6 +649,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _supervisors.Add(user);
             }
             StateHasChanged();
+
+            _sosHub.MaterialsUsed = new List<MaterialUsed>();
+            _sosHub.ToolsUsed = new List<ToolUsed>();
 
         }
 

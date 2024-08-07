@@ -27,8 +27,8 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 
         public string? TrainingTime { get; set; }
         public ICollection<Equipment>? SafetyEquipment { get; set; } = new List<Equipment>();
-        public ICollection<Tool>? ToolsUsed { get; set; } = new List<Tool>();
-        public ICollection<Material>? MaterialsUsed { get; set; } = new List<Material>();
+        public List<ToolUsed>? ToolsUsed { get; set; } = new List<ToolUsed>();
+        public List<MaterialUsed>? MaterialsUsed { get; set; } = new List<MaterialUsed>();
         public string OtherInformation { get; set; }
 
         public int? PlantId { get; set; }
