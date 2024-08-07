@@ -424,7 +424,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             Snackbar.Clear();
             UpdateButton = true;
-            //await GenerateSOSHUBCommentaries();
+            await GenerateSOSHUBCommentaries();
 
             foreach (Section sect in _sosAnalysis.SOSHub.Sections)
             {
@@ -478,8 +478,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 _sosAnalysis.Notes?.Add(processSheetCommentary);
             }
 
+            int i = 0;
             foreach (var item in tempItems)
             {
+                i++;
                 var processSheetCommentary = new Commentary
                 {
                     CommentaryId = 0,
@@ -487,7 +489,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     IsActive = true
                 };
 
-                _sosAnalysis.Notes?.Add(processSheetCommentary);
+                if (!(string.IsNullOrEmpty(processSheetCommentary.Comment) && i == 1))
+                {
+                    _sosAnalysis.Notes?.Add(processSheetCommentary);
+                }
+
             }
 
             return new AsyncVoidMethodBuilder();
