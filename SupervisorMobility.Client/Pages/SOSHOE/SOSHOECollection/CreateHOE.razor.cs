@@ -209,6 +209,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     tooltoAdd.ToolId = tool.ToolId;
                     tooltoAdd.Tool = tool;
                     tooltoAdd.Quantity = 1;
+                    tooltoAdd.IsActive = true;
                     _sosHub.ToolsUsed?.Add(tooltoAdd);
 
                     _filteredTools.Remove(tool);
@@ -288,6 +289,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     materialToAdd.MaterialId = material.MaterialId;
                     materialToAdd.Material = material;
                     materialToAdd.Quantity = 1;
+                    materialToAdd.IsActive = true;
                     _sosHub.MaterialsUsed?.Add(materialToAdd);
 
                     _filteredMaterials.Remove(material);
@@ -494,14 +496,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            if (supervisorOwnerId == new int())
-            {
-                return "First select a Owner!";
-            }
-            if (supervisorEditorId == new int())
-            {
-                return "First select a Editor!";
-            }
+            //if (supervisorOwnerId == new int())
+            //{
+            //    return "First select a Owner!";
+            //}
+            //if (supervisorEditorId == new int())
+            //{
+            //    return "First select a Editor!";
+            //}
             return string.Empty;
         }
 
@@ -572,24 +574,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
             }
 
-            if (!(items == null || !items.Any()))
-            {
-                foreach (var item in items)
-                {
-                    if (string.IsNullOrEmpty(item.Commentary))
-                    {
-                        Snackbar.Add($"Write down the commentary first!", Severity.Warning);
-                        return;
-                    }
-                    var processSheetCommentary = new Commentary
-                    {
-                        CommentaryId = 0,
-                        Comment = item.Commentary,
-                        IsActive = true
-                    };
-                    _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
-                }
-            }
+            //if (!(items == null || !items.Any()))
+            //{
+            //    foreach (var item in items)
+            //    {
+            //        if (string.IsNullOrEmpty(item.Commentary))
+            //        {
+            //            Snackbar.Add($"Write down the commentary first!", Severity.Warning);
+            //            return;
+            //        }
+            //        var processSheetCommentary = new Commentary
+            //        {
+            //            CommentaryId = 0,
+            //            Comment = item.Commentary,
+            //            IsActive = true
+            //        };
+            //        _sosHub.ProcessSheetCommentary.Add(processSheetCommentary);
+            //    }
+            //}
 
             var result = await SOSHubServices.CreateSOScollection(_sosHub);
 
