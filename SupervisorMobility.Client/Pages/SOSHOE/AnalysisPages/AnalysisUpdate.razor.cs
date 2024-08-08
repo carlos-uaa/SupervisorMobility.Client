@@ -639,5 +639,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
 
         }
+
     }
 }
