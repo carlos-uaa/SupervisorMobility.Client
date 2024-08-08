@@ -225,6 +225,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
         }
 
-
+        private async void DownloadExcel()
+        {
+            await Exportation.ExportAnalysisToExcel(AnalysisId.Value);
+        }
     }
 }
