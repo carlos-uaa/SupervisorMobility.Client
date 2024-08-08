@@ -561,5 +561,62 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
             NavigationManager.NavigateTo($"/SOSHOE/Hub/Details/{SOSHubId}/History");
         }
+
+        void UpdateHoe(int HoeId)
+        {
+            NavigationManager.NavigateTo($"/SOSHOE/Hub/Update/{HoeId}");
+        }
+
+        //Generate Documents
+        #region Generate Documents
+        private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        private DialogOptions dialogPagesOptions = new() { CloseOnEscapeKey = true, FullWidth = true, CloseButton = true };
+        public bool ShowGenerateDialog = false;
+        public bool ShowPagesGenerate = false;
+        private int selectedIndexPageGenerate = 0;
+        public void GoToPageGenerate(int indexPage)
+        {
+            selectedIndexPageGenerate = indexPage;
+            ShowGenerateDialog = false;
+            ShowPagesGenerate = true;
+
+        }
+
+
+        public void ReturnToGenerateindex()
+        {
+            selectedIndexPageGenerate = 0;
+            ShowPagesGenerate = false;
+            ShowGenerateDialog = true;
+        }
+
+        #endregion
+        #region generateAnalysis
+        SOSAnalysis analisys { get; set; } = new SOSAnalysis();
+
+        public async void GenerateAnalisys()
+        {
+
+
+            var GenAnalisys = await SOSHubServices.GenerateAnalysis(SOSHubId, analisys);
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (GenAnalisys)
+            {
+                Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
+                ShowPagesGenerate = false;
+                analisys = new SOSAnalysis();
+                //Pregutar si quiere ver el analisis generado
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+            }
+
+            StateHasChanged();
+        }
+
+        #endregion
     }
 }

@@ -555,14 +555,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            if (supervisorOwnerId == new int())
-            {
-                return "First select a Owner!";
-            }
-            if (supervisorEditorId == new int())
-            {
-                return "First select a Editor!";
-            }
+            //if (supervisorOwnerId == new int())
+            //{
+            //    return "First select a Owner!";
+            //}
+            //if (supervisorEditorId == new int())
+            //{
+            //    return "First select a Editor!";
+            //}
             return string.Empty;
         }
 
@@ -1712,32 +1712,42 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
             if (_sosHub.Sections.Count > 0)
             {
-                // Obtener los textos de los an�lisis de la secci�n que se va a eliminar
+                // Obtener los textos de los análisis de la sección que se va a eliminar
                 var textsToReinsert = item.Analyses.Select(analysis => analysis.Text).ToList();
 
-                // Para cada texto, encontrar su posici�n correcta en RawAnalisis seg�n RawAnalisisBk
+                // Para cada texto, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
                 foreach (var text in textsToReinsert)
                 {
-                    int indexInsert = RawAnalisisBk.FindIndex(a => a.Text == text);
+                    // Verificar si el texto existe en RawAnalisisBk
+                    var analysisToInsert = RawAnalisisBk.FirstOrDefault(a => a.Text == text);
+                    if (analysisToInsert != null)
+                    {
+                        int indexInsert = RawAnalisisBk.FindIndex(a => a.Text == text);
 
-                    // Encontrar el �ndice donde insertar en RawAnalisis
-                    int insertPosition = RawAnalisis
-                        .Select((value, index) => new { Value = value, Index = index })
-                        .Where(x => RawAnalisisBk.FindIndex(a => a.Text == x.Value.Text) >= indexInsert)
-                        .Select(x => x.Index)
-                        .DefaultIfEmpty(RawAnalisis.Count)
-                        .First();
+                        // Encontrar el índice donde insertar en RawAnalisis
+                        int insertPosition = RawAnalisis
+                            .Select((value, index) => new { Value = value, Index = index })
+                            .Where(x => RawAnalisisBk.FindIndex(a => a.Text == x.Value.Text) >= indexInsert)
+                            .Select(x => x.Index)
+                            .DefaultIfEmpty(RawAnalisis.Count)
+                            .First();
 
-                    // Insertar el AnalysisBkup en la posici�n correcta
-                    var analysisToInsert = RawAnalisisBk.First(a => a.Text == text);
-                    RawAnalisis.Insert(insertPosition, analysisToInsert);
+                        // Insertar el AnalysisBkup en la posición correcta
+                        RawAnalisis.Insert(insertPosition, analysisToInsert);
+                    }
+                    else
+                    {
+                        AnalysisBkup newToAdd = new();
+                        newToAdd.Text = text;
+                        RawAnalisis.Add(newToAdd);
+                    }
                 }
 
-                // Eliminar la secci�n de Sections
+                // Eliminar la sección de Sections
                 _sosHub.Sections.Remove(item);
             }
-
         }
+
 
         public void AddStep()
         {
