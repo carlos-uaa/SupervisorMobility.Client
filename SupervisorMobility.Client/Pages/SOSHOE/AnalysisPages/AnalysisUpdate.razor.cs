@@ -435,15 +435,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     return;
                 }
             }
-            //var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
+            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
 
-            //if (resultSOS != null)
-            //{
-            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            //    Snackbar.Add($"SOS Updated!", Severity.Info);
-            //}
-            //else
-            //    await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
+            if (resultSOS != null)
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"SOS Updated!", Severity.Info);
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
 
             var result = await SOSAnalysisServices.UpdateSOSAnalysis(_sosAnalysis);
 
@@ -631,7 +631,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 foreach (var file in OldImageRemoved)
                 {
                     var result = await SOSAnalysisServices.RemoveIlustrationFromSOSData(_sosAnalysis.SOSAnalysisId, file);
-                    if (result)
+                    if (!result)
                     {
                         Snackbar.Add($"Error removing the image", Severity.Error);
                     }
