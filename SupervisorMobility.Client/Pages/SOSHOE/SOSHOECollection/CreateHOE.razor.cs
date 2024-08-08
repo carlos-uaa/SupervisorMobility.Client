@@ -496,10 +496,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            //if (supervisorOwnerId == new int())
-            //{
-            //    return "First select a Owner!";
-            //}
+
+            if(user.UserType == 1)
+            {
+                if (supervisorOwnerId == new int())
+                {
+                    return "First select a Owner!";
+                }
+            }
+
+
             //if (supervisorEditorId == new int())
             //{
             //    return "First select a Editor!";
@@ -646,7 +652,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
                 supervisorOwnerId = user.UserId;
-                supervisorEditorId = user.UserId;
+                //supervisorEditorId = user.UserId;
 
                 _supervisors.Add(user);
             }
