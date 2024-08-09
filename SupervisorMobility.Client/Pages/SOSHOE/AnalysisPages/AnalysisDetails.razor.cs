@@ -13,6 +13,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         SOSAnalysis _sosAnalysis { get; set; } = new();
         List<SOSAnalysisLogbook> mostRecentLogs { get; set; }
+        public int logCount = 0;
 
         int cycleId = 0;
         private List<string> capturedImages = new List<string>();
@@ -58,20 +59,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
             _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
             if (_sosAnalysis.AnalysisLogbooks != null)
+            {
                 mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
+                logCount = mostRecentLogs.Count;
+            }
             else
                 mostRecentLogs = new List<SOSAnalysisLogbook>();
 
-            #region Tests
-            //Use Example logbooks
-            mostRecentLogs = new List<SOSAnalysisLogbook>
-            {
-                new SOSAnalysisLogbook { RevisedItem = "test", Date = new DateTime(2024, 1, 29), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
-                new SOSAnalysisLogbook { RevisedItem = "test2", Date = new DateTime(2024, 3, 15), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" } },
-                new SOSAnalysisLogbook {RevisedItem = "test3", Date = new DateTime(2024, 8, 10), SeniorSupervisor = new User { Name = "Jose Abdala" }, Supervisor = new User { Name = "V. Garita" }}
-            };
-    
-            #endregion
             if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
             {
 
@@ -225,6 +219,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
         }
 
-
+        private async void DownloadExcel()
+        {
+            await Exportation.ExportAnalysisToExcel(AnalysisId.Value);
+        }
     }
 }

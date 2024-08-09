@@ -631,7 +631,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 foreach (var file in OldImageRemoved)
                 {
                     var result = await SOSAnalysisServices.RemoveIlustrationFromSOSData(_sosAnalysis.SOSAnalysisId, file);
-                    if (result)
+                    if (!result)
                     {
                         Snackbar.Add($"Error removing the image", Severity.Error);
                     }
@@ -639,5 +639,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
 
         }
+
     }
 }

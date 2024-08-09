@@ -3,6 +3,7 @@
 @inject ISOSAnalysisService SOSAnalysisServices
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
+@inject IExportationService Exportation
 
 <style>
     .vertical {
@@ -80,6 +81,10 @@ else
                     {
                         <td style="width:15%">@(_sosAnalysis.AnalysisLogbooks.Count() - i++)</td>
                     }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
+                    }
                     <td rowspan="7" style="padding:0px!important;"><MudButton Class="vertical" Style="padding:0px;" OnClick="OpenLogbookDialog">See More</MudButton></td>
                 </tr>
                 <tr>
@@ -87,6 +92,10 @@ else
                     @foreach (var rev in mostRecentLogs)
                     {
                         <td style="width:15%">@(rev.Date?.ToShortDateString())</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
                     }
                 </tr>
                 <tr>
@@ -185,6 +194,10 @@ else
                     {
                         <td style="width:15%">@(rev.SeniorSupervisor.Name)</td>
                     }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
+                    }
                 </tr>
                 <tr>
                     <th>Tiempo de aprendizaje</th>
@@ -208,6 +221,10 @@ else
                     @foreach (var rev in mostRecentLogs)
                     {
                         <td style="width:15%">@(rev.Supervisor.Name)</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
                     }
                 </tr>
             </tbody>
@@ -264,7 +281,7 @@ else
                                 int totalSpecialCases = _sosAnalysis.SpecialCasesAbnormalSituations.Count();
 
                                 int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
-                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top">
+                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;">
                                     <MudItem Class="d-flex flex-column align-start">
                                         @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
                                         <MudItem Class="d-flex">
@@ -311,23 +328,32 @@ else
                     <th>NO DE PARTE</th>
                     <th>CANTIDAD</th>
                 </tr>
-                @if (_sosAnalysis.SpecialCasesAbnormalSituations?.Any() ?? false)
+                @{
+                    int specialCasesCount = _sosAnalysis.SOSHub.MaterialsUsed?.Count ?? 0;
+                    bool firstRow = true;
+                }
+                @if (_sosAnalysis.SOSHub.MaterialsUsed?.Any() ?? false)
                 {
-                    @foreach (var part in _sosAnalysis.SpecialCasesAbnormalSituations)
+                    @foreach (var material in _sosAnalysis.SOSHub.MaterialsUsed)
                     {
                         <tr>
-                            <td colspan="2"></td>
-                            <td>@part.key</td>
-                            <td colspan="2">@part.PartName</td>
-                            <td>@part.PartNumber</td>
-                            <td>@part.Quantity</td>
+                            @if (firstRow)
+                            {
+                                <td colspan="2" rowspan="@specialCasesCount">@_sosAnalysis.SOSHub.OtherInformation</td>
+                                firstRow = false;
+                            }
+                            <td>@material.Material.key</td>
+                            <td colspan="2">@material.Material.PartName</td>
+                            <td>@material.Material.PartNumber</td>
+                            <td>@material.Quantity</td>
                         </tr>
                     }
                 }
                 else
                 {
                     <tr>
-                        <td colspan="7">
+                        <td colspan="2">@_sosAnalysis.SOSHub.OtherInformation</td>
+                        <td colspan="5">
                             <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
                         </td>
                     </tr>
@@ -336,6 +362,10 @@ else
         </MudSimpleTable>
     </MudPaper>
     <br />
+    <MudItem Style="float:right;">
+        <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
+    </MudItem>
+    
 }
 
 
@@ -364,16 +394,24 @@ else
                 </tr>
             </thead>
             <tbody>
-                @if (_sosAnalysis.SpecialCasesAbnormalSituations?.Any() ?? false)
+                @{
+                    int specialCasesCount = _sosAnalysis.SOSHub.MaterialsUsed?.Count ?? 0;
+                    bool firstRow = true;
+                }
+                @if (_sosAnalysis.SOSHub.MaterialsUsed?.Any() ?? false)
                 {
-                    @foreach (var part in _sosAnalysis.SpecialCasesAbnormalSituations)
+                    @foreach (var material in _sosAnalysis.SOSHub.MaterialsUsed)
                     {
                         <tr>
-                            <td></td>
-                            <td>@part.key</td>
-                            <td>@part.PartName</td>
-                            <td>@part.PartNumber</td>
-                            <td>@part.Quantity</td>
+                            @if (firstRow)
+                            {
+                                <td rowspan="@specialCasesCount">@_sosAnalysis.SOSHub.OtherInformation</td>
+                                firstRow = false;
+                            }
+                            <td>@material.Material.key</td>
+                            <td>@material.Material.PartName</td>
+                            <td>@material.Material.PartNumber</td>
+                            <td>@material.Quantity</td>
                         </tr>
                     }
                 }
