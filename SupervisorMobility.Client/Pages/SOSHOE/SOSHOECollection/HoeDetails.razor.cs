@@ -1,7 +1,10 @@
 using BlazorCameraStreamer;
+using Blazorise.Extensions;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
@@ -45,7 +48,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int plantId = 0;
         int areaId = 0;
         int distributionId = 0;
-        int departmentId = 0; 
+        int departmentId = 0;
         int stationId = 0;
 
 
@@ -175,7 +178,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             ShowLoading = false;
         }
 
-    
+
         //Create SOS HUB and validations
         #region Create SOSHUB
 
@@ -200,10 +203,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _stations = await StationServices.GetStations();
             _stations = _stations.OrderBy(s => s.Description).ToList();
             StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments:true);
+
+            //Subhub get
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeDocuments: true, includeCollections: true);
 
 
-        
+
 
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
@@ -238,51 +243,43 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
             }
 
-            if(_sosHub.SafetyEquipment != null && _sosHub.SafetyEquipment.Count > 0)
-            {
-                _equipmentIds = _sosHub.SafetyEquipment.Select(s => s.EquipmentId).ToList();
-            }
-            if (_sosHub.ToolsUsed != null && _sosHub.ToolsUsed.Count > 0)
-            {
-                _toolsIds = _sosHub.ToolsUsed.Select(s => s.ToolId).ToList();
-            }
-            if (_sosHub.MaterialsUsed != null && _sosHub.MaterialsUsed.Count > 0)
-            {
-                _materialsIds = _sosHub.MaterialsUsed.Select(s => s.MaterialId).ToList();
-            }
 
             if (_sosHub.PlantId != null)
             {
                 plantId = (int)_sosHub.PlantId;
+                areaId = _sosHub.AreaId ?? areaId;
+                distributionId = _sosHub.DistributionId ?? distributionId;
             }
 
-            if (user.UserType == 1)
+
+
+            switch (user.UserType)
             {
-                if(plantId != new int())
-                {
+                case 1:
+                    if (plantId != new int())
+                    {
+                        _areas = await AreaServices.GetAreas(plantId);
+                        _areas = _areas.OrderBy(a => a.Description).ToList();
+                    }
+                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+                    _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+                    break;
+                case 2:
+                    _areas = user.Areas.ToList();
+                    foreach (var sv in user.Subordinates.ToList())
+                    {
+                        _supervisors.Add(sv);
+                    }
+                    break;
+                case 3:
                     _areas = await AreaServices.GetAreas(plantId);
                     _areas = _areas.OrderBy(a => a.Description).ToList();
-                }
-                _supervisors = await UsersService.GetUsersByType( 3, false, false);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-            }
-            if (user.UserType == 2)
-            {
 
-                _areas = user.Areas.ToList();
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors.Add(sv);
-                }
-
+                    _supervisors.Add(user);
+                    break;
             }
-            else if (user.UserType == 3)
-            {
-                _areas = await AreaServices.GetAreas(plantId);
-                _areas = _areas.OrderBy(a => a.Description).ToList();
 
-                _supervisors.Add(user);
-            }
+
 
             if (plantId != 0 && areaId != 0)
             {
@@ -290,8 +287,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _distributions = _distributions.OrderBy(d => d.Description).ToList();
             }
 
-            distributionId = _sosHub.DistributionId ?? distributionId;
-            areaId = _sosHub.AreaId ?? areaId;
             stationId = _sosHub.StationId ?? stationId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
             productId = _sosHub.AppliedModelId ?? productId;
@@ -371,7 +366,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
         #endregion
-   
+
         //Camera
         #region Camera
 
@@ -528,7 +523,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
 
-    
+
         public static string ReasonFormat(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -549,12 +544,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return input;
         }
 
-      
+
         private void CloseStepDialog()
         {
             showAddStepDialog = false;
         }
-     
+
         #endregion
 
         void HoeHistory()
@@ -577,6 +572,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public void GoToPageGenerate(int indexPage)
         {
             selectedIndexPageGenerate = indexPage;
+
+            switch (selectedIndexPageGenerate)
+            {
+                case 1:
+                    if (_sosHub.SOSAnalysis.Count > 0)
+                    {
+                        analisys = _sosHub.SOSAnalysis.FirstOrDefault();
+                    }
+                    break;
+            }
+
             ShowGenerateDialog = false;
             ShowPagesGenerate = true;
 
@@ -593,28 +599,103 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #endregion
         #region generateAnalysis
         SOSAnalysis analisys { get; set; } = new SOSAnalysis();
+        SOSAnalysisLogbook loganalysis { get; set; } = new SOSAnalysisLogbook();
+
+        int supervisorLogEditorId = 0;
 
         public async void GenerateAnalisys()
         {
 
-
-            var GenAnalisys = await SOSHubServices.GenerateAnalysis(SOSHubId, analisys);
-
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            if (GenAnalisys)
+            if (_sosHub.SOSAnalysis.Count > 0)
             {
-                Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
-                ShowPagesGenerate = false;
-                analisys = new SOSAnalysis();
-                //Pregutar si quiere ver el analisis generado
+                //REVISION
+                if (supervisorLogEditorId == 0 )
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                        "Es necesario seleccionar el editor!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    analisys = _sosHub.SOSAnalysis.First();
+                    loganalysis.NoRevision = analisys.AnalysisLogbooks?.Count() + 1;
+                    loganalysis.SeniorSupervisorId = supervisorOwnerId;
+                    loganalysis.SupervisorId = supervisorLogEditorId;
+                    loganalysis.Date = System.DateTime.Now;
+                    loganalysis.IsActive = true;
+                    if (analisys.AnalysisLogbooks == null)
+                    {
+                        analisys.AnalysisLogbooks = new List<SOSAnalysisLogbook>();
+                    }
+                    analisys.AnalysisLogbooks.Add(loganalysis);
+
+                    var GenAnalisys = await SOSHubServices.GenerateAnalysis(SOSHubId, analisys);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (GenAnalisys)
+                    {
+                        Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
+                        ShowPagesGenerate = false;
+                        analisys = new SOSAnalysis();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
             }
             else
             {
-                Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+                if (supervisorLogEditorId == 0 || string.IsNullOrEmpty(analisys.OperationName))
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       string.IsNullOrEmpty(analisys.OperationName) ? "Es necesario el nombre de operacion" : "Es necesario seleccionar el editor!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    loganalysis.NoRevision = 0;
+                    loganalysis.SeniorSupervisorId = supervisorOwnerId;
+                    loganalysis.SupervisorId = supervisorLogEditorId;
+                    loganalysis.Date = System.DateTime.Now;
+                    loganalysis.IsActive = true;
+                    if (analisys.AnalysisLogbooks == null)
+                    {
+                        analisys.AnalysisLogbooks = new List<SOSAnalysisLogbook>();
+                    }
+                    analisys.AnalysisLogbooks.Add(loganalysis);
+
+                    var GenAnalisys = await SOSHubServices.GenerateAnalysis(SOSHubId, analisys);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (GenAnalisys)
+                    {
+                        Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
+                        ShowPagesGenerate = false;
+                        analisys = new SOSAnalysis();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
             }
 
-            StateHasChanged();
+
         }
 
         #endregion

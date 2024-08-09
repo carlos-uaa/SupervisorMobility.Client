@@ -1897,7 +1897,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Collection.
+        ///   Busca una cadena traducida similar a Data Collector.
         /// </summary>
         public static string HOESOSHubTitle {
             get {
