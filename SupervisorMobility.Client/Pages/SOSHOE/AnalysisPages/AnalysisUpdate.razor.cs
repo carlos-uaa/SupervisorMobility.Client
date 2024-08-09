@@ -159,6 +159,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             {
 
                 mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
+                mostRecentLogs = mostRecentLogs.OrderByDescending(l => l.Date).ToList();
                 logCount = mostRecentLogs.Count;
             }
             else
