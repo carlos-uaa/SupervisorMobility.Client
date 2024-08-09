@@ -621,7 +621,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else
                 {
                     analisys = _sosHub.SOSAnalysis.First();
-                    loganalysis.NoRevision = analisys.AnalysisLogbooks?.Count() + 1;
+                    loganalysis.NoRevision = analisys.AnalysisLogbooks?.Count();
                     loganalysis.SeniorSupervisorId = supervisorOwnerId;
                     loganalysis.SupervisorId = supervisorLogEditorId;
                     loganalysis.Date = System.DateTime.Now;
@@ -640,6 +640,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Analysis/Details/{analisys.SOSAnalysisId}");
                         analisys = new SOSAnalysis();
                         //Pregutar si quiere ver el analisis generado
                     }
