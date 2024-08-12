@@ -192,7 +192,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 }
             }
 
-            AddItem();
+            if (!(_sosAnalysis.Notes?.Any() ?? false))
+            {
+                AddItem();
+            }
 
             cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
             totalTime = _sosAnalysis.SOSHub.Sections
