@@ -74,16 +74,9 @@ else
                     @*
                 Assuming the list of revitions is ordered from newest to oldest
                 *@
-                    @{
-                        int i = 0;
-                    }
-                    @foreach (var rev in mostRecentLogs)
+                    @foreach (var revision in GetRevisionNumbers())
                     {
-                        <td style="width:15%">@(_sosAnalysis.AnalysisLogbooks.Count() - i++)</td>
-                    }
-                    @for (int j = logCount; j < 3; j++)
-                    {
-                        <td style="width:15%"></td>
+                        <td style="width:15%;">@revision</td>
                     }
                     <td rowspan="7" style="padding:0px!important;"><MudButton Class="vertical" Style="padding:0px;" OnClick="OpenLogbookDialog">See More</MudButton></td>
                 </tr>
@@ -91,7 +84,7 @@ else
                     <th class="divider" colspan="2">Fecha</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.Date?.ToShortDateString())</td>
+                        <td style="width:15%">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", ""))</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -107,6 +100,10 @@ else
                     @foreach (var rev in mostRecentLogs)
                     {
                         <td rowspan="3" style="width:15%">@(rev.RevisedItem)</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td rowspan="3" style="width:15%"></td>
                     }
                 </tr>
                 <tr>
@@ -278,7 +275,7 @@ else
                                 int totalCriticalPoints = _sosAnalysis.SOSHub.Sections
                                 .SelectMany(section => section.Analyses)
                                 .Sum(analysis => analysis.CriticalPoints.Count());
-                                int totalSpecialCases = _sosAnalysis.SpecialCasesAbnormalSituations.Count();
+                                int totalSpecialCases = _sosAnalysis.SOSHub.MaterialsUsed.Count();
 
                                 int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
                                 <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;">
@@ -518,6 +515,7 @@ else
             <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0" Hover>
                 <thead>
                     <tr class="table-header-gray">
+                        <th>No. de revisión</th>
                         <th>SSV</th>
                         <th>SV</th>
                         <th>Date</th>
@@ -527,9 +525,21 @@ else
                 <tbody>
                     @if (_sosAnalysis.AnalysisLogbooks?.Any() ?? false)
                     {
+                        int i = 0;
                         @foreach (SOSAnalysisLogbook logbook in _sosAnalysis.AnalysisLogbooks)
                         {
                             <tr>
+                                <td>
+                                    @if (i == 0)
+                                    {
+                                        <span>N</span>
+                                        i++;
+                                    }
+                                    else
+                                    {
+                                        <span>@(i++)</span>
+                                    }
+                                </td>
                                 <td>@logbook.SeniorSupervisor?.Name</td>
                                 <td>@logbook.Supervisor?.Name</td>
                                 <td>@logbook.Date?.ToShortDateString()</td>

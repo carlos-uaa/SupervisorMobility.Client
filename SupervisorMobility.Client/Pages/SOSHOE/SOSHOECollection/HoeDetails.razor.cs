@@ -109,19 +109,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         //Tools, materials and equipment
-
-        List<Material> _materials { get; set; } = new();
-        List<int> _materialsIds = new();
-        private string selectedMaterialName;
-
-        List<Equipment> _equipment = new();
-        List<int> _equipmentIds = new();
-        private string selectedEquipmentName;
-
-        private List<Tool> _tools = new();
-        private List<int> _toolsIds = new();
-        private string selectedToolName;
-
         int analysisTabsIndex = 0;
 
 
@@ -185,15 +172,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
             _products = await ProductsServices.GetProducts();
-
-            _tools = await ToolsServices.GetTools();
-            _tools = _tools.OrderBy(t => t.ToolName).ToList();
-
-            _equipment = await EquipmentsServices.GetEquipments();
-            _equipment = _equipment.OrderBy(e => e.EquipmentName).ToList();
-
-            _materials = await MaterialsServices.GetMaterials();
-            _materials = _materials.OrderBy(m => m.key).ToList();
 
             _plants = await PlantServices.GetPlants();
             _plants = _plants.OrderBy(p => p.Description).ToList();

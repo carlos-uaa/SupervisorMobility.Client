@@ -20,8 +20,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         public int? AnalysisId { get; set; }
 
         SOSAnalysis _sosAnalysis { get; set; } = new();
-        List<SOSAnalysisLogbook> mostRecentLogs { get; set; }
-        public int logCount = 0;
+        private List<SOSAnalysisLogbook> mostRecentLogs = new List<SOSAnalysisLogbook>();
+        private int logCount = 0;
+        private int totalLogbooks = 0;
+        private int remainingLogs = 0;
+        private List<int> logbookIds = new List<int>();
 
         int cycleId = 0;
         private List<(int, string)> PreviousImages = new List<(int, string)>();//id, b64 string
@@ -157,12 +160,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
             if (_sosAnalysis.AnalysisLogbooks != null)
             {
+                mostRecentLogs = _sosAnalysis.AnalysisLogbooks
+                    .OrderByDescending(log => log.SOSAnalysisLogbookId)
+                    .Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count))
+                    .OrderBy(log => log.SOSAnalysisLogbookId)
+                    .ToList();
 
-                mostRecentLogs = _sosAnalysis.AnalysisLogbooks.Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count)).ToList();
                 logCount = mostRecentLogs.Count;
+                totalLogbooks = _sosAnalysis.AnalysisLogbooks.Count;
+
             }
-            else
-                mostRecentLogs = new List<SOSAnalysisLogbook>();
+
+            remainingLogs = 3 - logCount;
+            logbookIds = mostRecentLogs.Select(log => log.SOSAnalysisLogbookId).ToList();
 
 
             if (_sosAnalysis.Illustrations?.Any() ?? false)
@@ -191,7 +201,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 }
             }
 
-            AddItem();
+            if (!(_sosAnalysis.Notes?.Any() ?? false))
+            {
+                AddItem();
+            }
 
             cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
             totalTime = _sosAnalysis.SOSHub.Sections
@@ -207,6 +220,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             StateHasChanged();
 
             return new AsyncVoidMethodBuilder();
+        }
+
+        private List<string> GetRevisionNumbers()
+        {
+            List<string> revisionNumbers = new List<string> { "", "", "" };
+
+            Console.WriteLine(totalLogbooks);
+
+            if (totalLogbooks <= 3)
+            {
+                for (int i = 0; i < totalLogbooks; i++)
+                {
+                    if (i == 0)
+                    {
+                        revisionNumbers[0] = "N";
+                    }
+                    else
+                    {
+                        revisionNumbers[i] = (i).ToString();
+                    }
+                }
+            }
+            else
+            {
+                revisionNumbers[0] = (totalLogbooks - 3).ToString();
+                revisionNumbers[1] = (totalLogbooks - 2).ToString();
+                revisionNumbers[2] = (totalLogbooks - 1).ToString();
+            }
+
+            return revisionNumbers;
         }
 
         public static string ReasonFormat(string input)
