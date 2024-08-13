@@ -117,7 +117,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     }
                     else
                     {
-                        revisionNumbers[2 - i] = (i).ToString();
+                        revisionNumbers[i] = (i).ToString();
                     }
                 }
             }

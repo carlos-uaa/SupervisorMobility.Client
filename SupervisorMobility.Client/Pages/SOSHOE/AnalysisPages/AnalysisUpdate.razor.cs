@@ -226,6 +226,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             List<string> revisionNumbers = new List<string> { "", "", "" };
 
+            Console.WriteLine(totalLogbooks);
+
             if (totalLogbooks <= 3)
             {
                 for (int i = 0; i < totalLogbooks; i++)
@@ -236,7 +238,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     }
                     else
                     {
-                        revisionNumbers[2 - i] = (i).ToString();
+                        revisionNumbers[i] = (i).ToString();
                     }
                 }
             }
