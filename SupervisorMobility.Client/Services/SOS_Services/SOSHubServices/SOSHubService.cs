@@ -1,7 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -265,9 +265,18 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             throw new NotImplementedException();
         }
 
-        public Task<bool> GenerateSequence(int SOS_DataPool_id)
+        public async Task<bool> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync($"SOS/Sequence?SOSHubCollection_Id={SOS_DataPool_id}", sequence);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+
+            return true;
         }
 
         public async Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)

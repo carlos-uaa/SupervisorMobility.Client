@@ -4,7 +4,7 @@ global using SupervisorMobility.Client.Data.Entities.IS;
 global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
-global using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.JobStructureService;
 global using SupervisorMobility.Client.Services.DistributionService;

@@ -1,5 +1,5 @@
 ﻿
-namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
     public class Material
     {
