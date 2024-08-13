@@ -1,0 +1,565 @@
+﻿@page "/Sequence/Details/{SequenceId:int}"
+
+@inject ISOSSequenceService SOSSequenceServices
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IExportationService Exportation
+
+<style>
+    .vertical {
+        writing-mode: tb-rl;
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .border-left {
+        border-left: 2px solid #ababab;
+    }
+
+    .table-header td {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray th {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray td {
+        padding: 0px 1% !important;
+    }
+
+    .divider {
+        border-left: 1px solid var(--mud-palette-table-lines);
+    }
+
+    .images_cell {
+    }
+
+    .table-header-gray .images_cell {
+        padding: 1% 2% !important;
+    }
+
+    .section_divider {
+        border-top: 3px dashed var(--mud-palette-table-lines);
+    }
+
+</style>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody class="table-header-gray">
+                <tr>
+                    <th rowspan="2">Nombre de la Operación</th>
+                    <td rowspan="2" colspan="3">@_sosSequence.SOSHub.ProcessSheet</td>
+                    <th class="divider" colspan="2">No. de Revisión</th>
+                    @*
+                Assuming the list of revitions is ordered from newest to oldest
+                *@
+                    @foreach (var revision in GetRevisionNumbers())
+                    {
+                        <td style="width:15%;">@revision</td>
+                    }
+                    <td rowspan="7" style="padding:0px!important;"><MudButton Class="vertical" Style="padding:0px;" OnClick="OpenLogbookDialog">See More</MudButton></td>
+                </tr>
+                <tr>
+                    <th class="divider" colspan="2">Fecha</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td style="width:15%">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", ""))</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
+                    }
+                </tr>
+                <tr>
+                    <th>Número de control interno</th>
+                    <td style="width:20%">@_sosSequence.InternalControlNumber</td>
+                    <th>Nombre del proceso</th>
+                    <td style="width:20%">@_sosSequence.ProcessName</td>
+                    <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td rowspan="3" style="width:15%">@(rev.RevisedItem)</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td rowspan="3" style="width:15%"></td>
+                    }
+                </tr>
+                <tr>
+                    <th>Equipo de seguridad</th>
+                    <td colspan="3">
+                        @if (_sosSequence.SOSHub.SafetyEquipment != null && _sosSequence.SOSHub.SafetyEquipment.Any())
+                        {
+                            @foreach (var element in _sosSequence.SOSHub.SafetyEquipment.Take(2).ToList())
+                            {
+                                <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
+                                    @element.EquipmentName
+                                </MudChip>
+                            }
+                            @if (_sosSequence.SOSHub.SafetyEquipment.Count > 2)
+                            {
+
+                                <MudMenu Style="float:right" MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudChip Color="Color.Default" Icon="@Icons.Material.Filled.ExpandCircleDown" Size="Size.Small" Variant="Variant.Text">
+                                            Show more
+                                        </MudChip>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var element in _sosSequence.SOSHub.SafetyEquipment)
+                                        {
+                                            <MudMenuItem>
+                                                <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
+                                                    @element.EquipmentName
+                                                </MudChip>
+                                            </MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Herramientas</th>
+                    <td colspan="3">
+                        @if (_sosSequence.SOSHub.ToolsUsed != null && _sosSequence.SOSHub.ToolsUsed.Any())
+                        {
+
+                            @foreach (var element in _sosSequence.SOSHub.ToolsUsed.Take(2).ToList())
+                            {
+                                <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                    <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                        @(element.Tool?.ToolName)
+                                    </MudChip>
+                                </MudButton>
+                            }
+
+                            @if (_sosSequence.SOSHub.ToolsUsed.Count > 2)
+                            {
+
+
+                                <MudMenu Style="float:right" MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudChip Color="Color.Default" Icon="@Icons.Material.Filled.ExpandCircleDown" Size="Size.Small" Variant="Variant.Text">
+                                            Show more
+                                        </MudChip>
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        @foreach (var element in _sosSequence.SOSHub.ToolsUsed)
+                                        {
+                                            <MudMenuItem>
+                                                <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Outlined">
+                                                    @element.Tool?.ToolName
+                                                </MudChip>
+                                            </MudMenuItem>
+                                        }
+                                    </ChildContent>
+                                </MudMenu>
+                            }
+
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Modelo</th>
+                    <td colspan="3">@_sosSequence.SOSHub.AppliedModel?.Description</td>
+                    <th rowspan="2" class="divider"><span class="vertical">Confirmado Por</span></th>
+                    <th>Supervisor Gral.<br />( Aprobó )</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td style="width:15%">@(rev.SeniorSupervisor?.Name)</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
+                    }
+                </tr>
+                <tr>
+                    <th>Tiempo de aprendizaje</th>
+                    <td colspan="3">
+                        <MudAutocomplete T="int"
+                                         Margin="Margin.Dense"
+                                         Label=@Localizer["Cycles"]
+                                         Variant="Variant.Text"
+                                         AnchorOrigin="Origin.BottomCenter"
+                                         @bind-Value="cycleId"
+                                         OpenIcon="@Icons.Material.Filled.AccessTime"
+                                         AdornmentColor="Color.Info"
+                                         Clearable
+                                         ResetValueOnEmptyText
+                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                         MaxItems="10"
+                                         ReadOnly>
+                        </MudAutocomplete>
+                    </td>
+                    <th>Supervisor<br />( Elaboró )</th>
+                    @foreach (var rev in mostRecentLogs)
+                    {
+                        <td style="width:15%">@(rev.Supervisor?.Name)</td>
+                    }
+                    @for (int j = logCount; j < 3; j++)
+                    {
+                        <td style="width:15%"></td>
+                    }
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody class="table-header-gray">
+                <tr>
+                    <th>No.</th>
+                    <th>Pasos Principales</th>
+                    <th>Tiempo</th>
+                    <th colspan="2">Punto Critico (Razon)</th>
+                    <th>Ilustracion, Notas operacion, otros</th>
+                </tr>
+                @{
+                    int indexSequence = 0;
+                }
+                @if(_sosSequence.SOSHub != null)
+                {
+                    @foreach (var (sect, indexSection) in _sosSequence.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
+                    {
+                        @foreach (var (sequence, indexA) in sect.Analyses.Select((sequence, indexA) => (sequence, indexA)))
+                        {
+                            <tr class="@(indexSection != 0 && indexA==0?"section_divider":"")">
+                                @if (indexA == 0)
+                                {
+                                    int TotalRowSpan = sect.Analyses.Count();
+                                    <td rowspan="@TotalRowSpan">@(indexSection + 1)</td>
+                                    <td rowspan="@TotalRowSpan">@sect.Step</td>
+                                    <td rowspan="@TotalRowSpan">
+                                        <MudInput Value="@($"{sect.Time}")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                                    </td>
+                                }
+                                <td colspan="2">
+                                    @foreach (var (cp, cpIndex) in sequence.CriticalPoints.Select((cp, cpIndex) => (cp, cpIndex)))
+                                    {
+                                        <MudItem>
+                                            <MudText>@cp</MudText>
+                                            <MudText>
+                                                @ReasonFormat(sequence.Reasons[cpIndex])
+                                            </MudText>
+                                        </MudItem>
+                                    }
+                                </td>
+                                @if (indexSection == 0 && indexA == 0)
+                                {
+                                    int totalAnalyses = _sosSequence.SOSHub.Sections.Sum(section => section.Analyses.Count());
+                                    int totalCriticalPoints = _sosSequence.SOSHub.Sections
+                                    .SelectMany(section => section.Analyses)
+                                    .Sum(sequence => sequence.CriticalPoints.Count());
+                                    int totalSpecialCases = _sosSequence.SOSHub.MaterialsUsed.Count();
+
+                                    int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
+                                    <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;">
+                                        <MudItem Class="d-flex flex-column align-start">
+                                            @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
+                                            <MudItem Class="d-flex">
+                                                <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Show Notes (@(_sosSequence.Notes.Any() ? _sosSequence.Notes.Count() : 0))</MudButton>
+                                                @*                                             <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenLogbookDialog" Class="ml-3 mb-4" StartIcon="@Icons.Material.Filled.History">@Localizer["historyVersions"]</MudButton>
+                                *@
+                                            </MudItem>
+                                            @if (capturedImages.Any())
+                                            {
+                                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                                                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                                        {
+                                                            <MudItem Class="mb-2 mr-2">
+                                                                <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
+                                                            </MudItem>
+                                                        }
+                                                    </MudItem>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                    @Localizer["There are no images"]
+                                                </MudAlert>
+                                            }
+                                        </MudItem>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                    
+                }
+                <tr>
+                    <td colspan="3"></td>
+                    <td>Total</td>
+                    <td>
+                        <MudInput Value="@totalTime.ToString()" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">SITUACIÓN ANORMAL O CASOS ESPECIALES</th>
+                    <th>CLAVE</th>
+                    <th colspan="2">NOMBRE DE LA PARTE</th>
+                    <th>NO DE PARTE</th>
+                    <th>CANTIDAD</th>
+                </tr>
+                @{
+                    int specialCasesCount = _sosSequence.SOSHub?.MaterialsUsed?.Count ?? 0;
+                    bool firstRow = true;
+                }
+                @if (_sosSequence.SOSHub?.MaterialsUsed?.Any() ?? false)
+                {
+                    @foreach (var material in _sosSequence.SOSHub.MaterialsUsed)
+                    {
+                        <tr>
+                            @if (firstRow)
+                            {
+                                <td colspan="2" rowspan="@specialCasesCount">@_sosSequence.SOSHub.OtherInformation</td>
+                                firstRow = false;
+                            }
+                            <td>@material.Material.key</td>
+                            <td colspan="2">@material.Material.PartName</td>
+                            <td>@material.Material.PartNumber</td>
+                            <td>@material.Quantity</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="2">@_sosSequence.SOSHub?.OtherInformation</td>
+                        <td colspan="5">
+                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+    <br />
+    <MudItem Style="float:right;">
+        <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
+    </MudItem>
+    
+}
+
+
+
+
+
+@*Evidence Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Sequence Images"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudSimpleTable Elevation="0" Dense>
+            <thead>
+                <tr class="table-header-gray">
+                    <th>SITUACIÓN ANORMAL O CASOS ESPECIALES</th>
+                    <th>CLAVE</th>
+                    <th>NOMBRE DE LA PARTE</th>
+                    <th>NO DE PARTE</th>
+                    <th>CANTIDAD</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int specialCasesCount = _sosSequence.SOSHub.MaterialsUsed?.Count ?? 0;
+                    bool firstRow = true;
+                }
+                @if (_sosSequence.SOSHub.MaterialsUsed?.Any() ?? false)
+                {
+                    @foreach (var material in _sosSequence.SOSHub.MaterialsUsed)
+                    {
+                        <tr>
+                            @if (firstRow)
+                            {
+                                <td rowspan="@specialCasesCount">@_sosSequence.SOSHub.OtherInformation</td>
+                                firstRow = false;
+                            }
+                            <td>@material.Material.key</td>
+                            <td>@material.Material.PartName</td>
+                            <td>@material.Material.PartNumber</td>
+                            <td>@material.Quantity</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">
+                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+        <MudPaper Elevation="0">
+            @if (capturedImages.Count() > 0)
+            {
+                <MudCarousel Class="mud-width-full" Style="height: 65vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                    <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                        </MudAvatar>
+                    </PreviousButtonTemplate>
+                    <NextButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                    </NextButtonTemplate>
+                    <ChildContent>
+                        @foreach (var evidence in capturedImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="650" Width="1152" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 55vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            }
+            else
+            {
+                <MudItem Style="height: 65vh">
+                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                        @Localizer["There are no images"]
+                    </MudAlert>
+                </MudItem>
+            }
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleCommentaries" Options="dialogCommentariesOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Commentaries"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="height: 65vh">
+            <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                <tbody>
+                    @if (_sosSequence.Notes != null && _sosSequence.Notes.Any())
+                    {
+                        @foreach (Commentary comment in _sosSequence.Notes)
+                        {
+                            <tr>
+                                <td width="90%">
+                                    <MudTextField ReadOnly @bind-Value="@comment.Comment" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <MudItem Style="height: 65vh">
+                            <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                @Localizer["There are no commentaries"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseCommentariesDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleLogbook" Options="dialogLogbookOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Sequence Logbook"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="height: 65vh">
+            <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0" Hover>
+                <thead>
+                    <tr class="table-header-gray">
+                        <th>No. de revisión</th>
+                        <th>SSV</th>
+                        <th>SV</th>
+                        <th>Date</th>
+                        <th>Revised Items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_sosSequence.SequenceLogbooks?.Any() ?? false)
+                    {
+                        int i = 0;
+                        @foreach (SOSSequenceLogbook logbook in _sosSequence.SequenceLogbooks)
+                        {
+                            <tr>
+                                <td>
+                                    @if (i == 0)
+                                    {
+                                        <span>N</span>
+                                        i++;
+                                    }
+                                    else
+                                    {
+                                        <span>@(i++)</span>
+                                    }
+                                </td>
+                                <td>@logbook.SeniorSupervisor?.Name</td>
+                                <td>@logbook.Supervisor?.Name</td>
+                                <td>@logbook.Date?.ToShortDateString()</td>
+                                <td>@logbook.RevisedItem</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                    @Localizer["There is no sequence logbook"]
+                                </MudAlert>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>

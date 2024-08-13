@@ -82,7 +82,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
             return SOSHubsRetorned;
         }
 
-      
+
 
         //public async Task<FileUpload> AddIllustrationToSOSSequence(MultipartFormDataContent? contentfiles, int SOS_SOSSequence_id)
         //{
@@ -104,38 +104,38 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 
         //    return null;
         //}
-     
 
-        //public async Task<string> ShowIlustrationSOSSequence(int idfile)
-        //{
-        //    var response = await _http.GetAsync($"SOS/Sequence/Ilustrations/{idfile}");
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var contentType = response.Content.Headers.ContentType.MediaType;
-        //        var contentBytes = await response.Content.ReadAsByteArrayAsync();
-        //        var base64Content = Convert.ToBase64String(contentBytes);
+        public async Task<string> ShowIlustrationSOSSequence(int idfile)
+        {
+            var response = await _http.GetAsync($"SOS/Sequence/Ilustrations/{idfile}");
 
-        //        return $"data:{contentType};base64,{base64Content}";
-        //    }
-        //    else
-        //    {
-        //        return "Error Loading Image";
-        //    }
-        //}
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
 
-        //public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSequence_id, int ImageFile_id)
-        //{
-        //    var response = await _http.DeleteAsync($"SOS/Sequence/Ilustrations/{SOS_SOSSequence_id}/remove/{ImageFile_id}");
-        //    var content = await response.Content.ReadAsStringAsync();
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
 
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        return false;
-        //    }
+        public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSequence_id, int ImageFile_id)
+        {
+            var response = await _http.DeleteAsync($"SOS/Sequence/Ilustrations/{SOS_SOSSequence_id}/remove/{ImageFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
 
-        //    return true;
-        //}
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
 
 

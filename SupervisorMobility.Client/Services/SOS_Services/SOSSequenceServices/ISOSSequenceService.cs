@@ -10,8 +10,8 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
         Task<SOSSequence> DeleteSOSSequence(int SosEntity_id);
 
         //Task<FileUpload> AddIllustrationToSOSSequence(MultipartFormDataContent? contentfiles, int SOS_SOSSequence_id);
-        //Task<string> ShowIlustrationSOSSequence(int idfile);
+        Task<string> ShowIlustrationSOSSequence(int idfile);
 
-        //Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSequence_id, int ImageFile_id);
+        Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSequence_id, int ImageFile_id);
     }
 }
