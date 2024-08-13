@@ -1,7 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 

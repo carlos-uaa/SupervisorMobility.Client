@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Pages.Inicio.LupPage;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
