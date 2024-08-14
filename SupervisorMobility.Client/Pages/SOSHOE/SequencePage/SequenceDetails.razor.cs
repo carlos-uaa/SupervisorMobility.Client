@@ -61,58 +61,58 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
 
 
             #region Dummy Data
-            var sosHub = new SOSHub
-            {
-                SOSHubId = 1039,
-                ProcessSheet = "testeo",
-                AppliedModelId = 1,
-                RevisedItems = "testeo",
-                TrainingTime = "4 cycles",
-                OtherInformation = "testeo",
-                PlantId = 1,
-                AreaId = 16,
-                DepartmentId = 8,
-                OwnerId = 83,
-                CreatedDate = new DateTime(2024, 8, 9, 16, 41, 25, 273),
-                EditorId = 83,
-                ModifiedDate = new DateTime(2024, 8, 9, 16, 41, 25, 273),
-                Plan = "[Current]",
-                SourcePlan = "[Current]",
-                Status = "Pending",
-                IsActive = true,
-                DistributionId = 1384,
-                Folio = "C8-Test-L-P71A",
-            };
+            //var sosHub = new SOSHub
+            //{
+            //    SOSHubId = 1039,
+            //    ProcessSheet = "testeo",
+            //    AppliedModelId = 1,
+            //    RevisedItems = "testeo",
+            //    TrainingTime = "4 cycles",
+            //    OtherInformation = "testeo",
+            //    PlantId = 1,
+            //    AreaId = 16,
+            //    DepartmentId = 8,
+            //    OwnerId = 83,
+            //    CreatedDate = new DateTime(2024, 8, 9, 16, 41, 25, 273),
+            //    EditorId = 83,
+            //    ModifiedDate = new DateTime(2024, 8, 9, 16, 41, 25, 273),
+            //    Plan = "[Current]",
+            //    SourcePlan = "[Current]",
+            //    Status = "Pending",
+            //    IsActive = true,
+            //    DistributionId = 1384,
+            //    Folio = "C8-Test-L-P71A",
+            //};
 
-            var sosSequence = new SOSSequence
-            {
-                SOSSequenceId = 1,
-                InternalControlNumber = "ICN123",
-                OperationName = "Operation X",
-                ProcessName = "Process Y",
-                CreatedDate = DateTime.Now,
-                IsActive = true,
-                SOSHubId = sosHub.SOSHubId,
-                SOSHub = sosHub
-            };
+            //var sosSequence = new SOSSequence
+            //{
+            //    SOSSequenceId = 1,
+            //    InternalControlNumber = "ICN123",
+            //    OperationName = "Operation X",
+            //    ProcessName = "Process Y",
+            //    CreatedDate = DateTime.Now,
+            //    IsActive = true,
+            //    SOSHubId = sosHub.SOSHubId,
+            //    SOSHub = sosHub
+            //};
 
-            var sosSequenceLogbook = new SOSSequenceLogbook
-            {
-                SOSSequenceLogbookId = 1,
-                Status = 1,
-                NoRevision = 1,
-                IsActive = true,
-                SOSAnalysisId = 100, 
-                RevisedItem = "Item A",
-                SeniorSupervisorId = 200, 
-                SupervisorId = 300, 
-                Date = DateTime.Now
-            };
+            //var sosSequenceLogbook = new SOSSequenceLogbook
+            //{
+            //    SOSSequenceLogbookId = 1,
+            //    Status = 1,
+            //    NoRevision = 1,
+            //    IsActive = true,
+            //    SOSSequenceId = 100, 
+            //    RevisedItem = "Item A",
+            //    SeniorSupervisorId = 200, 
+            //    SupervisorId = 300, 
+            //    Date = DateTime.Now
+            //};
 
-            sosSequence.SequenceLogbooks.Add(sosSequenceLogbook);
-            _sosSequence = sosSequence;
+            //sosSequence.SequenceLogbooks.Add(sosSequenceLogbook);
+            //_sosSequence = sosSequence;
             #endregion
-            //_sosSequence = await SOSSequenceServices.GetSOSSequence((int)SequenceId, true, true, true, true, true);
+            _sosSequence = await SOSSequenceServices.GetSOSSequence((int)SequenceId, true, true, true, true, true);
             if (_sosSequence.SequenceLogbooks != null)
             {
                 mostRecentLogs = _sosSequence.SequenceLogbooks
