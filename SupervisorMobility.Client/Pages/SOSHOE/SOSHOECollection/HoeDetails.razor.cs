@@ -239,7 +239,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _areas = await AreaServices.GetAreas(plantId);
                         _areas = _areas.OrderBy(a => a.Description).ToList();
                     }
-                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+                    _supervisors = await UsersService.GetUsersByUserTypeInPlant(plantId,3, false, false);
                     _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
                     break;
                 case 2:
@@ -559,6 +559,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         analisys = _sosHub.SOSAnalysis.FirstOrDefault();
                     }
                     break;
+                case 5:
+                    if (_sosHub.SOSSequence.Count > 0)
+                    {
+                        sequence = _sosHub.SOSSequence.FirstOrDefault();
+                    }
+                    break;
             }
 
             ShowGenerateDialog = false;
@@ -614,7 +620,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (GenAnalisys)
+                    if (GenAnalisys != 0)
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
@@ -658,10 +664,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (GenAnalisys)
+                    if (GenAnalisys != 0)
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Analysis/Details/{GenAnalisys}");
                         analisys = new SOSAnalysis();
                         //Pregutar si quiere ver el analisis generado
                     }
@@ -712,11 +719,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                     sequence.SequenceLogbooks.Add(logSequence);
 
-                    var Gensequence = await SOSHubServices.GenerateSequence(SOSHubId, sequence);
+                    int Gensequence = await SOSHubServices.GenerateSequence(SOSHubId, sequence);
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (Gensequence)
+                    if (Gensequence != 0)
                     {
                         Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
@@ -760,10 +767,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (Gensequence)
+                    if (Gensequence != 0)
                     {
                         Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Sequence/Details/{Gensequence}");
                         sequence = new SOSSequence();
                         //Pregutar si quiere ver el analisis generado
                     }
