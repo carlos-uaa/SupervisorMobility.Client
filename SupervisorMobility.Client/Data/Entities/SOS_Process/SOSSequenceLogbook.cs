@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
     public class SOSSequenceLogbook
     {
@@ -9,7 +9,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
         public int? NoRevision { get; set; }
         public bool? IsActive { get; set; }
 
-        public int SOSAnalysisId { get; set; }
+        public int SOSSequenceId { get; set; }
         public SOSSequence? SOSSequence { get; set; }
 
         public string? RevisedItem { get; set; }

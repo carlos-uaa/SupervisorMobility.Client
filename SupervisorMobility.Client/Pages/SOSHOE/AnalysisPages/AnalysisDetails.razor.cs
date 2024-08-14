@@ -1,5 +1,5 @@
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Globalization;

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
 using System.Formats.Asn1;
@@ -239,7 +239,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _areas = await AreaServices.GetAreas(plantId);
                         _areas = _areas.OrderBy(a => a.Description).ToList();
                     }
-                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+                    _supervisors = await UsersService.GetUsersByUserTypeInPlant(plantId,3, false, false);
                     _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
                     break;
                 case 2:
@@ -559,6 +559,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         analisys = _sosHub.SOSAnalysis.FirstOrDefault();
                     }
                     break;
+                case 5:
+                    if (_sosHub.SOSSequence.Count > 0)
+                    {
+                        sequence = _sosHub.SOSSequence.FirstOrDefault();
+                    }
+                    break;
             }
 
             ShowGenerateDialog = false;
@@ -614,7 +620,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (GenAnalisys)
+                    if (GenAnalisys != 0)
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
@@ -658,16 +664,120 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (GenAnalisys)
+                    if (GenAnalisys != 0)
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Analysis/Details/{GenAnalisys}");
                         analisys = new SOSAnalysis();
                         //Pregutar si quiere ver el analisis generado
                     }
                     else
                     {
                         Snackbar.Add($"{Localizer["FailAnalisysGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+
+        #endregion
+        #region generateSequence
+        SOSSequence sequence { get; set; } = new SOSSequence();
+        SOSSequenceLogbook logSequence { get; set; } = new SOSSequenceLogbook();
+
+
+        public async void Generatesequence()
+        {
+
+            if (_sosHub.SOSSequence.Count > 0)
+            {
+                //REVISION
+                if (supervisorLogEditorId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                        "Es necesario seleccionar el editor!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    sequence = _sosHub.SOSSequence.First();
+                    logSequence.NoRevision = sequence.SequenceLogbooks?.Count();
+                    logSequence.SeniorSupervisorId = supervisorOwnerId;
+                    logSequence.SupervisorId = supervisorLogEditorId;
+                    logSequence.Date = System.DateTime.Now;
+                    logSequence.IsActive = true;
+                    if (sequence.SequenceLogbooks == null)
+                    {
+                        sequence.SequenceLogbooks = new List<SOSSequenceLogbook>();
+                    }
+                    sequence.SequenceLogbooks.Add(logSequence);
+
+                    int Gensequence = await SOSHubServices.GenerateSequence(SOSHubId, sequence);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gensequence != 0)
+                    {
+                        Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
+                        ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Sequence/Details/{sequence.SOSSequenceId}");
+                        sequence = new SOSSequence();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["FailsequenceGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+                if (supervisorLogEditorId == 0 || string.IsNullOrEmpty(sequence.OperationName))
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       string.IsNullOrEmpty(sequence.OperationName) ? "Es necesario el nombre de operacion" : "Es necesario seleccionar el editor!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    logSequence.NoRevision = 0;
+                    logSequence.SeniorSupervisorId = supervisorOwnerId;
+                    logSequence.SupervisorId = supervisorLogEditorId;
+                    logSequence.Date = System.DateTime.Now;
+                    logSequence.IsActive = true;
+                    if (sequence.SequenceLogbooks == null)
+                    {
+                        sequence.SequenceLogbooks = new List<SOSSequenceLogbook>();
+                    }
+                    sequence.SequenceLogbooks.Add(logSequence);
+
+                    var Gensequence = await SOSHubServices.GenerateSequence(SOSHubId, sequence);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gensequence != 0)
+                    {
+                        Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
+                        ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/Sequence/Details/{Gensequence}");
+                        sequence = new SOSSequence();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["FailsequenceGeneratedSucces"]}", Severity.Error);
                     }
 
                     StateHasChanged();

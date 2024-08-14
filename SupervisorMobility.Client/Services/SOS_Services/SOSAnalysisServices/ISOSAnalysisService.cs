@@ -1,4 +1,4 @@
-﻿using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+﻿using SupervisorMobility.Client.Data.Entities.SOS_Process;
 
 namespace SupervisorMobility.Client.Services.SOS_Services.SOSAnalysisServices
 {

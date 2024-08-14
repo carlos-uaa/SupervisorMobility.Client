@@ -1,5 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 
 namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 {
@@ -22,11 +22,11 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id);
         Task<bool> RemoveCDFromSOSData(int SOS_DataPool_id, int CDFile_id);
 
-        Task<bool> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis);
+        Task<int> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis);
         Task<bool> GenerateCombination(int SOS_DataPool_id);
         Task<bool> GenerateFlow(int SOS_DataPool_id);
         Task<bool> GenerateDistribution(int SOS_DataPool_id);
-        Task<bool> GenerateSequence(int SOS_DataPool_id);
+        Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence);
     
         //Histoy
         Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);

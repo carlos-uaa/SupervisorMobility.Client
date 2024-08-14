@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
     public class SOSAnalysis
     {
@@ -14,7 +14,6 @@ namespace SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process
 
         public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
         public ICollection<Commentary>? Notes { get; set; } = new List<Commentary>();
-        public ICollection<SpecialCaseAbnormalSituation>? SpecialCasesAbnormalSituations { get; set; } = new List<SpecialCaseAbnormalSituation>();
 
         public DateTime? CreatedDate { get; set; }
 
