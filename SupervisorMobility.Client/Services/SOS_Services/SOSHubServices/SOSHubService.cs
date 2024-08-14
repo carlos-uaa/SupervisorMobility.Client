@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using System.Buffers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -236,21 +237,23 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return true;
         }
 
-        public async Task<bool> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis)
+        public async Task<int> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis)
         {
             var response = await _http.PostAsJsonAsync($"SOS/Analysis?SOSHubCollection_Id={SOS_DataPool_id}", analysis);
-            var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                return false;
+                var content = await response.Content.ReadAsStringAsync();
+
+                var analysisCreated = JsonSerializer.Deserialize<SOSAnalysis>(content, _options);
+
+                return analysisCreated.SOSAnalysisId;
             }
-
-
-            return true;
+            
+            return 0;
         }
 
-        public Task<bool> GenerateCombination(int SOS_DataPool_id)
+            public Task<bool> GenerateCombination(int SOS_DataPool_id)
         {
             throw new NotImplementedException();
         }
@@ -265,18 +268,20 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             throw new NotImplementedException();
         }
 
-        public async Task<bool> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence)
+        public async Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence)
         {
             var response = await _http.PostAsJsonAsync($"SOS/Sequence?SOSHubCollection_Id={SOS_DataPool_id}", sequence);
             var content = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                return false;
+                SOSSequence? sequenceCreated = JsonSerializer.Deserialize<SOSSequence>(content, _options);
+
+                Console.WriteLine("sequence cre: " + sequence.SOSSequenceId );
+                return sequenceCreated.SOSSequenceId;
             }
 
-
-            return true;
+            return 0;
         }
 
         public async Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)
