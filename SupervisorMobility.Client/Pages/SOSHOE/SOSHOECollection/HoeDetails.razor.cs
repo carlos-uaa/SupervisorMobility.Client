@@ -144,8 +144,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _links = new List<BreadcrumbItem>
                 {
-                    new BreadcrumbItem(text: Localizer["home"], href: "/SOSHOE"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub"),
+                    new BreadcrumbItem(text: Localizer["home"], href: "/soshoe"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/soshoe/Hub"),
                     new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true)
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
@@ -532,12 +532,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void HoeHistory()
         {
-            NavigationManager.NavigateTo($"/SOSHOE/Hub/Details/{SOSHubId}/History");
+            NavigationManager.NavigateTo($"/soshoe/Hub/Details/{SOSHubId}/History");
         }
 
         void UpdateHoe(int HoeId)
         {
-            NavigationManager.NavigateTo($"/SOSHOE/Hub/Update/{HoeId}");
+            NavigationManager.NavigateTo($"/soshoe/Hub/Update/{HoeId}");
         }
 
         //Generate Documents
@@ -624,7 +624,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
-                        NavigationManager.NavigateTo($"/Analysis/Details/{analisys.SOSAnalysisId}");
+                        NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{analisys.SOSAnalysisId}");
                         analisys = new SOSAnalysis();
                         //Pregutar si quiere ver el analisis generado
                     }
@@ -668,7 +668,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         Snackbar.Add($"{Localizer["AnalisysGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
-                        NavigationManager.NavigateTo($"/Analysis/Details/{GenAnalisys}");
+                        NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{GenAnalisys}");
                         analisys = new SOSAnalysis();
                         //Pregutar si quiere ver el analisis generado
                     }
@@ -727,7 +727,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
-                        NavigationManager.NavigateTo($"/Sequence/Details/{sequence.SOSSequenceId}");
+                        NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{sequence.SOSSequenceId}");
                         sequence = new SOSSequence();
                         //Pregutar si quiere ver el analisis generado
                     }
@@ -771,7 +771,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         Snackbar.Add($"{Localizer["sequenceGeneratedSucces"]}", Severity.Info);
                         ShowPagesGenerate = false;
-                        NavigationManager.NavigateTo($"/Sequence/Details/{Gensequence}");
+                        NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{Gensequence}");
                         sequence = new SOSSequence();
                         //Pregutar si quiere ver el analisis generado
                     }

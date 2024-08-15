@@ -1,4 +1,4 @@
-﻿@page "/SOSHOE/Analysis"
+﻿@page "/soshoe/Analysis"
 
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -33,7 +33,7 @@ else if (_Analises.Count == 0)
         <MudText Align="Align.Center">
             <h4>@Localizer["thereAreNoAnalysisAnalysisCreated"]</h4>
             <MudSpacer></MudSpacer>
-            <MudButton Href="/Analysis/createAnalysis">
+            <MudButton Href="/soshoe/Analysis/createAnalysis">
                 <MudText>@Localizer["newAnalysisAnalysis"]</MudText>
                 <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
             </MudButton>
@@ -55,7 +55,7 @@ else
                     <MudSpacer />
                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     <MudSpacer />
-                    <MudButton Href="/Analysis/createAnalysis">
+                    <MudButton Href="/soshoe/Analysis/createAnalysis">
                         <MudText>@Localizer["newAnalysis"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
                     </MudButton>
@@ -117,6 +117,14 @@ else
     </MudTable>
 }
 
+<MudMessageBox @ref="_DeleteMessage" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Analysis?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
 
 
 
@@ -159,8 +167,8 @@ else
 
         _links = new List<BreadcrumbItem>
              {
-                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
-                 new BreadcrumbItem(text: Localizer["HOESOSAnalysisTitle"], href: "/SOSHOE/Analysis", disabled: true)
+                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                 new BreadcrumbItem(text: Localizer["HOESOSAnalysisTitle"], href: "/soshoe/Analysis", disabled: true)
                         };
         BreadcrumbService.UpdateBreadcrumbs(_links);
         ShowLoading = false;
@@ -234,15 +242,19 @@ else
 
     void AnalysisDetails(int AnalysisId)
     {
-        NavigationManager.NavigateTo($"Analysis/Details/{AnalysisId}");
+        NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{AnalysisId}");
     }
 
     // Delete Analysis
+
+    private MudMessageBox _DeleteMessage;
     async Task DeleteAnalysis(int AnalysisId)
     {
-        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this Analysis?");
+        bool? result = await _DeleteMessage.Show();
+        var confirm = result is null ? "Canceled" : "Deleted!";
+        StateHasChanged();
 
-        if (confirm)
+        if (confirm == "Deleted!")
         {
             _Analises.RemoveAll(Analysis => Analysis.SOSAnalysisId == AnalysisId);
             await SOSAnalysisServices.DeleteSOSAnalysis(AnalysisId);
@@ -252,7 +264,7 @@ else
     // Update Analysis
     void UpdateAnalysis(int AnalysisId)
     {
-        NavigationManager.NavigateTo($"Analysis/Update/{AnalysisId}");
+        NavigationManager.NavigateTo($"/soshoe/Analysis/Update/{AnalysisId}");
     }
 
 }

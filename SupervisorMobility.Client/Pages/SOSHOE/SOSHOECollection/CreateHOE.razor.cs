@@ -160,8 +160,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             _links = new List<BreadcrumbItem>
                 {
-                    new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/SOSHOE"),
-                    new BreadcrumbItem(text: Localizer["hoe"], href: "/SOSHOE/Hub" ),
+                    new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/soshoe/Hub" ),
                     new BreadcrumbItem(text: Localizer["create"], href: "", disabled:true )
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
@@ -609,7 +609,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _sosHub = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/SOSHOE/Hub");
+                NavigationManager.NavigateTo("/soshoe/Hub");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");

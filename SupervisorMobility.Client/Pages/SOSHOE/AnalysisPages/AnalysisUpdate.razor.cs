@@ -497,7 +497,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 _sosAnalysis = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/SOSHOE/Analysis");
+                NavigationManager.NavigateTo("/soshoe/Analysis");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
