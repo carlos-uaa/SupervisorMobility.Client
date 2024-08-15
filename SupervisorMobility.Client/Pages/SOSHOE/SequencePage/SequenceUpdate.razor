@@ -1,7 +1,7 @@
-﻿@page "/Analysis/Update/{AnalysisId:int}"
+﻿@page "/Sequence/Update/{SequenceId:int}"
 
 @inject NavigationManager NavigationManager
-@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSSequenceService SOSSequenceServices
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource> Localizer
@@ -72,7 +72,7 @@ else
             <tbody class="table-header-gray">
                 <tr>
                     <th rowspan="2">Nombre de la Operación</th>
-                    <td rowspan="2" colspan="3">@_sosAnalysis.SOSHub.ProcessSheet</td>
+                    <td rowspan="2" colspan="3">@_sosSequence.SOSHub.ProcessSheet</td>
                     <th class="divider" colspan="2">No. de Revisión</th>
                     @foreach (var revision in GetRevisionNumbers())
                     {
@@ -84,7 +84,7 @@ else
                     <th class="divider" colspan="2">Fecha</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", "")) <span>@rev.SOSAnalysisLogbookId</span></td>
+                        <td style="width:15%">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", "")) <span>@rev.SOSSequenceLogbookId</span></td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -93,9 +93,9 @@ else
                 </tr>
                 <tr>
                     <th>Número de control interno</th>
-                    <td style="width:20%">@_sosAnalysis.InternalControlNumber</td>
+                    <td style="width:20%">@_sosSequence.InternalControlNumber</td>
                     <th>Nombre del proceso</th>
-                    <td style="width:20%">@_sosAnalysis.ProcessName</td>
+                    <td style="width:20%">@_sosSequence.ProcessName</td>
                     <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
@@ -109,15 +109,15 @@ else
                 <tr>
                     <th>Equipo de seguridad</th>
                     <td colspan="3">
-                        @if (_sosAnalysis.SOSHub.SafetyEquipment != null && _sosAnalysis.SOSHub.SafetyEquipment.Any())
+                        @if (_sosSequence.SOSHub.SafetyEquipment != null && _sosSequence.SOSHub.SafetyEquipment.Any())
                         {
-                            @foreach (var element in _sosAnalysis.SOSHub.SafetyEquipment.Take(2).ToList())
+                            @foreach (var element in _sosSequence.SOSHub.SafetyEquipment.Take(2).ToList())
                             {
                                 <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
                                     @element.EquipmentName
                                 </MudChip>
                             }
-                            @if (_sosAnalysis.SOSHub.SafetyEquipment.Count > 2)
+                            @if (_sosSequence.SOSHub.SafetyEquipment.Count > 2)
                             {
 
                                 <MudMenu Style="float:right" MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
@@ -127,7 +127,7 @@ else
                                         </MudChip>
                                     </ActivatorContent>
                                     <ChildContent>
-                                        @foreach (var element in _sosAnalysis.SOSHub.SafetyEquipment)
+                                        @foreach (var element in _sosSequence.SOSHub.SafetyEquipment)
                                         {
                                             <MudMenuItem>
                                                 <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Engineering" Size="Size.Small" Variant="Variant.Outlined">
@@ -144,17 +144,17 @@ else
                 <tr>
                     <th>Herramientas</th>
                     <td colspan="3">
-                        @if (_sosAnalysis.SOSHub.ToolsUsed != null && _sosAnalysis.SOSHub.ToolsUsed.Any())
+                        @if (_sosSequence.SOSHub.ToolsUsed != null && _sosSequence.SOSHub.ToolsUsed.Any())
                         {
 
-                            @foreach (var element in _sosAnalysis.SOSHub.ToolsUsed.Take(2).ToList())
+                            @foreach (var element in _sosSequence.SOSHub.ToolsUsed.Take(2).ToList())
                             {
                                 <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Outlined">
                                     @element.Tool?.ToolName
                                 </MudChip>
                             }
 
-                            @if (_sosAnalysis.SOSHub.ToolsUsed.Count > 2)
+                            @if (_sosSequence.SOSHub.ToolsUsed.Count > 2)
                             {
 
 
@@ -165,7 +165,7 @@ else
                                         </MudChip>
                                     </ActivatorContent>
                                     <ChildContent>
-                                        @foreach (var element in _sosAnalysis.SOSHub.ToolsUsed)
+                                        @foreach (var element in _sosSequence.SOSHub.ToolsUsed)
                                         {
                                             <MudMenuItem>
                                                 <MudChip Color="Color.Info" Icon="@Icons.Material.Filled.Build" Size="Size.Small" Variant="Variant.Outlined">
@@ -182,7 +182,7 @@ else
                 </tr>
                 <tr>
                     <th>Modelo</th>
-                    <td colspan="3">@_sosAnalysis.SOSHub.AppliedModel?.Description</td>
+                    <td colspan="3">@_sosSequence.SOSHub.AppliedModel?.Description</td>
                     <th rowspan="2" class="divider"><span class="vertical">Confirmado Por</span></th>
                     <th>Supervisor Gral.<br />( Aprobó )</th>
                     @foreach (var rev in mostRecentLogs)
@@ -228,9 +228,7 @@ else
             <tbody class="table-header-gray">
                 <tr>
                     <th>No.</th>
-                    <th>Análisis</th>
-                    <th>No.</th>
-                    <th>Pasos Principales</th>
+                    <th colspan="3">Pasos Principales</th>
                     <th>Tiempo</th>
                     <th colspan="2">Punto Critico (Razon)</th>
                     <th>Ilustracion, Notas operacion, otros</th>
@@ -238,20 +236,16 @@ else
                 @{
                     int indexAnalysis = 0;
                 }
-                @foreach (var (sect, indexSection) in _sosAnalysis.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
+                @foreach (var (sect, indexSection) in _sosSequence.SOSHub.Sections.Select((sect, indexSection) => (sect, indexSection)))
                 {
                     @foreach (var (analysis, indexA) in sect.Analyses.Select((analysis, indexA) => (analysis, indexA)))
                     {
                         <tr class="@(indexSection != 0 && indexA==0?"section_divider":"")">
-                            <td>@(++indexAnalysis)</td>
-                            <td>
-                                @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(indexSection, indexA), analysis.CriticalPoints))
-                            </td>
                             @if (indexA == 0)
                             {
                                 int TotalRowSpan = sect.Analyses.Count();
                                 <td rowspan="@TotalRowSpan">@(indexSection + 1)</td>
-                                <td rowspan="@TotalRowSpan">@sect.Step</td>
+                                <td rowspan="@TotalRowSpan" colspan="3">@sect.Step</td>
                                 <td rowspan="@TotalRowSpan">
                                     <MudInput T="string" Value="@sect.Time" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect)" Validation="ValidateTime"/>
                                 </td>
@@ -269,11 +263,11 @@ else
                             </td>
                             @if (indexSection == 0 && indexA == 0)
                             {
-                                int totalAnalyses = _sosAnalysis.SOSHub.Sections.Sum(section => section.Analyses.Count());
-                                int totalCriticalPoints = _sosAnalysis.SOSHub.Sections
+                                int totalAnalyses = _sosSequence.SOSHub.Sections.Sum(section => section.Analyses.Count());
+                                int totalCriticalPoints = _sosSequence.SOSHub.Sections
                                 .SelectMany(section => section.Analyses)
                                 .Sum(analysis => analysis.CriticalPoints.Count());
-                                int totalSpecialCases = _sosAnalysis.SOSHub.MaterialsUsed.Count();
+                                int totalSpecialCases = _sosSequence.SOSHub.MaterialsUsed.Count();
 
                                 int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
                                 <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;" >
@@ -330,17 +324,17 @@ else
                     <th>CANTIDAD</th>
                 </tr>
                 @{
-                    int specialCasesCount = _sosAnalysis.SOSHub.MaterialsUsed?.Count ?? 0;
+                    int specialCasesCount = _sosSequence.SOSHub.MaterialsUsed?.Count ?? 0;
                     bool firstRow = true;
                 }
-                @if (_sosAnalysis.SOSHub.MaterialsUsed?.Any() ?? false)
+                @if (_sosSequence.SOSHub.MaterialsUsed?.Any() ?? false)
                 {
-                    @foreach (var material in _sosAnalysis.SOSHub.MaterialsUsed)
+                    @foreach (var material in _sosSequence.SOSHub.MaterialsUsed)
                     {
                         <tr>
                             @if (firstRow)
                             {
-                                <td colspan="2" rowspan="@specialCasesCount">@_sosAnalysis.SOSHub.OtherInformation</td>
+                                <td colspan="2" rowspan="@specialCasesCount">@_sosSequence.SOSHub.OtherInformation</td>
                                 firstRow = false;
                             }
                             <td>@material.Material.key</td>
@@ -353,7 +347,7 @@ else
                 else
                 {
                     <tr>
-                        <td colspan="2">@_sosAnalysis.SOSHub.OtherInformation</td>
+                        <td colspan="2">@_sosSequence.SOSHub.OtherInformation</td>
                         <td colspan="5">
                             <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there are no Special Cases.</MudAlert>
                         </td>
@@ -364,7 +358,7 @@ else
     </MudPaper>
     <MudCardActions>
         <MudItem Class="ml-auto mt-2">
-            <MudButton OnClick="UpdateAnalysis" StartIcon="@Icons.Material.Filled.PlayCircle" Disabled="UpdateButton" Variant="Variant.Filled" Color="Color.Info">@Localizer["Update Analysis"]</MudButton>
+            <MudButton OnClick="UpdateSequence" StartIcon="@Icons.Material.Filled.PlayCircle" Disabled="UpdateButton" Variant="Variant.Filled" Color="Color.Info">@Localizer["Update Sequence"]</MudButton>
         </MudItem>
     </MudCardActions>
 }
@@ -392,17 +386,17 @@ else
             </thead>
             <tbody>
                 @{
-                    int specialCasesCount = _sosAnalysis.SOSHub.MaterialsUsed?.Count ?? 0;
+                    int specialCasesCount = _sosSequence.SOSHub.MaterialsUsed?.Count ?? 0;
                     bool firstRow = true;
                 }
-                @if (_sosAnalysis.SOSHub.MaterialsUsed?.Any() ?? false)
+                @if (_sosSequence.SOSHub.MaterialsUsed?.Any() ?? false)
                 {
-                    @foreach (var material in _sosAnalysis.SOSHub.MaterialsUsed)
+                    @foreach (var material in _sosSequence.SOSHub.MaterialsUsed)
                     {
                         <tr>
                             @if (firstRow)
                             {
-                                <td rowspan="@specialCasesCount">@_sosAnalysis.SOSHub.OtherInformation</td>
+                                <td rowspan="@specialCasesCount">@_sosSequence.SOSHub.OtherInformation</td>
                                 firstRow = false;
                             }
                             <td>@material.Material.key</td>
@@ -595,10 +589,10 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @if (_sosAnalysis.AnalysisLogbooks?.Any() ?? false)
+                    @if (_sosSequence.SequenceLogbooks?.Any() ?? false)
                     {
                         int i = 0;
-                        @foreach (SOSAnalysisLogbook logbook in _sosAnalysis.AnalysisLogbooks)
+                        @foreach (SOSSequenceLogbook logbook in _sosSequence.SequenceLogbooks)
                         {
                             <tr>
                                 <td>
@@ -624,7 +618,7 @@ else
                         <tr>
                             <td colspan="4">
                                 <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                    @Localizer["There is no analysis logbook"]
+                                    @Localizer["There is no sequence logbook"]
                                 </MudAlert>
                             </td>
                         </tr>

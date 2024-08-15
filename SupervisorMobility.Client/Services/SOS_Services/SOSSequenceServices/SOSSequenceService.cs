@@ -84,26 +84,26 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 
 
 
-        //public async Task<FileUpload> AddIllustrationToSOSSequence(MultipartFormDataContent? contentfiles, int SOS_SOSSequence_id)
-        //{
-        //    var response = await _http.PostAsync($"SOS/Sequence/Ilustrations/{SOS_SOSSequence_id}", contentfiles);
+        public async Task<FileUpload> AddIllustrationToSOSSequence(MultipartFormDataContent? contentfiles, int SOS_SOSSequence_id)
+        {
+            var response = await _http.PostAsync($"SOS/Sequence/Ilustrations/{SOS_SOSSequence_id}", contentfiles);
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var content = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
 
-        //        var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
 
-        //        return result;
+                return result;
 
-        //    }
-        //    else
-        //    {
-        //        await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
-        //    }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
 
         public async Task<string> ShowIlustrationSOSSequence(int idfile)
