@@ -532,7 +532,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     IsActive = true
                 };
 
-                if (!(string.IsNullOrEmpty(processSheetCommentary.Comment) && i == 1))
+                if (!(string.IsNullOrEmpty(processSheetCommentary.Comment)))
                 {
                     _sosAnalysis.Notes?.Add(processSheetCommentary);
                 }

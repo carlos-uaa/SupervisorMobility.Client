@@ -478,7 +478,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
                     IsActive = true
                 };
 
-                if (!(string.IsNullOrEmpty(processSheetCommentary.Comment) && i == 1))
+                if (!(string.IsNullOrEmpty(processSheetCommentary.Comment)))
                 {
                     _sosSequence.Notes?.Add(processSheetCommentary);
                 }
