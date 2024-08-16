@@ -1,4 +1,4 @@
-﻿@page "/Sequence/Update/{SequenceId:int}"
+﻿@page "/soshoe/Sequence/Update/{SequenceId:int}"
 
 @inject NavigationManager NavigationManager
 @inject ISOSSequenceService SOSSequenceServices
@@ -275,7 +275,20 @@ else
                                         @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
                                         <MudItem Class="d-flex">
                                             <MudButton StartIcon="@Icons.Material.Filled.Image" Color="Color.Info" Variant="Variant.Filled" @onclick="() => ShowImagesDialog()" Class="mb-4 mr-4">Images (@(capturedImages.Count + PreviousImages.Count))</MudButton>
-                                            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">Notes (@(items.Count() + tempItems.Count()))</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Variant="Variant.Filled" @onclick="() => OpenCommentariesDialog()" Class="mb-4">
+                                                @{
+                                                    var validItemsCount = items.Where(item => item.IsActive).Count();
+                                                    var validTempItemsCount = tempItems.Count(item => !string.IsNullOrEmpty(item.Commentary));
+                                                }
+                                                @if (validItemsCount > 0 || validTempItemsCount > 0)
+                                                {
+                                                    <span>Notes (@(validItemsCount + validTempItemsCount))</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Notes (0)</span>
+                                                }
+                                            </MudButton>
                                         </MudItem>
                                         @if (capturedImages.Any() || PreviousImages.Any())
                                         {
@@ -547,7 +560,7 @@ else
                     {
                         <tr>
                             <td width="90%">
-                                <MudTextField @bind-Value="@tempItem.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                <MudTextField @bind-Value="@tempItem.Commentary" Label="Revisión - Modificación" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate></MudTextField>
                             </td>
                             @if (tempItems.IndexOf(tempItem) > 0 || items.Count() > 0)
                             {
