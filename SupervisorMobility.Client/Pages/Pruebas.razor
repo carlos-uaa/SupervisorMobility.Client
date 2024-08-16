@@ -1,134 +1,123 @@
-﻿@inject IJSRuntime JS
-@inject IStringLocalizer<Resource> Localizer
-@inject SignatureImageService _signatureImageService
+﻿@page "/image-editor"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
 
-<div class="container drawing-container pa-8">
-    <div class="row justify-content-center">
-        <div class="col-md-12 text-center position-relative mt-4">
-            <h3>@Localizer["operatorsSignature"]</h3>
-            <canvas class="canvas-container" id="myCanvas" width="500" height="200"
-            @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
-            @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-12 text-center">
-            <MudButton Disabled="@(!hasDrawing)" OnClick="GenerateSignature">Save Signature</MudButton>
-            <MudButton OnClick="ClearCanvas">Clear</MudButton>
-        </div>
-    </div>
-</div>
+<InputFile OnChange="OnFileSelected" />
+<MudButton OnClick="ClearImage" Color="Color.Error" Class="mt-2">Clear</MudButton>
+<MudButton OnClick="UndoChange" Color="Color.Primary" Class="mt-2 ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+@* <MudButton OnClick="GenerateImage" Color="Color.Success" Class="mt-2 ml-2">Generate Image</MudButton> *@
+<canvas id="canvas" style="border:1px solid #000;" @ref="canvasRef"></canvas>
+@* <img id="generatedImage" style="display:none; margin-top: 20px;" /> *@
+
+<MudGrid>
+    <MudItem xs="12" md="6">
+        <MudText Typo="Typo.subtitle1">PNG Image Size</MudText>
+        <MudSlider @bind-Value="pngImageSize" Min="50" Max="200" Step="1" Color="Color.Primary" />
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudText Typo="Typo.subtitle1">PDF Image Size</MudText>
+        <MudSlider @bind-Value="pdfImageSize" Min="50" Max="200" Step="1" Color="Color.Primary" />
+    </MudItem>
+    <MudItem xs="12">
+        <img src="Images/png.png" id="pngImage" width="@pngImageSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pngImage"))" />
+        <img src="Images/pdf.png" id="pdfImage" width="@pdfImageSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pdfImage"))" />
+    </MudItem>
+</MudGrid>
 
 @code {
-    [Parameter]
-    public EventCallback OnSignatureSaved { get; set; }
+    private ElementReference canvasRef;
+    private string uploadedImage;
+    private double pngImageSize = 100;
+    private double pdfImageSize = 100;
 
-    private bool isDrawing = false;
-    private double prevX;
-    private double prevY;
-    private bool hasDrawing = false;
+    private List<string> history = new List<string>();
+    private bool isUndoDisabled = true;
+    private bool isUploaded = false;
+    private DotNetObjectReference<Pruebas>? dotNetObjectRef;
+
+
+    [JSInvokable("OnImageDropped")]
+    public async Task OnImageDropped()
+    {
+        var currentCanvasImage = await JS.InvokeAsync<string>("getCanvasImage", canvasRef);
+
+        uploadedImage = currentCanvasImage;
+
+        history.Add(uploadedImage);
+
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("initCanvas", "myCanvas");
+            dotNetObjectRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
         }
     }
 
-    private async Task StartDrawing(MouseEventArgs e)
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        isDrawing = true;
-        prevX = e.OffsetX;
-        prevY = e.OffsetY;
-    }
-
-    private void EndDrawing(MouseEventArgs e)
-    {
-        isDrawing = false;
-        hasDrawing = true; 
-    }
-
-    private async Task Draw(MouseEventArgs e)
-    {
-        if (isDrawing)
+        var file = e.File;
+        using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
         {
-            await JS.InvokeVoidAsync("draw", "myCanvas", e.OffsetX, e.OffsetY, isDrawing, prevX, prevY);
-            prevX = e.OffsetX;
-            prevY = e.OffsetY;
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer);
+            var base64String = Convert.ToBase64String(buffer);
+            var dataUrl = $"data:{file.ContentType};base64,{base64String}";
+            uploadedImage = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+            history.Add(uploadedImage);
+            await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
+            isUndoDisabled = false;
+            isUploaded = true;
         }
     }
 
-    private async Task StartDrawingTouch(TouchEventArgs e)
+    private async Task OnDragStart(DragEventArgs e, string imageId)
     {
-        await JS.InvokeVoidAsync("disableScroll");
-        isDrawing = true;
-        prevX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-        prevY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+        await JS.InvokeVoidAsync("onDragStartJs", imageId );
+   
     }
 
-    private void EndDrawingTouch(TouchEventArgs e)
+    private void ClearImage()
     {
-        JS.InvokeVoidAsync("enableScroll");
-
-        isDrawing = false;
-        hasDrawing = true;
+        uploadedImage = null;
+        history = new();
+        JS.InvokeVoidAsync("clearCanvas", canvasRef);
+        isUndoDisabled = true;
+        isUploaded = false;
     }
 
-    private async Task DrawTouch(TouchEventArgs e)
+    private async void UndoChange()
     {
-        if (isDrawing)
+        if (history.Count > 0)
         {
-            var offsetX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-            var offsetY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+            await JS.InvokeVoidAsync("clearCanvas", canvasRef);
 
-            await JS.InvokeVoidAsync("draw", "myCanvas", offsetX, offsetY, isDrawing, prevX, prevY);
-            prevX = offsetX;
-            prevY = offsetY;
+            history.RemoveAt(history.Count - 1);
+
+            if (history.Count > 0)
+            {
+                foreach (var imageData in history)
+                {
+                    await JS.InvokeVoidAsync("addImageToCanvas", imageData, canvasRef);
+
+                }
+            }
+            else
+            {
+                uploadedImage = null;
+                isUndoDisabled = true;
+            }
+
+            isUndoDisabled = history.Count == 0;
+            StateHasChanged();
         }
     }
 
-    private async Task ClearCanvas()
+    private async Task GenerateImage()
     {
-        await JS.InvokeVoidAsync("clearCanvas", "myCanvas");
-        hasDrawing = false;
+        await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
     }
 
-    private async Task GenerateSignature()
-    {
-        if (hasDrawing)
-        {
-            string signatureImageBase64 = await JS.InvokeAsync<string>("generateSignature", "myCanvas");
-            _signatureImageService.SetImage(signatureImageBase64);
-            await OnSignatureSaved.InvokeAsync();
-        }
-    }
-
-    private async Task<double> GetOffsetLeft(string canvasId)
-    {
-        return await JS.InvokeAsync<double>("getOffsetLeft", canvasId);
-    }
-
-    private async Task<double> GetOffsetTop(string canvasId)
-    {
-        return await JS.InvokeAsync<double>("getOffsetTop", canvasId);
-    }
 }
-
-
-<style>
-    .canvas-container {
-        border: 1px dashed #000;
-        box-shadow: 5px 5px 5px rgb(218, 214, 213);
-        border-radius: 10px;
-        transition: all 0.3s ease-out;
-    }
-
-    .canvas-container:hover {
-        transform: scale(1.005);
-    }
-
-    .drawing-container {
-        overflow: hidden;
-    }
-</style>
