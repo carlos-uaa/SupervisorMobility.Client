@@ -1,5 +1,6 @@
 using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -10,10 +11,12 @@ using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System;
 using System.Formats.Asn1;
 using System.Globalization;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using static MudBlazor.CategoryTypes;
 using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
@@ -122,6 +125,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         public string stepName { get; set; } = "";
         bool showAddStepDialog = false;
+
+        public List<Object> Documents { get; set; } = new List<Object>();
 
 
         #endregion
@@ -274,6 +279,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
 
             StateHasChanged();
+
+            foreach(var analysis in _sosHub.SOSAnalysis)
+            {
+                Documents.Add(analysis);
+            }
+
+            foreach (var sequence in _sosHub.SOSSequence)
+            {
+                Documents.Add(sequence);
+            }
+
+
             return new AsyncVoidMethodBuilder();
         }
 
@@ -606,8 +623,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 {
                     analisys = _sosHub.SOSAnalysis.First();
                     loganalysis.NoRevision = analisys.AnalysisLogbooks?.Count();
-                    loganalysis.SeniorSupervisorId = supervisorOwnerId;
-                    loganalysis.SupervisorId = supervisorLogEditorId;
+                    loganalysis.ReviewerId = supervisorOwnerId;
+                    loganalysis.ApproverId = supervisorLogEditorId;
                     loganalysis.Date = System.DateTime.Now;
                     loganalysis.IsActive = true;
                     if (analisys.AnalysisLogbooks == null)
@@ -650,8 +667,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else
                 {
                     loganalysis.NoRevision = 0;
-                    loganalysis.SeniorSupervisorId = supervisorOwnerId;
-                    loganalysis.SupervisorId = supervisorLogEditorId;
+                    loganalysis.ReviewerId = supervisorOwnerId;
+                    loganalysis.ApproverId = supervisorLogEditorId;
                     loganalysis.Date = System.DateTime.Now;
                     loganalysis.IsActive = true;
                     if (analisys.AnalysisLogbooks == null)
@@ -788,5 +805,212 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
         #endregion
+
+
+        #region DocumentsSecction
+        public void Details<T>(int id) where T : class
+        {
+            if (typeof(T) == typeof(SOSAnalysis))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSCombination))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Combination/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSDistribution))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{id}");
+            } 
+            else if (typeof(T) == typeof(SOSFlow))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Flow/Details/{id}");
+            } 
+            else if (typeof(T) == typeof(SOSSequence))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{id}");
+            }
+            // Añadir más casos según sea necesario
+        }
+
+        public void Update<T>(int id) where T : class
+        {
+            if (typeof(T) == typeof(SOSAnalysis))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Analysis/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSCombination))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Combination/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSDistribution))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Distribution/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSFlow))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Flow/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSequence))
+            {
+                NavigationManager.NavigateTo($"/soshoe/Sequence/Update/{id}");
+            }
+            // Añadir más casos según sea necesario
+        }
+
+        private MudMessageBox _DeleteAnalysis;
+        private MudMessageBox _DeleteCombination;
+        private MudMessageBox _DeleteDistribution;
+        private MudMessageBox _DeleteFlow;
+        private MudMessageBox _DeleteSequence;
+
+        public async void Delete<T>(int id) where T : class
+        {
+            if (typeof(T) == typeof(SOSAnalysis))
+            {
+                bool? result = await _DeleteAnalysis.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+                    _sosHub.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
+                    await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                }
+            }
+            else if (typeof(T) == typeof(SOSCombination))
+            {
+                bool? result = await _DeleteCombination.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+                    _sosHub.SOSCombination.RemoveAll(combination => combination.SOSCombinationId == id);
+                    await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                }
+            }
+            else if (typeof(T) == typeof(SOSDistribution))
+            {
+            }
+            else if (typeof(T) == typeof(SOSFlow))
+            {
+            }
+            else if (typeof(T) == typeof(SOSSequence))
+            {
+                bool? result = await _DeleteAnalysis.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+                    _sosHub.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
+                    await SOSSequenceServices.DeleteSOSSequence(id);
+                }
+            }
+
+            
+        }
+
+        private int selectedRowNumber = -1;
+        private int SosDocId = -1;
+        private MudTable<Object> SelectTableEventDocument;
+
+        private void RowClickEventDocument(TableRowClickEventArgs<object> args)
+        {
+
+
+            if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
+            {
+                //HoeDetails(args.Item.SOSHubId);
+                //aqui va los details
+
+                if ( args.Item is SOSAnalysis)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
+                }
+                else if (args.Item is SOSCombination)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
+                }
+                else if (args.Item is SOSDistribution)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
+                }
+                else if (args.Item is SOSFlow)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
+                }
+                else if (args.Item is SOSSequence)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
+                }
+            }
+            else
+            {
+                SelectTableEventDocument.SelectedItem = args.Item;
+                selectedRowNumber = SelectTableEventDocument.Items.ToList().IndexOf(args.Item);
+            }
+        }
+
+        private string SelectedRowDocument(Object element, int rowNumber)
+        {
+            if (selectedRowNumber == rowNumber)
+            {
+                if (element is SOSAnalysis analysis)
+                {
+                    SosDocId = analysis.SOSAnalysisId;
+                }
+                else if (element is SOSCombination combination)
+                {
+                    SosDocId = combination.SOSCombinationId;
+                }
+                else if (element is SOSDistribution distribution)
+                {
+                    SosDocId = distribution.SOSDistributionId;
+                }
+                else if (element is SOSFlow flow)
+                {
+                    SosDocId = flow.SOSFlowId;
+                }
+                else if (element is SOSSequence sequence)
+                {
+                    SosDocId = sequence.SOSSequenceId;
+                }
+                return "selected"; // Mantener la fila seleccionada
+            }
+            else if (SelectTableEventDocument.SelectedItem != null && SelectTableEventDocument.SelectedItem.Equals(element))
+            {
+                if (element is SOSAnalysis analysis)
+                {
+                    SosDocId = analysis.SOSAnalysisId;
+                }
+                else if (element is SOSCombination combination)
+                {
+                    SosDocId = combination.SOSCombinationId;
+                }
+                else if (element is SOSDistribution distribution)
+                {
+                    SosDocId = distribution.SOSDistributionId;
+                }
+                else if (element is SOSFlow flow) 
+                {
+                    SosDocId = flow.SOSFlowId;
+                }
+                else if (element is SOSSequence sequence)
+                {
+                    SosDocId = sequence.SOSSequenceId;
+                }
+
+                selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        #endregion
+
     }
 }

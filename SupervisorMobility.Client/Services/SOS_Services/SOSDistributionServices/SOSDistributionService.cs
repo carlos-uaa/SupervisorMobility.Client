@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -20,7 +21,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-      
+
+
+
         public async Task<List<SOSDistribution>> GetAllSOSDistribution(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
         {
             var response = await _http.GetAsync($"SOS/Distribution/all?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
@@ -35,9 +38,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
             return SOSDistributionsRetorned;
         }
 
-        public async Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
+        public async Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false)
         {
-            var response = await _http.GetAsync($"SOS/Distribution/{SOSDistributionId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
+            var response = await _http.GetAsync($"SOS/Distribution/{SOSDistributionId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeImagesSOS={includeImagesSOS}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -48,7 +51,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
 
             return SOSDistributionsRetorned;
         }
-
         public async Task<SOSDistribution> UpdateSOSDistribution(SOSDistribution SosEntity)
         {
             var response = await _http.PutAsJsonAsync($"SOS/Distribution/{SosEntity.SOSDistributionId}", SosEntity);
@@ -80,61 +82,59 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
             return SOSHubsRetorned;
         }
 
-      
 
-        //public async Task<FileUpload> AddIllustrationToSOSDistribution(MultipartFormDataContent? contentfiles, int SOS_SOSDistribution_id)
-        //{
-        //    var response = await _http.PostAsync($"SOS/Distribution/Ilustrations/{SOS_SOSDistribution_id}", contentfiles);
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var content = await response.Content.ReadAsStringAsync();
+        public async Task<FileUpload> AddIllustrationToSOSDistribution(MultipartFormDataContent? contentfiles, int SOS_SOSDistribution_id)
+        {
+            var response = await _http.PostAsync($"SOS/Distribution/Ilustrations/{SOS_SOSDistribution_id}", contentfiles);
 
-        //        var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
 
-        //        return result;
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
 
-        //    }
-        //    else
-        //    {
-        //        await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
-        //    }
+                return result;
 
-        //    return null;
-        //}
-     
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
 
-        //public async Task<string> ShowIlustrationSOSDistribution(int idfile)
-        //{
-        //    var response = await _http.GetAsync($"SOS/Distribution/Ilustrations/{idfile}");
+            return null;
+        }
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var contentType = response.Content.Headers.ContentType.MediaType;
-        //        var contentBytes = await response.Content.ReadAsByteArrayAsync();
-        //        var base64Content = Convert.ToBase64String(contentBytes);
 
-        //        return $"data:{contentType};base64,{base64Content}";
-        //    }
-        //    else
-        //    {
-        //        return "Error Loading Image";
-        //    }
-        //}
+        public async Task<string> ShowIlustrationSOSDistribution(int idfile)
+        {
+            var response = await _http.GetAsync($"SOS/Distribution/Ilustrations/{idfile}");
 
-        //public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSDistribution_id, int ImageFile_id)
-        //{
-        //    var response = await _http.DeleteAsync($"SOS/Distribution/Ilustrations/{SOS_SOSDistribution_id}/remove/{ImageFile_id}");
-        //    var content = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
 
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        return false;
-        //    }
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
+        public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSDistribution_id, int ImageFile_id)
+        {
+            var response = await _http.DeleteAsync($"SOS/Distribution/Ilustrations/{SOS_SOSDistribution_id}/remove/{ImageFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
 
-        //    return true;
-        //}
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
 
+            return true;
+        }
 
 
 
