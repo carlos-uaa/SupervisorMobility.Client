@@ -4,6 +4,9 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IExportationService Exportation
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <style>
     .vertical {
@@ -99,7 +102,7 @@ else
                     <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td rowspan="3" style="width:15%">@(rev.RevisedItem)</td>
+                        <td rowspan="3" style="width:15%">@(rev.Changes)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -189,7 +192,7 @@ else
                     <th>Supervisor Gral.<br />( Aprobó )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.SeniorSupervisor?.Name)</td>
+                        <td style="width:15%">@(rev.Approver?.Name)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -217,7 +220,7 @@ else
                     <th>Supervisor<br />( Elaboró )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.Supervisor?.Name)</td>
+                        <td style="width:15%">@(rev.Reviewer?.Name)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -540,10 +543,10 @@ else
                                         <span>@(i++)</span>
                                     }
                                 </td>
-                                <td>@logbook.SeniorSupervisor?.Name</td>
-                                <td>@logbook.Supervisor?.Name</td>
+                                <td>@logbook.Approver?.Name</td>
+                                <td>@logbook.Reviewer?.Name</td>
                                 <td>@logbook.Date?.ToShortDateString()</td>
-                                <td>@logbook.RevisedItem</td>
+                                <td>@logbook.Changes</td>
                             </tr>
                         }
                     }
@@ -563,5 +566,22 @@ else
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+            @Localizer["areYouSureYouWantToApproveThisPAT"]
+        </MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["onceApprovedItCannotBeModified"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => ApprovePat())" Color="Color.Info" StartIcon="@Icons.Material.Filled.PlaylistAddCheck" Variant="Variant.Filled">@Localizer["approvePAT"]</MudButton>
     </DialogActions>
 </MudDialog>

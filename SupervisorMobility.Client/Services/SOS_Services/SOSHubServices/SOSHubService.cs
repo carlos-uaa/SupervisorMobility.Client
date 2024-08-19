@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
+
 namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 {
     public class SOSHubService : ISOSHubService
