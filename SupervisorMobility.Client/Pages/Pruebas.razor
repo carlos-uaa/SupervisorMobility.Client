@@ -5,46 +5,38 @@
 <InputFile OnChange="OnFileSelected" />
 <MudButton OnClick="ClearImage" Color="Color.Error" Class="mt-2">Clear</MudButton>
 <MudButton OnClick="UndoChange" Color="Color.Primary" Class="mt-2 ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
-@* <MudButton OnClick="GenerateImage" Color="Color.Success" Class="mt-2 ml-2">Generate Image</MudButton> *@
-<canvas id="canvas" style="border:1px solid #000;" @ref="canvasRef"></canvas>
-@* <img id="generatedImage" style="display:none; margin-top: 20px;" /> *@
+<MudButton OnClick="GenerateImage" Color="Color.Success" Class="mt-2 ml-2">Generate Image</MudButton>
+<canvas id="canvas" style="border:1px solid #000;@(isCanvasVisible ? "" : "display:none;")" @ref="canvasRef"></canvas>
+<img id="generatedImage" style="display:none; margin-top: 20px;" />
 
 <MudGrid>
     <MudItem xs="12" md="6">
-        <MudText Typo="Typo.subtitle1">PNG Image Size</MudText>
-        <MudSlider @bind-Value="pngImageSize" Min="50" Max="200" Step="1" Color="Color.Primary" />
-    </MudItem>
-    <MudItem xs="12" md="6">
-        <MudText Typo="Typo.subtitle1">PDF Image Size</MudText>
-        <MudSlider @bind-Value="pdfImageSize" Min="50" Max="200" Step="1" Color="Color.Primary" />
+        <MudText Typo="Typo.subtitle1">Slider</MudText>
+        <MudSlider @bind-Value="sliderSize" Min="50" Max="200" Step="1" Color="Color.Primary" />
     </MudItem>
     <MudItem xs="12">
-        <img src="Images/png.png" id="pngImage" width="@pngImageSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pngImage"))" />
-        <img src="Images/pdf.png" id="pdfImage" width="@pdfImageSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pdfImage"))" />
+        <img src="Images/png.png" id="pngImage" width="@sliderSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pngImage"))" @ontouchstart="@(e => OnTouchStart(e, "pngImage"))" />
+        <img src="Images/pdf.png" id="pdfImage" width="@sliderSize" draggable="true" @ondragstart="@(e => OnDragStart(e, "pdfImage"))" @ontouchstart="@(e => OnTouchStart(e, "pdfImage"))" />
     </MudItem>
 </MudGrid>
 
 @code {
     private ElementReference canvasRef;
     private string uploadedImage;
-    private double pngImageSize = 100;
-    private double pdfImageSize = 100;
+    private bool isCanvasVisible = false;
+    private double sliderSize = 100;
 
     private List<string> history = new List<string>();
     private bool isUndoDisabled = true;
     private bool isUploaded = false;
     private DotNetObjectReference<Pruebas>? dotNetObjectRef;
 
-
     [JSInvokable("OnImageDropped")]
     public async Task OnImageDropped()
     {
         var currentCanvasImage = await JS.InvokeAsync<string>("getCanvasImage", canvasRef);
-
         uploadedImage = currentCanvasImage;
-
         history.Add(uploadedImage);
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -70,13 +62,18 @@
             await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
             isUndoDisabled = false;
             isUploaded = true;
+            isCanvasVisible = true;
         }
     }
 
     private async Task OnDragStart(DragEventArgs e, string imageId)
     {
-        await JS.InvokeVoidAsync("onDragStartJs", imageId );
-   
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
+    }
+
+    private async Task OnTouchStart(TouchEventArgs e, string imageId)
+    {
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
     }
 
     private void ClearImage()
@@ -86,6 +83,7 @@
         JS.InvokeVoidAsync("clearCanvas", canvasRef);
         isUndoDisabled = true;
         isUploaded = false;
+        isCanvasVisible = false;
     }
 
     private async void UndoChange()
@@ -93,7 +91,6 @@
         if (history.Count > 0)
         {
             await JS.InvokeVoidAsync("clearCanvas", canvasRef);
-
             history.RemoveAt(history.Count - 1);
 
             if (history.Count > 0)
@@ -101,7 +98,6 @@
                 foreach (var imageData in history)
                 {
                     await JS.InvokeVoidAsync("addImageToCanvas", imageData, canvasRef);
-
                 }
             }
             else
@@ -111,6 +107,7 @@
             }
 
             isUndoDisabled = history.Count == 0;
+            isCanvasVisible = history.Count > 0;
             StateHasChanged();
         }
     }
@@ -119,5 +116,11 @@
     {
         await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
     }
-
 }
+
+<style>
+    img {
+        position: relative;
+        z-index: 1;
+    }
+</style>
