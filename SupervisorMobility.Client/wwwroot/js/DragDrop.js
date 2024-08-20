@@ -13,9 +13,11 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     canvas.addEventListener("drop", async function (e) {
         e.preventDefault();
         if (draggedImageElement) {
-            const x = e.offsetX;
-            const y = e.offsetY;
-            ctx.drawImage(draggedImageElement, x, y, draggedImageElement.width / 2, draggedImageElement.height / 2);
+            const x = e.offsetX - (draggedImageElement.width * 1.05) / 2;
+            const y = e.offsetY - (draggedImageElement.height * 1.05) / 2;
+            const width = draggedImageElement.width * 1.05;
+            const height = draggedImageElement.height * 1.05;
+            ctx.drawImage(draggedImageElement, x, y, width, height);
 
             removeSelection(draggedImageElement);
             removePreviewImage();
@@ -33,6 +35,10 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             initialTouchX = touch.clientX;
             initialTouchY = touch.clientY;
         }
+        createPreviewImage(draggedImageElement);
+
+        previewImageElement.style.left = `${initialTouchX - previewImageElement.width / 2}px`;
+        previewImageElement.style.top = `${initialTouchY - previewImageElement.height / 2}px`;
     });
 
     canvas.addEventListener("touchmove", function (e) {
@@ -44,15 +50,17 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             previewImageElement.style.left = `${x}px`;
             previewImageElement.style.top = `${y}px`;
         }
-    });
+    }, { passive: false });
 
     canvas.addEventListener("touchend", async function (e) {
         if (draggedImageElement) {
             const touch = e.changedTouches[0];
             const rect = canvas.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            ctx.drawImage(draggedImageElement, x, y, draggedImageElement.width / 2, draggedImageElement.height / 2);
+            const x = touch.clientX - rect.left - (draggedImageElement.width * 1.05) / 2;
+            const y = touch.clientY - rect.top - (draggedImageElement.height * 1.05) / 2;
+            const width = draggedImageElement.width * 1.05;
+            const height = draggedImageElement.height * 1.05;
+            ctx.drawImage(draggedImageElement, x, y, width, height);
 
             removeSelection(draggedImageElement);
             removePreviewImage();
@@ -64,25 +72,30 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 };
 
 window.onDragStartJs = function (imageId) {
+    if (draggedImageElement) {
+        removeSelection(draggedImageElement);
+    }
+
     draggedImageId = imageId;
     draggedImageElement = document.getElementById(imageId);
 
     if (draggedImageElement) {
-        // Añadir borde para indicar selección
         draggedImageElement.style.border = '2px solid blue';
-
-        // Crear imagen de vista previa
         createPreviewImage(draggedImageElement);
     }
 };
 
 function createPreviewImage(imageElement) {
-    previewImageElement = imageElement.cloneNode(true);
-    previewImageElement.style.position = 'absolute';
-    previewImageElement.style.zIndex = '1000';
-    previewImageElement.style.pointerEvents = 'none'; // Evitar interferencias con otros eventos
-    document.body.appendChild(previewImageElement);
+    if (imageElement) { 
+        previewImageElement = imageElement.cloneNode(true);
+        previewImageElement.style.position = 'absolute';
+        previewImageElement.style.zIndex = '1000';
+        previewImageElement.style.pointerEvents = 'none';
+        document.body.appendChild(previewImageElement);
+    }
 }
+
+
 
 function removePreviewImage() {
     if (previewImageElement) {
@@ -130,9 +143,16 @@ window.addImageToCanvas = function (dataUrl, canvasRef) {
     img.src = dataUrl;
     img.onload = function () {
         const maxWidth = window.innerWidth * 0.6;
-        const scale = maxWidth / img.width;
-        const width = img.width * scale;
-        const height = img.height * scale;
+
+        let width, height;
+        if (img.width > maxWidth) {
+            const scale = maxWidth / img.width;
+            width = img.width * scale;
+            height = img.height * scale;
+        } else {
+            width = img.width;
+            height = img.height;
+        }
 
         canvas.width = width;
         canvas.height = height;
