@@ -38,9 +38,9 @@
                     Load picture
                 </MudButton>
                 <InputFile hidden id="selectImage" OnChange="OnFileSelected" />
-                <MudButton OnClick="ClearImage" Color="Color.Error" Size="Size.Small" Class="mt-2">Clear</MudButton>
-                <MudButton OnClick="UndoChange" Color="Color.Primary" Size="Size.Small" Class="mt-2 ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
-                <MudButton OnClick="GenerateImage" Color="Color.Success" Size="Size.Small" Class="mt-2 ml-2">Generate Image</MudButton>
+                <MudButton OnClick="ClearImage" Color="Color.Error" Size="Size.Small">Clear</MudButton>
+                <MudButton OnClick="UndoChange" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+                <MudButton OnClick="GenerateImage" Color="Color.Success" Size="Size.Small" Class="ml-2">Generate Image</MudButton>
             </MudItem>
             <canvas id="canvas" style="border:1px solid #000;@(isCanvasVisible ? "" : "display:none;")" @ref="canvasRef"></canvas>
         </div>
@@ -141,6 +141,8 @@
     {
         if (history.Count > 0)
         {
+            await JS.InvokeVoidAsync("undoLastAction", canvasRef);
+
             await JS.InvokeVoidAsync("clearCanvas", canvasRef);
             history.RemoveAt(history.Count - 1);
 
