@@ -22,5 +22,6 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public int? ReviewerId { get; set; }
         public User? Reviewer { get; set; }
         public FileUpload? ReviewerSignatureImage { get; set; } = new();
+
     }
 }

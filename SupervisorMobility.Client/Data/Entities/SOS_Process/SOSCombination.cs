@@ -21,7 +21,7 @@
 
         public ICollection<Turn>? Turns { get; set; }
 
-        public DateTime? Date { get; set; }
+        public DateTime? ApplicationMonth { get; set; }
 
         public string? ProductionVolumePerShift { get; set; }
         public string? ControlNumber { get; set; }

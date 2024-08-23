@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubUpdated;
         }
-        public  async Task<SOSHub> DeleteSOSHub(int SosEntity_id)
+        public async Task<SOSHub> DeleteSOSHub(int SosEntity_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/{SosEntity_id}");
             var content = await response.Content.ReadAsStringAsync();
@@ -152,7 +152,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return null;
         }
-        public  async Task<string> ShowImageSosHub(int idfile)
+        public async Task<string> ShowImageSosHub(int idfile)
         {
             var response = await _http.GetAsync($"SOS/DataPool/Image/{idfile}");
 
@@ -214,7 +214,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return true;
         }
-        public  async  Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
+        public async Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/Video/{SOS_DataPool_id}/remove/{VideoFile_id}");
 
@@ -250,21 +250,21 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
                 return analysisCreated.SOSAnalysisId;
             }
-            
+
             return 0;
         }
 
-            public Task<bool> GenerateCombination(int SOS_DataPool_id)
+        public Task<int> GenerateCombination(int SOS_DataPool_id, SOSCombination combination)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> GenerateFlow(int SOS_DataPool_id)
+        public Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> GenerateDistribution(int SOS_DataPool_id)
+        public Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution)
         {
             throw new NotImplementedException();
         }
@@ -278,7 +278,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             {
                 SOSSequence? sequenceCreated = JsonSerializer.Deserialize<SOSSequence>(content, _options);
 
-                Console.WriteLine("sequence cre: " + sequence.SOSSequenceId );
+                Console.WriteLine("sequence cre: " + sequence.SOSSequenceId);
                 return sequenceCreated.SOSSequenceId;
             }
 

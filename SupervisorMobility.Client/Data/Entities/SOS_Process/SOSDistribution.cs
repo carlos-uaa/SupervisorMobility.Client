@@ -28,6 +28,7 @@
         public ICollection<SOSDistributionLogbook>? DistributionLogbooks { get; set; } = new List<SOSDistributionLogbook>();
         public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
         public ICollection<Commentary>? Notes { get; set; } = new List<Commentary>();
+        public DateTime? ApplicationMonth { get; set; }
         public DateTime? CreatedAt { get; set; }
 
         public bool? IsActive { get; set; }

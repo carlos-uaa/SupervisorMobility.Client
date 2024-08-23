@@ -341,5 +341,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             visibleSign = false;
         }
         #endregion
+
+        void HoeDetails(int HoeId)
+        {
+            NavigationManager.NavigateTo($"/soshoe/Hub/Details/{HoeId}");
+        }
+        void UpdateAnalysis(int AnalysisId)
+        {
+            NavigationManager.NavigateTo($"/soshoe/Analysis/Update/{AnalysisId}");
+        }
     }
 }

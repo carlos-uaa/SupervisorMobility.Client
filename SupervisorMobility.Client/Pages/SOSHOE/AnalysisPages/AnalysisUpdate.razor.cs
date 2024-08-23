@@ -683,5 +683,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         }
 
+        #region ApproveAnalysis
+
+        private bool visibleSign = false;
+        private void OpenSignComment()
+        {
+            visibleSign = true;
+        }
+        void CloseSign() => visibleSign = false;
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+        public async Task ApprovePat()
+        {
+
+            _sosAnalysis.AnalysisLogbooks.Last()!.Status = 2;
+
+             await UpdateAnalysis();
+
+             visibleSign = false;
+        }
+        #endregion
+
     }
 }
