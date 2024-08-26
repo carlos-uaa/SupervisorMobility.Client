@@ -1798,7 +1798,7 @@ else
                 break;
             case 2:
                 <div class="d-flex" style="height:100%; max-height: auto">
-                    <MudItem Class="ma-5">
+                    <MudItem Style="margin-top: -15px">
                         <MudSimpleTable Dense Style="width:100%; height:100%; margin:0px; padding:0px; overflow: hidden;" Square="true">
                             <tbody class="table-header-gray">
                                 <tr>
@@ -1988,7 +1988,26 @@ else
                                 </tr>
 
                                 <tr>
-                                    <td colspan="9">
+                                 
+                                    <td colspan="4">
+                                        <MudSelect T="int" Label=@Localizer["plant"] ReadOnly="true" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" FullWidth>
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                            @foreach (var type in _plants)
+                                            {
+                                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td  colspan="5">
+                                        <MudItem Class="ml-4">
+                                            <MudSelect T="int" ReadOnly="true" Label=@Localizer["Gerencia"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
+                                                @foreach (var type in _departments)
+                                                {
+                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
                                     </td>
                                     <th colspan="3" class="divider">No. de Revisión</th>
                                     <td colspan="4">
@@ -2016,12 +2035,13 @@ else
 
                                 <tr>
                                     <th colspan="3">
-                                        @if (_sosCombination?.Turns?.Count != 2)
+                                        @if (_sosCombination?.Turns?.Count != 3)
                                         {
-                                            <SupervisorMobility.Client.Pages.Components.ButtonQuickView Icon="@Icons.Material.Filled.Add" OnClick="() => {return;}"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
-                                        }else{
-                                            <b> Turn </b>
-                                            
+                                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Size="Size.Large" OnClick="AddCombinationTurn">Turn</MudButton>
+                                        }
+                                        else
+                                        {
+                                            <b> @Localizer["turn"] </b>
                                         }
                                     </th>
                                     <th colspan="3">Operador</th>
@@ -2052,9 +2072,60 @@ else
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3">1</td>
-                                    <td colspan="3">-</td>
-                                    <td colspan="3">-</td>
+                                    @if (_sosCombination.Turns?.Count >= 1)
+                                    {
+                                        <td colspan="3">
+                                            <b>
+                                                @_sosCombination.Turns.ElementAt(0).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="3">
+                                            @if (SupervisorTurn1 != 0)
+                                            {
+
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn1"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(0).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 0)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="3">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 0)"
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             Value="SupervisorTurn1"
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="3"></td>
+                                        <td colspan="3"></td>
+                                        <td colspan="3"></td>
+                                    }
+
                                     <th rowspan="2" colspan="3" class="divider">Status<br />( Estado )</th>
                                     <td rowspan="2" colspan="4">
                                         @if (_sosHub.SOSCombination.Count == 0 || _sosCombination.CombinationLogbooks?.Last().SOSCombinationLogbookId == 0 || _sosCombination.CombinationLogbooks?.Last().Status == 2)
@@ -2086,14 +2157,113 @@ else
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3">2</td>
-                                    <td colspan="3">-</td>
-                                    <td colspan="3">-</td>
+                                    @if (_sosCombination.Turns?.Count >= 2 && _sosCombination.Turns.ElementAt(1) != null)
+                                    {
+                                        <td colspan="3">
+                                            <b>
+                                                @_sosCombination.Turns.ElementAt(1).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="3">
+                                            @if (SupervisorTurn2 != 0)
+                                            {
+
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn2"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(1).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 1)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="3">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 1)"
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="3"></td>
+                                        <td colspan="3"></td>
+                                        <td colspan="3"></td>
+                                    }
                                 </tr>
                                 <tr>
-                                    <td rowspan="2" colspan="3">3</td>
-                                    <td rowspan="2" colspan="3">-</td>
-                                    <td rowspan="2" colspan="3">-</td>
+                                    @if (_sosCombination.Turns?.Count >= 3 && _sosCombination.Turns.ElementAt(2) != null)
+                                    {
+                                        <td rowspan="2" colspan="3">
+                                            <b>
+                                                @_sosCombination.Turns.ElementAt(2).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="3">
+                                            @if (SupervisorTurn3 != 0)
+                                            {
+
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn3"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(0).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 2)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="3">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 2)"
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td rowspan="2" colspan="3"> </td>
+                                        <td rowspan="2" colspan="3"> </td>
+                                        <td rowspan="2" colspan="3"> </td>
+
+                                    }
                                     <th rowspan="4" class="divider">
                                         <span class="vertical">Confirmado Por</span>
                                     </th>
@@ -2137,29 +2307,9 @@ else
                                     </td>
                                 </tr>
                                 <tr>
-
                                 </tr>
                                 <tr>
-                                    <td rowspan="2"></td>
-                                    <td rowspan="2" colspan="4">
-                                        <MudSelect T="int" Label=@Localizer["plant"] ReadOnly="true" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" FullWidth>
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
-                                            @foreach (var type in _plants)
-                                            {
-                                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    </td>
-                                    <td rowspan="2" colspan="4">
-                                        <MudItem Class="ml-4">
-                                            <MudSelect T="int" ReadOnly="true" Label=@Localizer["Gerencia"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
-                                                @foreach (var type in _departments)
-                                                {
-                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                                }
-                                            </MudSelect>
-                                        </MudItem>
+                                       <td rowspan="2" colspan="9">
                                     </td>
                                     <th rowspan="2" colspan="2">
                                         Supervisor<br />( Elaboró )
@@ -2210,18 +2360,17 @@ else
                                 <tr>
                                 </tr>
                             </tbody>
-
                         </MudSimpleTable>
                     </MudItem>
                 </div>
                 break;
             case 3:
                 <div class="d-flex" style="height:100%; max-height: auto">
-                    <MudItem Class="ma-5">
-                        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px; overflow: hidden;" Square="true">
+                    <MudItem Style="margin-top: -15px">
+                        <MudSimpleTable Dense Style="width:100%; height:100%; margin:0px; padding:0px; overflow: hidden;" Square="true">
                             <tbody class="table-header-gray">
                                 <tr>
-                                    <td colspan="8" style="width:45%;">
+                                    <td colspan="6">
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
                                         {
                                             <MudTextField Label="Número de control interno" Margin="Margin.Dense" @bind-Value="_sosDistribution.InternalControlNumber" />
@@ -2231,7 +2380,24 @@ else
                                             <MudTextField Label="Número de control interno" ReadOnly Margin="Margin.Dense" @bind-Value="_sosDistribution.InternalControlNumber" />
                                         }
                                     </td>
-                                    <td colspan="7" style="width:40%;">
+                                    <td colspan="6">
+                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
+                                        {
+                                            <MudTextField Label="Nombre de la Operacion" Margin="Margin.Dense" @bind-Value="_sosDistribution.OperationName" />
+                                        }
+                                        else
+                                        {
+                                            <MudTextField Label="Nombre de la Operacion" ReadOnly Margin="Margin.Dense" @bind-Value="_sosDistribution.OperationName" />
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="12">
+                                        <MudDivider />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="12">
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
                                         {
                                             <MudTextField Label="Nombre del proceso" Margin="Margin.Dense" @bind-Value="_sosDistribution.ProcessName" />
@@ -2241,11 +2407,132 @@ else
                                             <MudTextField Label="Nombre del proceso" ReadOnly Margin="Margin.Dense" @bind-Value="_sosDistribution.ProcessName" />
                                         }
                                     </td>
-                                    <th class="divider" colspan="2">No. de Revisión</th>
-                                    <td style="width:30%;">
+                                </tr>
+
+                                <tr>
+                                    <td colspan="4">
+                                        <MudAutocomplete T="int"
+                                                         Label=@Localizer["Elaboro"]
+                                                         Variant="Variant.Text"
+                                                         AnchorOrigin="Origin.BottomCenter"
+                                                         @bind-Value="supervisorOwnerId"
+                                                         AdornmentColor="Color.Secondary"
+                                                         Clearable
+                                                         ReadOnly
+                                                         ResetValueOnEmptyText
+                                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                         ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                         SearchFunc="SearchSupervisors">
+                                        </MudAutocomplete>
+                                    </td>
+                                    <td colspan="4">
+                                        @if (_sosHub.SOSDistribution.Count == 0)
+                                        {
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Revisor"]
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             @bind-Value="ReviewerDocDistributionId"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        }
+                                        else
+                                        {
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Revisor"]
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             @bind-Value="ReviewerDocDistributionId"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ReadOnly
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        }
+                                    </td>
+                                    <td colspan="4">
+                                        @if (_sosHub.SOSDistribution.Count == 0)
+                                        {
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Aprobador"]
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             @bind-Value="ApproverDocDistributionId"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        }
+                                        else
+                                        {
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Aprobador"]
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             @bind-Value="ApproverDocDistributionId"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ReadOnly
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        }
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="4">
+                                        <MudDatePicker Label="Fecha Emision" @bind-Date="_sosHub.CreatedDate" ReadOnly="true" />
+                                    </td>
+                                    <td colspan="4">
+                                        <MudDatePicker Label="Mes" @bind-Date="_sosDistribution.ApplicationMonth" />
+                                    </td>
+                                    <td colspan="4">
+                                        <MudTextField Label="Modelo" Value="_sosHub.AppliedModel?.Description" ReadOnly></MudTextField>
+                                    </td>
+                                   
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td colspan="3">
+                                        <MudSelect T="int" Label=@Localizer["plant"] ReadOnly="true" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" FullWidth>
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                            @foreach (var type in _plants)
+                                            {
+                                                <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td colspan="3">
+                                        <MudItem Class="ml-4">
+                                            <MudSelect T="int" ReadOnly="true" Label=@Localizer["Gerencia"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
+                                                @foreach (var type in _departments)
+                                                {
+                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+                                    </td>
+                                    <th colspan="3" class="divider">No. de Revisión</th>
+                                    <td colspan="3">
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().NoRevision == 0)
                                         {
-                                            <b> New - @_sosDistribution.DistributionLogbooks?.Count() </b>
+                                            <b> New </b>
                                         }
                                         else
                                         {
@@ -2264,24 +2551,35 @@ else
                                         }
                                     </td>
                                 </tr>
+
                                 <tr>
-                                </tr>
-                                <tr>
-                                    <td colspan="8" rowspan="5" style="width:50%;">
+                                     <td colspan="3">
+                                        <MudAutocomplete T="int"
+                                                         Margin="Margin.Dense"
+                                                         Label=@Localizer["TiempoAprendizaje"]
+                                                         Variant="Variant.Text"
+                                                         AnchorOrigin="Origin.BottomCenter"
+                                                         @bind-Value="cycleId"
+                                                         OpenIcon="@Icons.Material.Filled.AccessTime"
+                                                         AdornmentColor="Color.Info"
+                                                         Clearable
+                                                         ResetValueOnEmptyText
+                                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                         MaxItems="10"
+                                                         ReadOnly>
+                                        </MudAutocomplete>
+                                    </td>
+                                     <td colspan="3">  
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
                                         {
-                                            <MudTextField Label="Nombre de la Operacion" Margin="Margin.Dense" @bind-Value="_sosDistribution.OperationName" />
+                                            <MudTextField Label="Tiempo Tacto" Margin="Margin.Dense" @bind-Value="_sosDistribution.TackTime" />
                                         }
                                         else
                                         {
-                                            <MudTextField Label="Nombre de la Operacion" ReadOnly Margin="Margin.Dense" @bind-Value="_sosDistribution.OperationName" />
-                                        }
-                                    </td>
-                                    <th>Turno</th>
-                                    <th colspan="3">Operador</th>
-                                    <th colspan="3">Supervisor</th>
-                                    <th class="divider" colspan="2">Fecha</th>
-                                    <td style="width:20%">
+                                            <MudTextField Label="Tiempo Tacto" ReadOnly Margin="Margin.Dense" @bind-Value="_sosDistribution.TackTime" />
+                                        }</td>
+                                    <th colspan="3" class="divider">Fecha</th>
+                                    <td colspan="3">
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().NoRevision == 0)
                                         {
                                             <b> New - @(DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "")) </b>
@@ -2306,11 +2604,20 @@ else
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td rowspan="2">T1</td>
-                                    <td rowspan="2" colspan="3">Op1</td>
-                                    <td rowspan="2" colspan="3">Sv1</td>
-                                    <th rowspan="3" colspan="2" class="divider">Status<br />( Estado )</th>
-                                    <td rowspan="3" style="width:30%">
+                                    <th colspan="2">
+                                        @if (_sosDistribution?.Turns?.Count != 3)
+                                        {
+                                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Size="Size.Large" OnClick="AddDistributionTurn">Turn</MudButton>
+                                        }
+                                        else
+                                        {
+                                            <b> @Localizer["turn"] </b>
+                                        }
+                                    </th>
+                                    <th colspan="2">Operador</th>
+                                    <th colspan="2">Supervisor</th>
+                                    <th rowspan="2" colspan="3" class="divider">Status<br />( Estado )</th>
+                                    <td rowspan="2" colspan="3">
                                         @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0 || _sosDistribution.DistributionLogbooks?.Last().Status == 2)
                                         {
                                             <b>
@@ -2340,40 +2647,97 @@ else
                                     </td>
                                 </tr>
                                 <tr>
-                                </tr>
-                                <tr>
-                                    <td rowspan="2">T2</td>
-                                    <td rowspan="2" colspan="3">Op2</td>
-                                    <td rowspan="2" colspan="3">Sv2</td>
+                                    @if (_sosDistribution.Turns?.Count >= 1)
+                                    {
+                                        <td colspan="2">
+                                            <b>
+                                                @_sosDistribution.Turns.ElementAt(0).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="2">
+                                            @if (SupervisorTurn1 != 0)
+                                            {
 
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn1"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(0).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 0)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="2">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 0)"
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             Value="SupervisorTurn1"
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="2"></td>
+                                        <td colspan="2"></td>
+                                        <td colspan="2"></td>
+                                    }
                                 </tr>
                                 <tr>
-                                </tr>
-                                <tr>
-                                    <td rowspan="2" colspan="2">
-                                        <MudAutocomplete T="int"
-                                                         Label=@Localizer["Elaboro"]
-                                                         Variant="Variant.Text"
-                                                         AnchorOrigin="Origin.BottomCenter"
-                                                         @bind-Value="supervisorOwnerId"
-                                                         OpenIcon="@Icons.Material.Filled.SupervisorAccount"
-                                                         AdornmentColor="Color.Secondary"
-                                                         Clearable
-                                                         ReadOnly
-                                                         ResetValueOnEmptyText
-                                                         ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                                         ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                                         SearchFunc="SearchSupervisors">
-                                        </MudAutocomplete>
-                                    </td>
-                                    <td rowspan="2" colspan="4">
-                                        @if (_sosHub.SOSDistribution.Count == 0)
-                                        {
+                                    @if (_sosDistribution.Turns?.Count >= 2 && _sosDistribution.Turns.ElementAt(1) != null)
+                                    {
+                                        <td colspan="2">
+                                            <b>
+                                                @_sosDistribution.Turns.ElementAt(1).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="2">
+                                            @if (SupervisorTurn2 != 0)
+                                            {
+
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn2"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(1).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 1)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="2">
                                             <MudAutocomplete T="int"
-                                                             Label=@Localizer["Revisor"]
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 1)"
                                                              Variant="Variant.Text"
                                                              AnchorOrigin="Origin.BottomCenter"
-                                                             @bind-Value="ReviewerDocDistributionId"
                                                              OpenIcon="@Icons.Material.Filled.SupervisorAccount"
                                                              AdornmentColor="Color.Secondary"
                                                              Clearable
@@ -2382,66 +2746,21 @@ else
                                                              ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
                                                              SearchFunc="SearchSupervisors">
                                             </MudAutocomplete>
-                                        }
-                                        else
-                                        {
-                                            <MudAutocomplete T="int"
-                                                             Label=@Localizer["Revisor"]
-                                                             Variant="Variant.Text"
-                                                             AnchorOrigin="Origin.BottomCenter"
-                                                             @bind-Value="ReviewerDocDistributionId"
-                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
-                                                             AdornmentColor="Color.Secondary"
-                                                             Clearable
-                                                             ResetValueOnEmptyText
-                                                             ReadOnly
-                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                                             SearchFunc="SearchSupervisors">
-                                            </MudAutocomplete>
-                                        }
-                                    </td>
-                                    <td rowspan="2" colspan="2">
-                                        @if (_sosHub.SOSDistribution.Count == 0)
-                                        {
-                                            <MudAutocomplete T="int"
-                                                             Label=@Localizer["Aprobador"]
-                                                             Variant="Variant.Text"
-                                                             AnchorOrigin="Origin.BottomCenter"
-                                                             @bind-Value="ApproverDocDistributionId"
-                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
-                                                             AdornmentColor="Color.Secondary"
-                                                             Clearable
-                                                             ResetValueOnEmptyText
-                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                                             SearchFunc="SearchSupervisors">
-                                            </MudAutocomplete>
-                                        }
-                                        else
-                                        {
-                                            <MudAutocomplete T="int"
-                                                             Label=@Localizer["Aprobador"]
-                                                             Variant="Variant.Text"
-                                                             AnchorOrigin="Origin.BottomCenter"
-                                                             @bind-Value="ApproverDocDistributionId"
-                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
-                                                             AdornmentColor="Color.Secondary"
-                                                             Clearable
-                                                             ResetValueOnEmptyText
-                                                             ReadOnly
-                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                                             SearchFunc="SearchSupervisors">
-                                            </MudAutocomplete>
-                                        }
-                                    </td>
-                                    <td rowspan="2"> - </td>
-                                    <td rowspan="2" colspan="3"> - </td>
-                                    <td rowspan="2" colspan="3"> - </td>
-                                    <th rowspan="4" class="divider"><span class="vertical">Confirmado Por</span></th>
-                                    <th>Supervisor Gral.<br />( Aprobó )</th>
-                                    <td style="width:30%">
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="2"></td>
+                                        <td colspan="2"></td>
+                                        <td colspan="2"></td>
+                                    }
+                                    <th rowspan="4" class="divider">
+                                        <span class="vertical">Confirmado Por</span>
+                                    </th>
+                                    <th rowspan="2" colspan="2">
+                                        Supervisor Gral.<br />( Aprobó )
+                                    </th>
+                                    <td rowspan="2" colspan="3">
                                         @if (_sosHub.SOSDistribution.Count == 0)
                                         {
                                             <MudAutocomplete T="int"
@@ -2476,19 +2795,68 @@ else
                                             </MudAutocomplete>
                                         }
                                     </td>
-
                                 </tr>
-                                <tr></tr>
                                 <tr>
-                                    <td rowspan="2" colspan="2">Fecha emision</td>
-                                    <td rowspan="2" colspan="3">Mes</td>
-                                    <td rowspan="2" colspan="2">Modelo</td>
-                                    <td rowspan="2" colspan="1">Tiempo Tacto</td>
-                                    <td rowspan="2" colspan="2">Tiempo aprendizaje</td>
-                                    <td rowspan="2" colspan="2">Planta</td>
-                                    <td rowspan="2" colspan="3">Gerencia</td>
-                                    <th>Supervisor<br />( Elaboró )</th>
-                                    <td style="width:30%">
+                                </tr>
+                                <tr>
+                                    @if (_sosDistribution.Turns?.Count >= 3 && _sosDistribution.Turns.ElementAt(2) != null)
+                                    {
+                                        <td rowspan="2" colspan="2">
+                                            <b>
+                                                @_sosDistribution.Turns.ElementAt(2).TurnType
+                                            </b>
+                                        </td>
+                                        <td colspan="2">
+                                            @if (SupervisorTurn3 != 0)
+                                            {
+
+                                                <MudAutocomplete T="int"
+                                                                 Label=@Localizer["Operador"]
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 @bind-Value="OperatorTurn3"
+                                                                 OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                                 AdornmentColor="Color.Secondary"
+                                                                 Clearable
+                                                                 ResetValueOnEmptyText
+                                                                 ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                                 ToStringFunc="@(s => _operators.ElementAt(0).Value.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                                 SearchFunc="(e) => SearchOperator(e, 2)">
+                                                </MudAutocomplete>
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstSelectAnSupervisor"]</MudAlert>
+                                            }
+                                        </td>
+                                        <td colspan="2">
+                                            <MudAutocomplete T="int"
+                                                             Label=@Localizer["Supervisor"]
+                                                             ValueChanged="(e) => ShowOperators(e, 2)"
+                                                             Variant="Variant.Text"
+                                                             AnchorOrigin="Origin.BottomCenter"
+                                                             OpenIcon="@Icons.Material.Filled.SupervisorAccount"
+                                                             AdornmentColor="Color.Secondary"
+                                                             Clearable
+                                                             ResetValueOnEmptyText
+                                                             ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                                             ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                                             SearchFunc="SearchSupervisors">
+                                            </MudAutocomplete>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td rowspan="2" colspan="2"> </td>
+                                        <td rowspan="2" colspan="2"> </td>
+                                        <td rowspan="2" colspan="2"> </td>
+
+                                    }
+
+                                    <th rowspan="2" colspan="2">
+                                        Supervisor<br />( Elaboró )
+                                    </th>
+                                    <td rowspan="2" colspan="3">
                                         @if (_sosHub.SOSDistribution.Count == 0)
                                         {
                                             @if (_supervisors.Count > 0)
@@ -2531,11 +2899,11 @@ else
                                         }
                                     </td>
                                 </tr>
-
+                              
                             </tbody>
-
                         </MudSimpleTable>
                     </MudItem>
+                  
                 </div>
                 break;
             case 4:
@@ -2747,7 +3115,7 @@ else
                                     <th rowspan="2" class="divider"><span class="vertical">Confirmado Por</span></th>
                                     <th>Supervisor Gral.<br />( Aprobó )</th>
                                     <td style="width:30%">
-                                        @if (_sosHub.SOSSequence.Count == 0)
+                                        @if (_sosHub.SOSSequence.Count == 0 || _sosSequence.SequenceLogbooks?.Last().SOSSequenceLogbookId == 0)
                                         {
                                             <MudAutocomplete T="int"
                                                              Label=@Localizer["Supervisor"]
@@ -2802,7 +3170,7 @@ else
                                     </td>
                                     <th>Supervisor<br />( Elaboró )</th>
                                     <td style="width:30%">
-                                        @if (_sosHub.SOSSequence.Count == 0)
+                                        @if (_sosHub.SOSSequence.Count == 0 || _sosSequence.SequenceLogbooks?.Last().SOSSequenceLogbookId == 0)
                                         {
                                             @if (_supervisors.Count > 0)
                                             {
@@ -2838,7 +3206,7 @@ else
                                                              ProgressIndicatorColor="Color.Info"
                                                              ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
                                                              SearchFunc="SearchSupervisors"
-                                                             ReadOnly="_sosSequence.SequenceLogbooks?.Last().Status != 2">
+                                                             ReadOnly="_sosSequence.SequenceLogbooks?.Last().Status != 2 && _sosSequence.SequenceLogbooks?.Last().SOSSequenceLogbookId != 0">
 
                                             </MudAutocomplete>
                                         }

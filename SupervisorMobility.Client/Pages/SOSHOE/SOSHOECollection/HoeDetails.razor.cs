@@ -2,6 +2,7 @@ using BlazorCameraStreamer;
 using Blazorise.Extensions;
 using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2010.PowerPoint;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -90,6 +91,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         //Users
         List<User> _supervisors { get; set; } = new();
+        Dictionary<int, List<User>> _operators { get; set; } = new();
         int supervisorOwnerId = 0;
         int supervisorEditorId = 0;
 
@@ -460,6 +462,109 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return Task.FromResult(result);
         }
 
+        int OperatorTurn1 { get; set; } = 0; 
+        int OperatorTurn2 { get; set; } = 0; 
+        int OperatorTurn3 { get; set; } = 0; 
+        int SupervisorTurn1 { get; set; } = 0;
+        int SupervisorTurn2 { get; set; } = 0;
+        int SupervisorTurn3 { get; set; } = 0;
+
+
+        private async void ShowOperators(int value, int TurnId)
+        {
+
+            switch (TurnId)
+            {
+                case 0:
+                    SupervisorTurn1 = value;
+                    if (value == 0)
+                    {
+                        OperatorTurn1 = 0;
+                    }
+                    break;
+                case 1:
+                    SupervisorTurn2 = value;
+                    if (value == 0)
+                    {
+                        OperatorTurn2 = 0;
+                    }
+                    break;
+                case 2:
+                    SupervisorTurn3 = value;
+                    if (value == 0)
+                    {
+                        OperatorTurn3 = 0;
+                    }
+                    break;
+            }
+
+      
+            if (user.UserType == 1)
+            {
+                List<User> _oper = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, false, false);
+                _oper = _oper.OrderBy(s => s.Name).ToList();
+
+                if (_operators.ContainsKey(TurnId))
+                {
+                    _operators[TurnId] = _oper;
+                }
+                else
+                {
+                    _operators.Add(TurnId, _oper);
+                }
+
+            }
+            else if (user.UserType == 2)
+            {
+               
+                List<User> _oper = new();
+                switch (TurnId)
+                {
+                    case 0:
+                                _oper = await UsersService.GetSubordinates(SupervisorTurn1 ,false);
+                        break;
+                        case 1:
+                                _oper = await UsersService.GetSubordinates(SupervisorTurn2 ,false);
+                        break;
+                    case 2:
+                                _oper = await UsersService.GetSubordinates(SupervisorTurn3 ,false);
+                        break;
+                } 
+
+                _oper = _oper.OrderBy(s => s.Name).ToList();
+
+                if (_operators.ContainsKey(TurnId))
+                {
+                    _operators[TurnId] = _oper;
+                }
+                else
+                {
+                    _operators.Add(TurnId, _oper);
+                }
+            }
+
+            StateHasChanged();
+        }
+
+        private Task<IEnumerable<int>> SearchOperator(string searchString, int turn)
+        {
+            IEnumerable<int> result;
+
+            if (string.IsNullOrEmpty(searchString))
+            {
+                result = _operators[turn].Select(x => x.UserId);
+            }
+            else
+            {
+                result = _operators[turn]
+                    .Where(x => x.Name.Contains(searchString, StringComparison.InvariantCultureIgnoreCase))
+                    .Select(x => x.UserId);
+            }
+
+            return Task.FromResult(result);
+        }
+
+
 
         private async Task<IEnumerable<int>> SearchCycles(string searchString)
         {
@@ -618,11 +723,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         {
                             _sosCombination.CombinationLogbooks.Add(new SOSCombinationLogbook());
                         }
+
+                        if (_sosCombination.Turns?.Count >= 1)
+                        {
+                            OperatorTurn1 = (int)_sosCombination.Turns.ElementAt(0).OperatorId;
+                            SupervisorTurn1 = (int)_sosCombination.Turns.ElementAt(0).SupervisorId;
+                        }
+
+                        if (_sosCombination.Turns?.Count >= 2)
+                        {
+                            OperatorTurn2 = (int)_sosCombination.Turns.ElementAt(1).OperatorId;
+                            SupervisorTurn2 = (int)_sosCombination.Turns.ElementAt(1).SupervisorId;
+                        }
+
+                        if (_sosCombination.Turns?.Count >= 3)
+                        {
+                            OperatorTurn3 = (int)_sosCombination.Turns.ElementAt(2).OperatorId;
+                            SupervisorTurn3 = (int)_sosCombination.Turns.ElementAt(2).SupervisorId;
+                        }
+
                     }
                     break;
 
                         case 3:
-                    dialogPagesOptions.MaxWidth = MaxWidth.Large;
                     if (_sosHub.SOSDistribution.Count > 0)
                     {
                         _sosDistribution = _sosHub.SOSDistribution.FirstOrDefault();
@@ -635,6 +758,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         if (_sosDistribution.DistributionLogbooks.Count == 0)
                         {
                             _sosDistribution.DistributionLogbooks.Add(new SOSDistributionLogbook());
+                        }
+
+                        if (_sosDistribution.Turns?.Count >= 1)
+                        {
+                            OperatorTurn1 = (int)_sosDistribution.Turns.ElementAt(0).OperatorId;
+                            SupervisorTurn1 = (int)_sosDistribution.Turns.ElementAt(0).SupervisorId;
+                        }
+
+                        if (_sosDistribution.Turns?.Count >= 2)
+                        {
+                            OperatorTurn2 = (int)_sosDistribution.Turns.ElementAt(1).OperatorId;
+                            SupervisorTurn2 = (int)_sosDistribution.Turns.ElementAt(1).SupervisorId;
+                        }
+
+                        if (_sosDistribution.Turns?.Count >= 3)
+                        {
+                            OperatorTurn3 = (int)_sosDistribution.Turns.ElementAt(2).OperatorId;
+                            SupervisorTurn3 = (int)_sosDistribution.Turns.ElementAt(2).SupervisorId;
                         }
                     }
                     break;
@@ -819,12 +960,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #endregion
         #region generateCombination
         SOSCombination _sosCombination { get; set; } = new SOSCombination();
-        SOSCombinationLogbook logCombination { get; set; } = new SOSCombinationLogbook();
-        int ApproverCombinationId = 0;
-        int ReviewerCombinationId = 0;  
         int ApproverDocCombinationId = 0;
         int ReviewerDocCombinationId = 0;
         int ReviewerHYDocCombinationId = 0;
+
+        SOSCombinationLogbook logCombination { get; set; } = new SOSCombinationLogbook();
+        int ApproverCombinationId = 0;
+        int ReviewerCombinationId = 0;  
+
 
         public async void GenerateCombination()
         {
@@ -860,6 +1003,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 {
                     _sosCombination.CombinationLogbooks = new List<SOSCombinationLogbook>();
                 }
+
 
                 _sosCombination.CombinationLogbooks.Add(logCombination);
 
@@ -924,7 +1068,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         _sosCombination.CombinationLogbooks = new List<SOSCombinationLogbook>();
                     }
+
                     _sosCombination.CombinationLogbooks.Add(logCombination);
+
+                    _sosCombination.ReviewerId = ReviewerDocCombinationId;
+                    _sosCombination.ReviewerHSId = ReviewerHYDocCombinationId;
+                    _sosCombination.ApproverId = ApproverDocCombinationId;
+
+
+                    if (SupervisorTurn1 != 0 && OperatorTurn1 != 0)
+                    {
+                        _sosCombination.Turns.ElementAt(0).SupervisorId = SupervisorTurn1;
+                        _sosCombination.Turns.ElementAt(0).OperatorId = OperatorTurn1;
+                    }
+
+                    if (SupervisorTurn2 != 0 && OperatorTurn2 != 0)
+                    {
+                        _sosCombination.Turns.ElementAt(1).SupervisorId = SupervisorTurn2;
+                        _sosCombination.Turns.ElementAt(1).OperatorId = OperatorTurn2;
+                    }
+
+                    if (SupervisorTurn3 != 0 && OperatorTurn3 != 0)
+                    {
+                        _sosCombination.Turns.ElementAt(2).SupervisorId = SupervisorTurn3;
+                        _sosCombination.Turns.ElementAt(2).OperatorId = OperatorTurn3;
+                    }
 
                     var Gen_sosCombination = await SOSHubServices.GenerateCombination(SOSHubId, _sosCombination);
 
@@ -950,136 +1118,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
-        #endregion
-        #region generateFlow
-        SOSFlow _sosFlow { get; set; } = new SOSFlow();
-        SOSFlowLogbook logFlow { get; set; } = new SOSFlowLogbook();
-        int ApproverFlowId = 0;
-        int ReviewerFlowId = 0;
-
-        public async void GenerateFlow()
+        private void AddCombinationTurn()
         {
-
-            if (_sosHub.SOSFlow.Count > 0)
+            if(_sosCombination.Turns == null)
             {
-                //REVISION
-                if (ReviewerFlowId == 0 || ApproverFlowId == 0)
-                {
-                    bool? result = await DialogService.ShowMessageBox(
-                       "Warning",
-                       ApproverFlowId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
-                       yesText: "Ok!");
-                    var state = result == null ? "Canceled" : "Deleted!";
-                    StateHasChanged();
-                    return;
-                }
-
-                _sosFlow = _sosHub.SOSFlow.First();
-
-                if (_sosFlow.FlowLogbooks.First().SOSFlowLogbookId == 0)
-                {
-                    _sosFlow.FlowLogbooks.Clear();
-                }
-
-                logFlow.NoRevision = _sosFlow.FlowLogbooks?.Count();
-                logFlow.ApproverId = ApproverFlowId;
-                logFlow.ReviewerId = ReviewerFlowId;
-                logFlow.Date = System.DateTime.Now;
-                logFlow.Status = 1;
-                logFlow.IsActive = true;
-                if (_sosFlow.FlowLogbooks == null)
-                {
-                    _sosFlow.FlowLogbooks = new List<SOSFlowLogbook>();
-                }
-
-                _sosFlow.FlowLogbooks.Add(logFlow);
-
-                var Gen_sosFlow = await SOSHubServices.GenerateFlow(SOSHubId, _sosFlow);
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                if (Gen_sosFlow != 0)
-                {
-                    Snackbar.Add($"{Localizer["_sosFlowGeneratedSucces"]}", Severity.Info);
-                    ShowPagesGenerate = false;
-                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{_sosFlow.SOSFlowId}");
-                    _sosFlow = new SOSFlow();
-                    //Pregutar si quiere ver el analisis generado
-                }
-                else
-                {
-                    Snackbar.Add($"{Localizer["Fail_sosFlowGeneratedSucces"]}", Severity.Error);
-                }
-
-                StateHasChanged();
-
-            }
-            else
-            {
-                if (ReviewerFlowId == 0 || ApproverFlowId == 0)
-                {
-                    bool? result = await DialogService.ShowMessageBox(
-                       "Warning",
-                       string.IsNullOrEmpty(_sosFlow.OperationName) ? "Es necesario el aproador" : "Es necesario seleccionar el editor (elaboro)!",
-                       yesText: "Ok!");
-                    var state = result == null ? "Canceled" : "Deleted!";
-                    StateHasChanged();
-                }
-                else if (string.IsNullOrEmpty(_sosFlow.ProcessName) || string.IsNullOrEmpty(_sosFlow.InternalControlNumber))
-                {
-                    bool? result = await DialogService.ShowMessageBox(
-                      "Warning",
-                      string.IsNullOrEmpty(_sosFlow.ProcessName) ? "Es necesario el nombre de Proceso" : "Es necesario el nombre del proceso!",
-                      yesText: "Ok!");
-                    var state = result == null ? "Canceled" : "Deleted!";
-                    StateHasChanged();
-                }
-                else if (string.IsNullOrEmpty(_sosFlow.OperationName))
-                {
-                    bool? result = await DialogService.ShowMessageBox(
-                      "Warning",
-                       "Es necesario el nombre de operacion!",
-                      yesText: "Ok!");
-                    var state = result == null ? "Canceled" : "Deleted!";
-                    StateHasChanged();
-                }
-                else
-                {
-                    logFlow.NoRevision = 0;
-                    logFlow.ReviewerId = supervisorOwnerId;
-                    logFlow.ApproverId = ReviewerFlowId;
-                    logFlow.Date = System.DateTime.Now;
-                    logFlow.Status = 1;
-                    logFlow.IsActive = true;
-                    if (_sosFlow.FlowLogbooks == null)
-                    {
-                        _sosFlow.FlowLogbooks = new List<SOSFlowLogbook>();
-                    }
-                    _sosFlow.FlowLogbooks.Add(logFlow);
-
-                    var Gen_sosFlow = await SOSHubServices.GenerateFlow(SOSHubId, _sosFlow);
-
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    if (Gen_sosFlow != 0)
-                    {
-                        Snackbar.Add($"{Localizer["_sosFlowGeneratedSucces"]}", Severity.Info);
-                        ShowPagesGenerate = false;
-                        NavigationManager.NavigateTo($"/soshoe/Flow/Details/{Gen_sosFlow}");
-                        _sosFlow = new SOSFlow();
-                        //Pregutar si quiere ver el analisis generado
-                    }
-                    else
-                    {
-                        Snackbar.Add($"{Localizer["Fail_sosFlowGeneratedSucces"]}", Severity.Error);
-                    }
-
-                    StateHasChanged();
-                }
+                _sosCombination.Turns = new List<Turn>();
             }
 
-
+            string[] numbers = new string[]{"ero", "ndo", "ero","rto"};
+            Turn toCreate = new Turn();
+            toCreate.TurnType = (_sosCombination.Turns.Count + 1).ToString() + numbers[(int)_sosCombination.Turns.Count()];
+            _sosCombination.Turns?.Add(toCreate);
         }
+
 
         #endregion
         #region generateDistribution
@@ -1214,6 +1265,149 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         }
 
+        private void AddDistributionTurn()
+        {
+            if (_sosDistribution.Turns == null)
+            {
+                _sosDistribution.Turns = new List<Turn>();
+            }
+
+            string[] numbers = new string[] { "ero", "ndo", "ero", "rto" };
+            Turn toCreate = new Turn();
+            toCreate.TurnType = (_sosDistribution.Turns.Count + 1).ToString() + numbers[(int)_sosDistribution.Turns.Count()];
+            _sosDistribution.Turns?.Add(toCreate);
+        }
+        #endregion
+        #region generateFlow
+        SOSFlow _sosFlow { get; set; } = new SOSFlow();
+        SOSFlowLogbook logFlow { get; set; } = new SOSFlowLogbook();
+        int ApproverFlowId = 0;
+        int ReviewerFlowId = 0;
+
+        public async void GenerateFlow()
+        {
+
+            if (_sosHub.SOSFlow.Count > 0)
+            {
+                //REVISION
+                if (ReviewerFlowId == 0 || ApproverFlowId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       ApproverFlowId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                    return;
+                }
+
+                _sosFlow = _sosHub.SOSFlow.First();
+
+                if (_sosFlow.FlowLogbooks.First().SOSFlowLogbookId == 0)
+                {
+                    _sosFlow.FlowLogbooks.Clear();
+                }
+
+                logFlow.NoRevision = _sosFlow.FlowLogbooks?.Count();
+                logFlow.ApproverId = ApproverFlowId;
+                logFlow.ReviewerId = ReviewerFlowId;
+                logFlow.Date = System.DateTime.Now;
+                logFlow.Status = 1;
+                logFlow.IsActive = true;
+                if (_sosFlow.FlowLogbooks == null)
+                {
+                    _sosFlow.FlowLogbooks = new List<SOSFlowLogbook>();
+                }
+
+                _sosFlow.FlowLogbooks.Add(logFlow);
+
+                var Gen_sosFlow = await SOSHubServices.GenerateFlow(SOSHubId, _sosFlow);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_sosFlow != 0)
+                {
+                    Snackbar.Add($"{Localizer["_sosFlowGeneratedSucces"]}", Severity.Info);
+                    ShowPagesGenerate = false;
+                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{_sosFlow.SOSFlowId}");
+                    _sosFlow = new SOSFlow();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_sosFlowGeneratedSucces"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+
+            }
+            else
+            {
+                if (ReviewerFlowId == 0 || ApproverFlowId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       string.IsNullOrEmpty(_sosFlow.OperationName) ? "Es necesario el aproador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (string.IsNullOrEmpty(_sosFlow.ProcessName) || string.IsNullOrEmpty(_sosFlow.InternalControlNumber))
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                      string.IsNullOrEmpty(_sosFlow.ProcessName) ? "Es necesario el nombre de Proceso" : "Es necesario el nombre del proceso!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (string.IsNullOrEmpty(_sosFlow.OperationName))
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       "Es necesario el nombre de operacion!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    logFlow.NoRevision = 0;
+                    logFlow.ReviewerId = supervisorOwnerId;
+                    logFlow.ApproverId = ReviewerFlowId;
+                    logFlow.Date = System.DateTime.Now;
+                    logFlow.Status = 1;
+                    logFlow.IsActive = true;
+                    if (_sosFlow.FlowLogbooks == null)
+                    {
+                        _sosFlow.FlowLogbooks = new List<SOSFlowLogbook>();
+                    }
+                    _sosFlow.FlowLogbooks.Add(logFlow);
+
+                    var Gen_sosFlow = await SOSHubServices.GenerateFlow(SOSHubId, _sosFlow);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gen_sosFlow != 0)
+                    {
+                        Snackbar.Add($"{Localizer["_sosFlowGeneratedSucces"]}", Severity.Info);
+                        ShowPagesGenerate = false;
+                        NavigationManager.NavigateTo($"/soshoe/Flow/Details/{Gen_sosFlow}");
+                        _sosFlow = new SOSFlow();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["Fail_sosFlowGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+
         #endregion
         #region generateSequence
         SOSSequence _sosSequence { get; set; } = new SOSSequence();
@@ -1310,8 +1504,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else
                 {
                     logSequence.NoRevision = 0;
-                    logSequence.ReviewerId = supervisorOwnerId;
-                    logSequence.ApproverId = ReviewerSequenceId;
+                    logSequence.ApproverId = ApproverSequenceId;
+                    logSequence.ReviewerId = ReviewerSequenceId;
                     logSequence.Date = System.DateTime.Now;
                     logSequence.Status = 1;
                     logSequence.IsActive = true;
