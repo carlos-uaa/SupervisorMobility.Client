@@ -30,7 +30,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 y: y,
                 width: draggedImageElement.width,
                 height: draggedImageElement.height,
-                imageId: imageIndex++
+                imageId: imageIndex++,
+                rotation: 0
             });
 
             removeSelection(draggedImageElement);
@@ -58,7 +59,9 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             redrawCanvas(ctx, canvas);
 
             dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
-            dotNetObjectRef.invokeMethodAsync('UpdateSelectedSlider', selectedImage.width);
+            dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
+            dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180); 
+
         }
         else {
             dotNetObjectRef.invokeMethodAsync('DeselectImage');
@@ -144,7 +147,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 y: y,
                 width: width,
                 height: height,
-                imageId: imageIndex++
+                imageId: imageIndex++,
+                rotation: 0
 
             });
 
@@ -339,15 +343,25 @@ function redrawCanvas(ctx, canvas) {
     }
 
     movableImages.forEach(img => {
-        ctx.drawImage(img.element, img.x, img.y, img.width, img.height);
-
+        ctx.save(); 
+        
+        ctx.translate(img.x + img.width / 2, img.y + img.height / 2);
+        
+        ctx.rotate(img.rotation);
+        
+        ctx.drawImage(img.element, -img.width / 2, -img.height / 2, img.width, img.height);
+        
         if (img === selectedImage) {
             ctx.strokeStyle = 'blue';
             ctx.lineWidth = 1;
-            ctx.strokeRect(img.x, img.y, img.width, img.height);
+            ctx.strokeRect(-img.width / 2, -img.height / 2, img.width, img.height);
         }
+
+        ctx.restore(); 
     });
 }
+
+
 
 window.undoLastAction = function (canvasRef) {
     if (movableImages.length > 0) {
@@ -374,13 +388,16 @@ window.updateImageSize = function (canvasRef, newSize) {
 window.rotateImage = function (canvasRef, newRotation) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
-    const image = movableImages.find(img => img.imageId === selectedIndex); // Encuentra la imagen seleccionada
+    const image = movableImages.find(img => img.imageId === selectedIndex);
 
     if (image) {
-        const radians = newRotation * Math.PI / 180;
+        const degrees = newRotation - 180;
+        const radians = degrees * Math.PI / 180;
+
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         redrawCanvas(ctx, canvas);
+
         ctx.translate(image.x + image.width / 2, image.y + image.height / 2);
         ctx.rotate(radians);
         ctx.drawImage(
@@ -391,5 +408,17 @@ window.rotateImage = function (canvasRef, newRotation) {
             image.height
         );
         ctx.restore();
+
+        image.rotation = radians;
+        updateImagePositionAfterRotation(image);
     }
 };
+
+
+function updateImagePositionAfterRotation(image) {
+    const centerX = image.x + image.width / 2;
+    const centerY = image.y + image.height / 2;
+
+    image.x = centerX - image.width / 2;
+    image.y = centerY - image.height / 2;
+}
