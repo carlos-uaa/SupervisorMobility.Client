@@ -68,6 +68,41 @@
 else
 {
     <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+            <thead>
+                <tr>
+                    <th rowspan="2">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <MudItem Style="justify-content: end" Class="ml-auto">
+                            <MudItem Class="d-flex">
+                                @if ((user.UserType == 1 || user.UserType == 2) && _sosAnalysis.AnalysisLogbooks.Last()?.Status == 1)
+                                {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                        @Localizer["new"]
+                                    </MudChip>
+                                }
+                                @if ((user.UserType == 1 || user.UserType == 2) && _sosAnalysis.AnalysisLogbooks.Last().Status != 2)
+                                {
+                                    <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
+                                }
+                                else if (_sosAnalysis.AnalysisLogbooks.Last().Status == 2)
+                                {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                        @Localizer["approved"]!
+                                    </MudChip>
+                                }
+
+                            </MudItem>
+                        </MudItem>
+                    </td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
         <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
             <tbody class="table-header-gray">
                 <tr>
@@ -99,7 +134,7 @@ else
                     <th rowspan="3" colspan="2" class="divider">Punto revisado<br />( Cambio )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td rowspan="3" style="width:15%">@(rev.RevisedItem)</td>
+                        <td rowspan="3" style="width:15%">@(rev.Changes)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -187,7 +222,7 @@ else
                     <th>Supervisor Gral.<br />( Aprobó )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.SeniorSupervisor.Name)</td>
+                        <td style="width:15%">@(rev.Approver.Name)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -215,7 +250,7 @@ else
                     <th>Supervisor<br />( Elaboró )</th>
                     @foreach (var rev in mostRecentLogs)
                     {
-                        <td style="width:15%">@(rev.Supervisor.Name)</td>
+                        <td style="width:15%">@(rev.Reviewer.Name)</td>
                     }
                     @for (int j = logCount; j < 3; j++)
                     {
@@ -253,7 +288,7 @@ else
                                 <td rowspan="@TotalRowSpan">@(indexSection + 1)</td>
                                 <td rowspan="@TotalRowSpan">@sect.Step</td>
                                 <td rowspan="@TotalRowSpan">
-                                    <MudInput T="string" Value="@sect.Time" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect)" Validation="ValidateTime"/>
+                                    <MudInput T="string" Value="@sect.Time" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect)" Validation="ValidateTime" />
                                 </td>
                             }
                             <td colspan="2">
@@ -276,7 +311,7 @@ else
                                 int totalSpecialCases = _sosAnalysis.SOSHub.MaterialsUsed.Count();
 
                                 int TotalRowSpanImages = totalAnalyses + totalCriticalPoints + 2 + totalSpecialCases;
-                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;" >
+                                <td class="divider images_cell" rowspan="@TotalRowSpanImages" style="vertical-align: top; min-width: 30vw;">
                                     <MudItem Class="d-flex flex-column align-start">
                                         @* <MudButton Color="Color.Info" Variant="Variant.Filled" @onclick="() => OpenEvidenceDialog(0)" >Show Images Dialog</MudButton> *@
                                         <MudItem Class="d-flex">
@@ -321,7 +356,7 @@ else
                                                 @Localizer["There are no images"]
                                             </MudAlert>
                                         }
-                                       
+
                                     </MudItem>
                                 </td>
                             }
@@ -419,7 +454,7 @@ else
                                 firstRow = false;
                             }
                             <td>@material.Material.key</td>
-                            <td >@material.Material.PartName</td>
+                            <td>@material.Material.PartName</td>
                             <td>@material.Material.PartNumber</td>
                             <td>@material.Quantity</td>
                         </tr>
@@ -493,7 +528,7 @@ else
     <DialogContent>
         <MudPaper Elevation="0">
             @if (capturedImages.Any() || PreviousImages.Any())
-                {            
+            {
                 <MudCarousel Class="mud-width-full" Style="height: 65vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
                     <PreviousButtonTemplate>
                         <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
@@ -507,18 +542,18 @@ else
                     </NextButtonTemplate>
                     <ChildContent>
 
-                            @foreach (var evidence in PreviousImages)
-                            {
-                                <MudCarouselItem Transition="Transition.Fade">
-                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
-                                </MudCarouselItem>
-                            }
-                            @foreach (var evidence in capturedImages)
-                            {
-                                <MudCarouselItem Transition="Transition.Fade">
-                                    <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
-                                </MudCarouselItem>
-                            }
+                        @foreach (var evidence in PreviousImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                        @foreach (var evidence in capturedImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
                     </ChildContent>
                 </MudCarousel>
             }
@@ -615,7 +650,7 @@ else
                         {
                             <tr>
                                 <td>
-                                    @if(i == 0)
+                                    @if (i == 0)
                                     {
                                         <span>N</span>
                                         i++;
@@ -625,10 +660,10 @@ else
                                         <span>@(i++)</span>
                                     }
                                 </td>
-                                <td>@logbook.SeniorSupervisor?.Name</td>
-                                <td>@logbook.Supervisor?.Name</td>
+                                <td>@logbook.Approver?.Name</td>
+                                <td>@logbook.Reviewer?.Name</td>
                                 <td>@logbook.Date?.ToShortDateString()</td>
-                                <td>@logbook.RevisedItem</td>
+                                <td>@logbook.Changes</td>
                             </tr>
                         }
                     }
@@ -648,5 +683,23 @@ else
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@*Sign PAT modal*@
+<MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+            @Localizer["areYouSureYouWantToApproveThisPAT"]
+        </MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["onceApprovedItCannotBeModified"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => ApprovePat())" Color="Color.Info" StartIcon="@Icons.Material.Filled.PlaylistAddCheck" Variant="Variant.Filled">@Localizer["approvePAT"]</MudButton>
     </DialogActions>
 </MudDialog>

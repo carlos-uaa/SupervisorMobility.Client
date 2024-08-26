@@ -3,6 +3,8 @@ using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Globalization;
+using SupervisorMobility.Client.Data.Entities;
+using Microsoft.JSInterop;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -42,6 +44,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
         public bool ShowLoading = true;
 
+        //User
+        private string json = string.Empty;
+        public User user = new();
+        public bool logged = false;
 
         private double totalTime;
 
@@ -60,48 +66,92 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
-            if (_sosAnalysis.AnalysisLogbooks != null)
+            logged = await HasPropertyAsync();
+
+            if (!logged)
             {
-                mostRecentLogs = _sosAnalysis.AnalysisLogbooks
-                    .OrderByDescending(log => log.SOSAnalysisLogbookId)
-                    .Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count))
-                    .OrderBy(log => log.SOSAnalysisLogbookId)
-                    .ToList();
-
-                logCount = mostRecentLogs.Count;
-                totalLogbooks = _sosAnalysis.AnalysisLogbooks.Count;
-
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavigationManager.NavigateTo($"/");
             }
-
-            remainingLogs = 3 - logCount;
-            logbookIds = mostRecentLogs.Select(log => log.SOSAnalysisLogbookId).ToList();
-
-
-
-            if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
+            else
             {
 
-                foreach (var analysisImage in _sosAnalysis.Illustrations)
+
+
+
+                _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
+                if (_sosAnalysis.AnalysisLogbooks != null)
                 {
-                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
-                    capturedImages.Add(image);
+                    mostRecentLogs = _sosAnalysis.AnalysisLogbooks
+                        .OrderByDescending(log => log.SOSAnalysisLogbookId)
+                        .Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count))
+                        .OrderBy(log => log.SOSAnalysisLogbookId)
+                        .ToList();
+
+                    logCount = mostRecentLogs.Count;
+                    totalLogbooks = _sosAnalysis.AnalysisLogbooks.Count;
+
                 }
-            }
-            cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
-            totalTime = _sosAnalysis.SOSHub.Sections
-                .Select(sect =>
+
+                remainingLogs = 3 - logCount;
+                logbookIds = mostRecentLogs.Select(log => log.SOSAnalysisLogbookId).ToList();
+
+
+
+                if (_sosAnalysis.Illustrations != null && _sosAnalysis.Illustrations.Any())
                 {
-                    double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
-                })
-                .Where(timeValue => timeValue.HasValue)
-                .Select(timeValue => timeValue.Value)
-                .DefaultIfEmpty(0)
-                .Sum();
-            ShowLoading = false;
-            StateHasChanged();
+
+                    foreach (var analysisImage in _sosAnalysis.Illustrations)
+                    {
+                        var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
+                        capturedImages.Add(image);
+                    }
+                }
+                cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
+                totalTime = _sosAnalysis.SOSHub.Sections
+                    .Select(sect =>
+                    {
+                        double timeValue;
+                        return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                    })
+                    .Where(timeValue => timeValue.HasValue)
+                    .Select(timeValue => timeValue.Value)
+                    .DefaultIfEmpty(0)
+                    .Sum();
+                ShowLoading = false;
+                StateHasChanged();
+            }
+
         }
+        #region User
+        //Local storage user
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+            {
+                user = new();
+            }
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
+        #endregion
 
         private List<string> GetRevisionNumbers()
         {
@@ -262,6 +312,43 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private async void DownloadExcel()
         {
             await Exportation.ExportAnalysisToExcel(AnalysisId.Value);
+        }
+
+        #region ApproveAnalysis
+
+        private bool visibleSign = false;
+        private void OpenSignComment()
+        {
+            visibleSign = true;
+        }
+        void CloseSign() => visibleSign = false;
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+        public async Task ApprovePat()
+        {
+
+            //_pat!.Status = 2;
+            //var result = await PATsServices.UpdatePat(_pat);
+
+            //if (result)
+            //{
+            //    Snackbar.Clear();
+            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //    Snackbar.Add($"PAT Approved succesfully!", Severity.Info);
+            //    NavigationManager.NavigateTo($"PAT");
+            //}
+
+            visibleSign = false;
+        }
+        #endregion
+
+        void HoeDetails(int HoeId)
+        {
+            NavigationManager.NavigateTo($"/soshoe/Hub/Details/{HoeId}");
+        }
+        void UpdateAnalysis(int AnalysisId)
+        {
+            NavigationManager.NavigateTo($"/soshoe/Analysis/Update/{AnalysisId}");
         }
     }
 }

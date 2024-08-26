@@ -1,18 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace SupervisorMobility.Client.Data.Entities.SOS_Process
+﻿namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
-    public class SOSSequenceLogbook
+    public class SOSDistributionLogbook
     {
-        public int SOSSequenceLogbookId { get; set; }
+        public int SOSDistributionLogbookId { get; set; }
         public string? Changes { get; set; }
         public DateTime? Date { get; set; }
         public int? NoRevision { get; set; }
         public int? Status { get; set; }
         public bool? IsActive { get; set; }
 
-        public int SOSSequenceId { get; set; }
-        public SOSSequence? SOSSequence { get; set; }
+        public int SOSDistributionId { get; set; }
+        public SOSDistribution? SOSDistribution { get; set; }
 
 
         public int? ApproverId { get; set; }

@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -20,7 +21,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-      
+
 
 
         public async Task<List<SOSSequence>> GetAllSOSSequence(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
@@ -37,9 +38,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
             return SOSSequencesRetorned;
         }
 
-        public async Task<SOSSequence> GetSOSSequence(int SOSSequenceId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
+        public async Task<SOSSequence> GetSOSSequence(int SOSSequenceId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false)
         {
-            var response = await _http.GetAsync($"SOS/Sequence/{SOSSequenceId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
+            var response = await _http.GetAsync($"SOS/Sequence/{SOSSequenceId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeImagesSOS={includeImagesSOS}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -50,7 +51,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 
             return SOSSequencesRetorned;
         }
-
         public async Task<SOSSequence> UpdateSOSSequence(SOSSequence SosEntity)
         {
             var response = await _http.PutAsJsonAsync($"SOS/Sequence/{SosEntity.SOSSequenceId}", SosEntity);
@@ -123,7 +123,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
                 return "Error Loading Image";
             }
         }
-
         public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSequence_id, int ImageFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/Sequence/Ilustrations/{SOS_SOSSequence_id}/remove/{ImageFile_id}");
@@ -136,8 +135,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 
             return true;
         }
-
-
 
 
     }

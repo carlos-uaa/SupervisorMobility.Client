@@ -23,9 +23,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<bool> RemoveCDFromSOSData(int SOS_DataPool_id, int CDFile_id);
 
         Task<int> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis);
-        Task<bool> GenerateCombination(int SOS_DataPool_id);
-        Task<bool> GenerateFlow(int SOS_DataPool_id);
-        Task<bool> GenerateDistribution(int SOS_DataPool_id);
+        Task<int> GenerateCombination(int SOS_DataPool_id, SOSCombination combination);
+        Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow);
+        Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution);
         Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence);
     
         //Histoy
