@@ -15,6 +15,16 @@
                     <MudText Typo="Typo.subtitle1">Size</MudText>
                     <MudSlider @bind-Value="sliderSize" Min="20" Max="150" Step="1" Color="Color.Primary" />
                 </MudItem>
+                <MudItem Class="pa-2">
+                    <MudText Typo="Typo.subtitle1">Draw</MudText>
+                    <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
+                                         Icon="@Icons.Material.Filled.EditOff"
+                                         ToggledIcon="@Icons.Material.Filled.Edit"
+                                         ToggledColor="@Color.Info"
+                                         @onclick="OnToggleClick" />
+
+
+                </MudItem>
                 @foreach (var image in FilteredImagesWithSelection)
                 {
                     <MudNavLink Match="NavLinkMatch.All">
@@ -91,6 +101,25 @@
     private string search = string.Empty;
     private ImageModel selectedImageModel;
     private int selectedImageSize = 85;
+
+    private bool isPencilSelected;
+    public bool IsPencilSelected
+    {
+        get => isPencilSelected;
+        set
+        {
+            if (isPencilSelected != value)
+            {
+                isPencilSelected = value;
+                _ = UpdatePencilStateAsync(value);
+            }
+        }
+    }
+
+    private async Task UpdatePencilStateAsync(bool state)
+    {
+        await JS.InvokeVoidAsync("togglePencilState", state);
+    }
     private int SelectedImageSize
     {
         get => selectedImageSize;
@@ -175,6 +204,15 @@
         rotateImage = rotateSlider;
         StateHasChanged();
     }
+
+    [JSInvokable("SetPencilState")]
+    public void UpdatePencilState(bool penState)
+    {
+        isPencilSelected = penState;
+        StateHasChanged();
+    }
+
+
 
     [JSInvokable("OnImageDropped")]
     public async Task OnImageDropped()
@@ -268,6 +306,12 @@
     {
         await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
     }
+
+    private void OnToggleClick()
+    {
+        IsPencilSelected = !IsPencilSelected;
+    }
+
 }
 
 <style>
