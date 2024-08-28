@@ -17,12 +17,14 @@
                 </MudItem>
                 <MudItem Class="pa-2">
                     <MudText Typo="Typo.subtitle1">Draw</MudText>
-                    <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
-                                         Icon="@Icons.Material.Filled.EditOff"
-                                         ToggledIcon="@Icons.Material.Filled.Edit"
-                                         ToggledColor="@Color.Info"
-                                         @onclick="OnToggleClick" />
-
+                    <MudItem Class="d-flex" Style="align-items: flex-end;">
+                        <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
+                                             Icon="@Icons.Material.Filled.EditOff"
+                                             ToggledIcon="@Icons.Material.Filled.Edit"
+                                             ToggledColor="@Color.Info"
+                                             @onclick="OnToggleClick" />
+                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%")" ColorPickerView="ColorPickerView.Palette" />
+                    </MudItem>
 
                 </MudItem>
                 @foreach (var image in FilteredImagesWithSelection)
@@ -86,7 +88,10 @@
                 <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
                 <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Generate Image</MudButton>
             </MudItem>
-            <canvas id="canvas" style="border:1px solid #000;@(isCanvasVisible ? "" : "display:none;")" @ref="canvasRef"></canvas>
+            <canvas id="canvas"
+                    style="border:1px solid #000; cursor: @(IsPencilSelected ? "crosshair" : "default"); @(isCanvasVisible ? "" : "display:none;")"
+                    @ref="canvasRef">
+            </canvas>
         </div>
 
     </MudDrawerContainer>
@@ -100,7 +105,17 @@
     private int sliderSize = 85;
     private string search = string.Empty;
     private ImageModel selectedImageModel;
-    private int selectedImageSize = 85;
+
+    private string pencilColor = "#000";
+    private string PencilColor
+    {
+        get => pencilColor;
+        set
+        {
+            pencilColor = value;
+            UpdateSelectedColor(value).GetAwaiter().GetResult();
+        }
+    }
 
     private bool isPencilSelected;
     public bool IsPencilSelected
@@ -120,6 +135,8 @@
     {
         await JS.InvokeVoidAsync("togglePencilState", state);
     }
+
+    private int selectedImageSize = 85;
     private int SelectedImageSize
     {
         get => selectedImageSize;
@@ -156,6 +173,12 @@
         {
             await JS.InvokeVoidAsync("rotateImage", canvasRef, newRotation);
         }
+    }
+
+    private async Task UpdateSelectedColor(string newColor)
+    {
+        IsPencilSelected = true;
+        await JS.InvokeVoidAsync("setPencilColor", newColor);
     }
 
     public class ImageModel

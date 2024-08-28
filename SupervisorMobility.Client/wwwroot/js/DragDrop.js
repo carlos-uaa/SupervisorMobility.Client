@@ -14,7 +14,8 @@ let selectedIndex = 0;
 let isDrawing = false;
 let isPencilSelected = false;
 let drawColor = "#000000";
-let drawPathData = []; 
+let drawPathData = [];
+let drawings = [];
 
 window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     const canvas = canvasRef;
@@ -103,7 +104,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     canvas.addEventListener("mouseup", function () {
         if (isPencilSelected) {
             isDrawing = false;
-            redrawCanvas(ctx, canvas); // Llama a redrawCanvas para aplicar el trazo al canvas
+            drawings.push({ path: drawPathData.slice(), color: drawColor });
+            redrawCanvas(ctx, canvas);
         } else {
             selectedImage = null;
             canvas.style.cursor = 'default';
@@ -115,10 +117,15 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             if (e.touches.length === 1) {
                 isDrawing = true;
                 const touch = e.touches[0];
-                ctx.strokeStyle = drawColor; 
-                ctx.lineWidth = 2; 
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+
+                ctx.strokeStyle = drawColor;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+                ctx.moveTo(x, y);
+                drawPathData = [[e.offsetX, e.offsetY]];
             }
         } else {
             if (e.touches.length === 1) {
@@ -148,8 +155,14 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
         e.preventDefault();
         if (isPencilSelected && isDrawing) {
             const touch = e.touches[0];
-            ctx.lineTo(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            ctx.lineTo(x, y);
             ctx.stroke();
+            drawPathData.push([x, y]);
+
         } else if (selectedImage) {
             const touch = e.touches[0];
             const rect = canvas.getBoundingClientRect();
@@ -169,7 +182,9 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     }, { passive: false });
 
     canvas.addEventListener("touchend", async function (e) {
-        if (isPencilSelected) {
+        if (isPencilSelected && isDrawing) {
+            drawings.push({ path: drawPathData.slice(), color: drawColor });
+            redrawCanvas(ctx, canvas);
             isDrawing = false;
         } else {
             if (selectedImage) {
@@ -384,34 +399,6 @@ function isPointInImage(x, y, image) {
         y >= image.y && y <= image.y + image.height;
 }
 
-//function redrawCanvas(ctx, canvas) {
-//    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//    if (fixedImage) {
-//        ctx.drawImage(fixedImage.element, fixedImage.x, fixedImage.y, fixedImage.width, fixedImage.height);
-//    }
-
-//    movableImages.forEach(img => {
-//        ctx.save(); 
-        
-//        ctx.translate(img.x + img.width / 2, img.y + img.height / 2);
-        
-//        ctx.rotate(img.rotation);
-        
-//        ctx.drawImage(img.element, -img.width / 2, -img.height / 2, img.width, img.height);
-        
-//        if (img === selectedImage) {
-//            ctx.strokeStyle = 'blue';
-//            ctx.lineWidth = 1;
-//            ctx.strokeRect(-img.width / 2, -img.height / 2, img.width, img.height);
-//        }
-
-//        ctx.restore(); 
-//    });
-//}
-
-
-
 window.undoLastAction = function (canvasRef) {
     if (movableImages.length > 0) {
         movableImages.pop();
@@ -433,12 +420,24 @@ window.updateImageSize = function (canvasRef, newSize) {
     }
 };
 
+
 function redrawCanvas(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (fixedImage) {
         ctx.drawImage(fixedImage.element, fixedImage.x, fixedImage.y, fixedImage.width, fixedImage.height);
     }
+    drawings.forEach(drawing => {
+        ctx.strokeStyle = drawing.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(drawing.path[0][0], drawing.path[0][1]);
+        for (let i = 1; i < drawing.path.length; i++) {
+            ctx.lineTo(drawing.path[i][0], drawing.path[i][1]);
+        }
+        ctx.stroke();
+    });
+
 
     movableImages.forEach(img => {
         ctx.save();
@@ -452,14 +451,6 @@ function redrawCanvas(ctx, canvas) {
         }
         ctx.restore();
     });
-
-    if (isPencilSelected && fixedImage) {
-        ctx.strokeStyle = drawColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        drawPath(ctx);
-        ctx.stroke();
-    }
 }
 
 function drawPath(ctx) {
@@ -473,6 +464,37 @@ function drawPath(ctx) {
     }
 }
 
+
+window.rotateImage = function (canvasRef, newRotation) {
+    const canvas = canvasRef;
+    const ctx = canvas.getContext("2d");
+    const image = movableImages.find(img => img.imageId === selectedIndex);
+
+    if (image) {
+        const degrees = newRotation - 180;
+        const radians = degrees * Math.PI / 180;
+
+        ctx.save();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        redrawCanvas(ctx, canvas);
+
+        ctx.translate(image.x + image.width / 2, image.y + image.height / 2);
+        ctx.rotate(radians);
+        ctx.drawImage(
+            image.element,
+            -image.width / 2,
+            -image.height / 2,
+            image.width,
+            image.height
+        );
+        ctx.restore();
+
+        image.rotation = radians;
+        updateImagePositionAfterRotation(image);
+    }
+};
+
+
 function updateImagePositionAfterRotation(image) {
     const centerX = image.x + image.width / 2;
     const centerY = image.y + image.height / 2;
@@ -485,5 +507,6 @@ function updateImagePositionAfterRotation(image) {
 
 
 window.setPencilColor = function (color) {
+    console.log("algo")
     drawColor = color;
 }
