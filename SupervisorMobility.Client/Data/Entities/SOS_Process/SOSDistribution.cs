@@ -19,8 +19,7 @@
 
         public ICollection<Turn>? Turns { get; set; }
         public string? AplicationModels { get; set; } = "§§§§";
-        public ICollection<ModelTimeStep>? AplicationModelsTimes { get; set; }
-
+        public ICollection<SOSTime>? Times { get; set; } = new List<SOSTime>();
 
         public string? AdditionalTime { get; set; } = "§§§§";
         public string? CycleTime { get; set; } = "§§§§";

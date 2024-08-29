@@ -207,17 +207,51 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
 
             cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
-            totalTime = _sosAnalysis.SOSHub.Sections
-                .Select(sect =>
+
+            if (_sosAnalysis.Times == null)
+            {
+                _sosAnalysis.Times = new List<SOSTime>();
+                //crearlos artificialmente
+                foreach (Section section in _sosAnalysis.SOSHub.Sections)
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = "";
+
+                    _sosAnalysis.Times.Add(newitem);
+                }
+            }
+            else
+            {
+                //iterar sobre ellos para añadir casos faltantes de haber
+                foreach (Section section in _sosAnalysis.SOSHub.Sections)
+                {
+                    if(!_sosAnalysis.Times.Any(t => t.SectionId == section.SectionId)) {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "0";
+
+                        _sosAnalysis.Times.Add(newitem);
+                    }                   
+                }
+            }
+
+            totalTime = _sosAnalysis.Times
+                .Select(time =>
                 {
                     double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                    return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
                 })
                 .Where(timeValue => timeValue.HasValue)
                 .Select(timeValue => timeValue.Value)
                 .DefaultIfEmpty(0)
                 .Sum();
             StateHasChanged();
+
 
             return new AsyncVoidMethodBuilder();
         }
@@ -376,14 +410,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             if (section != null && newValue != null)
             {
-                section.Time = newValue;
+                int indexTime = _sosAnalysis.Times.ToList().FindIndex(t => t.SectionId == section.SectionId);
+
+                if (indexTime != -1)
+                {
+                    _sosAnalysis.Times.ElementAt(indexTime).Time = newValue;
+                }
+                else
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = newValue;
+
+                    _sosAnalysis.Times.Add(newitem);
+                }
             }
 
-            totalTime = _sosAnalysis.SOSHub.Sections
-                .Select(sect =>
+            totalTime = _sosAnalysis.Times
+                .Select(time =>
                 {
                     double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                    return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
                 })
                 .Where(timeValue => timeValue.HasValue)
                 .Select(timeValue => timeValue.Value)
@@ -469,9 +518,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            foreach (Section sect in _sosAnalysis.SOSHub.Sections)
+            foreach (SOSTime time in _sosAnalysis.Times)
             {
-                if (!string.IsNullOrEmpty(sect.Time) && !double.TryParse(sect.Time, out _))
+                if (!string.IsNullOrEmpty(time.Time) && !double.TryParse(time.Time, out _))
                 {
                     Snackbar.Add("The time field only accepts numbers.", Severity.Warning);
                     UpdateButton = false;

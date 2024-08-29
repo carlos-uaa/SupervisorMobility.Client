@@ -448,6 +448,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a are you sure you want to approve this Analysis?.
+        /// </summary>
+        public static string areYouSureYouWantToApproveThisAnalysis {
+            get {
+                return ResourceManager.GetString("areYouSureYouWantToApproveThisAnalysis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a are you sure you want to approve this PAT?.
         /// </summary>
         public static string areYouSureYouWantToApproveThisPAT {

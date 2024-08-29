@@ -2,6 +2,7 @@ using MudBlazor;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Globalization;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
 {
@@ -88,19 +89,60 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
                 }
             }
             cycleId = _sosSequence.SOSHub?.TrainingTime != null ? GetCycleId(_sosSequence.SOSHub.TrainingTime) : 0;
+
+            //creacion artificial
+            if (_sosSequence.Times == null)
+            {
+                _sosSequence.Times = new List<SOSTime>();
+                foreach (Section section in _sosSequence.SOSHub.Sections)
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = "0";
+
+                    _sosSequence.Times.Add(newitem);
+                }
+            }
+            else
+            {
+                //iterar sobre existentes para añadir casos faltantes de haber
+                foreach (Section section in _sosSequence.SOSHub.Sections)
+                {
+                    if (!_sosSequence.Times.Any(t => t.SectionId == section.SectionId))
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "";
+
+                        _sosSequence.Times.Add(newitem);
+                    }
+                }
+            }
+
+
+
+
+
             if (_sosSequence?.SOSHub?.Sections != null)
             {
-                totalTime = _sosSequence.SOSHub.Sections
-                    .Select(sect =>
+                totalTime = _sosSequence.Times
+                    .Select(time =>
                     {
                         double timeValue;
-                        return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
+                        return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
                     })
                     .Where(timeValue => timeValue.HasValue)
                     .Select(timeValue => timeValue.Value)
                     .DefaultIfEmpty(0)
                     .Sum();
             }
+
+
+
             ShowLoading = false;
             StateHasChanged();
         }
