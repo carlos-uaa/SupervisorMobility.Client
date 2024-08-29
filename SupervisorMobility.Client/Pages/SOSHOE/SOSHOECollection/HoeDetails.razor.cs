@@ -1,24 +1,10 @@
 using BlazorCameraStreamer;
-using Blazorise.Extensions;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
-using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
-using System;
-using System.Formats.Asn1;
 using System.Globalization;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static MudBlazor.CategoryTypes;
-using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 {
@@ -715,6 +701,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _sosCombination = _sosHub.SOSCombination.FirstOrDefault() ?? new SOSCombination();
                         if (_sosCombination.SOSCombinationId != 0 && _sosCombination.CombinationLogbooks.Count > 0)
                         {
+                            ApproverDocCombinationId = (int)(_sosCombination.ApproverId ?? 0);
+                            ReviewerDocCombinationId = (int)(_sosCombination.ReviewerId ?? 0);
+                            ReviewerHYDocCombinationId = (int)(_sosCombination.ReviewerHSId ?? 0);
+
                             ApproverCombinationId = (int)(_sosCombination.CombinationLogbooks.Last().Status != 2 ? _sosCombination.CombinationLogbooks.Last().ApproverId : 0);
                             ReviewerCombinationId = (int)(_sosCombination.CombinationLogbooks.Last().Status != 2 ? _sosCombination.CombinationLogbooks.Last().ReviewerId : 0);
                         }
@@ -726,20 +716,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                         if (_sosCombination.Turns?.Count >= 1)
                         {
-                            OperatorTurn1 = (int)_sosCombination.Turns.ElementAt(0).OperatorId;
-                            SupervisorTurn1 = (int)_sosCombination.Turns.ElementAt(0).SupervisorId;
+                            OperatorTurn1 = (int)(_sosCombination.Turns.ElementAt(0).OperatorId ?? 0);
+                            SupervisorTurn1 = (int)(_sosCombination.Turns.ElementAt(0).SupervisorId ?? 0);
                         }
 
                         if (_sosCombination.Turns?.Count >= 2)
                         {
-                            OperatorTurn2 = (int)_sosCombination.Turns.ElementAt(1).OperatorId;
-                            SupervisorTurn2 = (int)_sosCombination.Turns.ElementAt(1).SupervisorId;
+                            OperatorTurn2 = (int)(_sosCombination.Turns.ElementAt(1).OperatorId ?? 0);
+                            SupervisorTurn2 = (int)(_sosCombination.Turns.ElementAt(1).SupervisorId ?? 0);
                         }
 
                         if (_sosCombination.Turns?.Count >= 3)
                         {
-                            OperatorTurn3 = (int)_sosCombination.Turns.ElementAt(2).OperatorId;
-                            SupervisorTurn3 = (int)_sosCombination.Turns.ElementAt(2).SupervisorId;
+                            OperatorTurn3 = (int)(_sosCombination.Turns.ElementAt(2).OperatorId ?? 0);
+                            SupervisorTurn3 = (int)(_sosCombination.Turns.ElementAt(2).SupervisorId ?? 0);
                         }
 
                     }
@@ -751,6 +741,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _sosDistribution = _sosHub.SOSDistribution.FirstOrDefault();
                         if (_sosDistribution.SOSDistributionId != 0 && _sosDistribution.DistributionLogbooks.Count > 0)
                         {
+                            ApproverDocDistributionId = (int)(_sosDistribution.ApproverId ?? 0);
+                            ReviewerDocDistributionId = (int)(_sosDistribution.ReviewerId ?? 0);
+
                             ApproverDistributionId = (int)(_sosDistribution.DistributionLogbooks.Last().Status != 2 ? _sosDistribution.DistributionLogbooks.Last().ApproverId : 0);
                             ReviewerDistributionId = (int)(_sosDistribution.DistributionLogbooks.Last().Status != 2 ? _sosDistribution.DistributionLogbooks.Last().ReviewerId : 0);
                         }
@@ -762,20 +755,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                         if (_sosDistribution.Turns?.Count >= 1)
                         {
-                            OperatorTurn1 = (int)_sosDistribution.Turns.ElementAt(0).OperatorId;
-                            SupervisorTurn1 = (int)_sosDistribution.Turns.ElementAt(0).SupervisorId;
+                            OperatorTurn1 = (int)(_sosDistribution.Turns.ElementAt(0).OperatorId ?? 0);
+                            SupervisorTurn1 = (int)(_sosDistribution.Turns.ElementAt(0).SupervisorId ?? 0);
                         }
 
                         if (_sosDistribution.Turns?.Count >= 2)
                         {
-                            OperatorTurn2 = (int)_sosDistribution.Turns.ElementAt(1).OperatorId;
-                            SupervisorTurn2 = (int)_sosDistribution.Turns.ElementAt(1).SupervisorId;
+                            OperatorTurn2 = (int)(_sosDistribution.Turns.ElementAt(1).OperatorId ?? 0);
+                            SupervisorTurn2 = (int)(_sosDistribution.Turns.ElementAt(1).SupervisorId ?? 0);
                         }
 
                         if (_sosDistribution.Turns?.Count >= 3)
                         {
-                            OperatorTurn3 = (int)_sosDistribution.Turns.ElementAt(2).OperatorId;
-                            SupervisorTurn3 = (int)_sosDistribution.Turns.ElementAt(2).SupervisorId;
+                            OperatorTurn3 = (int)(_sosDistribution.Turns.ElementAt(2).OperatorId ?? 0);
+                            SupervisorTurn3 = (int)(_sosDistribution.Turns.ElementAt(2).SupervisorId ?? 0);
                         }
                     }
                     break;
@@ -827,6 +820,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
         #endregion
+        //Generate Analysis
         #region generateAnalysis
         SOSAnalysis _sosAnalysis { get; set; } = new SOSAnalysis();
         SOSAnalysisLogbook loganalysis { get; set; } = new SOSAnalysisLogbook();
@@ -933,6 +927,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                     _sosAnalysis.AnalysisLogbooks.Add(loganalysis);
 
+                    if (_sosAnalysis.Times == null)
+                    {
+                        _sosAnalysis.Times = new List<SOSTime>();
+                    }
+
+                    foreach (Section section in _sosHub.Sections)
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "";
+
+                        _sosAnalysis.Times.Add(newitem);
+                    }
+
+
                     var Gen_sosAnalysis = await SOSHubServices.GenerateAnalysis(SOSHubId, _sosAnalysis);
 
                     Snackbar.Clear();
@@ -956,8 +967,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         }
-
         #endregion
+        //generate combination
         #region generateCombination
         SOSCombination _sosCombination { get; set; } = new SOSCombination();
         int ApproverDocCombinationId = 0;
@@ -1133,7 +1144,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         #endregion
-        #region generateDistribution
+        //generate distribucion
+        #region generate Distribution
         SOSDistribution _sosDistribution { get; set; } = new SOSDistribution();
         SOSDistributionLogbook logDistribution { get; set; } = new SOSDistributionLogbook();
         int ApproverDistributionId = 0;
@@ -1177,6 +1189,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
 
                 _sosDistribution.DistributionLogbooks.Add(logDistribution);
+
+
 
                 var Gen_sosDistribution = await SOSHubServices.GenerateDistribution(SOSHubId, _sosDistribution);
 
@@ -1229,6 +1243,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
                 else
                 {
+                    _sosDistribution.ReviewerId = ReviewerDistributionId;
+                    _sosDistribution.ApproverId = ApproverDistributionId;
+
                     logDistribution.NoRevision = 0;
                     logDistribution.ReviewerId = supervisorOwnerId;
                     logDistribution.ApproverId = ReviewerDistributionId;
@@ -1239,7 +1256,42 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         _sosDistribution.DistributionLogbooks = new List<SOSDistributionLogbook>();
                     }
+                    
                     _sosDistribution.DistributionLogbooks.Add(logDistribution);
+
+                    if (SupervisorTurn1 != 0 && OperatorTurn1 != 0)
+                    {
+                        _sosDistribution.Turns.ElementAt(0).SupervisorId = SupervisorTurn1;
+                        _sosDistribution.Turns.ElementAt(0).OperatorId = OperatorTurn1;
+                    }
+
+                    if (SupervisorTurn2 != 0 && OperatorTurn2 != 0)
+                    {
+                        _sosDistribution.Turns.ElementAt(1).SupervisorId = SupervisorTurn2;
+                        _sosDistribution.Turns.ElementAt(1).OperatorId = OperatorTurn2;
+                    }
+
+                    if (SupervisorTurn3 != 0 && OperatorTurn3 != 0)
+                    {
+                        _sosDistribution.Turns.ElementAt(2).SupervisorId = SupervisorTurn3;
+                        _sosDistribution.Turns.ElementAt(2).OperatorId = OperatorTurn3;
+                    }
+
+                    if(_sosDistribution.Times == null)
+                    {
+                        _sosDistribution.Times = new List<SOSTime>();
+                    }
+
+                    foreach (Section section in _sosHub.Sections)
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "";
+
+                        _sosDistribution.Times.Add(newitem);
+                    }
 
                     var Gen_sosDistribution = await SOSHubServices.GenerateDistribution(SOSHubId, _sosDistribution);
 
@@ -1278,6 +1330,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosDistribution.Turns?.Add(toCreate);
         }
         #endregion
+        //generate flow
         #region generateFlow
         SOSFlow _sosFlow { get; set; } = new SOSFlow();
         SOSFlowLogbook logFlow { get; set; } = new SOSFlowLogbook();
@@ -1409,6 +1462,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
         #endregion
+        //generate sequence
         #region generateSequence
         SOSSequence _sosSequence { get; set; } = new SOSSequence();
         SOSSequenceLogbook logSequence { get; set; } = new SOSSequenceLogbook();
@@ -1514,6 +1568,28 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _sosSequence.SequenceLogbooks = new List<SOSSequenceLogbook>();
                     }
                     _sosSequence.SequenceLogbooks.Add(logSequence);
+
+                    if (_sosSequence.Times == null)
+                    {
+                        _sosSequence.Times = new List<SOSTime>();
+                    }
+
+                    foreach (Section section in _sosHub.Sections)
+                    {
+
+                        foreach(Analysis analysis in section.Analyses)
+                        {
+                            SOSTime newitem = new SOSTime();
+
+                            newitem.SectionId = section.SectionId;
+                            newitem.AnalysisId = analysis.AnalysisId;
+                            newitem.IsActive = true;
+                            newitem.Time = "";
+
+                            _sosSequence.Times.Add(newitem);
+                        }
+                    }
+
 
                     var Gen_sosSequence = await SOSHubServices.GenerateSequence(SOSHubId, _sosSequence);
 
@@ -1626,9 +1702,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else if (typeof(T) == typeof(SOSDistribution))
             {
+                bool? result = await _DeleteDistribution.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+                    _sosHub.SOSDistribution.RemoveAll(distribution => distribution.SOSDistributionId == id);
+                    await SOSDistributionServices.DeleteSOSDistribution(id);
+                }
             }
             else if (typeof(T) == typeof(SOSFlow))
             {
+                bool? result = await _DeleteFlow.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+                    _sosHub.SOSFlow.RemoveAll(flow => flow.SOSFlowId == id);
+                    await SOSFlowServices.DeleteSOSFlow(id);
+                }
             }
             else if (typeof(T) == typeof(SOSSequence))
             {

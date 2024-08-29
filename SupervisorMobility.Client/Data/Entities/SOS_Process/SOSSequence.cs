@@ -14,6 +14,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 
         public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
         public ICollection<Commentary>? Notes { get; set; } = new List<Commentary>();
+        public ICollection<SOSTime>? Times { get; set; } = new List<SOSTime>();
 
         public DateTime? CreatedDate { get; set; }
 
