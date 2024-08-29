@@ -16,6 +16,7 @@ let isPencilSelected = false;
 let drawColor = "#000000";
 let drawPathData = [];
 let drawings = [];
+let actionHistory = [];
 
 window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     const canvas = canvasRef;
@@ -36,9 +37,12 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 y: y,
                 width: draggedImageElement.width,
                 height: draggedImageElement.height,
+                originalWidth: draggedImageElement.width,
+                originalHeight: draggedImageElement.height,
                 imageId: imageIndex++,
                 rotation: 0
             });
+            actionHistory.push({ type: "addImage" });
 
             removeSelection(draggedImageElement);
             removePreviewImage();
@@ -73,7 +77,12 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 offsetX = x - selectedImage.x;
                 offsetY = y - selectedImage.y;
                 canvas.style.cursor = 'move';
+                const aspectRatio = selectedImage.originalWidth / selectedImage.originalHeight;
+                if (selectedImage.width / selectedImage.height !== aspectRatio) {
+                    selectedImage.height = selectedImage.width / aspectRatio;
+                }
                 redrawCanvas(ctx, canvas);
+
 
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
@@ -97,14 +106,22 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 
             selectedImage.x = x - offsetX;
             selectedImage.y = y - offsetY;
+
+            const aspectRatio = selectedImage.originalWidth / selectedImage.originalHeight;
+            if (selectedImage.width / selectedImage.height !== aspectRatio) {
+                selectedImage.height = selectedImage.width / aspectRatio;
+            }
             redrawCanvas(ctx, canvas);
         }
     });
 
-    canvas.addEventListener("mouseup", function () {
+    canvas.addEventListener("mouseup", async function () {
         if (isPencilSelected) {
             isDrawing = false;
             drawings.push({ path: drawPathData.slice(), color: drawColor });
+            actionHistory.push({ type: "addDrawing" });
+            await dotNetObjectRef.invokeMethodAsync('OnDrawingAdded');
+
             redrawCanvas(ctx, canvas);
         } else {
             selectedImage = null;
@@ -139,6 +156,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                     offsetX = x - selectedImage.x;
                     offsetY = y - selectedImage.y;
                     canvas.style.cursor = 'move';
+                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.imageId);
+
                 } else if (draggedImageElement) {
                     initialTouchX = touch.clientX;
                     initialTouchY = touch.clientY;
@@ -184,6 +203,9 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     canvas.addEventListener("touchend", async function (e) {
         if (isPencilSelected && isDrawing) {
             drawings.push({ path: drawPathData.slice(), color: drawColor });
+            actionHistory.push({ type: "addDrawing" });
+            await dotNetObjectRef.invokeMethodAsync('OnDrawingAdded');
+
             redrawCanvas(ctx, canvas);
             isDrawing = false;
         } else {
@@ -208,6 +230,7 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                     imageId: imageIndex++,
                     rotation: 0
                 });
+                actionHistory.push({ type: "addImage" });
 
                 removeSelection(draggedImageElement);
                 removePreviewImage();
@@ -381,6 +404,7 @@ window.clearCanvas = function (canvasRef) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
     movableImages = [];
+    drawings = [];
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
@@ -400,11 +424,18 @@ function isPointInImage(x, y, image) {
 }
 
 window.undoLastAction = function (canvasRef) {
-    if (movableImages.length > 0) {
-        movableImages.pop();
+    if (actionHistory.length > 0) {
+        const lastAction = actionHistory.pop();
+
+        if (lastAction.type === "addImage" && movableImages.length > 0) {
+            movableImages.pop();
+        } else if (lastAction.type === "addDrawing" && drawings.length > 0) {
+            drawings.pop();
+        }
+
         const canvas = canvasRef;
         const ctx = canvas.getContext("2d");
-        redrawCanvas(ctx, canvas)
+        redrawCanvas(ctx, canvas);
     }
 };
 
@@ -412,11 +443,19 @@ window.updateImageSize = function (canvasRef, newSize) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
     const image = movableImages.find(img => img.imageId == selectedIndex);
-    if (image) {
-        image.width = newSize;
-        image.height = newSize;
-        redrawCanvas(ctx, canvas)
 
+    if (image) {
+        const aspectRatio = image.originalWidth / image.originalHeight;
+
+        if (image.originalWidth > image.originalHeight) {
+            image.width = newSize;
+            image.height = newSize / aspectRatio;
+        } else {
+            image.height = newSize;
+            image.width = newSize * aspectRatio;
+        }
+
+        redrawCanvas(ctx, canvas);
     }
 };
 
@@ -507,6 +546,5 @@ function updateImagePositionAfterRotation(image) {
 
 
 window.setPencilColor = function (color) {
-    console.log("algo")
     drawColor = color;
 }
