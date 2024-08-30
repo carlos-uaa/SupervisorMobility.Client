@@ -1,134 +1,278 @@
-﻿@inject IJSRuntime JS
-@inject IStringLocalizer<Resource> Localizer
-@inject SignatureImageService _signatureImageService
+﻿@page "/image-editor"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
 
-<div class="container drawing-container pa-8">
-    <div class="row justify-content-center">
-        <div class="col-md-12 text-center position-relative mt-4">
-            <h3>@Localizer["operatorsSignature"]</h3>
-            <canvas class="canvas-container" id="myCanvas" width="500" height="200"
-            @onmousedown="StartDrawing" @onmouseup="EndDrawing" @onmousemove="Draw"
-            @ontouchstart="StartDrawingTouch" @ontouchend="EndDrawingTouch" @ontouchmove="DrawTouch"></canvas>
+
+
+<MudPaper Height="85vh" Style="overflow:hidden; position:relative;">
+    <MudDrawerContainer Class="mud-height-full">
+        <MudDrawer Open Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" >
+            <MudNavMenu>
+                <MudItem Class="pa-2">
+                    <MudInput T="string" Placeholder="Buscar" @bind-Value="search" Immediate Clearable Style="width:100%;"/>
+                </MudItem>
+                <MudItem Class="pa-2">
+                    <MudText Typo="Typo.subtitle1">Size</MudText>
+                    <MudSlider @bind-Value="sliderSize" Min="20" Max="150" Step="1" Color="Color.Primary" />
+                </MudItem>
+                @foreach (var image in FilteredImagesWithSelection)
+                {
+                    <MudNavLink Match="NavLinkMatch.All">
+                        <MudItem Style="display: flex; align-items: center;">
+                            <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info"/>
+                            <MudImage src="@image.Src" Class="rounded-lg" id="@image.Src" Width="@(image.IsSelected ? sliderSize : 100)" draggable="true" @ondragstart="@(e => OnDragStart(e, image.Src))" @ontouchstart="@(e => OnTouchStart(e, image.Src))" />
+                        </MudItem>
+                    </MudNavLink>
+                }
+            </MudNavMenu>
+        </MudDrawer>
+
+            <MudDrawer Open="@(selectedImageModel != null)"
+                       Anchor="Anchor.End"
+                       Elevation="0"
+                       DisableOverlay
+                       Variant="@DrawerVariant.Temporary">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">Settings</MudText>
+                </MudDrawerHeader>
+                <MudNavMenu>
+                    @if (selectedImageModel != null)
+                    {
+                        <MudItem Class="pa-2">
+                            <MudText Typo="Typo.subtitle1">Selected Image Size</MudText>
+                            <MudSlider @bind-Value="SelectedImageSize"
+                                       Min="20"
+                                       Max="150"
+                                       Step="1"
+                                       Color="Color.Primary"
+                                        />
+                        </MudItem>
+                    <MudItem Class="pa-2">
+                        <MudText Typo="Typo.subtitle1">RotateImage</MudText>
+                        <MudSlider @bind-Value="RotateImage"
+                                   Min="0"
+                                   Max="360"
+                                   Step="1"
+                                   Color="Color.Primary" />
+                    </MudItem>
+                    }
+                </MudNavMenu>
+            </MudDrawer>
+
+
+        <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: column;">
+            <MudItem Class="d-flex mb-4" >
+                <MudButton 
+                           HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Size="Size.Small"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.Image"
+                           for="selectImage">
+                    Load picture
+                </MudButton>
+                <InputFile hidden id="selectImage" OnChange="OnFileSelected" />
+                <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton>
+                <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+                <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Generate Image</MudButton>
+            </MudItem>
+            <canvas id="canvas" style="border:1px solid #000;@(isCanvasVisible ? "" : "display:none;")" @ref="canvasRef"></canvas>
         </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-12 text-center">
-            <MudButton Disabled="@(!hasDrawing)" OnClick="GenerateSignature">Save Signature</MudButton>
-            <MudButton OnClick="ClearCanvas">Clear</MudButton>
-        </div>
-    </div>
-</div>
+
+    </MudDrawerContainer>
+</MudPaper>
+<img id="generatedImage" style="display:none; margin-top: 20px;" />
 
 @code {
-    [Parameter]
-    public EventCallback OnSignatureSaved { get; set; }
+    private ElementReference canvasRef;
+    private string uploadedImage;
+    private bool isCanvasVisible = false;
+    private int sliderSize = 85;
+    private string search = string.Empty;
+    private ImageModel selectedImageModel;
+    private int selectedImageSize = 85;
+    private int SelectedImageSize
+    {
+        get => selectedImageSize;
+        set
+        {
+            selectedImageSize = value;
+            UpdateSelectedImageSize(value).GetAwaiter().GetResult(); 
+        }
+    }
 
-    private bool isDrawing = false;
-    private double prevX;
-    private double prevY;
-    private bool hasDrawing = false;
+    private int rotateImage = 180;
+    private int RotateImage
+    {
+        get => rotateImage;
+        set
+        {
+            rotateImage = value;
+            UpdateRotateImage(value).GetAwaiter().GetResult();
+        }
+    }
+
+
+    private async Task UpdateSelectedImageSize(int newSize)
+    {
+        if (selectedImageModel != null)
+        {
+            await JS.InvokeVoidAsync("updateImageSize", canvasRef, newSize);
+        }
+    }
+
+    private async Task UpdateRotateImage(int newRotation)
+    {
+        if (selectedImageModel != null)
+        {
+            await JS.InvokeVoidAsync("rotateImage", canvasRef, newRotation);
+        }
+    }
+
+    public class ImageModel
+    {
+        public string Src { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    private List<ImageModel> imageUrls = new List<ImageModel>
+    {
+        new ImageModel { Src = "/Images/png.png", IsSelected = true },
+        new ImageModel { Src = "/Images/pdf.png", IsSelected = true },
+    };
+
+    private IEnumerable<ImageModel> FilteredImagesWithSelection => imageUrls
+        .Where(image => string.IsNullOrEmpty(search) || GetFileNameWithoutExtension(image.Src).Contains(search, StringComparison.OrdinalIgnoreCase));
+
+    private string GetFileNameWithoutExtension(string filePath)
+    {
+        var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+        return fileName;
+    }
+
+    private List<string> history = new List<string>();
+    private bool isUndoDisabled = true;
+    private bool isUploaded = false;
+    private DotNetObjectReference<Pruebas>? dotNetObjectRef;
+
+    [JSInvokable("UpdateSelectedImage")]
+    public void UpdateSelectedImage(string imageId)
+    {
+        selectedImageModel = imageUrls.FirstOrDefault(img => img.Src == imageId);
+        StateHasChanged();
+    }
+
+    [JSInvokable("UpdateSelectedSizeSlider")]
+    public void UpdateSizeSlider(int sliderWidth)
+    {
+        selectedImageSize = sliderWidth;
+        StateHasChanged();
+    }
+
+    [JSInvokable("UpdateSelectedRotateSlider")]
+    public void UpdateRotateSlider(int rotateSlider)
+    {
+        rotateImage = rotateSlider;
+        StateHasChanged();
+    }
+
+    [JSInvokable("OnImageDropped")]
+    public async Task OnImageDropped()
+    {
+        var currentCanvasImage = await JS.InvokeAsync<string>("getCanvasImage", canvasRef);
+        uploadedImage = currentCanvasImage;
+        history.Add(uploadedImage);
+    }
+
+    [JSInvokable("DeselectImage")]
+    public void DeselectImage()
+    {
+        if (selectedImageModel != null)
+        {
+            selectedImageModel = null;
+            StateHasChanged();
+        }
+    }
+
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("initCanvas", "myCanvas");
+            dotNetObjectRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
         }
     }
 
-    private async Task StartDrawing(MouseEventArgs e)
-    {
-        isDrawing = true;
-        prevX = e.OffsetX;
-        prevY = e.OffsetY;
-    }
 
-    private void EndDrawing(MouseEventArgs e)
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        isDrawing = false;
-        hasDrawing = true; 
-    }
-
-    private async Task Draw(MouseEventArgs e)
-    {
-        if (isDrawing)
+        ClearImage();
+        var file = e.File;
+        using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
         {
-            await JS.InvokeVoidAsync("draw", "myCanvas", e.OffsetX, e.OffsetY, isDrawing, prevX, prevY);
-            prevX = e.OffsetX;
-            prevY = e.OffsetY;
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer);
+            var base64String = Convert.ToBase64String(buffer);
+            var dataUrl = $"data:{file.ContentType};base64,{base64String}";
+            uploadedImage = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+            history.Add(uploadedImage);
+            await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
+            isUndoDisabled = false;
+            isUploaded = true;
+            isCanvasVisible = true;
         }
     }
 
-    private async Task StartDrawingTouch(TouchEventArgs e)
+    private async Task OnDragStart(DragEventArgs e, string imageId)
     {
-        await JS.InvokeVoidAsync("disableScroll");
-        isDrawing = true;
-        prevX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-        prevY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
     }
 
-    private void EndDrawingTouch(TouchEventArgs e)
+    private async Task OnTouchStart(TouchEventArgs e, string imageId)
     {
-        JS.InvokeVoidAsync("enableScroll");
-
-        isDrawing = false;
-        hasDrawing = true;
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
     }
 
-    private async Task DrawTouch(TouchEventArgs e)
+    private void ClearImage()
     {
-        if (isDrawing)
+        uploadedImage = null;
+        history = new();
+        JS.InvokeVoidAsync("clearCanvas", canvasRef);
+        isUndoDisabled = true;
+        isUploaded = false;
+        isCanvasVisible = false;
+    }
+
+    private async void UndoChange()
+    {
+        if (history.Count > 0)
         {
-            var offsetX = e.Touches[0].PageX - await GetOffsetLeft("myCanvas");
-            var offsetY = e.Touches[0].PageY - await GetOffsetTop("myCanvas");
+            await JS.InvokeVoidAsync("undoLastAction", canvasRef);
 
-            await JS.InvokeVoidAsync("draw", "myCanvas", offsetX, offsetY, isDrawing, prevX, prevY);
-            prevX = offsetX;
-            prevY = offsetY;
+            history.RemoveAt(history.Count - 1);
+            if (!(history.Count > 0))
+            {
+                uploadedImage = null;
+                isUndoDisabled = true;
+            }
+
+            isUndoDisabled = history.Count == 0;
+            isCanvasVisible = history.Count > 0;
+            StateHasChanged();
         }
     }
 
-    private async Task ClearCanvas()
+    private async Task GenerateImage()
     {
-        await JS.InvokeVoidAsync("clearCanvas", "myCanvas");
-        hasDrawing = false;
-    }
-
-    private async Task GenerateSignature()
-    {
-        if (hasDrawing)
-        {
-            string signatureImageBase64 = await JS.InvokeAsync<string>("generateSignature", "myCanvas");
-            _signatureImageService.SetImage(signatureImageBase64);
-            await OnSignatureSaved.InvokeAsync();
-        }
-    }
-
-    private async Task<double> GetOffsetLeft(string canvasId)
-    {
-        return await JS.InvokeAsync<double>("getOffsetLeft", canvasId);
-    }
-
-    private async Task<double> GetOffsetTop(string canvasId)
-    {
-        return await JS.InvokeAsync<double>("getOffsetTop", canvasId);
+        await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
     }
 }
 
-
 <style>
-    .canvas-container {
-        border: 1px dashed #000;
-        box-shadow: 5px 5px 5px rgb(218, 214, 213);
-        border-radius: 10px;
-        transition: all 0.3s ease-out;
-    }
-
-    .canvas-container:hover {
-        transform: scale(1.005);
-    }
-
-    .drawing-container {
-        overflow: hidden;
+    img {
+        position: relative;
+        z-index: 1;
     }
 </style>

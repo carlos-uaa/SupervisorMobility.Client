@@ -12,15 +12,15 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 
-namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
+namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
 {
-    public partial class AnalysisUpdate
+    public partial class SequenceUpdate
     {
         [Parameter]
-        public int? AnalysisId { get; set; }
+        public int? SequenceId { get; set; }
 
-        SOSAnalysis _sosAnalysis { get; set; } = new();
-        private List<SOSAnalysisLogbook> mostRecentLogs = new List<SOSAnalysisLogbook>();
+        SOSSequence _sosSequence { get; set; } = new();
+        private List<SOSSequenceLogbook> mostRecentLogs = new List<SOSSequenceLogbook>();
         private int logCount = 0;
         private int totalLogbooks = 0;
         private int remainingLogs = 0;
@@ -146,48 +146,48 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         }
         //protected override void OnAfterRender(bool firstRender)
         //{
-        //    IndexAnalysis = 0;
+        //    IndexSequence = 0;
         //}
 
         //protected override void OnParametersSet()
         //{
-        //    IndexAnalysis = 0;
+        //    IndexSequence = 0;
         //}
 
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
 
-            _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
-            if (_sosAnalysis.AnalysisLogbooks != null)
+            _sosSequence = await SOSSequenceServices.GetSOSSequence((int)SequenceId, true, true, true, true, true);
+            if (_sosSequence.SequenceLogbooks != null)
             {
-                mostRecentLogs = _sosAnalysis.AnalysisLogbooks
-                    .OrderByDescending(log => log.SOSAnalysisLogbookId)
-                    .Take(Math.Min(3, _sosAnalysis.AnalysisLogbooks.Count))
-                    .OrderBy(log => log.SOSAnalysisLogbookId)
+                mostRecentLogs = _sosSequence.SequenceLogbooks
+                    .OrderByDescending(log => log.SOSSequenceLogbookId)
+                    .Take(Math.Min(3, _sosSequence.SequenceLogbooks.Count))
+                    .OrderBy(log => log.SOSSequenceLogbookId)
                     .ToList();
 
                 logCount = mostRecentLogs.Count;
-                totalLogbooks = _sosAnalysis.AnalysisLogbooks.Count;
+                totalLogbooks = _sosSequence.SequenceLogbooks.Count;
 
             }
 
             remainingLogs = 3 - logCount;
-            logbookIds = mostRecentLogs.Select(log => log.SOSAnalysisLogbookId).ToList();
+            logbookIds = mostRecentLogs.Select(log => log.SOSSequenceLogbookId).ToList();
 
 
-            if (_sosAnalysis.Illustrations?.Any() ?? false)
+            if (_sosSequence.Illustrations?.Any() ?? false)
             {
 
-                foreach (var analysisImage in _sosAnalysis.Illustrations)
+                foreach (var sequenceImage in _sosSequence.Illustrations)
                 {
-                    var image = await SOSAnalysisServices.ShowIlustrationSOSAnalysis(analysisImage.FileUploadId);
-                    PreviousImages.Add((analysisImage.FileUploadId, image));
+                    var image = await SOSSequenceServices.ShowIlustrationSOSSequence(sequenceImage.FileUploadId);
+                    PreviousImages.Add((sequenceImage.FileUploadId, image));
                 }
             }
 
-            if (_sosAnalysis.Notes?.Any() ?? false)
+            if (_sosSequence.Notes?.Any() ?? false)
             {
-                foreach (var comment in _sosAnalysis.Notes)
+                foreach (var comment in _sosSequence.Notes)
                 {
                     if (comment.IsActive != null && comment.IsActive == true)
                     {
@@ -201,57 +201,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 }
             }
 
-            if (!(_sosAnalysis.Notes?.Any() ?? false))
+            if (!(_sosSequence.Notes?.Any() ?? false))
             {
                 AddItem();
             }
 
-            cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
-
-            if (_sosAnalysis.Times == null)
-            {
-                _sosAnalysis.Times = new List<SOSTime>();
-                //crearlos artificialmente
-                foreach (Section section in _sosAnalysis.SOSHub.Sections)
-                {
-                    SOSTime newitem = new SOSTime();
-
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = "";
-
-                    _sosAnalysis.Times.Add(newitem);
-                }
-            }
-            else
-            {
-                //iterar sobre ellos para añadir casos faltantes de haber
-                foreach (Section section in _sosAnalysis.SOSHub.Sections)
-                {
-                    if(!_sosAnalysis.Times.Any(t => t.SectionId == section.SectionId)) {
-                        SOSTime newitem = new SOSTime();
-
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "0";
-
-                        _sosAnalysis.Times.Add(newitem);
-                    }                   
-                }
-            }
-
-            totalTime = _sosAnalysis.Times
-                .Select(time =>
+            cycleId = _sosSequence.SOSHub.TrainingTime != null ? GetCycleId(_sosSequence.SOSHub.TrainingTime) : 0;
+            totalTime = _sosSequence.SOSHub.Sections
+                .Select(sect =>
                 {
                     double timeValue;
-                    return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
+                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
                 })
                 .Where(timeValue => timeValue.HasValue)
                 .Select(timeValue => timeValue.Value)
                 .DefaultIfEmpty(0)
                 .Sum();
             StateHasChanged();
-
 
             return new AsyncVoidMethodBuilder();
         }
@@ -336,60 +302,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         }
 
 
-        //Highlight critical points
-
-        private string GetFormatedAnalisisText(int sectionIndex, int analisisIndex)
-        {
-            string BaseText = Regex.Replace(_sosAnalysis.SOSHub?.Sections[sectionIndex].Analyses[analisisIndex].Text, @"\*", "").ToString();
-
-            return BaseText;
-        }
-
-
-        private MarkupString GenerateHighlightedText(string text, List<string> criticalPoints)
-        {
-            if (string.IsNullOrEmpty(text) || criticalPoints == null || criticalPoints.Count == 0)
-            {
-                return new MarkupString(text);
-            }
-
-            var normalizedText = Normalize(text);
-            var builder = new StringBuilder();
-            var currentIndex = 0;
-
-            foreach (var criticalPoint in criticalPoints)
-            {
-                var normalizedCriticalPoint = Normalize(criticalPoint);
-                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-                if (match.Success)
-                {
-                    var startIndex = match.Index;
-                    var endIndex = startIndex + criticalPoint.Length;
-
-                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
-
-                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
-
-                    currentIndex = endIndex;
-                }
-            }
-
-            builder.Append(text.Substring(currentIndex));
-
-            return new MarkupString(builder.ToString());
-        }
-
-        private static string Normalize(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return string.Empty;
-            }
-
-            return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
-        }
-
         private string ValidateTime(string time)
         {
             if (string.IsNullOrEmpty(time))
@@ -410,29 +322,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
             if (section != null && newValue != null)
             {
-                int indexTime = _sosAnalysis.Times.ToList().FindIndex(t => t.SectionId == section.SectionId);
-
-                if (indexTime != -1)
-                {
-                    _sosAnalysis.Times.ElementAt(indexTime).Time = newValue;
-                }
-                else
-                {
-                    SOSTime newitem = new SOSTime();
-
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = newValue;
-
-                    _sosAnalysis.Times.Add(newitem);
-                }
+                section.Time = newValue;
             }
 
-            totalTime = _sosAnalysis.Times
-                .Select(time =>
+            totalTime = _sosSequence.SOSHub.Sections
+                .Select(sect =>
                 {
                     double timeValue;
-                    return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
+                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
                 })
                 .Where(timeValue => timeValue.HasValue)
                 .Select(timeValue => timeValue.Value)
@@ -472,7 +369,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         #endregion
 
 
-        #region Analysis Images
+        #region Sequence Images
 
         private void RemoveOldImage(int fileId)
         {
@@ -512,22 +409,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         #endregion
 
 
-        private async Task UpdateAnalysis()
+        private async Task UpdateSequence()
         {
             Snackbar.Clear();
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            foreach (SOSTime time in _sosAnalysis.Times)
+            foreach (Section sect in _sosSequence.SOSHub.Sections)
             {
-                if (!string.IsNullOrEmpty(time.Time) && !double.TryParse(time.Time, out _))
+                if (!string.IsNullOrEmpty(sect.Time) && !double.TryParse(sect.Time, out _))
                 {
                     Snackbar.Add("The time field only accepts numbers.", Severity.Warning);
                     UpdateButton = false;
                     return;
                 }
             }
-            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
+            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosSequence.SOSHub);
 
             if (resultSOS != null)
             {
@@ -537,16 +434,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
 
-            var result = await SOSAnalysisServices.UpdateSOSAnalysis(_sosAnalysis);
+            var result = await SOSSequenceServices.UpdateSOSSequence(_sosSequence);
 
             if (result != null)
             {
-                Snackbar.Add($"Analysis Updated!", Severity.Info);
+                Snackbar.Add($"Sequence Updated!", Severity.Info);
 
-                _sosAnalysis = result;
+                _sosSequence = result;
                 _ = await UploadEvidence();
 
-                NavigationManager.NavigateTo("/soshoe/Analysis");
+                NavigationManager.NavigateTo("/SOSHOE/Sequence");
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
@@ -557,7 +454,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         public async Task<AsyncVoidMethodBuilder> GenerateSOSHUBCommentaries()
         {
-            _sosAnalysis.Notes?.Clear();
+            _sosSequence.Notes?.Clear();
             foreach (var item in items)
             {
                 var processSheetCommentary = new Commentary
@@ -567,7 +464,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     IsActive = item.IsActive
                 };
 
-                _sosAnalysis.Notes?.Add(processSheetCommentary);
+                _sosSequence.Notes?.Add(processSheetCommentary);
             }
 
             int i = 0;
@@ -583,7 +480,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
                 if (!(string.IsNullOrEmpty(processSheetCommentary.Comment)))
                 {
-                    _sosAnalysis.Notes?.Add(processSheetCommentary);
+                    _sosSequence.Notes?.Add(processSheetCommentary);
                 }
 
             }
@@ -603,7 +500,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         {
 
             List<string> images = capturedImages;
-            int analysisId = _sosAnalysis.SOSAnalysisId;
+            int sequenceId = _sosSequence.SOSSequenceId;
 
             if (images.Count > 0)
             {
@@ -657,19 +554,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     content.Add(fileContent, "\"file\"", "evidenceSosHub.png");
 
 
-                    var result = await SOSAnalysisServices.AddIllustrationToSOSAnalysis(content, analysisId);
+                    var result = await SOSSequenceServices.AddIllustrationToSOSSequence(content, sequenceId);
 
                     if (result is not null)
                     {
                         Snackbar.Configuration.MaxDisplayedSnackbars = 10;
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Image Added to Analysis", Severity.Info);
+                        Snackbar.Add("Image Added to Sequence", Severity.Info);
                     }
                     else
                     {
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add("Failed to upload Image to Analysis", Severity.Error);
+                        Snackbar.Add("Failed to upload Image to Sequence", Severity.Error);
                     }
 
                 }
@@ -722,7 +619,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             {
                 foreach (var file in OldImageRemoved)
                 {
-                    var result = await SOSAnalysisServices.RemoveIlustrationFromSOSData(_sosAnalysis.SOSAnalysisId, file);
+                    var result = await SOSSequenceServices.RemoveIlustrationFromSOSData(_sosSequence.SOSSequenceId, file);
                     if (!result)
                     {
                         Snackbar.Add($"Error removing the image", Severity.Error);
@@ -731,27 +628,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
 
         }
-
-        #region ApproveAnalysis
-
-        private bool visibleSign = false;
-        private void OpenSignComment()
-        {
-            visibleSign = true;
-        }
-        void CloseSign() => visibleSign = false;
-        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-
-        public async Task ApprovePat()
-        {
-
-            _sosAnalysis.AnalysisLogbooks.Last()!.Status = 2;
-
-             await UpdateAnalysis();
-
-             visibleSign = false;
-        }
-        #endregion
 
     }
 }

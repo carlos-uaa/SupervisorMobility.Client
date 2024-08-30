@@ -305,7 +305,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
 
         private async void DownloadExcel()
         {
-            //await Exportation.ExportSequenceToExcel(SequenceId.Value);
+            await Exportation.ExportSequenceToExcel(SequenceId.Value);
         }
     }
 }
