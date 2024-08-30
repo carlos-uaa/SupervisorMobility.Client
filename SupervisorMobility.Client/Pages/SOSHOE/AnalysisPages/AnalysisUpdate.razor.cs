@@ -524,7 +524,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 {
                     Snackbar.Add("The time field only accepts numbers.", Severity.Warning);
                     UpdateButton = false;
-                    return;
+                    return; 
                 }
             }
             var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
