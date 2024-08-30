@@ -1648,6 +1648,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 
+        public async void ModifyKPI(int kpi)
+        {
+            kpiID = kpi;
+        }
 
         //Past Job Observations Modal
         private async void OpenDialogPastJobObservations()
