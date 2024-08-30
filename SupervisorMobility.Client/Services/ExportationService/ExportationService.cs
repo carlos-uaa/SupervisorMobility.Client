@@ -34,6 +34,24 @@ namespace SupervisorMobility.Client.Services.ExportationService
             }
         }
 
+        public async Task ExportSequenceToExcel(int idSequence)
+        {
+            var response = await _http.GetAsync($"Exportation/Excel/Sequence/{idSequence}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                setSnackbarConfig();
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+        }
+
         private void setSnackbarConfig()
         {
             snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;

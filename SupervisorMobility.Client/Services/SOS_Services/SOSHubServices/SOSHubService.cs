@@ -254,9 +254,20 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return 0;
         }
 
-        public Task<int> GenerateCombination(int SOS_DataPool_id, SOSCombination combination)
+        public async Task<int> GenerateCombination(int SOS_DataPool_id, SOSCombination combination)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync($"SOS/Combination?SOSHubCollection_Id={SOS_DataPool_id}", combination);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var CombinationCreated = JsonSerializer.Deserialize<SOSCombination>(content, _options);
+
+                return CombinationCreated.SOSCombinationId;
+            }
+
+            return 0;
         }
 
         public Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow)
@@ -264,9 +275,20 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             throw new NotImplementedException();
         }
 
-        public Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution)
+        public async Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync($"SOS/Distribution?SOSHubCollection_Id={SOS_DataPool_id}", distribution);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var DistributionCreated = JsonSerializer.Deserialize<SOSDistribution>(content, _options);
+
+                return DistributionCreated.SOSDistributionId;
+            }
+
+            return 0;
         }
 
         public async Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence)

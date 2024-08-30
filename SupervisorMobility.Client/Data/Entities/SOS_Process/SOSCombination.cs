@@ -24,9 +24,10 @@
         public DateTime? ApplicationMonth { get; set; }
 
         public string? ProductionVolumePerShift { get; set; }
+        public string? TackTime { get; set; }
         public string? ControlNumber { get; set; }
         public ICollection<SOSCombinationLogbook>? CombinationLogbooks { get; set; } = new List<SOSCombinationLogbook>();
-
+        public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
 
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
