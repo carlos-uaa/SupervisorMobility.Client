@@ -77,10 +77,10 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 offsetX = x - selectedImage.x;
                 offsetY = y - selectedImage.y;
                 canvas.style.cursor = 'move';
-                const aspectRatio = selectedImage.originalWidth / selectedImage.originalHeight;
-                if (selectedImage.width / selectedImage.height !== aspectRatio) {
-                    selectedImage.height = selectedImage.width / aspectRatio;
-                }
+                const aspectratio = selectedImage.originalWidth / selectedImage.originalHeight;
+                //if (selectedImage.width / selectedImage.height !== aspectratio) {
+                    selectedImage.height = selectedImage.width / aspectratio;
+                //}
                 redrawCanvas(ctx, canvas);
 
 
@@ -155,9 +155,14 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 if (selectedImage) {
                     offsetX = x - selectedImage.x;
                     offsetY = y - selectedImage.y;
-                    canvas.style.cursor = 'move';
-                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.imageId);
-
+                    const aspectRatio = selectedImage.originalWidth / selectedImage.originalHeight;
+                    if (selectedImage.width / selectedImage.height !== aspectRatio) {
+                        selectedImage.height = selectedImage.width / aspectRatio;
+                    }
+                    redrawCanvas(ctx, canvas);
+                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
+                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
+                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
                 } else if (draggedImageElement) {
                     initialTouchX = touch.clientX;
                     initialTouchY = touch.clientY;
@@ -225,8 +230,10 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                     element: draggedImageElement,
                     x: x,
                     y: y,
-                    width: width,
-                    height: height,
+                    width: draggedImageElement.width,
+                    height: draggedImageElement.height,
+                    originalWidth: draggedImageElement.width,
+                    originalHeight: draggedImageElement.height,
                     imageId: imageIndex++,
                     rotation: 0
                 });
@@ -236,6 +243,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 removePreviewImage();
                 draggedImageElement = null;
 
+                isPencilSelected = false;
+                await dotNetObjectRef.invokeMethodAsync('SetPencilState', isPencilSelected);
                 await dotNetObjectRef.invokeMethodAsync('OnImageDropped');
             }
         }
@@ -455,6 +464,10 @@ window.updateImageSize = function (canvasRef, newSize) {
             image.width = newSize * aspectRatio;
         }
 
+        const imageIndex = movableImages.findIndex(img => img.imageId == selectedIndex);
+        if (imageIndex !== -1) {
+            movableImages[imageIndex] = image;
+        }
         redrawCanvas(ctx, canvas);
     }
 };
