@@ -1,0 +1,162 @@
+﻿@page "/soshoe/Hub/Details/{SOSHubId:int}/History"
+@using System.Runtime.CompilerServices
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IBreadcrumbService BreadcrumbServices
+@inject ISOSHubService SOSHubServices
+
+<PageTitle>Supervisor Mobility | @Localizer["history"]</PageTitle>
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudTable Items="_SOSHubHistoryVersions" T="SOSHub">
+        <HeaderContent>
+            <MudTh>HistoryId</MudTh>
+            <MudTh>
+                <MudSimpleTable>
+                    <thead>
+                        <tr>
+                                <th colspan="3">Changes Version</th>
+                        </tr>
+                        <tr>
+                                <th>Propety</th>
+                                <th>Before</th>
+                                <th>After</th>
+                        </tr>
+                    </thead>
+                </MudSimpleTable>
+            </MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.SOSHubHistoryId</MudTd>
+            <MudTd DataLabel="Changes">
+                <MudSimpleTable>
+                    <tbody>
+                        @foreach (DifferenceDetail row in context.DifferenceDetails)
+                        {
+                            <tr>
+                                    <td>@row.Property</td>
+                                    <td>@row.Before</td>
+                                    <td>@row.After</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudTd>
+            <MudTd DataLabel="Actions"></MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+
+
+@code {
+    [Parameter]
+    public int SOSHubId { get; set; }
+
+    private List<SOSHub> _SOSHubHistoryVersions = new();
+
+    private List<BreadcrumbItem> _links;
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    public int userType = 0;
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+
+        _links = new List<BreadcrumbItem>
+                {
+                    new BreadcrumbItem(text: Localizer["home"], href: "/soshoe"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/soshoe/Hub"),
+                    new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: $"/soshoe/Hub/Details/{SOSHubId}"),
+                    new BreadcrumbItem(text: Localizer["history"] + SOSHubId, href: "", disabled: true)
+                };
+        BreadcrumbServices.UpdateBreadcrumbs(_links);
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+
+
+        await SetUserInfo();
+
+        ShowLoading = false;
+
+        StateHasChanged();
+    }
+    public async Task<AsyncVoidMethodBuilder> SetUserInfo()
+    {
+        _SOSHubHistoryVersions = await SOSHubServices.GetAllHistorySOSHub(SOSHubId);
+        return new AsyncVoidMethodBuilder();
+
+    }
+
+    //Local storage user
+    #region LocalStorageUser
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    #endregion
+}
+

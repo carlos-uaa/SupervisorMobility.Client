@@ -1,9 +1,11 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOSAnalysis_Process;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using System.Buffers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+
 
 namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 {
@@ -35,9 +37,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubCreated;
         }
-        public async Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)
+        public async Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false)
         {
-            var response = await _http.GetAsync($"SOS/DataPool/{HubId}?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}");
+            var response = await _http.GetAsync($"SOS/DataPool/{HubId}?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}&includeModel={includeModel}&includeCollections={includeCollections}&includePeopleCollections={includePeopleCollections}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -76,7 +78,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubUpdated;
         }
-        public  async Task<SOSHub> DeleteSOSHub(int SosEntity_id)
+        public async Task<SOSHub> DeleteSOSHub(int SosEntity_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/{SosEntity_id}");
             var content = await response.Content.ReadAsStringAsync();
@@ -150,7 +152,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return null;
         }
-        public  async Task<string> ShowImageSosHub(int idfile)
+        public async Task<string> ShowImageSosHub(int idfile)
         {
             var response = await _http.GetAsync($"SOS/DataPool/Image/{idfile}");
 
@@ -204,7 +206,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         public async Task<bool> RemoveImageFromSOSData(int SOS_DataPool_id, int ImageFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/Image/{SOS_DataPool_id}/remove/{ImageFile_id}");
-            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
@@ -213,10 +214,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return true;
         }
-        public  async  Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
+        public async Task<bool> RemoveVideoFromSOSData(int SOS_DataPool_id, int VideoFile_id)
         {
             var response = await _http.DeleteAsync($"SOS/DataPool/Video/{SOS_DataPool_id}/remove/{VideoFile_id}");
-            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
@@ -238,38 +238,88 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return true;
         }
 
-        public async Task<bool> GenerateAnalysis(int SOS_DataPool_id, string side)
+        public async Task<int> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis)
         {
-            var response = await _http.GetAsync($"SOS/Analysis?SOSHubCollection_Id={SOS_DataPool_id}&side={side}");
+            var response = await _http.PostAsJsonAsync($"SOS/Analysis?SOSHubCollection_Id={SOS_DataPool_id}", analysis);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var analysisCreated = JsonSerializer.Deserialize<SOSAnalysis>(content, _options);
+
+                return analysisCreated.SOSAnalysisId;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> GenerateCombination(int SOS_DataPool_id, SOSCombination combination)
+        {
+            var response = await _http.PostAsJsonAsync($"SOS/Combination?SOSHubCollection_Id={SOS_DataPool_id}", combination);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var CombinationCreated = JsonSerializer.Deserialize<SOSCombination>(content, _options);
+
+                return CombinationCreated.SOSCombinationId;
+            }
+
+            return 0;
+        }
+
+        public Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution)
+        {
+            var response = await _http.PostAsJsonAsync($"SOS/Distribution?SOSHubCollection_Id={SOS_DataPool_id}", distribution);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var DistributionCreated = JsonSerializer.Deserialize<SOSDistribution>(content, _options);
+
+                return DistributionCreated.SOSDistributionId;
+            }
+
+            return 0;
+        }
+
+        public async Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence)
+        {
+            var response = await _http.PostAsJsonAsync($"SOS/Sequence?SOSHubCollection_Id={SOS_DataPool_id}", sequence);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                SOSSequence? sequenceCreated = JsonSerializer.Deserialize<SOSSequence>(content, _options);
+
+                Console.WriteLine("sequence cre: " + sequence.SOSSequenceId);
+                return sequenceCreated.SOSSequenceId;
+            }
+
+            return 0;
+        }
+
+        public async Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false)
+        {
+            var response = await _http.GetAsync($"SOS/DataPool/{HubId}/History?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                return false;
+                throw new ApplicationException(content);
             }
 
+            var SOSHubReturned = JsonSerializer.Deserialize<List<SOSHub>>(content, _options);
 
-            return true;
-        }
-
-        public Task<bool> GenerateCombination(int SOS_DataPool_id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> GenerateFlow(int SOS_DataPool_id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> GenerateDistribution(int SOS_DataPool_id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> GenerateSequence(int SOS_DataPool_id)
-        {
-            throw new NotImplementedException();
+            return SOSHubReturned;
         }
     }
 }

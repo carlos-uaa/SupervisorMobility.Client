@@ -1,0 +1,11 @@
+﻿
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
+{
+    public class Section
+    {
+        public int SectionId { get; set; }
+        public List<Analysis> Analyses { get; set; } = new List<Analysis>();
+        public string Step { get; set; } = "";
+        public bool? IsActive { get; set; }
+    }
+}

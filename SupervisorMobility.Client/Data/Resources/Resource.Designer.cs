@@ -448,6 +448,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a are you sure you want to approve this Analysis?.
+        /// </summary>
+        public static string areYouSureYouWantToApproveThisAnalysis {
+            get {
+                return ResourceManager.GetString("areYouSureYouWantToApproveThisAnalysis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a are you sure you want to approve this PAT?.
         /// </summary>
         public static string areYouSureYouWantToApproveThisPAT {
@@ -1888,6 +1897,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Panel where all general information is centralized, allowing the collection, visualization and efficient management of Sos Collection..
+        /// </summary>
+        public static string HOESOSHubDescription {
+            get {
+                return ResourceManager.GetString("HOESOSHubDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Data Collector.
+        /// </summary>
+        public static string HOESOSHubTitle {
+            get {
+                return ResourceManager.GetString("HOESOSHubTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a SOS / HOE Sequence.
         /// </summary>
         public static string HOESOSSequence {
@@ -1929,6 +1956,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string homeSOSHOE {
             get {
                 return ResourceManager.GetString("homeSOSHOE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Data Collector.
+        /// </summary>
+        public static string HubCollectionTitle {
+            get {
+                return ResourceManager.GetString("HubCollectionTitle", resourceCulture);
             }
         }
         
