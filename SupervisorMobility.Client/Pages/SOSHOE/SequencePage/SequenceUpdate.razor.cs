@@ -207,7 +207,41 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
             }
 
             cycleId = _sosSequence.SOSHub.TrainingTime != null ? GetCycleId(_sosSequence.SOSHub.TrainingTime) : 0;
-            totalTime = _sosSequence.SOSHub.Sections
+
+            if (_sosSequence.Times == null)
+            {
+                _sosSequence.Times = new List<SOSTime>();
+                //crearlos artificialmente
+                foreach (Section section in _sosSequence.SOSHub.Sections)
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = "";
+
+                    _sosSequence.Times.Add(newitem);
+                }
+            }
+            else
+            {
+                //iterar sobre ellos para añadir casos faltantes de haber
+                foreach (Section section in _sosSequence.SOSHub.Sections)
+                {
+                    if (!_sosSequence.Times.Any(t => t.SectionId == section.SectionId))
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "0";
+
+                        _sosSequence.Times.Add(newitem);
+                    }
+                }
+            }
+
+            totalTime = _sosSequence.Times
                 .Select(sect =>
                 {
                     double timeValue;
@@ -322,10 +356,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
         {
             if (section != null && newValue != null)
             {
-                section.Time = newValue;
+
+                int indexTime = _sosSequence.Times.ToList().FindIndex(t => t.SectionId == section.SectionId);
+
+                if (indexTime != -1)
+                {
+                    _sosSequence.Times.ElementAt(indexTime).Time = newValue;
+                }
+                else
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = newValue;
+
+                    _sosSequence.Times.Add(newitem);
+                }
             }
 
-            totalTime = _sosSequence.SOSHub.Sections
+            totalTime = _sosSequence.Times
                 .Select(sect =>
                 {
                     double timeValue;
@@ -415,7 +465,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            foreach (Section sect in _sosSequence.SOSHub.Sections)
+            foreach (SOSTime sect in _sosSequence.Times)
             {
                 if (!string.IsNullOrEmpty(sect.Time) && !double.TryParse(sect.Time, out _))
                 {
