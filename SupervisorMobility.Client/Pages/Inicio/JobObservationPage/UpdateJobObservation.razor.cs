@@ -353,7 +353,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (!string.IsNullOrEmpty(_jobObservation.ModelsSpecification) && _jobObservation.ModelsSpecification != "0|0|0|0|0")
                 {
                     productSpecification =  _jobObservation.ModelsSpecification;
-                        Console.WriteLine(productSpecification);
                 }
 
 
