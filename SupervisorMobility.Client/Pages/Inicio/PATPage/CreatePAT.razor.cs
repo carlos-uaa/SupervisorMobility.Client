@@ -30,15 +30,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         public User user = new();
         public bool logged = false;
 
+        bool ShowLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
+
+            ShowLoading = true;
+
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
             _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem("PAT", href: "/PAT"),
-            new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
-        };
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem("PAT", href: "/PAT"),
+                new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
+            };
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
             logged = await HasPropertyAsync();
@@ -93,8 +113,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     }
                 }
             }
+            ShowLoading = false;
             StateHasChanged();
-
         }
 
 

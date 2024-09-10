@@ -21,6 +21,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         public string SupervisorName = string.Empty;
 
+        [Inject]
+        private IDialogService DialogService { get; set; }
+
         //User
         private string json = string.Empty;
         public User user = new();
@@ -36,10 +39,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         [Inject]
         private IBreadcrumbService BreadcrumbService { get; set; }
+
+
         // Initialization
+
         protected async override Task OnInitializedAsync()
         {
-            ShowLoading = false;
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -53,13 +58,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
+            ShowLoading = true;
 
             _links = new List<BreadcrumbItem>
-        {
-            new BreadcrumbItem(text: Localizer["home"], href: "/"),
-            new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
-            new BreadcrumbItem(text: Localizer["createSOS"], href: "", disabled: true)
-        };
+            {
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["sosProgram"], href: "/sosProgram"),
+                new BreadcrumbItem(text: Localizer["createSOS"], href: "", disabled: true)
+            };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
             logged = await HasPropertyAsync();
@@ -133,8 +139,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     }
                 }
             }
-            StateHasChanged();
 
+            StateHasChanged();
+            ShowLoading = false;
         }
         private async Task<IEnumerable<User>> SearchSV(string value)
         {
@@ -306,36 +313,101 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
 
-            if (_sosReview.Supervisors == null)
+            var findExistSOS = await SOSReviewServices.FindSOS(_sosReview.PlantId, _sosReview.AreaId, _sosReview.CreationDate.Value.Year - 1 );
+            if (findExistSOS != null)
             {
-                _sosReview.Supervisors = new List<User>();
-            }
+                bool? msgOption = await DialogService.ShowMessageBox("Warning",
+                  "Se encontro un plan del año anterior, quieres usarlo como base?!",
+                 yesText: "Si", cancelText: "No");
+                var state = msgOption == null ? "No - Crear Nuevo" : "Si - Usar!";
+                StateHasChanged();
 
-            switch (user.UserType)
-            {
-                case 2:
-                    _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
-                    break;
-                case 3:
-                    _sosReview.Supervisors.Add(user);
-                    break;
-            }
+                if (state == "No - Crear Nuevo")
+                {
+                    if (_sosReview.Supervisors == null)
+                    {
+                        _sosReview.Supervisors = new List<User>();
+                    }
+
+                    switch (user.UserType)
+                    {
+                        case 2:
+                            //Si lo hace el SSV Añade a sus subordinados
+                            _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
+                            break;
+                        case 3:
+                            //Si lo hace el SV se añadade a el
+                            _sosReview.Supervisors.Add(user);
+                            break;
+                    }
 
 
-            var result = await SOSReviewServices.CreateSOSReview(_sosReview);
-            if (result != null)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"New SOS Created", Severity.Info);
-                NavigationManager.NavigateTo($"sosProgram");
+                    var result = await SOSReviewServices.CreateSOSReview(_sosReview);
+                    if (result != null)
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"New SOS Created", Severity.Info);
+                        NavigationManager.NavigateTo($"sosProgram");
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"Error in SOS", Severity.Error);
+                    }
+
+                }
+                else
+                {
+                    //usar el plan del año pasado
+                    Console.WriteLine("Se usa la del año pasado");
+                }
             }
             else
             {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error in SOS", Severity.Error);
+                if (_sosReview.Supervisors == null)
+                {
+                    _sosReview.Supervisors = new List<User>();
+                }
+
+                switch (user.UserType)
+                {
+                    case 2:
+                        //Si lo hace el SSV Añade a sus subordinados
+                        _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
+                        break;
+                    case 3:
+                        //Si lo hace el SV se añadade a el
+                        _sosReview.Supervisors.Add(user);
+                        break;
+                }
+
+
+                var result = await SOSReviewServices.CreateSOSReview(_sosReview);
+                if (result != null)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"New SOS Created", Severity.Info);
+                    NavigationManager.NavigateTo($"sosProgram");
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Error in SOS", Severity.Error);
+                }
+
             }
+
+            //busacr existente
+
+
+            //buscar una incidencia 
+
+
+
         }
     }
 }
