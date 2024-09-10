@@ -10,6 +10,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.StationsPage
         public int? StationID { get; set; }
         int PageState = 0;
 
+        [Parameter]
+        public string? StationName { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> OnStationCreated { get; set; }
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
@@ -28,17 +33,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.StationsPage
 
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-            PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
-            
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+            if (!string.IsNullOrEmpty(StationName))
+            {
+                PageState = 1;
             }
-            if (PageState == 0) { 
-                PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+            else
+            {
+                var currentUrl = NavigationManager.Uri;
+                PageState = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
+                if (PageState == 0)
+                {
+                    PageState = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+                }
+                if (PageState == 0)
+                {
+                    PageState = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+                }
+
             }
-
-
             await GetUserAsync();
             logged = await HasPropertyAsync();
             if (!logged)
@@ -65,6 +78,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.StationsPage
                 case 1:
                     _Station = new Station();
                     _Station.IsActive =  true;
+                    if (!string.IsNullOrEmpty(StationName))
+                    {
+                        _Station.Description = StationName;
+                    }
                     _links.Add(new BreadcrumbItem(text: Localizer["create"], href: "", disabled: true));
                     break;
                 case 2:
@@ -118,10 +135,17 @@ namespace SupervisorMobility.Client.Pages.Configuration.StationsPage
 
                     if (result != null)
                     {
-                        NavigationManager.NavigateTo($"Station");
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"{Localizer1["StationCreateSucces"]}", Severity.Info);
+                        if (!string.IsNullOrEmpty(StationName))
+                        {
+                            await OnStationCreated.InvokeAsync(true);
+                        }
+                        else
+                        {
+                            NavigationManager.NavigateTo($"Station");
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                            Snackbar.Add($"{Localizer1["StationCreateSucces"]}", Severity.Info);
+                        }
                     }
                     else
                     {

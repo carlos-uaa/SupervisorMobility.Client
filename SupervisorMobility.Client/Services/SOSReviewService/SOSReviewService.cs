@@ -83,6 +83,17 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
             }
 
             return null;
+        } 
+        public async Task<SOSReviewProgram> FindSOS(int plantId, int areaId, int year, bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false)
+        {
+            var response = await _http.GetAsync($"SOSReview/find?plantId={plantId}&areaId={areaId}&year={year}&includeNavigation={includeNavigation}&includeUsers={includeUsers}&includeSuggestions={includeSuggestions}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<SOSReviewProgram>();
+                return content;
+            }
+
+            return null;
         }
 
         public async Task<bool> UpdateSOSReview(SOSReviewProgram sosentity)

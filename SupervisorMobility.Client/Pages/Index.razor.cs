@@ -29,6 +29,8 @@ namespace SupervisorMobility.Client.Pages
         public string password;
 
         //User
+        public int LoginTry { get; set; } = 0;
+        public bool userInSystem = true;
         private string json = string.Empty;
         public User user = new();
 
@@ -189,11 +191,9 @@ namespace SupervisorMobility.Client.Pages
 
             if (result != null)
             {
-
-                
                 user = await UsersService.GetUserByObjectIdWithCollections(result.userPrincipalName);
 
-                if(user != null)
+                if (user != null)
                 {
 
                     GlobalData.LoggedUser = user.Name;
@@ -205,40 +205,52 @@ namespace SupervisorMobility.Client.Pages
 
                     json = JsonSerializer.Serialize<User>(user);
                     await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-                    NavigationManager.NavigateTo($"/",true);
+                    NavigationManager.NavigateTo($"/", true);
                     StateHasChanged();
-
                 }
                 else
                 {
-
-                    UserNotFound newUser =new();
-                    newUser.Name = result.displayName;
-                    newUser.ObjectId = result.userPrincipalName;
-                    newUser.IsActive = true;
-
-                    var response = await UsersService.CreateUnregisteredUser(newUser);
-                    if (response != null)
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(Localizer["unregisteredUserAddedToDatabaseForAdmin"], Severity.Info);
-                    }
-                    else
-                        await js.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
-
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add(Localizer["userNotFoundPleaseContactYourAdmin"], Severity.Warning);
+                    LoginTry++;
+                    userInSystem = false;
                 }
             }
             else
             {
+
+                LoginTry++;
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["errorWithUsernamePasswordDoesNotMatch"], Severity.Error);
             }
             _processing = false;
 
+            if (LoginTry == 2 && !userInSystem)
+            {
+                UserNotFound newUser = new();
+                newUser.Name = result.displayName;
+                newUser.ObjectId = result.userPrincipalName;
+                newUser.IsActive = true;
+
+                var response = await UsersService.CreateUnregisteredUser(newUser);
+                if (response != null)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["unregisteredUserAddedToDatabaseForAdmin"], Severity.Info);
+                }
+                else
+                    await js.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
+
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["userNotFoundPleaseContactYourAdmin"], Severity.Warning);
+
+                //notificacion de que se mando al administrador del sistema
+            }
+            else
+            {
+                //error del usuario en contraseña o usuario
+
+            }
         }
 
         public void ShowText()

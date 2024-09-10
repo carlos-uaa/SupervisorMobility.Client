@@ -56,5 +56,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public int Sequence { get; set; } = 1; 
         public string Container { get; set; } = "CategoryContainer";
+
+        public ICollection<SOSHub>? SosHubs = new List<SOSHub>();
     }
 }
