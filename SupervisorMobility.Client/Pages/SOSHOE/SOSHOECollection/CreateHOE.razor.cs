@@ -408,7 +408,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 }
             }
 
-            Console.WriteLine(inputText);
             StateHasChanged();
         }
         private void StationDelete()

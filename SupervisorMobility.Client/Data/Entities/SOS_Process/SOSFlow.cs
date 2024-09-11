@@ -12,7 +12,8 @@
         public User? ReviewerHS { get; set; }
         public FileUpload? ReviewerHSSignatureImage { get; set; } = new();
 
-    
+
+        public DateTime? CreatedAt { get; set; }
 
         public string? TargetTime { get; set; }
 

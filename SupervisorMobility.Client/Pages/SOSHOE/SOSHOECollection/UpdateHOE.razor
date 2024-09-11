@@ -183,7 +183,6 @@ else
                                                     {
                                                         <MudItem>
                                                             <MudStack>
-                                                                <MudText>Selection Values: @string.Join(", ", _selectedValues ?? new List<string>())</MudText>
                                                                 <MudStack Class="flex-wrap">
                                                                     <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
                                                                          @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
@@ -826,14 +825,35 @@ else
                                         <td class="d-flex">
                                             <MudItem>
 
+                                        <MudAutocomplete T="Station"
+                                                         Label=@Localizer["station"]
+                                                         SearchFunc="SearchStation"
+                                                         Placeholder="Buscar Estacion..."
+                                                         @bind-Value="_sosHub.Station"
+                                                         TextChanged="@(text => StationTextChanged(text))"
+                                                         OnClearButtonClick="StationDelete"
+                                                         ToStringFunc="@(e=> e.Code == null || e.Code == "" ? $"{Localizer["SelectStation"]}" : $"{e.Code} - {e.Description}")"
+                                                         Variant="Variant.Text"
+                                                         AnchorOrigin="Origin.BottomCenter"
+                                                         AdornmentColor="Color.Primary"
+                                                         ResetValueOnEmptyText
+                                                         CoerceText="false"
+                                                         CoerceValue="true"
+                                                         Clearable
+                                                         ShowProgressIndicator="true"
+                                                         ProgressIndicatorColor="Color.Info"
+                                                         OpenIcon="@Icons.Material.Filled.Work">
+                                        </MudAutocomplete>
 
-                                                <MudSelect T="int" Label=@Localizer["station"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="stationId" SelectedValuesChanged="GenerateFolio" FullWidth>
-                                                 <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnStation"]</MudSelectItem>
-                                                 @foreach (var type in _stations)
-                                                    {
-                                                        <MudSelectItem Value="type.StationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                                    }
-                                                </MudSelect>
+                                         
+                                        @if (!string.IsNullOrWhiteSpace(selectedStationName) && stationId == 0 )
+                                        {
+                                            string title = "Station";
+                                            <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                Crear Station
+                                            </MudButton>
+                                        }
+                                          
                                             </MudItem>
 
                                             <MudItem Class="ml-4">
@@ -1436,6 +1456,11 @@ else
         {
             <MudItem Style="height: 50vh">
                 <SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm MaterialName="@newMaterialName" OnMaterialCreated="HandleMaterialCreated"></SupervisorMobility.Client.Pages.Configuration.MaterialPage.MaterialForm>
+            </MudItem>
+        }else if (resourceType == "Station")
+        {
+            <MudItem Style="height: 50vh">
+                <SupervisorMobility.Client.Pages.Configuration.StationsPage.StationForm StationName="@newStationName" OnStationCreated="HandleStationCreated"></SupervisorMobility.Client.Pages.Configuration.StationsPage.StationForm>
             </MudItem>
         }
     </DialogContent>
