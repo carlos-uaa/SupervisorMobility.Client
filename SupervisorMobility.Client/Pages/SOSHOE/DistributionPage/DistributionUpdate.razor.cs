@@ -478,24 +478,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            foreach (SOSTime sect in _sosDistribution.Times)
-            {
-                if (!string.IsNullOrEmpty(sect.Time) && !double.TryParse(sect.Time, out _))
-                {
-                    Snackbar.Add("The time field only accepts numbers.", Severity.Warning);
-                    UpdateButton = false;
-                    return;
-                }
-            }
-            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosDistribution.SOSHub);
-
-            if (resultSOS != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"SOS Updated!", Severity.Info);
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
 
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
