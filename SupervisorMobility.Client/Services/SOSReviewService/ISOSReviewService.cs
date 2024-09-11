@@ -8,6 +8,7 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
         Task<List<SOSReviewProgram>> GetAllSOSReviews( bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false);
 
         Task<SOSReviewProgram> GetSOSById(int id, bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false);
+        Task<SOSReviewProgram> FindSOS(int plantId, int areaId, int year, bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false);
 
         Task<SOSReviewProgram> CreateSOSReview(SOSReviewProgram product);
 
