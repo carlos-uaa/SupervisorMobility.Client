@@ -264,7 +264,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
         private async void DownloadExcel()
         {
-            //await Exportation.ExportDistributionToExcel(DistributionId.Value);
+            await Exportation.ExportDistributionToExcel(DistributionId.Value);
         }
     }
 }
