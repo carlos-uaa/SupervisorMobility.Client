@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
+using Blazorise.Extensions;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 {
@@ -73,8 +74,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         public bool ShowLoading = true;
         public bool UpdateButton = false;
 
-
-        private double totalTime;
 
         private string[] additionalTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
@@ -243,28 +242,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 }
             }
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[5];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[5];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[5];
 
             for (int i = 0; i < 5; i++)
             {
                 additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
-                cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) ? tempCycleTimes[i] : "0";
+                cycleTimes[i] = "0";
                 applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
             }
 
-            totalTime = _sosDistribution.Times
-                .Select(sect =>
-                {
-                    double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
-                })
-                .Where(timeValue => timeValue.HasValue)
-                .Select(timeValue => timeValue.Value)
-                .DefaultIfEmpty(0)
-                .Sum();
-            StateHasChanged();
+            for (int i = 0; i < 5; i++)
+            {
+                double cycleTime = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i])
+                    ? double.TryParse(tempCycleTimes[i], out double tempCycleTime) ? tempCycleTime : 0
+                    : 0;
+
+                cycleTimes[i] = (cycleTime).ToString();
+            }
 
             return new AsyncVoidMethodBuilder();
         }
@@ -360,44 +356,71 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             return regex.IsMatch(time) ? null : "Invalid time format. Only numbers and dots are allowed.";
         }
 
-        private EventCallback<string> CreateValueChangedCallback(Section section)
+        private EventCallback<string> CreateValueChangedCallback(Section section, int index)
         {
-            return EventCallback.Factory.Create<string>(this, e => UpdateTotal(e, section));
+            return EventCallback.Factory.Create<string>(this, e => UpdateTimeArray(e, section, index));
         }
 
-        private void UpdateTotal(string newValue, Section section)
+        private void UpdateTimeArray(string newValue, Section section, int index)
         {
             if (section != null && newValue != null)
             {
-
                 int indexTime = _sosDistribution.Times.ToList().FindIndex(t => t.SectionId == section.SectionId);
 
                 if (indexTime != -1)
                 {
-                    _sosDistribution.Times.ElementAt(indexTime).Time = newValue;
+                    var timeEntry = _sosDistribution.Times.ElementAt(indexTime);
+                    var splitTimes = timeEntry.Time?.Split("§") ?? new string[5];
+
+                    if (splitTimes.Length < 5)
+                    {
+                        Array.Resize(ref splitTimes, 5);
+                    }
+
+                    splitTimes[index] = newValue;
+
+                    timeEntry.Time = string.Join("§", splitTimes);
                 }
                 else
                 {
-                    SOSTime newitem = new SOSTime();
+                    SOSTime newItem = new SOSTime
+                    {
+                        SectionId = section.SectionId,
+                        IsActive = true,
+                        Time = CreateTimeString(newValue, index)
+                    };
 
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = newValue;
-
-                    _sosDistribution.Times.Add(newitem);
+                    _sosDistribution.Times.Add(newItem);
                 }
-            }
 
-            totalTime = _sosDistribution.Times
-                .Select(sect =>
-                {
-                    double timeValue;
-                    return double.TryParse(sect.Time, out timeValue) ? timeValue : (double?)null;
-                })
-                .Where(timeValue => timeValue.HasValue)
-                .Select(timeValue => timeValue.Value)
-                .DefaultIfEmpty(0)
-                .Sum();
+                cycleTimes[index] = "0";
+
+                double totalSectTimes = _sosDistribution.Times
+                    .Select(t => {
+                        var times = t.Time?.Split("§");
+                        // Verifica que el índice esté dentro del rango
+                        return (times != null && index < times.Length) ? times[index] : null;
+                    })
+                    .Where(splitTime => !string.IsNullOrEmpty(splitTime))
+                    .Select(splitTime => double.TryParse(splitTime, out double parsedTime) ? parsedTime : 0)
+                    .Sum();
+
+                double parsedAdditionalTime = double.TryParse(additionalTimes[index], out double tempAdditionalTime) ? tempAdditionalTime : 0;
+
+                double totalCycleTime = totalSectTimes + parsedAdditionalTime;
+
+                cycleTimes[index] = totalCycleTime.ToString();
+            }
+        }
+
+        private string CreateTimeString(string newValue, int index)
+        {
+            var timesArray = new string[5];
+            for (int i = 0; i < timesArray.Length; i++)
+            {
+                timesArray[i] = i == index ? newValue : "";
+            }
+            return string.Join("§", timesArray);
         }
 
         //Commentaries
