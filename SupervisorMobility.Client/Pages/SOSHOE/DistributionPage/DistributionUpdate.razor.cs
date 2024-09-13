@@ -413,6 +413,35 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             }
         }
 
+        private EventCallback<string> CreateAdditionalTimeChangedCallback(int index)
+        {
+            return EventCallback.Factory.Create<string>(this, e => OnAdditionalTimeChanged(e, index));
+        }
+
+
+        private void OnAdditionalTimeChanged(string newValue, int index)
+        {
+            additionalTimes[index] = newValue;
+
+            double totalSectTimes = _sosDistribution.Times
+                .Select(t => {
+                    var times = t.Time?.Split("§");
+                    return (times != null && index < times.Length) ? times[index] : null;
+                })
+                .Where(splitTime => !string.IsNullOrEmpty(splitTime))
+                .Select(splitTime => double.TryParse(splitTime, out double parsedTime) ? parsedTime : 0)
+                .Sum();
+
+            double parsedAdditionalTime = double.TryParse(newValue, out double tempAdditionalTime) ? tempAdditionalTime : 0;
+
+            double totalCycleTime = totalSectTimes + parsedAdditionalTime;
+
+            cycleTimes[index] = totalCycleTime.ToString();
+
+            StateHasChanged();
+        }
+
+
         private string CreateTimeString(string newValue, int index)
         {
             var timesArray = new string[5];
