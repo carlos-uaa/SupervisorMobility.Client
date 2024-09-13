@@ -26,14 +26,14 @@
         </ItemTemplate>
     </MudCarousel>
 }
-else if (_Sequences.Count == 0)
+else if (_Analises.Count == 0)
 {
     <MudContainer>
 
         <MudText Align="Align.Center">
             <h4>@Localizer["thereAreNoSequenceSequenceCreated"]</h4>
             <MudSpacer></MudSpacer>
-            <MudButton Href="/Sequence/createSequence">
+            <MudButton Href="/soshoe/Sequence/createSequence">
                 <MudText>@Localizer["newSequenceSequence"]</MudText>
                 <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
             </MudButton>
@@ -43,7 +43,7 @@ else if (_Sequences.Count == 0)
 else
 {
 
-    <MudTable Items="_Sequences" Hover="true" T="SOSSequence" SortLabel="Sort By" Height="80vh"
+    <MudTable Items="_Analises" Hover="true" T="SOSSequence" SortLabel="Sort By" Height="80vh"
               RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
               Filter="new Func<SOSSequence,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
         <ToolBarContent>
@@ -55,7 +55,7 @@ else
                     <MudSpacer />
                     <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     <MudSpacer />
-                    <MudButton Href="/Sequence/createSequence">
+                    <MudButton Href="/soshoe/Sequence/createSequence">
                         <MudText>@Localizer["newSequence"]</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
                     </MudButton>
@@ -127,12 +127,13 @@ else
 </MudMessageBox>
 
 
+
 @code {
     // Breadcrumb links
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
     // Objects
-    public List<SOSSequence> _Sequences { get; set; } = new();
+    public List<SOSSequence> _Analises { get; set; } = new();
 
     //User
     private string json = string.Empty;
@@ -152,7 +153,7 @@ else
     protected async override Task OnInitializedAsync()
     {
 
-        _Sequences = await SOSSequenceServices.GetAllSOSSequence();
+        _Analises = await SOSSequenceServices.GetAllSOSSequence();
 
         await GetUserAsync();
         logged = await HasPropertyAsync();
@@ -213,20 +214,25 @@ else
     private int selectedRowNumber = -1;
     private MudTable<SOSSequence> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<SOSSequence> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<SOSSequence> args)
     {
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            SequenceDetails(args.Item.SOSSequenceId);
+
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }
     }
 
     private string SelectedRowClassFunc(SOSSequence element, int rowNumber)
     {
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                SequenceDetails(element.SOSSequenceId);
-            }
-            return string.Empty;
+            return "selected"; // Mantener la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
@@ -245,18 +251,17 @@ else
     }
 
     // Delete Sequence
-    private MudMessageBox _DeleteMessage;
 
+    private MudMessageBox _DeleteMessage;
     async Task DeleteSequence(int SequenceId)
     {
-        
         bool? result = await _DeleteMessage.Show();
         var confirm = result is null ? "Canceled" : "Deleted!";
         StateHasChanged();
 
         if (confirm == "Deleted!")
         {
-            _Sequences.RemoveAll(Sequence => Sequence.SOSSequenceId == SequenceId);
+            _Analises.RemoveAll(Sequence => Sequence.SOSSequenceId == SequenceId);
             await SOSSequenceServices.DeleteSOSSequence(SequenceId);
         }
     }

@@ -1470,7 +1470,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
                 }
-                else if (_sosFlow.CreatedAt != null )
+                else if (_sosFlow.CreatedAt == null )
                 {
                     bool? result = await DialogService.ShowMessageBox(
                       "Warning",
