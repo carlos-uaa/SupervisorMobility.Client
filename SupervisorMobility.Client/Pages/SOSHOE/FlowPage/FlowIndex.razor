@@ -1,5 +1,278 @@
-﻿<h3>FlowIndex</h3>
+﻿@page "/soshoe/Flow"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IUserService UsersService
+@inject ISOSFlowService SOSFlowServices
+@inject IDialogService DialogService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["SOSFlow"]</PageTitle>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else if (_Analises.Count == 0)
+{
+    <MudContainer>
+
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoFlowFlowCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton Href="/soshoe/Flow/createFlow">
+                <MudText>@Localizer["newFlowFlow"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+
+    <MudTable Items="_Analises" Hover="true" T="SOSFlow" SortLabel="Sort By" Height="80vh"
+              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+              Filter="new Func<SOSFlow,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/soshoe/Flow/createFlow">
+                        <MudText>@Localizer["newFlow"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<SOSFlow, object>(x=>x?.SOSFlowId)">Flow Id</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSFlow, object>(x=>x?.InternalControlNumber)">Internal Control Number</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSFlow, object>(x=>x?.OperationName)">Operation Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSFlow, object>(x=>x?.ProcessName)">Process Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="FlowId">
+                    <MudText Align="Align.Center">@context.SOSFlowId</MudText>
+                </MudTd>
+            }
+            <MudTd DataLabel="InternalControlNumber">
+                <MudText Align="Align.Center">@context.InternalControlNumber</MudText>
+            </MudTd>
+            <MudTd DataLabel="Operation Name">
+                <MudText Align="Align.Center">@context.OperationName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Process Name">
+                <MudText Align="Align.Center">@context.ProcessName</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => FlowDetails(context.SOSFlowId))" @ontouchstart="(() => FlowDetails(context.SOSFlowId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateFlow(context.SOSFlowId))" @ontouchstart="(() => UpdateFlow(context.SOSFlowId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteFlow(context.SOSFlowId))" @ontouchstart="(() => DeleteFlow(context.SOSFlowId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+<MudMessageBox @ref="_DeleteMessage" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Flow?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
 
 @code {
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    // Objects
+    public List<SOSFlow> _Analises { get; set; } = new();
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    //Side Dialog
+    private string SideName = string.Empty;
+    private int SosFlowId = 0;
+    public bool ShowSideDialog = false;
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+
+        _Analises = await SOSFlowServices.GetAllSOSFlow();
+
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+        _links = new List<BreadcrumbItem>
+             {
+                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                 new BreadcrumbItem(text: Localizer["HOESOSFlowTitle"], href: "/soshoe/Flow", disabled: true)
+                        };
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+        ShowLoading = false;
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string searchString = "";
+
+    private bool FilterFunc(SOSFlow element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        // if (element.FlowId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.FlowCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.FlowName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+        return false;
+    }
+
+    private int selectedRowNumber = -1;
+    private MudTable<SOSFlow> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<SOSFlow> args)
+    {
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            FlowDetails(args.Item.SOSFlowId);
+
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowClassFunc(SOSFlow element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    void FlowDetails(int FlowId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Flow/Details/{FlowId}");
+    }
+
+    // Delete Flow
+
+    private MudMessageBox _DeleteMessage;
+    async Task DeleteFlow(int FlowId)
+    {
+        bool? result = await _DeleteMessage.Show();
+        var confirm = result is null ? "Canceled" : "Deleted!";
+        StateHasChanged();
+
+        if (confirm == "Deleted!")
+        {
+            _Analises.RemoveAll(Flow => Flow.SOSFlowId == FlowId);
+            await SOSFlowServices.DeleteSOSFlow(FlowId);
+        }
+    }
+
+    // Update Flow
+    void UpdateFlow(int FlowId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Flow/Update/{FlowId}");
+    }
 
 }
+
+
+

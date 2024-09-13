@@ -80,9 +80,27 @@ else
             </thead>
             <tbody>
                 <MudTr>
-                    <MudTd rowspan="2"><b>ELABORÓ</b><br />@* @_sosDistribution.SOSHub?.ApproverOwners?.First()?.Name *@</MudTd>
-                    <MudTd rowspan="2"><b>REVISÓ</b><br />@_sosDistribution.DistributionLogbooks?.First().Reviewer?.Name</MudTd>
-                    <MudTd rowspan="2"><b>APROBÓ</b><br />@_sosDistribution.DistributionLogbooks?.First().Approver?.Name</MudTd>
+                    <MudTd rowspan="2">
+                        <b>ELABORÓ</b><br />
+                        @if (_sosDistribution.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name != null)
+                        {
+                            @_sosDistribution.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name
+                        }
+                    </MudTd>
+                    <MudTd rowspan="2">
+                        <b>REVISÓ</b><br />
+                        @if (_sosDistribution.DistributionLogbooks?.FirstOrDefault()?.Reviewer?.Name != null)
+                        {
+                            @_sosDistribution.DistributionLogbooks?.FirstOrDefault()?.Reviewer?.Name
+                        }
+                    </MudTd>
+                    <MudTd rowspan="2">
+                        <b>APROBÓ</b><br />
+                        @if (_sosDistribution.DistributionLogbooks?.FirstOrDefault()?.Approver?.Name != null)
+                        {
+                            @_sosDistribution.DistributionLogbooks?.FirstOrDefault()?.Approver?.Name
+                        }
+                    </MudTd>
                     <MudTd rowspan="2" colspan="2"></MudTd>
                 </MudTr>
                 <MudTr>
@@ -132,7 +150,10 @@ else
                         <b>MES DE APLICACIÓN</b><br />@_sosDistribution.ApplicationMonth?.ToString("MM/yyyy")
                     </MudTd>
                     <MudTd><b>MODELO</b><br />@_sosDistribution.SOSHub?.AppliedModel?.Description</MudTd>
-                    <MudTd><b>TIEMPO TACTO</b><br />@_sosDistribution.TackTime</MudTd>
+                    <MudTd>
+                        <b>TIEMPO TACTO</b><br />
+                        <MudInput @bind-Value="_sosDistribution.TackTime" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudTd>
                     <MudTd><b>TIEMPO DE APRENDIZAJE</b><br />@_sosDistribution.SOSHub?.TrainingTime</MudTd>
                     <MudTd><b>PLANTA</b><br />@_sosDistribution.SOSHub?.Plant?.Description</MudTd>
                     <MudTd><b>GERENCIA</b><br />@_sosDistribution.SOSHub?.Department?.Description</MudTd>
@@ -150,11 +171,22 @@ else
                     <th rowspan="2">DIAGRAMA DE DESPLAZAMIENTO</th>
                 </tr>
                 <tr>
-                    <th style="width: 6vw">@applicationModels[0]</th>
-                    <th style="width: 6vw">@applicationModels[1]</th>
-                    <th style="width: 6vw">@applicationModels[2]</th>
-                    <th style="width: 6vw">@applicationModels[3]</th>
-                    <th style="width: 6vw">@applicationModels[4]</th>
+                    <th style="width: 6vw">
+                        <MudInput @bind-Value="applicationModels[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </th>
+                    <th style="width: 6vw">
+                        <MudInput @bind-Value="applicationModels[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </th>
+                    <th style="width: 6vw">
+                        <MudInput @bind-Value="applicationModels[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </th>
+                    <th style="width: 6vw">
+                        <MudInput @bind-Value="applicationModels[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </th>
+                    <th style="width: 6vw">
+                        <MudInput @bind-Value="applicationModels[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </th>
+
                 </tr>
                 @{
                     int indexAnalysis = 0;
@@ -186,36 +218,56 @@ else
                             {
                                 int TotalRowSpan = sect.Analyses.Count();
                                 int indexTime = _sosDistribution.Times.ToList().FindIndex(t => t.SectionId == sect.SectionId);
+
+                                var timesArray = new string[5];
+
+                                for (int i = 0; i < timesArray.Length; i++)
+                                {
+                                    timesArray[i] = "0";
+                                }
+
+                                if (indexTime != -1)
+                                {
+                                    var timeString = _sosDistribution.Times.ElementAt(indexTime).Time;
+                                    var splitTimes = timeString?.Split("§") ?? new string[5];
+
+                                    for (int i = 0; i < splitTimes.Length && i < timesArray.Length; i++)
+                                    {
+                                        timesArray[i] = splitTimes[i];
+                                    }
+                                }
+
                                 <td rowspan="@TotalRowSpan">
                                     @if (indexTime != -1)
                                     {
-                                        <MudInput Value="@($"{_sosDistribution.Times.ElementAt(indexTime).Time}")" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                                        <MudInput Value="@timesArray[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect, 0)" Validation="ValidateTime" />
                                     }
                                 </td>
                                 <td rowspan="@TotalRowSpan">
                                     @if (indexTime != -1)
                                     {
-                                        <MudInput Value="@($"{_sosDistribution.Times.ElementAt(indexTime).Time}")" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                                        <MudInput Value="@timesArray[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect, 1)" Validation="ValidateTime" />
                                     }
                                 </td>
                                 <td rowspan="@TotalRowSpan">
                                     @if (indexTime != -1)
                                     {
-                                        <MudInput Value="@($"{_sosDistribution.Times.ElementAt(indexTime).Time}")" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                                        <MudInput Value="@timesArray[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect, 2)" Validation="ValidateTime" />
                                     }
                                 </td>
                                 <td rowspan="@TotalRowSpan">
                                     @if (indexTime != -1)
                                     {
-                                        <MudInput Value="@($"{_sosDistribution.Times.ElementAt(indexTime).Time}")" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                        <MudInput Value="@timesArray[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect, 3)" Validation="ValidateTime" />
                                     }
                                 </td>
                                 <td rowspan="@TotalRowSpan">
                                     @if (indexTime != -1)
                                     {
-                                        <MudInput Value="@($"{_sosDistribution.Times.ElementAt(indexTime).Time}")" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                        <MudInput Value="@timesArray[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateValueChangedCallback(sect, 4)" Validation="ValidateTime" />
                                     }
                                 </td>
+
                             }
                             @if (indexSection == 0 && indexA == 0)
                             {
@@ -311,23 +363,26 @@ else
                     }
                 }
                 <tr>
-                    <td colspan="2" rowspan="2">No Control</td>
+                    <MudTd colspan="2" rowspan="2">
+                        <b>No Control</b><br />
+                        <MudInput @bind-Value="_sosDistribution.ControlNumber" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudTd>
                     <td colspan="3"></td>
                     <td>Tiempo Adicional total</td>
                     <td>
-                        <MudInput Value="@additionalTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                        <MudInput Value="@additionalTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(0)" Validation="ValidateTime"/>
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                        <MudInput Value="@additionalTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(1)" Validation="ValidateTime"/>
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                        <MudInput Value="@additionalTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(2)" Validation="ValidateTime"/>
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                        <MudInput Value="@additionalTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(3)" Validation="ValidateTime"/>
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
+                        <MudInput Value="@additionalTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(4)" Validation="ValidateTime" />
                     </td>
                 </tr>
                 <tr>

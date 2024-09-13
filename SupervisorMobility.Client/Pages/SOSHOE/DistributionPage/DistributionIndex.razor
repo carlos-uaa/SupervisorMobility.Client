@@ -1,5 +1,278 @@
-﻿<h3>DistributionIndex</h3>
+﻿@page "/soshoe/Distribution"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IUserService UsersService
+@inject ISOSDistributionService SOSDistributionServices
+@inject IDialogService DialogService
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["SOSDistribution"]</PageTitle>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else if (_Analises.Count == 0)
+{
+    <MudContainer>
+
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoDistributionDistributionCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton Href="/soshoe/Distribution/createDistribution">
+                <MudText>@Localizer["newDistributionDistribution"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+
+    <MudTable Items="_Analises" Hover="true" T="SOSDistribution" SortLabel="Sort By" Height="80vh"
+              RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+              Filter="new Func<SOSDistribution,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    <MudButton Href="/soshoe/Distribution/createDistribution">
+                        <MudText>@Localizer["newDistribution"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<SOSDistribution, object>(x=>x?.SOSDistributionId)">Distribution Id</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSDistribution, object>(x=>x?.InternalControlNumber)">Internal Control Number</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSDistribution, object>(x=>x?.OperationName)">Operation Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSDistribution, object>(x=>x?.ProcessName)">Process Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="DistributionId">
+                    <MudText Align="Align.Center">@context.SOSDistributionId</MudText>
+                </MudTd>
+            }
+            <MudTd DataLabel="InternalControlNumber">
+                <MudText Align="Align.Center">@context.InternalControlNumber</MudText>
+            </MudTd>
+            <MudTd DataLabel="Operation Name">
+                <MudText Align="Align.Center">@context.OperationName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Process Name">
+                <MudText Align="Align.Center">@context.ProcessName</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => DistributionDetails(context.SOSDistributionId))" @ontouchstart="(() => DistributionDetails(context.SOSDistributionId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateDistribution(context.SOSDistributionId))" @ontouchstart="(() => UpdateDistribution(context.SOSDistributionId))">Edit </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteDistribution(context.SOSDistributionId))" @ontouchstart="(() => DeleteDistribution(context.SOSDistributionId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+<MudMessageBox @ref="_DeleteMessage" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Distribution?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
 
 @code {
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    // Objects
+    public List<SOSDistribution> _Analises { get; set; } = new();
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    //Side Dialog
+    private string SideName = string.Empty;
+    private int SosDistributionId = 0;
+    public bool ShowSideDialog = false;
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+
+        _Analises = await SOSDistributionServices.GetAllSOSDistribution();
+
+        await GetUserAsync();
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+        _links = new List<BreadcrumbItem>
+             {
+                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                 new BreadcrumbItem(text: Localizer["HOESOSDistributionTitle"], href: "/soshoe/Distribution", disabled: true)
+                        };
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+        ShowLoading = false;
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string searchString = "";
+
+    private bool FilterFunc(SOSDistribution element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        // if (element.DistributionId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.DistributionCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.DistributionName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+        return false;
+    }
+
+    private int selectedRowNumber = -1;
+    private MudTable<SOSDistribution> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<SOSDistribution> args)
+    {
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            DistributionDetails(args.Item.SOSDistributionId);
+
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowClassFunc(SOSDistribution element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    void DistributionDetails(int DistributionId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{DistributionId}");
+    }
+
+    // Delete Distribution
+
+    private MudMessageBox _DeleteMessage;
+    async Task DeleteDistribution(int DistributionId)
+    {
+        bool? result = await _DeleteMessage.Show();
+        var confirm = result is null ? "Canceled" : "Deleted!";
+        StateHasChanged();
+
+        if (confirm == "Deleted!")
+        {
+            _Analises.RemoveAll(Distribution => Distribution.SOSDistributionId == DistributionId);
+            await SOSDistributionServices.DeleteSOSDistribution(DistributionId);
+        }
+    }
+
+    // Update Distribution
+    void UpdateDistribution(int DistributionId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Distribution/Update/{DistributionId}");
+    }
 
 }
+
+
+
