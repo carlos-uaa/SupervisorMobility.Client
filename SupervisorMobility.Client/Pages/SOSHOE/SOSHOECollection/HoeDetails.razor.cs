@@ -739,7 +739,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                             //ApproverDocCombinationId = (int)(_sosCombination.ApproverId ?? 0);
                             //ReviewerDocCombinationId = (int)(_sosCombination.ReviewerId ?? 0);
-                            ReviewerHYDocCombinationId = (int)(_sosCombination.ReviewerHSId ?? 0);
+                            ReviewerHYSDocCombinationId = (int)(_sosCombination.ReviewerHSId ?? 0);
 
                             ApproverCombinationId = (int)(_sosCombination.CombinationLogbooks.Last().Status != 2 ? _sosCombination.CombinationLogbooks.Last().ApproverId : 0);
                             ReviewerCombinationId = (int)(_sosCombination.CombinationLogbooks.Last().Status != 2 ? _sosCombination.CombinationLogbooks.Last().ReviewerId : 0);
@@ -1009,10 +1009,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //generate combination
         #region generateCombination
         SOSCombination _sosCombination { get; set; } = new SOSCombination();
-        int ApproverDocCombinationId = 0;
-        int ReviewerDocCombinationId = 0;
-        int ReviewerHYDocCombinationId = 0;
-
+        
+        int ReviewerHYSDocCombinationId = 0;
+        bool ReviewerHYSCombinationExist = false;
         SOSCombinationLogbook logCombination { get; set; } = new SOSCombinationLogbook();
         int ApproverCombinationId = 0;
         int ReviewerCombinationId = 0;
@@ -1120,10 +1119,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                     _sosCombination.CombinationLogbooks.Add(logCombination);
 
-                    //reviewer = SV = Editor  //Approver = SSV = owner 
-                    //_sosCombination.ReviewerId = ReviewerDocCombinationId;
-                    //_sosCombination.ApproverId = ApproverDocCombinationId;
-                    _sosCombination.ReviewerHSId = ReviewerHYDocCombinationId;
+                    _sosCombination.ReviewerHSId = ReviewerHYSDocCombinationId;
 
 
                     if (SupervisorTurn1 != 0 && OperatorTurn1 != 0)
@@ -1189,8 +1185,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         SOSDistributionLogbook logDistribution { get; set; } = new SOSDistributionLogbook();
         int ApproverDistributionId = 0;
         int ReviewerDistributionId = 0;
-        int ApproverDocDistributionId = 0;
-        int ReviewerDocDistributionId = 0;
+        
 
         public async void GenerateDistribution()
         {
@@ -1377,6 +1372,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         SOSFlowLogbook logFlow { get; set; } = new SOSFlowLogbook();
         int ApproverFlowId = 0;
         int ReviewerFlowId = 0;
+        int ReviewerHYSDocFlowId = 0;
+        bool ReviewerHYSFlowExist = false;
 
         public async void GenerateFlow()
         {
@@ -1463,6 +1460,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                       yesText: "Ok!");
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
+                } 
+                else if (string.IsNullOrEmpty(_sosFlow.TargetTime))
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       "Es necesario el tiempo objetivo!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (_sosFlow.CreatedAt != null )
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       "Es necesaria una fecha!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
                 }
                 else
                 {
@@ -1477,6 +1492,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         _sosFlow.FlowLogbooks = new List<SOSFlowLogbook>();
                     }
                     _sosFlow.FlowLogbooks.Add(logFlow);
+
+                    _sosFlow.ReviewerHSId = ReviewerHYSDocCombinationId;
 
                     var Gen_sosFlow = await SOSHubServices.GenerateFlow(SOSHubId, _sosFlow);
 

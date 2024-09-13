@@ -4,5 +4,6 @@
     {
         Task ExportAnalysisToExcel(int idAnalysis);
         Task ExportSequenceToExcel(int idSequence);
+        Task ExportDistributionToExcel(int idDistribution);
     }
 }

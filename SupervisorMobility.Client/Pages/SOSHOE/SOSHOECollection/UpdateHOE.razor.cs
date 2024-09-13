@@ -691,8 +691,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _stations = await StationServices.GetStations();
             _stations = _stations.OrderBy(s => s.Description).ToList();
 
+
+
             StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true);
+
+            if(_sosHub.StationId != 0)
+                _sosHub.Station = _stations.Find(s => s.StationId == _sosHub.StationId);
 
 
             if (_sosHub.ProcessSheetCommentary != null && _sosHub.ProcessSheetCommentary.Count > 0)
@@ -912,13 +917,72 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #endregion
         #region Station
-        private async Task<IEnumerable<int>> SearchStation(string searchString)
+        private string newStationName;
+        private string selectedStationName;
+
+        private async Task<IEnumerable<Station>> SearchStation(string searchString)
         {
             if (string.IsNullOrWhiteSpace(searchString))
-                return _stations.Select(t => t.StationId);
+                return _stations.Select(t => t);
 
-            return _stations.Where(x => x.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Select(t => t.StationId);
+            return _stations.Where(x => x.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Select(t => t);
         }
+
+       
+        private async void HandleStationCreated(bool isCreated)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (isCreated)
+            {
+                newStationName = string.Empty;
+                visibleResources = false;
+                resourceType = "";
+                _stations = await StationServices.GetStations();
+                _stations = _stations.OrderBy(d => d.Description).ToList();
+
+
+                Snackbar.Add($"{Localizer1["StationCreateSucces"]}", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer1["StationCreateError"]}", Severity.Error);
+            }
+        }
+
+
+   
+
+        private void StationTextChanged(string inputText)
+        {
+
+            selectedStationName = _stations.Any(s => s.Code == inputText || s.Description == inputText || inputText == $"{s.Code} - {s.Description}") ? "" : inputText;
+
+            if (selectedStationName == "")
+            {
+                Station? stat = _stations.Find(s => s.Code == inputText || s.Description == inputText || inputText == $"{s.Code} - {s.Description}");
+                if (stat != null)
+                {
+
+                    stationId = stat != null ? stat.StationId : 0;
+                    _sosHub.Station = stat;
+
+                    GenerateFolio();
+
+                }
+            }
+
+            StateHasChanged();
+        }
+        private void StationDelete()
+        {
+            stationId = 0;
+            selectedStationName = "";
+        }
+
+        private bool IsExistingStation => _stations.Any(t => t.Description.Equals(selectedStationName, StringComparison.OrdinalIgnoreCase));
+
         #endregion
         //Show areas
         #region Areas
