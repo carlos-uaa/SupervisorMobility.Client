@@ -214,20 +214,25 @@ else
     private int selectedRowNumber = -1;
     private MudTable<SOSAnalysis> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<SOSAnalysis> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<SOSAnalysis> args)
     {
+         if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            AnalysisDetails(args.Item.SOSAnalysisId);
+
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }        
     }
 
     private string SelectedRowClassFunc(SOSAnalysis element, int rowNumber)
     {
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                AnalysisDetails(element.SOSAnalysisId);
-            }
-            return string.Empty;
+            return "selected"; // Mantener la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
