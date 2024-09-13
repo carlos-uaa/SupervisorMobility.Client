@@ -13,17 +13,32 @@
                 </MudItem>
                 <MudItem Class="pa-2">
                     <MudText Typo="Typo.subtitle1">Size</MudText>
-                    <MudSlider @bind-Value="sliderSize" Min="20" Max="150" Step="1" Color="Color.Primary" />
+                    <MudSlider @bind-Value="sliderSize" Min="10" Max="100" Step="1" Color="Color.Primary" />
                 </MudItem>
-                @foreach (var image in FilteredImagesWithSelection)
-                {
-                    <MudNavLink Match="NavLinkMatch.All">
-                        <MudItem Style="display: flex; align-items: center;">
-                            <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info"/>
-                            <MudImage src="@image.Src" Class="rounded-lg" id="@image.Src" Width="@(image.IsSelected ? sliderSize : 100)" draggable="true" @ondragstart="@(e => OnDragStart(e, image.Src))" @ontouchstart="@(e => OnTouchStart(e, image.Src))" />
-                        </MudItem>
-                    </MudNavLink>
-                }
+                <MudItem Class="pa-2">
+                    <MudText Typo="Typo.subtitle1">Draw</MudText>
+                    <MudItem Class="d-flex" Style="align-items: flex-end;">
+                        <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
+                                             Icon="@Icons.Material.Filled.EditOff"
+                                             ToggledIcon="@Icons.Material.Filled.Edit"
+                                             ToggledColor="@Color.Info"
+                                             @onclick="OnToggleClick" />
+                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%")" ColorPickerView="ColorPickerView.Palette" />
+                    </MudItem>
+
+                </MudItem>
+                <MudItem>
+
+                    @foreach (var image in FilteredImagesWithSelection)
+                    {
+                        <MudNavLink Match="NavLinkMatch.All">
+                            <MudItem Style="display: flex; align-items: center;">
+                                <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info"/>
+                                <MudImage src="@image.Src" Class="rounded-lg" id="@image.Src" Width="@(image.IsSelected ? sliderSize : 55)" draggable="true" @ondragstart="@(e => OnDragStart(e, image.Src))" @ontouchstart="@(e => OnTouchStart(e, image.Src))" />
+                            </MudItem>
+                        </MudNavLink>
+                    }
+                </MudItem>
             </MudNavMenu>
         </MudDrawer>
 
@@ -41,8 +56,8 @@
                         <MudItem Class="pa-2">
                             <MudText Typo="Typo.subtitle1">Selected Image Size</MudText>
                             <MudSlider @bind-Value="SelectedImageSize"
-                                       Min="20"
-                                       Max="150"
+                                       Min="10"
+                                       Max="100"
                                        Step="1"
                                        Color="Color.Primary"
                                         />
@@ -76,7 +91,10 @@
                 <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
                 <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Generate Image</MudButton>
             </MudItem>
-            <canvas id="canvas" style="border:1px solid #000;@(isCanvasVisible ? "" : "display:none;")" @ref="canvasRef"></canvas>
+            <canvas id="canvas"
+                    style="border:1px solid #000; cursor: @(IsPencilSelected ? "crosshair" : "default"); @(isCanvasVisible ? "" : "display:none;")"
+                    @ref="canvasRef">
+            </canvas>
         </div>
 
     </MudDrawerContainer>
@@ -87,10 +105,41 @@
     private ElementReference canvasRef;
     private string uploadedImage;
     private bool isCanvasVisible = false;
-    private int sliderSize = 85;
+    private int sliderSize = 55;
     private string search = string.Empty;
     private ImageModel selectedImageModel;
-    private int selectedImageSize = 85;
+
+    private string pencilColor = "#000";
+    private string PencilColor
+    {
+        get => pencilColor;
+        set
+        {
+            pencilColor = value;
+            UpdateSelectedColor(value).GetAwaiter().GetResult();
+        }
+    }
+
+    private bool isPencilSelected;
+    public bool IsPencilSelected
+    {
+        get => isPencilSelected;
+        set
+        {
+            if (isPencilSelected != value)
+            {
+                isPencilSelected = value;
+                _ = UpdatePencilStateAsync(value);
+            }
+        }
+    }
+
+    private async Task UpdatePencilStateAsync(bool state)
+    {
+        await JS.InvokeVoidAsync("togglePencilState", state);
+    }
+
+    private int selectedImageSize = 55;
     private int SelectedImageSize
     {
         get => selectedImageSize;
@@ -129,6 +178,12 @@
         }
     }
 
+    private async Task UpdateSelectedColor(string newColor)
+    {
+        IsPencilSelected = true;
+        await JS.InvokeVoidAsync("setPencilColor", newColor);
+    }
+
     public class ImageModel
     {
         public string Src { get; set; }
@@ -137,9 +192,29 @@
 
     private List<ImageModel> imageUrls = new List<ImageModel>
     {
-        new ImageModel { Src = "/Images/png.png", IsSelected = true },
-        new ImageModel { Src = "/Images/pdf.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag A.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag B.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag C.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Green Cross.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/HV.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/OBD Triangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/OBD.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Dashed Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Rounded Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Regulation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Air Bag.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small HV.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small OBD.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Regulation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Water leak.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak A.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak B.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak C.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water leak.png", IsSelected = true },
     };
+
 
     private IEnumerable<ImageModel> FilteredImagesWithSelection => imageUrls
         .Where(image => string.IsNullOrEmpty(search) || GetFileNameWithoutExtension(image.Src).Contains(search, StringComparison.OrdinalIgnoreCase));
@@ -176,6 +251,15 @@
         StateHasChanged();
     }
 
+    [JSInvokable("SetPencilState")]
+    public void UpdatePencilState(bool penState)
+    {
+        isPencilSelected = penState;
+        StateHasChanged();
+    }
+
+
+
     [JSInvokable("OnImageDropped")]
     public async Task OnImageDropped()
     {
@@ -194,6 +278,12 @@
         }
     }
 
+    [JSInvokable("OnDrawingAdded")]
+    public void OnDrawingAdded()
+    {
+        history.Add("addDrawing");
+    }
+
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -201,6 +291,7 @@
         if (firstRender)
         {
             dotNetObjectRef = DotNetObjectReference.Create(this);
+            IsPencilSelected = false;
             await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
         }
     }
@@ -252,6 +343,7 @@
             await JS.InvokeVoidAsync("undoLastAction", canvasRef);
 
             history.RemoveAt(history.Count - 1);
+
             if (!(history.Count > 0))
             {
                 uploadedImage = null;
@@ -268,6 +360,12 @@
     {
         await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
     }
+
+    private void OnToggleClick()
+    {
+        IsPencilSelected = !IsPencilSelected;
+    }
+
 }
 
 <style>

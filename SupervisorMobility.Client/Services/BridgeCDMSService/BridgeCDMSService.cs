@@ -52,11 +52,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
 
@@ -87,20 +87,20 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FILES CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FILES CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+                //Console.WriteLine($"Error of Json GOS: {ex.Message}");
 
                 var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
                 var contentString = await response.Content.ReadAsStringAsync();
@@ -113,7 +113,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (operation == "NO FILES IN DIRECTORY")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    //Console.WriteLine($"No Files or Directories");
                     CDMS_CCP_Archives toreturn = new CDMS_CCP_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
@@ -121,7 +121,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else if (operation == "NO FILES OR DIRECTORIES")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    //Console.WriteLine($"No Files or Directories");
                     CDMS_CCP_Archives toreturn = new CDMS_CCP_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
@@ -158,7 +158,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
+                    //Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
                 }
 
                 if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
@@ -168,7 +168,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                    //Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
                 }
 
                 if (response.IsSuccessStatusCode)
@@ -187,18 +187,18 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                         var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", namefile, fileBytes);
 
-                        Console.WriteLine($"Download CCP - fileDownlaod Succes");
+                        //Console.WriteLine($"Download CCP - fileDownlaod Succes");
                         if (result == "File downloaded successfully")
                         {
                             var DeleteTemp = await DeleteFileTempCCP(KeyDocument, PathDocument);
                             if (DeleteTemp is not null)
                             {
-                                Console.WriteLine($"Delete File TempCCP successfully");
+                                //Console.WriteLine($"Delete File TempCCP successfully");
                             }
                         }
                         else
                         {
-                            Console.WriteLine("Error durante la descarga del archivo.");
+                            //Console.WriteLine("Error durante la descarga del archivo.");
                         }
 
 
@@ -209,16 +209,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WritkeLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return new AsyncVoidMethodBuilder();
@@ -248,16 +248,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"DELETE TEMP CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"DELETE TEMP CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return null;
@@ -280,16 +280,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FOLDERS HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FOLDERS HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
             return null;
         }
@@ -320,20 +320,20 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FILES HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FILES HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error of Json HOE: {ex.Message}");
+                //Console.WriteLine($"Error of Json HOE: {ex.Message}");
 
                 var response = await _http.PostAsync("BridgeCDMS/SMHoe/PostArchivesDirectoryHOE", content);
                 var contentString = await response.Content.ReadAsStringAsync();
@@ -343,11 +343,11 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 // Acceder a la propiedad "operation" del objeto JObject
                 var operation = (string)responseObject["operation"];
-                Console.WriteLine($"REAL ERRO [{operation}]");
+                //Console.WriteLine($"REAL ERRO [{operation}]");
 
                 if (operation == "NO FILES IN DIRECTORY")
                 {
-                    Console.WriteLine($"No Files in Directories");
+                    //Console.WriteLine($"No Files in Directories");
                     CDMS_HOE_Archives toreturn = new CDMS_HOE_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
@@ -355,7 +355,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else if (operation == "NO FILES OR DIRECTORIES")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    //Console.WriteLine($"No Files or Directories");
                     CDMS_HOE_Archives toreturn = new CDMS_HOE_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
@@ -390,7 +390,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                    //Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
                 }
 
                 if (response.IsSuccessStatusCode)
@@ -409,7 +409,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                         var result = await _js.InvokeAsync<string>("triggerFileDownloadAndWaitForConfirmation", FileName, fileBytes);
 
-                        Console.WriteLine($"Download GOS - fileDownlaod Succes");
+                        //Console.WriteLine($"Download GOS - fileDownlaod Succes");
                         if (result == "File downloaded successfully")
                         {
                             var DELETEparameters = new Dictionary<string, string>
@@ -427,26 +427,26 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                                 if (response.IsSuccessStatusCode)
                                 {
-                                    Console.WriteLine($"Delete File TempHOE successfully");
+                                    //Console.WriteLine($"Delete File TempHOE successfully");
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"DELETE TEMP hoe, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                                    //Console.WriteLine($"DELETE TEMP hoe, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                                 }
                             }
                             catch (HttpRequestException ex)
                             {
-                                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
                             }
                             catch (TaskCanceledException ex)
                             {
-                                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
                             }
                           
                         }
                         else
                         {
-                            Console.WriteLine("Error durante la descarga del archivo.");
+                            //Console.WriteLine("Error durante la descarga del archivo.");
                         }
 
                     }//end using
@@ -455,16 +455,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"GET FILE HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FILE HOE, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return new AsyncVoidMethodBuilder();
@@ -488,16 +488,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FOLDERS GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FOLDERS GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return null;
@@ -527,20 +527,20 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FILES GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FILES GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error of Json GOS: {ex.Message}");
+                //Console.WriteLine($"Error of Json GOS: {ex.Message}");
 
                 var response = await _http.PostAsync("BridgeCDMS/SMGos/PostArchivesDirectoryGos", content);
                 var contentString = await response.Content.ReadAsStringAsync();
@@ -553,14 +553,14 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (operation == "NO FILES IN DIRECTORY")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    //Console.WriteLine($"No Files or Directories");
                     CDMS_GOS_Archives toreturn = new CDMS_GOS_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
                     return toreturn;
                 }else if(operation == "NO FILES OR DIRECTORIES")
                 {
-                    Console.WriteLine($"No Files or Directories");
+                    //Console.WriteLine($"No Files or Directories");
                     CDMS_GOS_Archives toreturn = new CDMS_GOS_Archives();
                     toreturn.success = false;
                     toreturn.message = operation;
@@ -596,7 +596,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
+                    //Console.WriteLine($"El encabezado 'KeyDocument' no está presente en la respuesta HTTP.");
                 }
 
                 if (response.Headers.TryGetValues("PathDocument", out IEnumerable<string> pathValue))
@@ -606,7 +606,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 }
                 else
                 {
-                    Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
+                    //Console.WriteLine($"El encabezado 'PathDocument' no está presente en la respuesta HTTP.");
                 }
 
                 if (response.IsSuccessStatusCode)
@@ -631,12 +631,12 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                             var DeleteTemp = await DeleteFileTempGOS(KeyDocument, PathDocument);
                             if (DeleteTemp is not null)
                             {
-                                Console.WriteLine($"Delete File TempGOS successfully");
+                                //Console.WriteLine($"Delete File TempGOS successfully");
                             }
                         }
                         else
                         {
-                            Console.WriteLine("Error durante la descarga del archivo.");
+                            //Console.WriteLine("Error durante la descarga del archivo.");
                         }
 
                       
@@ -647,16 +647,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET LINK GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return new AsyncVoidMethodBuilder();
@@ -686,16 +686,16 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"DELETE TEMP GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"DELETE TEMP GOS, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
+                //Console.WriteLine($"Error al hacer la solicitud: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
+                //Console.WriteLine($"La solicitud ha sido cancelada: {ex.Message}");
             }
 
             return null;
