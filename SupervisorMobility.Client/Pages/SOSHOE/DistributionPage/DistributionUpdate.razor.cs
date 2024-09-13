@@ -530,6 +530,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
+            _sosDistribution.AdditionalTime = string.Join("§", additionalTimes);
+            _sosDistribution.CycleTime = string.Join("§", cycleTimes);
+            _sosDistribution.AplicationModels = string.Join("§", applicationModels);
 
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
