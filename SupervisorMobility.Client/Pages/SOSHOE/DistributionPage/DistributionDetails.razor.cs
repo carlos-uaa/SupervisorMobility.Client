@@ -52,6 +52,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] applicationModels = new string[] { "", "", "", "", "" };
 
+        public class TablaDatos
+        {
+            public string Tiempo { get; set; }
+            public int CantidadX247 { get; set; }
+            public int CantidadPtaNtaRhd { get; set; }
+            public int CantidadPtaNtaLhdErs { get; set; }
+            public int CantidadPtaNtaLhdSsw { get; set; }
+            public double Tiempo2 { get; set; }
+            public double X247 { get; set; }
+            public double PtaNtaRhd { get; set; }
+            public double PtaNtaLhdErs { get; set; }
+            public double PtaNtaLhdSsw { get; set; }
+        }
+
+        private List<TablaDatos> datos = new List<TablaDatos>
+    {
+        new TablaDatos { Tiempo = "TOMA", CantidadX247 = 6, CantidadPtaNtaRhd = 12, CantidadPtaNtaLhdErs = 13, CantidadPtaNtaLhdSsw = 13, Tiempo2 = 0.02, X247 = 0.12, PtaNtaRhd = 0.24, PtaNtaLhdErs = 0.26, PtaNtaLhdSsw = 0.26 },
+        new TablaDatos { Tiempo = "DEJA", CantidadX247 = 6, CantidadPtaNtaRhd = 12, CantidadPtaNtaLhdErs = 13, CantidadPtaNtaLhdSsw = 13, Tiempo2 = 0.02, X247 = 0.12, PtaNtaRhd = 0.24, PtaNtaLhdErs = 0.26, PtaNtaLhdSsw = 0.26 },
+        new TablaDatos { Tiempo = "PASOS", CantidadX247 = 43, CantidadPtaNtaRhd = 116, CantidadPtaNtaLhdErs = 118, CantidadPtaNtaLhdSsw = 118, Tiempo2 = 0.01, X247 = 0.43, PtaNtaRhd = 1.16, PtaNtaLhdErs = 1.18, PtaNtaLhdSsw = 1.18 }
+    };
+
         protected async override Task OnInitializedAsync()
         {
 
