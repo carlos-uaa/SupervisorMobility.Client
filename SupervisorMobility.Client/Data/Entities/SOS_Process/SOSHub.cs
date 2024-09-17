@@ -16,8 +16,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public ICollection<Commentary>? ProcessSheetCommentary { get; set; } = new List<Commentary>();
         public ICollection<CommonDirection>? CommonDirection { get; set; } = new List<CommonDirection>();
 
-        public int? AppliedModelId { get; set; }
-        public Product? AppliedModel { get; set; }
+        public ICollection<Product>? AppliedModels { get; set; } = new List<Product>();
 
 
         public ICollection<FileUpload>? Images { get; set; } = new List<FileUpload>();
