@@ -44,7 +44,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private string HighlightedText;
 
 
-        public int productId = 0;
         public string productSide = string.Empty;
         public class Segment
         {
@@ -99,7 +98,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //Users
         List<User> _Seniorsupervisors { get; set; } = new();
         List<User> _supervisors { get; set; } = new();
-       
+
 
         private readonly List<int> Cycles = Enumerable.Range(1, 3000).ToList();
         int cycleId = 0;
@@ -542,10 +541,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "Write down the Process Sheet plan first";
             }
-            if (productId == new int())
-            {
-                return "First select a product!";
-            }
+         
             if (string.IsNullOrEmpty(_sosHub.SourcePlan))
             {
                 return "Write down the source plan first";
@@ -583,7 +579,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return "First select a Distribution!";
             }
 
-         
             if (_sosHub.ApproverOwners.Count == 0)
             {
                 return "First add one Owner!";
@@ -593,6 +588,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First add one Editor!";
             }
+
+            if (_sosHub.AppliedModels.Count == 0)
+            {
+                return "First add one Product!";
+            }
+
             return string.Empty;
         }
 
@@ -607,10 +608,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Snackbar.Add(validationMessage, Severity.Warning);
                 return;
             }
-            _sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
-            //_sosHub.ApproverOwnerId = supervisorOwnerId;
-            //_sosHub.ReviewerEditorId = supervisorEditorId;
             _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
@@ -619,8 +617,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
             _sosHub.DistributionId = distributionId;
-            //_sosHub.ToolsUsed = _tools.Where(tool => _toolsIds.Contains(tool.ToolId)).ToList();
-            //_sosHub.MaterialsUsed = _materials.Where(material => _materialsIds.Contains(material.MaterialId)).ToList();
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
             var temp = new List<CommonDirection>();
@@ -738,7 +734,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private async void ShowSupervisors()
         {
-            
+
             distributionId = 0;
             _distributions.Clear();
             _Seniorsupervisors.Clear();
@@ -787,7 +783,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private async void ShowAreas()
         {
             areaId = 0;
-            
+
             distributionId = 0;
             _distributions.Clear();
             _supervisors.Clear();
@@ -1341,10 +1337,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private async Task<IEnumerable<User>> SearchSupervisorsUsers(string value)
         {
-            // In real life use an asynchronous function for fetching data from an api.
-            // await Task.Delay(1000);
-
-            // if text is null or empty, show complete list
+          
             if (string.IsNullOrEmpty(value))
                 return _supervisors;
 
@@ -1353,10 +1346,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private async Task<IEnumerable<User>> SearchSeniorSupervisorsUsers(string value)
         {
-            // In real life use an asynchronous function for fetching data from an api.
-            // await Task.Delay(1000);
-
-            // if text is null or empty, show complete list
+          
             if (string.IsNullOrEmpty(value))
                 return _Seniorsupervisors;
 
@@ -1686,7 +1676,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             string? areaCode = _areas.Find(a => a.AreaId == areaId)?.Code;
             string? stationCode = _stations.Find(s => s.StationId == stationId)?.Code;
             string? sideCode = productSide;
-            string? modelCode = _products.Find(p => p.ProductId == productId)?.Code;
+            string? modelCode = _sosHub.AppliedModels != null ? string.Join("/", _sosHub.AppliedModels.Select(m => m.Code)) : "";
 
             _sosHub.Folio = string.Concat(areaCode, "-", stationCode, "-", sideCode, "-", modelCode);
             StateHasChanged();
@@ -1809,5 +1799,73 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
         #endregion
+
+        #region AppliedModels
+        private Product selectedProductOfList = null;
+        private bool ActiveAddProduct = false;
+
+
+        private void DeleteProductList(Product selection)
+        {
+            _sosHub.AppliedModels?.Remove(selection);
+            _products.Add(selection);
+            cantCreate = _sosHub.AppliedModels.Count == 0;
+            GenerateFolio();
+            StateHasChanged();
+        }
+
+
+        private void AddProduc(Product selection)
+        {
+            if (_sosHub.AppliedModels == null)
+            {
+                _sosHub.AppliedModels = new List<Product>();
+            }
+
+
+            if (selectedProductOfList != null && !_sosHub.AppliedModels.Contains(selection))
+            {
+
+                _sosHub.AppliedModels.Add(selection);
+
+                _products.Remove(selection);
+
+                selectedProductOfList = null;
+                ActiveAddProduct = true;
+                if (_sosHub.AppliedModels.Count >= 1)
+                {
+                    GenerateFolio();
+                }
+            }
+
+            cantCreate = _sosHub.AppliedModels.Count == 0;
+
+            StateHasChanged();
+        }
+
+        private async Task<IEnumerable<Product>> SearchProduct(string value)
+        {
+
+            if (string.IsNullOrEmpty(value))
+                return _products;
+
+            return _products.Where(x => x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+        private async void OnSelectedProductFunction(Product element)
+        {
+            selectedProductOfList = element;
+
+            if (selectedProductOfList != new Product())
+            {
+                ActiveAddProduct = false;
+            }
+            else
+            {
+                ActiveAddProduct = true;
+            }
+
+        }
+
+        #endregion 
     }
 }

@@ -257,7 +257,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             stationId = _sosHub.StationId ?? stationId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
-            productId = _sosHub.AppliedModelId ?? productId;
+            //productId = _sosHub.AppliedModelId ?? productId;
             //supervisorEditorId = _sosHub.ReviewerEditorId ?? supervisorEditorId;
             //supervisorOwnerId = _sosHub.ApproverOwnerId ?? supervisorOwnerId;
 
@@ -265,7 +265,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             StateHasChanged();
 
-            _sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
+            //_sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
 
             foreach (var analysis in _sosHub.SOSAnalysis)
             {
