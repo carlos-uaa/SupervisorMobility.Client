@@ -2,19 +2,11 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
-using SupervisorMobility.Client.Pages.Inicio.LupPage;
-using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
-using System;
-using System.Formats.Asn1;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.RegularExpressions;
-using static MudBlazor.FilterOperator;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 {
@@ -52,12 +44,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int departmentId = 0;
         int stationId = 0;
 
-
-
         private string BaseText = "Este es un texto de ejemplo donde los t�rminos ser�n resaltados.";
         private string HighlightedText;
 
-        public int productId = 0;
         public string productSide = string.Empty;
         public class Segment
         {
@@ -517,10 +506,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "Write down the Process Sheet plan first";
             }
-            if (productId == new int())
-            {
-                return "First select a product!";
-            }
+        
             if (string.IsNullOrEmpty(_sosHub.SourcePlan))
             {
                 return "Write down the source plan first";
@@ -567,6 +553,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (_sosHub.ReviewerEditors.Count == 0)
             {
                 return "First add one Editor!";
+            } 
+            
+            if (_sosHub.AppliedModels.Count == 0)
+            {
+                return "First add one Product!";
             }
             return string.Empty;
         }
@@ -585,7 +576,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return;
             }
 
-            _sosHub.AppliedModelId = productId;
+            //_sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
             _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
             _sosHub.CreatedDate = createdDateTime;
@@ -852,6 +843,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     _supervisors.RemoveAt(index);
                 }
             }
+            
+            foreach (Product model in _sosHub.AppliedModels)
+            {
+                var index = _products.FindIndex(u => u.ProductId == model.ProductId);
+
+                if (index >= 0)
+                {
+                    _products.RemoveAt(index);
+                }
+            }
 
 
             if (plantId != 0 && areaId != 0)
@@ -862,7 +863,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             distributionId = _sosHub.DistributionId ?? distributionId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
-            productId = _sosHub.AppliedModelId ?? productId;
+            //productId = _sosHub.AppliedModelId ?? productId;
 
             stationId = _sosHub.StationId ?? stationId;
 
@@ -1972,7 +1973,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             string? areaCode = _areas.Find(a => a.AreaId == areaId)?.Code;
             string? stationCode = _stations.Find(s => s.StationId == stationId)?.Code;
             string? sideCode = productSide;
-            string? modelCode = _products.Find(p => p.ProductId == productId)?.Code;
+            string? modelCode = _sosHub.AppliedModels != null ? string.Join("/", _sosHub.AppliedModels.Select(m => m.Code)) : "";
+
 
             _sosHub.Folio = string.Concat(areaCode, "-", stationCode, "-", sideCode, "-", modelCode);
             StateHasChanged();
@@ -2119,6 +2121,76 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             return _Seniorsupervisors.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
         }
+
+        #region AppliedModels
+        private Product selectedProductOfList = null;
+        private bool ActiveAddProduct = false;
+
+
+        private void DeleteProductList(Product selection)
+        {
+            _sosHub.AppliedModels?.Remove(selection);
+            _products.Add(selection);
+            cantCreate = _sosHub.AppliedModels.Count == 0;
+            GenerateFolio();
+            StateHasChanged();
+        }
+
+
+        private void AddProduc(Product selection)
+        {
+            if (_sosHub.AppliedModels == null)
+            {
+                _sosHub.AppliedModels = new List<Product>();
+            }
+
+
+            if (selectedProductOfList != null && !_sosHub.AppliedModels.Contains(selection))
+            {
+
+                _sosHub.AppliedModels.Add(selection);
+
+                _products.Remove(selection);
+
+                selectedProductOfList = null;
+                ActiveAddProduct = true;
+
+                if (_sosHub.AppliedModels.Count >= 1)
+                {
+                    GenerateFolio();
+                }
+
+            }
+
+            cantCreate = _sosHub.AppliedModels.Count == 0;
+
+            StateHasChanged();
+        }
+
+        private async Task<IEnumerable<Product>> SearchProduct(string value)
+        {
+
+            if (string.IsNullOrEmpty(value))
+                return _products;
+
+            return _products.Where(x => x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+        private async void OnSelectedProductFunction(Product element)
+        {
+            selectedProductOfList = element;
+
+            if (selectedProductOfList != new Product())
+            {
+                ActiveAddProduct = false;
+            }
+            else
+            {
+                ActiveAddProduct = true;
+            }
+
+        }
+
+        #endregion 
 
     }
 }

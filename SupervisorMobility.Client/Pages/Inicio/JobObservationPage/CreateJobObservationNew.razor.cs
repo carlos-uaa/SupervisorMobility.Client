@@ -2675,7 +2675,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
-                ,"DblManagement","Waiting","CC"});
+                ,"DblManagement","Waiting","CC", "CJO"});
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Presentation;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
@@ -270,9 +271,20 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return 0;
         }
 
-        public Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow)
+        public async Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync($"SOS/Flow?SOSHubCollection_Id={SOS_DataPool_id}", flow);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var FlowCreated = JsonSerializer.Deserialize<SOSFlow>(content, _options);
+
+                return FlowCreated.SOSFlowId;
+            }
+
+            return 0;
         }
 
         public async Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution)

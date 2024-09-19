@@ -72,7 +72,7 @@ else
                             </div>
                         </TitleContent>
                         <ChildContent>
-                            <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0" Class="custom-table">
+                            <MudSimpleTable Style="overflow-x: hidden;" Dense=true Elevation="0" Class="custom-table">
                                 <tbody>
                                     <tr>
                                         <td width="20%">
@@ -411,31 +411,50 @@ else
                                         <td>
                                             <MudText>Applied Models</MudText>
                                         </td>
-                                        <td class="d-flex">
-                                            <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productId" SelectedValuesChanged="GenerateFolio" OpenIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                                                @foreach (var type in _products)
+                                       <td>
+                                        @if (_sosHub.AppliedModels?.Count > 0)
+                                        {
+                                            <MudItem Style="max-height: 50vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                                                @foreach (Product item in _sosHub.AppliedModels)
                                                 {
-                                                    <MudSelectItem Value="type.ProductId">
-                                                        @type.Code
-                                                    </MudSelectItem>
+                                                    <MudChip T="string" Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Secondary" CloseIcon="@Icons.Material.Filled.Delete" OnClose="@(() => DeleteProductList(item))">@item.Description</MudChip>
                                                 }
-                                            </MudSelect>
-                                            @if (productId != 0)
-                                            {
-                                                <MudSelect Class="ml-4" T="string" Label="Side" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" SelectedValuesChanged="GenerateFolio" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
-                                                    <MudSelectItem Value="@("L")" />
-                                                    <MudSelectItem Value="@("R")" />
-                                                </MudSelect>
+                                            </MudItem>
+                                        }
 
-                                            }
-                                            else
-                                            {
-                                                <MudSelect Class="ml-4" T="string" Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
-                                                     <MudSelectItem Disabled="true" Value="@("")">@Localizer["firstSelectAProduct"]</MudSelectItem>
-                                                 </MudSelect>
-                                            }
-                                        </td>
+                                        @*Mud select for SSV A,B, C for Admin*@
+                                        @if (user.UserType < 4)
+                                        {
+                                            <MudItem Style="max-width:70vh;" class="d-flex d-flex-column justify-center ma-1">
+
+                                                @if (_products?.Count > 0)
+                                                {
+                                                    <MudItem xs="12" sm="12" md="12">
+                                                        <MudAutocomplete Clearable T="Product" Label="@Localizer1["Product"]" ValueChanged="@(selectedProduct => OnSelectedProductFunction(selectedProduct))"
+                                                                         SearchFunc="@SearchProduct" ToStringFunc="@(e=> e.Code == null || e.Description == "" ? $"{Localizer["Product"]}" : $"[{e.Code}] - {e.Description}")"
+                                                                         Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.CarRepair" ResetValueOnEmptyText
+                                                                         ShowProgressIndicator="true" MaxItems="null">
+                                                            <ItemTemplate Context="e">
+                                                                <MudPaper Class="pa-4">
+                                                                    <MudStack Row="true">
+                                                                        <MudAvatar Size="Size.Large">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon>
+                                                                        </MudAvatar>
+                                                                        <MudStack Justify="Justify.Center" Spacing="0">
+                                                                            <MudText Typo="Typo.body1">@e.Code</MudText>
+                                                                            <MudText Typo="Typo.body2">@e.Description</MudText>
+                                                                        </MudStack>
+                                                                    </MudStack>
+                                                                </MudPaper>
+                                                            </ItemTemplate>
+                                                        </MudAutocomplete>
+                                                    </MudItem>
+                                                    <MudButton Disabled="@ActiveAddProduct" OnClick="@(() => AddProduc(selectedProductOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add Product </MudButton>
+                                                }
+
+                                            </MudItem>
+                                        }
+                                    </td>
                                     </tr>
 
                                     <tr>
@@ -875,7 +894,7 @@ else
                                             @if (_sosHub.ApproverOwners?.Count > 0)
                                             {
 
-                                                <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                                                <MudItem Style="max-height: 70vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
                                                     @foreach (User item in _sosHub.ApproverOwners)
                                                     {
 
@@ -932,7 +951,7 @@ else
                                             {
                                                 @if (plantId != 0 && areaId != 0)
                                                 {
-                                                    <MudItem class="d-flex d-flex-column justify-center ma-1">
+                                                    <MudItem Style="max-width:70vh;" class="d-flex d-flex-column justify-center ma-1">
 
                                                         @if (_Seniorsupervisors?.Count > 0)
                                                         {
@@ -1001,7 +1020,7 @@ else
                                             @if (_sosHub.ReviewerEditors?.Count > 0)
                                             {
 
-                                                <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                                                <MudItem Style="max-height: 70vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
                                                     @foreach (User item in _sosHub.ReviewerEditors)
                                                     {
 
@@ -1057,7 +1076,7 @@ else
                                             {
                                                 @if (plantId != 0 && areaId != 0)
                                                 {
-                                                    <MudItem class="d-flex d-flex-column justify-center ma-1">
+                                                    <MudItem Style="max-width:70vh;" class="d-flex d-flex-column justify-center ma-1">
 
                                                         @if (_supervisors?.Count > 0)
                                                         {
