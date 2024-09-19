@@ -52,29 +52,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] applicationModels = new string[] { "", "", "", "", "" };
 
-        public class TablaDatos
-        {
-            public string Tiempo { get; set; }
-            public int CantidadX247 { get; set; }
-            public int CantidadPtaNtaRhd { get; set; }
-            public int CantidadPtaNtaLhdErs { get; set; }
-            public int CantidadPtaNtaLhdSsw { get; set; }
-            public double Tiempo2 { get; set; }
-            public double X247 { get; set; }
-            public double PtaNtaRhd { get; set; }
-            public double PtaNtaLhdErs { get; set; }
-            public double PtaNtaLhdSsw { get; set; }
-        }
+        private string[] takeQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] takeTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] leaveQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] leaveTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
 
-        private List<TablaDatos> datos = new List<TablaDatos>
-    {
-        new TablaDatos { Tiempo = "TOMA", CantidadX247 = 6, CantidadPtaNtaRhd = 12, CantidadPtaNtaLhdErs = 13, CantidadPtaNtaLhdSsw = 13, Tiempo2 = 0.02, X247 = 0.12, PtaNtaRhd = 0.24, PtaNtaLhdErs = 0.26, PtaNtaLhdSsw = 0.26 },
-        new TablaDatos { Tiempo = "DEJA", CantidadX247 = 6, CantidadPtaNtaRhd = 12, CantidadPtaNtaLhdErs = 13, CantidadPtaNtaLhdSsw = 13, Tiempo2 = 0.02, X247 = 0.12, PtaNtaRhd = 0.24, PtaNtaLhdErs = 0.26, PtaNtaLhdSsw = 0.26 },
-        new TablaDatos { Tiempo = "PASOS", CantidadX247 = 43, CantidadPtaNtaRhd = 116, CantidadPtaNtaLhdErs = 118, CantidadPtaNtaLhdSsw = 118, Tiempo2 = 0.01, X247 = 0.43, PtaNtaRhd = 1.16, PtaNtaLhdErs = 1.18, PtaNtaLhdSsw = 1.18 }
-    };
+        public class SOSDistributionAdditionalTime
+        {
+            public int DistributionAdditionalTimeId { get; set; }
+            public string TakeQuantity { get; set; }
+            public string TakeTime { get; set; }
+            public string LeaveQuantity { get; set; }
+            public string LeaveTime { get; set; }
+            public string StepsQuantity { get; set; }
+            public string StepsTime { get; set; }
+        }
 
         protected async override Task OnInitializedAsync()
         {
+            var sosDistributionAdditionalTime = new SOSDistributionAdditionalTime
+            {
+                DistributionAdditionalTimeId = 1,
+                TakeQuantity = "10§1§4§2§4",
+                TakeTime = "8§9§10§11§12§13",
+                LeaveQuantity = "7§10§6§8§9",
+                LeaveTime = "17§16§§14§13§12",
+                StepsQuantity = "100§150§200§120§180",
+                StepsTime = "30§45§60§§§55",
+            };
+
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -155,11 +163,30 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
             var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
 
+            //var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
+
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
+
             for (int i = 0; i < 5; i++)
             {
                 additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
                 cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) ? tempCycleTimes[i] : "0";
                 applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
+                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) ? tempTakeQuantity[i] : "0";
+                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) ? tempLeaveQuantity[i] : "0";
+                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) ? tempStepsQuantity[i] : "0";
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) ? tempTakeTime[i] : "0";
+                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
+                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
             }
 
             if (_sosDistribution?.SOSHub?.Sections != null)
