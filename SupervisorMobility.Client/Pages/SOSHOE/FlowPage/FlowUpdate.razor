@@ -1,0 +1,416 @@
+﻿@page "/soshoe/Flow/Update/{FlowId:int}"
+
+@inject ISOSFlowService SOSFlowServices
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ISnackbar Snackbar
+@inject IExportationService Exportation
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<style>
+    .vertical {
+        writing-mode: tb-rl;
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .border-left {
+        border-left: 2px solid #ababab;
+    }
+
+    .table-header td {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray th {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray td {
+        padding: 0px 1% !important;
+    }
+
+    .divider {
+        border-left: 1px solid var(--mud-palette-table-lines);
+    }
+
+    .images_cell {
+    }
+
+    .table-header-gray .images_cell {
+        padding: 1% 2% !important;
+    }
+
+    .section_divider {
+        border-top: 3px dashed var(--mud-palette-table-lines);
+    }
+
+</style>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+            <thead>
+                <tr>
+                    <th rowspan="2">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <MudItem Style="justify-content: end" Class="ml-auto">
+                            <MudItem Class="d-flex">
+                                @if ( _sosFlow.FlowLogbooks?.Last().Status == 1)
+                                {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                        @Localizer["new"]
+                                    </MudChip>
+                                }
+                                else if (_sosFlow.FlowLogbooks?.Last().Status == 2)
+                                {
+                                    <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                        @Localizer["approved"]!
+                                    </MudChip>
+                                }
+
+                                @if ((user.UserType < 3) && _sosFlow.FlowLogbooks?.Last().Status != 2)
+                                {
+                                    <MudButton @onclick="(() => OpenApproveFlow())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approveFlow"]</MudButton>
+                                }
+                            </MudItem>
+                        </MudItem>
+                    </td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+    <MudText Typo="Typo.h6"><b>HOJA DE OPERACION ESTANDAR (FLUJO)</b></MudText>
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable>
+            <thead>
+                <MudTr>
+                    <MudTh><b>PLANTA</b><br />@_sosFlow.SOSHub?.Plant?.Description </MudTh>
+                    <MudTd><b>GERENCIA</b><br />@_sosFlow.SOSHub?.Department?.Description</MudTd>
+                    <MudTd><b>DEPARTAMENTO</b><br />@_sosFlow.SOSHub?.Distribution?.Description</MudTd>
+                    <MudTd><b>NO. Control</b><br />@_sosFlow.InternalControlNumber</MudTd>
+                    <MudTd><b>HOJA</b><br />1 de 1</MudTd>
+                </MudTr>
+            </thead>
+        </MudSimpleTable>
+        <MudSimpleTable>
+            <tbody>
+                <MudTr>
+                    <MudTh colspan="8" rowspan="3"><b>NOMBRE DE LA OPERACION</b><br />@_sosFlow.OperationName</MudTh>
+                    @if (TryGetFlowLogbooksElementAtIndex(7, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    @if (TryGetFlowLogbooksElementAtIndex(6, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    @if (TryGetFlowLogbooksElementAtIndex(5, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTd colspan="2" rowspan="3">
+                        <b>ELABORÓ</b><br />
+                        @if (_sosFlow.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name != null)
+                        {
+                            @_sosFlow.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name
+                        }
+                    </MudTd>
+                    <MudTd colspan="2" rowspan="3">
+                        <b>REVISÓ</b><br />
+                        @if (_sosFlow.SOSHub?.ReviewerEditors?.FirstOrDefault()?.Name != null)
+                        {
+                            @_sosFlow.SOSHub?.ReviewerEditors?.FirstOrDefault()?.Name
+                        }
+                    </MudTd>
+                    <MudTd colspan="2" rowspan="3">
+                        <b>REVISÓ (H. Y S.)</b><br />
+                        @if (_sosFlow.ReviewerHS?.Name != null)
+                        {
+                            @_sosFlow.ReviewerHS.Name
+                        }
+                    </MudTd>
+                    <MudTd colspan="2" rowspan="3">
+                        <b>APROBÓ</b><br />
+                        @if (_sosFlow.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name != null)
+                        {
+                            @_sosFlow.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name
+                        }
+                    </MudTd>
+                    @if (TryGetFlowLogbooksElementAtIndex(4, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    @if (TryGetFlowLogbooksElementAtIndex(3, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    @if (TryGetFlowLogbooksElementAtIndex(2, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTh colspan="3" rowspan="3"></MudTh>
+                    <MudTd colspan="2" rowspan="3"><b>FECHA </b><br />@_sosFlow.CreatedAt?.ToShortDateString()</MudTd>
+                    <MudTd colspan="3" rowspan="3"><b>TIEMPO OBJETIVO</b><br />@_sosFlow.TargetTime</MudTd>
+
+                    @if (TryGetFlowLogbooksElementAtIndex(1, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>@item.NoRevision</MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    @if (TryGetFlowLogbooksElementAtIndex(0, out var item))
+                    {
+                        <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@item.Status</MudTh>
+                        <MudTh colspan="4"> @item.Changes</MudTh>
+                        <MudTh>@item.Date</MudTh>
+                        <MudTh>
+                            @if (item.NoRevision == 0)
+                            {
+                                <b>N</b>
+                            }
+                            else
+                            {
+                                @item.NoRevision
+                            }
+                        </MudTh>
+                    }
+                    else
+                    {
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh></MudTh>
+                        <MudTh></MudTh>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTh colspan="2"><b>APROBO </b></MudTh>
+                    <MudTh><b>NO </b></MudTh>
+                    <MudTh colspan="4"><b>CAMBIO </b></MudTh>
+                    <MudTh><b>FECHA </b></MudTh>
+                    <MudTh><b>REV.</b></MudTh>
+                </MudTr>
+            </tbody>
+        </MudSimpleTable>
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
+            <tbody class="table-header-gray">
+                <MudTr>
+                    <MudTh Style="text-align:center"><b>FLUJO </b></MudTh>
+                    <MudTh Style="text-align:center"><b>CRITERIO DE JUICIO </b></MudTh>
+                </MudTr>
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+    <br />
+    </MudPaper>
+    <MudCardActions>
+        <MudItem Class="ml-auto mt-2">
+            <MudButton OnClick="UpdateFlow" StartIcon="@Icons.Material.Filled.PlayCircle" Disabled="UpdateButton" Variant="Variant.Filled" Color="Color.Info">@Localizer["UpdateFlow"]</MudButton>
+        </MudItem>
+    </MudCardActions>
+}
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleLogbook" Options="dialogLogbookOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Flow Logbook"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="height: 65vh">
+            <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0" Hover>
+                <thead>
+                    <tr class="table-header-gray">
+                        <th>No. de revisión</th>
+                        <th>SSV</th>
+                        <th>SV</th>
+                        <th>Date</th>
+                        <th>Revised Items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_sosFlow.FlowLogbooks?.Any() ?? false)
+                    {
+                        int i = 0;
+                        @foreach (SOSFlowLogbook logbook in _sosFlow.FlowLogbooks)
+                        {
+                            <tr>
+                                <td>
+                                    @if (i == 0)
+                                    {
+                                        <span>N</span>
+                                        i++;
+                                    }
+                                    else
+                                    {
+                                        <span>@(i++)</span>
+                                    }
+                                </td>
+                                <td>@logbook.Approver?.Name</td>
+                                <td>@logbook.Reviewer?.Name</td>
+                                <td>@logbook.Date?.ToShortDateString()</td>
+                                <td>@logbook.Changes</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                    @Localizer["There is no Flow logbook"]
+                                </MudAlert>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="visibleApproveFlow" Options="dialogSignOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6">Confirm</MudText>
+        <MudText Class="mt-4 mb-4">
+            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
+            @Localizer["areYouSureYouWantToApproveThisFlow"]
+        </MudText>
+        <MudText Class="mt-4 mb-4">
+            @Localizer["onceApprovedItCannotBeModified"]
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+        <MudButton @onclick="(() => ApproveFlow())" Color="Color.Info" StartIcon="@Icons.Material.Filled.PlaylistAddCheck" Variant="Variant.Filled">@Localizer["approveFlow"]</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -734,22 +734,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         #region ApproveAnalysis
 
-        private bool visibleSign = false;
-        private void OpenSignComment()
+        private bool visibleApproveAnalysis = false;
+        private void OpenApproveAnalysis()
         {
-            visibleSign = true;
+            visibleApproveAnalysis = true;
         }
-        void CloseSign() => visibleSign = false;
+        void CloseSign() => visibleApproveAnalysis = false;
         private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
-        public async Task ApprovePat()
+        public async Task ApproveAnalysis()
         {
 
             _sosAnalysis.AnalysisLogbooks.Last()!.Status = 2;
 
              await UpdateAnalysis();
 
-             visibleSign = false;
+             visibleApproveAnalysis = false;
         }
         #endregion
 
