@@ -23,6 +23,9 @@
         public DateTime? ApplicationMonth { get; set; }
         public DateTime? CreatedAt { get; set; }
 
+        public int? SOSDistributionAdditionalTimeId { get; set; }
+        public SOSDistributionAdditionalTime? SOSDistributionAdditionalTime { get; set; }
+
         public bool? IsActive { get; set; }
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }

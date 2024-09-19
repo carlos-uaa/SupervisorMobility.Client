@@ -46,7 +46,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
-        private double totalTime;
 
         private string[] additionalTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
@@ -59,29 +58,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
         private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
 
-        public class SOSDistributionAdditionalTime
-        {
-            public int DistributionAdditionalTimeId { get; set; }
-            public string TakeQuantity { get; set; }
-            public string TakeTime { get; set; }
-            public string LeaveQuantity { get; set; }
-            public string LeaveTime { get; set; }
-            public string StepsQuantity { get; set; }
-            public string StepsTime { get; set; }
-        }
 
         protected async override Task OnInitializedAsync()
         {
-            var sosDistributionAdditionalTime = new SOSDistributionAdditionalTime
-            {
-                DistributionAdditionalTimeId = 1,
-                TakeQuantity = "10§1§4§2§4",
-                TakeTime = "8§9§10§11§12§13",
-                LeaveQuantity = "7§10§6§8§9",
-                LeaveTime = "17§16§§14§13§12",
-                StepsQuantity = "100§150§200§120§180",
-                StepsTime = "30§45§60§§§55",
-            };
 
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -158,12 +137,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     }
                 }
             }
+            var sosDistributionAdditionalTime  = _sosDistribution.SOSDistributionAdditionalTime;
+
 
             var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
             var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
             var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
-
-            //var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
             var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
             var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
@@ -188,21 +167,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
                 stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
             }
-
-            if (_sosDistribution?.SOSHub?.Sections != null)
-            {
-                totalTime = _sosDistribution.Times
-                    .Select(time =>
-                    {
-                        double timeValue;
-                        return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
-                    })
-                    .Where(timeValue => timeValue.HasValue)
-                    .Select(timeValue => timeValue.Value)
-                    .DefaultIfEmpty(0)
-                    .Sum();
-            }
-
 
 
             ShowLoading = false;
