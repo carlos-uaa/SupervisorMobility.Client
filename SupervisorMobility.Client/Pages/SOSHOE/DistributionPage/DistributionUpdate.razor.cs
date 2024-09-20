@@ -559,7 +559,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sosDistribution.AdditionalTime = string.Join("§", additionalTimes);
             _sosDistribution.CycleTime = string.Join("§", cycleTimes);
             _sosDistribution.AplicationModels = string.Join("§", applicationModels);
-
+            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("§", takeQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("§", takeTime);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("§", leaveQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("§", leaveTime);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("§", stepsQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("§", stepsTime);
+            
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
             if (result != null)
