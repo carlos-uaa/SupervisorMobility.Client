@@ -22,7 +22,6 @@ namespace SupervisorMobility.Client.Services.ExportationService
 
             if (!response.IsSuccessStatusCode)
             {
-                setSnackbarConfig();
                 snackbar.Add("Error while exporting, could not download file", Severity.Error);
             }
             else
@@ -40,7 +39,6 @@ namespace SupervisorMobility.Client.Services.ExportationService
 
             if (!response.IsSuccessStatusCode)
             {
-                setSnackbarConfig();
                 snackbar.Add("Error while exporting, could not download file", Severity.Error);
             }
             else
@@ -58,7 +56,6 @@ namespace SupervisorMobility.Client.Services.ExportationService
 
             if (!response.IsSuccessStatusCode)
             {
-                setSnackbarConfig();
                 snackbar.Add("Error while exporting, could not download file", Severity.Error);
             }
             else
@@ -68,11 +65,6 @@ namespace SupervisorMobility.Client.Services.ExportationService
                 using var streamRef = new DotNetStreamReference(stream: await fileStream);
                 await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
             }
-        }
-
-        private void setSnackbarConfig()
-        {
-            snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
         }
     }
 }
