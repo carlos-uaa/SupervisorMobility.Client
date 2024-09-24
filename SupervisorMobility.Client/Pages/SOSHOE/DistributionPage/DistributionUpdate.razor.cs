@@ -79,6 +79,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] applicationModels = new string[] { "", "", "", "", "" };
 
+
+        private string[] takeQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] takeTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] leaveQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] leaveTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -246,11 +254,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[5];
             var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[5];
 
+            var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
+
             for (int i = 0; i < 5; i++)
             {
                 additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
                 cycleTimes[i] = "0";
                 applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
+                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) ? tempTakeQuantity[i] : "0";
+                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) ? tempLeaveQuantity[i] : "0";
+                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) ? tempStepsQuantity[i] : "0";
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) ? tempTakeTime[i] : "0";
+                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
+                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
             }
 
             for (int i = 0; i < 5; i++)
@@ -533,7 +559,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sosDistribution.AdditionalTime = string.Join("§", additionalTimes);
             _sosDistribution.CycleTime = string.Join("§", cycleTimes);
             _sosDistribution.AplicationModels = string.Join("§", applicationModels);
-
+            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("§", takeQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("§", takeTime);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("§", leaveQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("§", leaveTime);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("§", stepsQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("§", stepsTime);
+            
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
             if (result != null)

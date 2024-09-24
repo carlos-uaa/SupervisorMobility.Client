@@ -46,14 +46,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
-        private double totalTime;
 
         private string[] additionalTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
         private string[] applicationModels = new string[] { "", "", "", "", "" };
 
+        private string[] takeQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] takeTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] leaveQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] leaveTime = new string[] { "0", "0", "0", "0", "0", "0" };
+        private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
+        private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
+
+
         protected async override Task OnInitializedAsync()
         {
+
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -129,32 +137,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     }
                 }
             }
+            var sosDistributionAdditionalTime  = _sosDistribution.SOSDistributionAdditionalTime;
+
 
             var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
             var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
             var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
+
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
                 additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
                 cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) ? tempCycleTimes[i] : "0";
                 applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
+                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) ? tempTakeQuantity[i] : "0";
+                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) ? tempLeaveQuantity[i] : "0";
+                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) ? tempStepsQuantity[i] : "0";
             }
 
-            if (_sosDistribution?.SOSHub?.Sections != null)
+            for (int i = 0; i < 6; i++)
             {
-                totalTime = _sosDistribution.Times
-                    .Select(time =>
-                    {
-                        double timeValue;
-                        return double.TryParse(time.Time, out timeValue) ? timeValue : (double?)null;
-                    })
-                    .Where(timeValue => timeValue.HasValue)
-                    .Select(timeValue => timeValue.Value)
-                    .DefaultIfEmpty(0)
-                    .Sum();
+                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) ? tempTakeTime[i] : "0";
+                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
+                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
             }
-
 
 
             ShowLoading = false;

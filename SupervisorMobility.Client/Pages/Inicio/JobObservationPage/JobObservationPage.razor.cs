@@ -6,6 +6,7 @@ using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Services.BreadcrumsService;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -78,8 +79,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             _links = new List<BreadcrumbItem>
             {
-                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                    new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation", disabled: true),
+                new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                new BreadcrumbItem(text: Localizer["jobObservations"], href: "/jobobservation", disabled: true),
             };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
@@ -91,108 +92,76 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Error You have to log in", Severity.Error);
                 NavigationManager.NavigateTo($"/");
+                return;
             }
-            else
+
+            await GetUserAsync();
+            _jobObservations.Clear();
+            ClearFilters();
+
+            if (user != null)
             {
+                var jobObservationsTask = user.UserType != 3
+                    ? JobObservationService.GetAllJobObservations(true, true)
+                    : JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId);
 
-                await GetUserAsync();
-                //await LateDates();
-                _jobObservations.Clear();
-                JobObservationsTotalCount();
-                ClearFilters();
-
-                if (user != null)
+                Task<List<Plant>> plantsTask = null;
+                if (user.UserType == 1 || user.UserType == 5)
                 {
-                    if(user.UserType != 3)
-                    {
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true);
-                    }
-                    else
-                    {
-                        _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId);
-                    }
-
-                    if (user.UserType == 1 || user.UserType == 6)
-                    {
-                        _plants = await PlantServices.GetPlants();
-                        _plants = _plants.OrderBy(p => p.Description).ToList();
-
-                        foreach (var jobobs in _jobObservationsAux)
-                        {
-
-                            _jobObservations.Add(jobobs);
-
-                        }
-
-                    }
-                    else if (user.UserType == 2)
-                    {
-                        plantId = (int)user.PlantId;
-
-                        if (user.Areas != null)
-                        {
-                            _areas = user.Areas.ToList();
-                            _areas.OrderBy(a => a.Description).ToList();
-                        }
-                        foreach (var jobobs in _jobObservationsAux)
-                        {
-                            if (plantId == jobobs.PlantId)
-                            {
-                                foreach (User usr in user.Subordinates)
-                                {
-                                    if (jobobs.SupervisorId == usr.UserId && jobobs.PlantId == plantId)
-                                    {
-                                        _jobObservations.Add(jobobs);
-
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                    else if (user.UserType == 3)
-                    {
-                        plantId = (int)user.PlantId;
-                        areaId = (int)user.AreaId;
-
-                        _jobObservations = _jobObservationsAux.ToList();
-
-                        _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
-
-                        operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
-                    }
-                    else if (user.UserType == 5)
-                    {
-                        _plants = await PlantServices.GetPlants();
-                        _plants = _plants.OrderBy(p => p.Description).ToList();
-
-                        plantId = (int)user.PlantId;
-                        _areas = await AreaServices.GetAreas(plantId);
-                        _areas = _areas.OrderBy(a => a.Description).ToList();
-
-                        foreach (var jobobs in _jobObservationsAux)
-                        {
-                            if (plantId == jobobs.PlantId)
-                            {
-                                foreach (User usr in user.Subordinates)
-                                {
-                                    if (jobobs.Supervisor.SuperiorId == usr.UserId)
-                                    {
-
-                                        _jobObservations.Add(jobobs);
-
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-
-                    _filterJobObservation = _jobObservations;
-                    JobObservationsTotalCount();
-                    StateHasChanged();
+                    plantsTask = PlantServices.GetPlants();
                 }
+
+                Task<List<Area>> areasTask = null;
+                if (user.UserType == 2 || user.UserType == 5)
+                {
+                    plantId = (int)user.PlantId;
+                    areasTask = AreaServices.GetAreas(plantId);
+                }
+
+                _jobObservationsAux = await jobObservationsTask;
+
+                if (plantsTask != null)
+                {
+                    _plants = (await plantsTask).OrderBy(p => p.Description).ToList();
+                }
+
+                if (areasTask != null)
+                {
+                    _areas = (await areasTask).OrderBy(a => a.Description).ToList();
+                }
+
+                if (user.UserType == 1 || user.UserType == 6)
+                {
+                    _jobObservations = _jobObservationsAux.ToList();
+                }
+                else if (user.UserType == 2)
+                {
+                    plantId = (int)user.PlantId;
+                    _jobObservations = _jobObservationsAux
+                        .Where(jobobs => jobobs.PlantId == plantId &&
+                                         user.Subordinates.Any(usr => usr.UserId == jobobs.SupervisorId))
+                        .ToList();
+                }
+                else if (user.UserType == 3)
+                {
+                    plantId = (int)user.PlantId;
+                    areaId = (int)user.AreaId;
+                    _jobObservations = _jobObservationsAux.ToList();
+                    _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
+                    operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
+                }
+                else if (user.UserType == 5)
+                {
+                    plantId = (int)user.PlantId;
+                    _jobObservations = _jobObservationsAux
+                        .Where(jobobs => jobobs.PlantId == plantId &&
+                                         user.Subordinates.Any(usr => usr.UserId == jobobs.Supervisor.SuperiorId))
+                        .ToList();
+                }
+
+                _filterJobObservation = _jobObservations;
+                JobObservationsTotalCount();
+                StateHasChanged(); 
             }
         }
 
@@ -272,66 +241,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservations.Clear();
             operatorUsers.Clear();
 
+            var filteredJobObs = _jobObservationsAux.Where(jobobs => jobobs.PlantId == plantId && jobobs.AreaId == areaId).ToList();
 
-            if (user.UserType == 1 || user.UserType == 6)
+            switch (user.UserType)
             {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId && areaId == jobobs.AreaId)
-                    {
+                case 1:
+                case 6:
+                    _jobObservations = filteredJobObs;
+                    break;
 
-                        _jobObservations.Add(jobobs);
+                case 2:
+                    var subordinateIds = user.Subordinates.Select(s => s.UserId).ToHashSet();
+                    _jobObservations = filteredJobObs
+                        .Where(jobobs => subordinateIds.Contains(jobobs.SupervisorId))
+                        .ToList();
+                    break;
 
-                    }
-                }
-            }
-            else if (user.UserType == 2)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId)
-                    {
-                        foreach (User usr in user.Subordinates)
-                        {
-                            if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
-                            {
+                case 3:
+                    _jobObservations = filteredJobObs
+                        .Where(jobobs => jobobs.SupervisorId == user.UserId)
+                        .ToList();
+                    break;
 
-                                _jobObservations.Add(jobobs);
-
-                            }
-                        }
-                    }
-                }
-            }
-            else if (user.UserType == 3)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId && jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
-                    {
-
-                        _jobObservations.Add(jobobs);
-
-                    }
-                }
-            }
-            else if (user.UserType == 5)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId)
-                    {
-                        foreach (User usr in user.Subordinates)
-                        {
-                            if (jobobs.Supervisor.SuperiorId == usr.UserId && jobobs.AreaId == areaId)
-                            {
-
-                                _jobObservations.Add(jobobs);
-
-                            }
-                        }
-                    }
-                }
+                case 5:
+                    var superiorIds = user.Subordinates.Select(s => s.UserId).ToHashSet();
+                    _jobObservations = filteredJobObs
+                        .Where(jobobs => jobobs.Supervisor?.SuperiorId.HasValue == true && superiorIds.Contains(jobobs.Supervisor.SuperiorId.Value))
+                        .ToList();
+                    break;
             }
 
             _filterJobObservation = _jobObservations;
@@ -339,19 +276,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
-            //operator User
-            //users = await UsersService.GetUsers();
-            //foreach (var operatorUser in users)
-            //{
-            //    if (operatorUser.PlantId == plantId && operatorUser.AreaId == areaId && operatorUser.UserType == 4)
-            //    {
-            //        operatorUsers.Add(operatorUser);
-            //    }
-            //}
             operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
 
             StateHasChanged();
-
         }
 
         public void ActiveFilters()
