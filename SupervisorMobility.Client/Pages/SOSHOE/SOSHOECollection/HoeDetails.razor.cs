@@ -1,4 +1,5 @@
 using BlazorCameraStreamer;
+using DocumentFormat.OpenXml.VariantTypes;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
@@ -1742,10 +1743,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    _sosHub.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
-                    var res = await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                    bool res = await SOSAnalysisServices.DeleteSOSAnalysis(id);
                     if (res){
-                        Documents.RemoveAll(d => d is SOSAnalysis analysis && analysis.SOSAnalysisId == id);
+
+                        _sosHub.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
+                        Documents.RemoveAll(doc => doc is SOSAnalysis analysis && analysis.SOSAnalysisId == id);
+
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemoveAnalysis"]}", Severity.Info);
                     }
 
                 }
@@ -1758,11 +1765,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                 
-                    var res = await SOSCombinationServices.DeleteSOSCombination(id);
+
+                    bool res = await SOSCombinationServices.DeleteSOSCombination(id);
                     if (res)
                     {
-                        Documents.RemoveAll(d => d is SOSCombination Combination && Combination.SOSCombinationId == id);
+                        _sosHub.SOSCombination.RemoveAll(Combination => Combination.SOSCombinationId == id);
+
+                        Documents.RemoveAll(doc => doc is SOSFlow Flow && Flow.SOSFlowId == id);
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemoveCombination"]}", Severity.Info);
                     }
                 }
             }
@@ -1775,10 +1788,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 if (confirm == "Deleted!")
                 {
                    
-                    var res = await SOSDistributionServices.DeleteSOSDistribution(id);
+                    bool res = await SOSDistributionServices.DeleteSOSDistribution(id);
                     if (res)
                     {
-                        Documents.RemoveAll(d => d is SOSDistribution Distribution && Distribution.SOSDistributionId == id);
+                        _sosHub.SOSDistribution.RemoveAll(Distribution => Distribution.SOSDistributionId == id);
+
+                        Documents.RemoveAll(doc => doc is SOSDistribution Distribution && Distribution.SOSDistributionId == id);
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemoveDistribution"]}", Severity.Info);
                     }
                 }
             }
@@ -1790,11 +1808,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    
-                    var res = await SOSFlowServices.DeleteSOSFlow(id);
+
+                    bool res = await SOSFlowServices.DeleteSOSFlow(id);
                     if (res)
                     {
-                        Documents.RemoveAll(d => d is SOSFlow Flow && Flow.SOSFlowId == id);
+                        _sosHub.SOSFlow.RemoveAll(Flow => Flow.SOSFlowId == id);
+
+                        Documents.RemoveAll(doc => doc is SOSFlow Flow && Flow.SOSFlowId == id);
+
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemoveFlow"]}", Severity.Info);
                     }
                 }
             }
@@ -1806,16 +1830,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    
-                    var res = await SOSSequenceServices.DeleteSOSSequence(id);
+
+                    bool res = await SOSSequenceServices.DeleteSOSSequence(id);
                     if (res)
                     {
-                        Documents.RemoveAll(d => d is SOSSequence Sequence && Sequence.SOSSequenceId == id);
+                        _sosHub.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
+
+                        Documents.RemoveAll(doc => doc is SOSSequence Sequence && Sequence.SOSSequenceId == id);
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemoveSequence"]}", Severity.Info);
                     }
                 }
             }
 
-
+            StateHasChanged();
         }
 
         private int selectedRowNumber = -1;
