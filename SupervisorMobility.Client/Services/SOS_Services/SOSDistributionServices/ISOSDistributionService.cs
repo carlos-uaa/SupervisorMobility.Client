@@ -6,7 +6,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
         Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false);
         Task<List<SOSDistribution>> GetAllSOSDistribution(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSDistribution> UpdateSOSDistribution(SOSDistribution SosEntity);
-        Task<SOSDistribution> DeleteSOSDistribution(int SosEntity_id);
+        Task<bool> DeleteSOSDistribution(int SosEntity_id);
 
         Task<FileUpload> AddIllustrationToSOSDistribution(MultipartFormDataContent? contentfiles, int SOS_SOSDistribution_id);
         Task<string> ShowIlustrationSOSDistribution(int idfile);

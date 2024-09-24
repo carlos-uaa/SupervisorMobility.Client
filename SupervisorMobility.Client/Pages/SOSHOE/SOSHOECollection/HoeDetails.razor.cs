@@ -1743,7 +1743,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 if (confirm == "Deleted!")
                 {
                     _sosHub.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
-                    await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                    var res = await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                    if (res){
+                        Documents.RemoveAll(d => d is SOSAnalysis analysis && analysis.SOSAnalysisId == id);
+                    }
+
                 }
             }
             else if (typeof(T) == typeof(SOSCombination))
@@ -1754,8 +1758,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    _sosHub.SOSCombination.RemoveAll(combination => combination.SOSCombinationId == id);
-                    await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                 
+                    var res = await SOSCombinationServices.DeleteSOSCombination(id);
+                    if (res)
+                    {
+                        Documents.RemoveAll(d => d is SOSCombination Combination && Combination.SOSCombinationId == id);
+                    }
                 }
             }
             else if (typeof(T) == typeof(SOSDistribution))
@@ -1766,8 +1774,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    _sosHub.SOSDistribution.RemoveAll(distribution => distribution.SOSDistributionId == id);
-                    await SOSDistributionServices.DeleteSOSDistribution(id);
+                   
+                    var res = await SOSDistributionServices.DeleteSOSDistribution(id);
+                    if (res)
+                    {
+                        Documents.RemoveAll(d => d is SOSDistribution Distribution && Distribution.SOSDistributionId == id);
+                    }
                 }
             }
             else if (typeof(T) == typeof(SOSFlow))
@@ -1778,8 +1790,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    _sosHub.SOSFlow.RemoveAll(flow => flow.SOSFlowId == id);
-                    await SOSFlowServices.DeleteSOSFlow(id);
+                    
+                    var res = await SOSFlowServices.DeleteSOSFlow(id);
+                    if (res)
+                    {
+                        Documents.RemoveAll(d => d is SOSFlow Flow && Flow.SOSFlowId == id);
+                    }
                 }
             }
             else if (typeof(T) == typeof(SOSSequence))
@@ -1790,8 +1806,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                    _sosHub.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
-                    await SOSSequenceServices.DeleteSOSSequence(id);
+                    
+                    var res = await SOSSequenceServices.DeleteSOSSequence(id);
+                    if (res)
+                    {
+                        Documents.RemoveAll(d => d is SOSSequence Sequence && Sequence.SOSSequenceId == id);
+                    }
                 }
             }
 
