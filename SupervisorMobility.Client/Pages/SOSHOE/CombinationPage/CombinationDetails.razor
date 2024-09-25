@@ -1,0 +1,350 @@
+﻿@page "/soshoe/Combination/Details/{CombinationId:int}"
+
+@inject ISOSCombinationService SOSCombinationServices
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IExportationService Exportation
+
+<style>
+    .vertical {
+        writing-mode: tb-rl;
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .border-left {
+        border-left: 2px solid #ababab;
+    }
+
+    .table-header td {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray th {
+        background-color: #f5f5f6;
+    }
+
+    .table-header-gray td {
+        padding: 0px 1% !important;
+    }
+
+    .divider {
+        border-left: 1px solid var(--mud-palette-table-lines);
+    }
+
+    .images_cell {
+    }
+
+    .table-header-gray .images_cell {
+        padding: 1% 2% !important;
+    }
+
+    .section_divider {
+        border-top: 3px dashed var(--mud-palette-table-lines);
+    }
+
+    .mud-input .mud-input-slot {
+        font-size: 0.6rem;
+        scrollbar-width: none;
+        margin: 2px;
+    }
+
+    .verticalText {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
+
+    .small-font {
+        font-size: 0.8rem;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+
+</style>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudText Typo="Typo.h6"><b>HOJA DE OPERACION ESTANDAR (COMBINACIÓN)</b></MudText>
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable>
+            <thead>
+                <MudTr>
+                    <MudTh colspan="4" rowspan="2"><b>NOMBRE DEL PROCESO</b><br />@_sosCombination.ProcessName</MudTh>
+                    <MudTh><b>TURNO</b></MudTh>
+                    <MudTh><b>OPERADOR</b></MudTh>
+                    <MudTh><b>SUPERVISOR</b></MudTh>
+                </MudTr>
+            </thead>
+            <tbody>
+                <MudTr>
+                    <MudTd rowspan="2">
+                        <b>ELABORÓ</b><br />
+                        @if (_sosCombination.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name != null)
+                        {
+                            @_sosCombination.SOSHub?.ApproverOwners?.FirstOrDefault()?.Name
+                        }
+                    </MudTd>
+                    <MudTd rowspan="2">
+                        <b>REVISÓ</b><br />
+                        @if (_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Reviewer?.Name != null)
+                        {
+                            @_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Reviewer?.Name
+                        }
+                    </MudTd>
+                    <MudTd rowspan="2">
+                        <b>REVISÓ (H y S)</b><br />
+                        @if (_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Reviewer?.Name != null)
+                        {
+                            @_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Reviewer?.Name
+                        }
+                    </MudTd>
+                    <MudTd rowspan="2">
+                        <b>APROBÓ</b><br />
+                        @if (_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Approver?.Name != null)
+                        {
+                            @_sosCombination.CombinationLogbooks?.FirstOrDefault()?.Approver?.Name
+                        }
+                    </MudTd>
+                </MudTr>
+                <MudTr>
+                    <MudTd>
+                        <ul style="list-style-type:none; padding-left:0;">
+                            @if(_sosCombination.Turns?.Any() ?? false){
+
+                                @foreach(Turn turn in _sosCombination.Turns){
+
+                                    <li>@turn.TurnType</li>
+                                }
+                            }
+                        </ul>
+                    </MudTd>
+                    <MudTd>
+                        <ul style="list-style-type:none; padding-left:0;">
+                            @if (_sosCombination.Turns?.Any() ?? false)
+                            {
+
+                                @foreach (Turn turn in _sosCombination.Turns)
+                                {
+
+                                    <li>@turn.Operator?.Name</li>
+                                }
+                            }
+                        </ul>
+                    </MudTd>
+                    <MudTd>
+                        <ul style="list-style-type:none; padding-left:0;">
+                            @if (_sosCombination.Turns?.Any() ?? false)
+                            {
+
+                                @foreach (Turn turn in _sosCombination.Turns)
+                                {
+
+                                    <li>@turn.Supervisor?.Name</li>
+                                }
+                            }
+                        </ul>
+                    </MudTd>
+                </MudTr>
+                <MudTr>
+                    <MudTd><b>FECHA DE EMISIÓN</b><br />@* @_sosCombination.CreatedAt?.ToShortDateString() *@</MudTd>
+                    <MudTd>
+                        <b>MES DE APLICACIÓN</b><br />@_sosCombination.ApplicationMonth?.ToString("MM/yyyy")
+                    </MudTd>
+                    <MudTd><b>MODELO</b><br />
+                        @foreach (Product model in _sosCombination.SOSHub.AppliedModels)
+                        {
+                            @($"{model?.Description} -")
+                        }
+                    </MudTd>
+                    <MudTd><b>TIEMPO DE APRENDIZAJE</b><br />@_sosCombination.SOSHub?.TrainingTime</MudTd>
+                    <MudTd colspan="2"><b>PLANTA</b><br />@_sosCombination.SOSHub?.Plant?.Description</MudTd>
+                    <MudTd><b>GERENCIA</b><br />@_sosCombination.SOSHub?.Department?.Description</MudTd>
+                </MudTr>
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+    <br />
+    <MudSimpleTable Style="width:100%">
+        <tr>
+            @foreach (var rev in mostRecentLogs)
+            {
+                <td style="width:25%; font-size: 12px;">@(rev.Approver?.Name)</td>
+                <td style="width:25%; font-size: 12px;">@(rev.Changes)</td>
+                <td style="width:25%; font-size: 12px;">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", ""))</td>
+                <td style="width:25%; font-size: 12px;">@(rev.Reviewer?.Name)</td>
+            }
+        </tr>
+        <tr>
+            <th style="font-size: 12px;">APROBO</th>
+            <th style="font-size: 12px;">CAMBIO</th>
+            <th style="font-size: 12px;">FECHA</th>
+            <th style="font-size: 12px;">REV</th>
+        </tr>
+    </MudSimpleTable>
+    <br />
+    <MudSimpleTable Style="width:100%" Class="table-header-gray mb-2" Elevation="3">
+        <tr>
+            <th style="writing-mode: vertical-rl; transform: rotate(180deg); " rowspan="2">SÍMBOLOS</th>
+            <th style="">SEGURIDAD</th>
+            <th style="">INVENTARIO</th>
+            <th style="">CHEQUEO</th>
+            <th style="text-align:center;">ÁREA DE OPERACIÓN</th>
+            <th style="">RUTA</th>
+        </tr>
+        <tr>
+            <td style="text-align: center; vertical-align: middle;">
+                <MudImage Src="/Images/DistributionSymbols/safety.png" Alt="Seguridad" Width="20" />
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <MudImage Src="/Images/DistributionSymbols/inventory.png" Alt="Inventario" Width="20" />
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <MudImage Src="/Images/DistributionSymbols/checking.png" Alt="Chequeo" Width="20" />
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <MudImage Src="/Images/DistributionSymbols/operation_area.png" Alt="Área de Operación" Width="20" />
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" />
+            </td>
+        </tr>
+    </MudSimpleTable>
+
+    <MudItem Style="float:right;">
+        <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
+    </MudItem>
+    
+}
+
+
+
+@*Evidence Modal*@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleEvidence" Options="dialogEvidenceOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Combination Images"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Elevation="0">
+            @if (capturedImages.Count() > 0)
+            {
+                <MudCarousel Class="mud-width-full" Style="height: 65vh" ShowArrows=true ShowBullets=true EnableSwipeGesture=true AutoCycle="false" TData="object" @bind-SelectedIndex=@photoIndex>
+                    <PreviousButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                        </MudAvatar>
+                    </PreviousButtonTemplate>
+                    <NextButtonTemplate>
+                        <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                            <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                        </MudAvatar>
+                    </NextButtonTemplate>
+                    <ChildContent>
+                        @foreach (var evidence in capturedImages)
+                        {
+                            <MudCarouselItem Transition="Transition.Fade">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="650" Width="1152" Src=@evidence Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 55vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                            </MudCarouselItem>
+                        }
+                    </ChildContent>
+                </MudCarousel>
+            }
+            else
+            {
+                <MudItem Style="height: 65vh">
+                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                        @Localizer["There are no images"]
+                    </MudAlert>
+                </MudItem>
+            }
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleLogbook" Options="dialogLogbookOptions">
+    <TitleContent>
+        <div class="d-flex" style="align-items: center; justify-content:center;">
+            <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+            <MudText Typo="Typo.h6" Style="text-align: center;">
+                @Localizer["Combination Logbook"]
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudItem Style="height: 65vh">
+            <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0" Hover>
+                <thead>
+                    <tr class="table-header-gray">
+                        <th>No. de revisión</th>
+                        <th>SSV</th>
+                        <th>SV</th>
+                        <th>Date</th>
+                        <th>Revised Items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_sosCombination.CombinationLogbooks?.Any() ?? false)
+                    {
+                        int i = 0;
+                        @foreach (SOSCombinationLogbook logbook in _sosCombination.CombinationLogbooks)
+                        {
+                            <tr>
+                                <td>
+                                    @if (i == 0)
+                                    {
+                                        <span>N</span>
+                                        i++;
+                                    }
+                                    else
+                                    {
+                                        <span>@(i++)</span>
+                                    }
+                                </td>
+                                <td>@logbook.Approver?.Name</td>
+                                <td>@logbook.Reviewer?.Name</td>
+                                <td>@logbook.Date?.ToShortDateString()</td>
+                                <td>@logbook.Changes</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                    @Localizer["There is no combination logbook"]
+                                </MudAlert>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+
+</MudDialog>

@@ -82,60 +82,60 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
             return SOSHubsRetorned;
         }
 
-      
 
-        //public async Task<FileUpload> AddIllustrationToSOSCombination(MultipartFormDataContent? contentfiles, int SOS_SOSCombination_id)
-        //{
-        //    var response = await _http.PostAsync($"SOS/Combination/Ilustrations/{SOS_SOSCombination_id}", contentfiles);
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var content = await response.Content.ReadAsStringAsync();
+        public async Task<FileUpload> AddIllustrationToSOSCombination(MultipartFormDataContent? contentfiles, int SOS_SOSCombination_id)
+        {
+            var response = await _http.PostAsync($"SOS/Combination/Ilustrations/{SOS_SOSCombination_id}", contentfiles);
 
-        //        var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
 
-        //        return result;
+                var result = JsonSerializer.Deserialize<FileUpload>(content, _options);
 
-        //    }
-        //    else
-        //    {
-        //        await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
-        //    }
+                return result;
 
-        //    return null;
-        //}
-     
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error Upload Data error: {response.Content.ReadAsStringAsync().Result}");
+            }
 
-        //public async Task<string> ShowIlustrationSOSCombination(int idfile)
-        //{
-        //    var response = await _http.GetAsync($"SOS/Combination/Ilustrations/{idfile}");
+            return null;
+        }
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var contentType = response.Content.Headers.ContentType.MediaType;
-        //        var contentBytes = await response.Content.ReadAsByteArrayAsync();
-        //        var base64Content = Convert.ToBase64String(contentBytes);
 
-        //        return $"data:{contentType};base64,{base64Content}";
-        //    }
-        //    else
-        //    {
-        //        return "Error Loading Image";
-        //    }
-        //}
+        public async Task<string> ShowIlustrationSOSCombination(int idfile)
+        {
+            var response = await _http.GetAsync($"SOS/Combination/Ilustrations/{idfile}");
 
-        //public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSCombination_id, int ImageFile_id)
-        //{
-        //    var response = await _http.DeleteAsync($"SOS/Combination/Ilustrations/{SOS_SOSCombination_id}/remove/{ImageFile_id}");
-        //    var content = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var contentType = response.Content.Headers.ContentType.MediaType;
+                var contentBytes = await response.Content.ReadAsByteArrayAsync();
+                var base64Content = Convert.ToBase64String(contentBytes);
 
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        return false;
-        //    }
+                return $"data:{contentType};base64,{base64Content}";
+            }
+            else
+            {
+                return "Error Loading Image";
+            }
+        }
 
-        //    return true;
-        //}
+        public async Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSCombination_id, int ImageFile_id)
+        {
+            var response = await _http.DeleteAsync($"SOS/Combination/Ilustrations/{SOS_SOSCombination_id}/remove/{ImageFile_id}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
 
 
