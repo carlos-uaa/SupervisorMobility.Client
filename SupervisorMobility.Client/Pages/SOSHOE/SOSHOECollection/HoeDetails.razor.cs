@@ -258,9 +258,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             stationId = _sosHub.StationId ?? stationId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
-            //productId = _sosHub.AppliedModelId ?? productId;
-            //supervisorEditorId = _sosHub.ReviewerEditorId ?? supervisorEditorId;
-            //supervisorOwnerId = _sosHub.ApproverOwnerId ?? supervisorOwnerId;
+        
 
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
 
