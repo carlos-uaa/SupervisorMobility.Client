@@ -514,6 +514,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
             _assychart = null;
+            jobProductId = 0;
+            _specifications = new();
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
 
@@ -533,6 +535,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.SupervisorId = 0;
             _supervisors.Clear();
             _assychart = null;
+            jobProductId = 0;
+            _specifications = new();
+
             if (user.UserType == 1)
             {
                 _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
@@ -587,6 +592,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowOperations()
         {
             _assychart = null;
+            _specifications = new();
+            jobProductId = 0;
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
@@ -800,7 +807,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
             {
-                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                var op = _operations.Where(o=>o.OperationId == _jobObservation.OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
                     var names = op.NameTime.Replace(',', '.').Split("§");
@@ -2437,6 +2444,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task UpdateOperation()
         {
+            jobProductId = 0;
+            _specifications = new();
             var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
             if (operation != null)
             {
