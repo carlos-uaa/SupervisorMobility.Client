@@ -25,6 +25,9 @@
         public ICollection<SOSCombinationLogbook>? CombinationLogbooks { get; set; } = new List<SOSCombinationLogbook>();
         public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
 
+        public DateTime? CreatedAt { get; set; }
+        public int? SOSCombinationOperationSequenceId { get; set; }
+        public ICollection<SOSCombinationOperationSequence>? SOSCombinationOperationSequence { get; set; }
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
     }
