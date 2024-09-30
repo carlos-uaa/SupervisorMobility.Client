@@ -7,12 +7,12 @@
         public string? InternalControlNumber { get; set; }
         public string? OperationName { get; set; }
         public string? ProcessName { get; set; }
-
+        public string? ProductionPlanAndObservations { get; set; }
 
         public int? ReviewerHSId { get; set; }
         public User? ReviewerHS { get; set; }
         public FileUpload? ReviewerHSSignatureImage { get; set; } = new();
-
+            
        
 
         public ICollection<Turn>? Turns { get; set; }

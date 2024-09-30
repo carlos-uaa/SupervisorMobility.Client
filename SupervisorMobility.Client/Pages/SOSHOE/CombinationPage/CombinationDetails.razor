@@ -63,6 +63,11 @@
         margin-bottom: 5px;
     }
 
+    .small-font2{
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
 
 </style>
 
@@ -83,8 +88,7 @@
 else
 {
     <MudText Typo="Typo.h6"><b>HOJA DE OPERACION ESTANDAR (COMBINACIÓN)</b></MudText>
-    <MudPaper Square="true" Elevation="3">
-        <MudSimpleTable>
+        <MudSimpleTable Elevation="3">
             <thead>
                 <MudTr>
                     <MudTh colspan="4" rowspan="2"><b>NOMBRE DEL PROCESO</b><br />@_sosCombination.ProcessName</MudTh>
@@ -180,8 +184,29 @@ else
                     <MudTd colspan="2"><b>PLANTA</b><br />@_sosCombination.SOSHub?.Plant?.Description</MudTd>
                     <MudTd><b>GERENCIA</b><br />@_sosCombination.SOSHub?.Department?.Description</MudTd>
                 </MudTr>
-
-
+                    <td class="divider images_cell" colspan="7" style="min-width: 30vw; height: 100%;">
+                        <MudItem Class="d-flex" Style="justify-content: center; margin-top: 2px; margin-bottom: -8px;">
+                            @if (capturedImages.Any())
+                            {
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                                        @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
+                                        {
+                                            <MudItem Class="mb-2 mr-2">
+                                                <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
+                                            </MudItem>
+                                        }
+                                    </MudItem>
+                                </div>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                    @Localizer["There are no images"]
+                                </MudAlert>
+                            }
+                        </MudItem>
+                    </td>
                 <MudTr>
                     <MudTd><b>VOLUMEN DE PRODUCCIÓN POR TURNO</b><br />@_sosCombination.ProductionVolumePerShift </MudTd>
                     <MudTd>
@@ -191,7 +216,9 @@ else
                         <b>NO. DE CONTROL</b><br />@_sosCombination.ControlNumber
                     </MudTd>
                     <MudTd colspan="4" >
-                        <MudSimpleTable Style="width:100%" Class="table-header-gray mb-2" Elevation="3">
+                        <MudSimpleTable Style="width:100%" Class="table-header-gray" Elevation="1">
+                        <tbody>
+
                             <tr>
                                 <th style="writing-mode: vertical-rl; transform: rotate(180deg); " rowspan="2">SÍMBOLOS</th>
                                 <th style="">SEGURIDAD</th>
@@ -217,34 +244,78 @@ else
                                     <MudIcon Icon="@Icons.Material.Filled.ArrowForward" />
                                 </td>
                             </tr>
+                        </tbody>
                         </MudSimpleTable>
                     </MudTd>
                 </MudTr>
 
             </tbody>
         </MudSimpleTable>
-    </MudPaper>
+        <br />
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Bordered Elevation="3">
+            <tbody>
+                <tr>
+                    <td class="verticalText"><span class="small-font2">SECUENCIA DE <br />OPERACIÓN</span></td>
+                    <td>No. DE PROCESO</td>
+                    <td class="verticalText"><span class="small-font2">PARTES POR CICLO</span></td> 
+                    <td class="verticalText"><span class="small-font2">TIEMPO DE OPERACIÓN <br />MANUAL</span></td>
+                    <td class="verticalText"><span class="small-font2">TIEMPO DE OP. MANUAL <br />CON MAQ. EN <br />AUTOMATICO</span></td>
+                    <td class="verticalText"><span class="small-font2">TIEMPO DE OP.<br /> AUTO. DE MAQ.</span></td>
+                    <td style="min-width: 40vw;"></td>
+                </tr>
+                @if(_sosCombination.SOSCombinationOperationSequence?.Any() ?? false)
+                {
+                    @foreach(SOSCombinationOperationSequence operationSequence in _sosCombination.SOSCombinationOperationSequence)
+                    {
+                        <tr>
+                            <td>@operationSequence.SequenceId</td>
+                            <td>@operationSequence.ProcessName</td>
+                            <td>@operationSequence.PartsPerCycle</td>
+                            <td>@operationSequence.ManualOperationTime</td>
+                            <td>@operationSequence.ManualOperationTimeWithMachineInAutomatic</td>
+                            <td>@operationSequence.AutomaticMachineOperationTime</td>
+                        </tr>
+                    }
+                    
+                }
+            </tbody>
+        </MudSimpleTable>
     <br />
-    <MudSimpleTable Style="width:100%" Class="table-header-gray mb-2" Elevation="3">
+    <MudSimpleTable Style="width:100%; padding: 10px" Elevation="3">
         <tr>
-            @foreach (var rev in mostRecentLogs)
-            {
-                <td style="width:25%; font-size: 12px;">@(rev.Approver?.Name)</td>
-                <td style="width:25%; font-size: 12px;">@(rev.Changes)</td>
-                <td style="width:25%; font-size: 12px;">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", ""))</td>
-                <td style="width:25%; font-size: 12px;">@(rev.Reviewer?.Name)</td>
-            }
+            <td colspan="2">
+                <b>PLAN DE PRODUCCIÓN Y OBSERVACIONES</b>
+            </td>
         </tr>
         <tr>
-            <th style="font-size: 12px;">APROBO</th>
-            <th style="font-size: 12px;">CAMBIO</th>
-            <th style="font-size: 12px;">FECHA</th>
-            <th style="font-size: 12px;">REV</th>
+            <td colspan="2">
+                <MudInput Lines="4" Value="@_sosCombination.ProductionPlanAndObservations" Variant="Variant.Outlined" Style="min-width: 100%;" Class="mb-4" ReadOnly/>
+            </td>
+        </tr>
+        <tr>
+            <td width="50%"></td>
+            <td>
+                <MudSimpleTable Class="table-header-gray mb-2">
+                    <tr>
+                        @foreach (var rev in mostRecentLogs)
+                        {
+                            <td style="width:25%; font-size: 12px;">@(rev.Approver?.Name)</td>
+                            <td style="width:25%; font-size: 12px;">@(rev.Changes)</td>
+                            <td style="width:25%; font-size: 12px;">@(rev.Date?.ToString("dd-MMM-yyyy").Replace(".", ""))</td>
+                            <td style="width:25%; font-size: 12px;">@(rev.Reviewer?.Name)</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th style="font-size: 12px;">APROBO</th>
+                        <th style="font-size: 12px;">CAMBIO</th>
+                        <th style="font-size: 12px;">FECHA</th>
+                        <th style="font-size: 12px;">REV</th>
+                    </tr>
+                </MudSimpleTable>
+            </td>
         </tr>
     </MudSimpleTable>
     <br />
-
-
     <MudItem Style="float:right;">
         <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
     </MudItem>

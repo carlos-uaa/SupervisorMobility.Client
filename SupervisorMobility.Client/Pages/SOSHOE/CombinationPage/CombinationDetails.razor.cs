@@ -47,22 +47,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
 
-        private string[] additionalTimes = new string[] { "0", "0", "0", "0", "0" };
-        private string[] cycleTimes = new string[] { "0", "0", "0", "0", "0" };
-        private string[] applicationModels = new string[] { "", "", "", "", "" };
-
-        private string[] takeQuantity = new string[] { "0", "0", "0", "0", "0" };
-        private string[] takeTime = new string[] { "0", "0", "0", "0", "0", "0" };
-        private string[] leaveQuantity = new string[] { "0", "0", "0", "0", "0" };
-        private string[] leaveTime = new string[] { "0", "0", "0", "0", "0", "0" };
-        private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
-        private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
-
-
         protected async override Task OnInitializedAsync()
         {
-
-
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -160,26 +146,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         //    IndexCombination = 0;
         //}
 
-
-        public static string ReasonFormat(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return input;
-            }
-
-            if (!input.StartsWith("("))
-            {
-                input = "(" + input;
-            }
-
-            if (!input.EndsWith(")"))
-            {
-                input = input + ")";
-            }
-
-            return input;
-        }
 
         private void OpenEvidenceDialog(int index)
         {
