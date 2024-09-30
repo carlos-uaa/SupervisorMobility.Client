@@ -1533,6 +1533,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.SupervisorId = 0;
             productSpecification = "0";
             jobProductId = 0;
+            _specifications = new();
             _assychart = null;
 
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
@@ -1544,6 +1545,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.SupervisorId = 0;
             _supervisors.Clear();
             _assychart = null;
+            jobProductId = 0;
+            _specifications = new();
             if (user.UserType == 1)
             {
                 _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
@@ -1643,8 +1646,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             productSpecification = "0";
             jobProductId = 0;
+            _specifications = new();
             _jobObservation.OperationId = 0;
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+        }
+
+        private async void UpdateOperation(int id)
+        {
+            _jobObservation.OperationId = id;
+            jobProductId = 0;
+            _specifications = new();
         }
 
         public async void ModifyKPI(int kpi)
