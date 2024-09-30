@@ -7,17 +7,13 @@
         public string? OperationName { get; set; }
         public string? ProcessName { get; set; }
 
-        public int? ReviewerId { get; set; }
-        public User? Reviewer { get; set; }
-        public FileUpload? ReviewerSignatureImage { get; set; } = new();
-
+       
         public int? ReviewerHSId { get; set; }
         public User? ReviewerHS { get; set; }
         public FileUpload? ReviewerHSSignatureImage { get; set; } = new();
 
-        public int? ApproverId { get; set; }
-        public User? Approver { get; set; }
-        public FileUpload? ApproverSignatureImage { get; set; } = new();
+
+        public DateTime? CreatedAt { get; set; }
 
         public string? TargetTime { get; set; }
 

@@ -1,9 +1,7 @@
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Globalization;
-using SupervisorMobility.Client.Data.Entities;
 using Microsoft.JSInterop;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
@@ -77,9 +75,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
             else
             {
-
-
-
 
                 _sosAnalysis = await SOSAnalysisServices.GetSOSAnalysis((int)AnalysisId, true, true, true, true, true);
                 if (_sosAnalysis.AnalysisLogbooks != null)

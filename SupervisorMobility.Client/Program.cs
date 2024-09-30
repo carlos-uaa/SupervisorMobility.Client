@@ -66,7 +66,6 @@ using SupervisorMobility.Client;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
-using SupervisorMobility.Client.Services.ExportationService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

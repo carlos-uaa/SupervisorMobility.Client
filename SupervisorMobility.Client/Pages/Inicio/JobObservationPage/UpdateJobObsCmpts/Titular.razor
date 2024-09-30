@@ -127,7 +127,7 @@
                 <tr>
                     <td>
                         @*Mud select of Operations *@
-                        <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)">
+                        <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" For="@(() => _jobObservation.OperationId)" SelectedValuesChanged="(id)=>UpdateOperation.InvokeAsync(id.FirstOrDefault())">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
                             @foreach (var type in _operations)
                             {
@@ -230,7 +230,7 @@
                             }
                             @if (jobProductId != 0)
                             {
-                                <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="(spec)=>InitializeCycleTimes.InvokeAsync(spec.First())">
+                                <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="(selected)=>InitializeCycleTimes.InvokeAsync(selected.FirstOrDefault())">
                                     <MudSelectItem Disabled="true" Value="@("0")">@Localizer["selectAnSpecification"]</MudSelectItem>
                                     @foreach (var type in _specifications)
                                     {
@@ -338,6 +338,8 @@
     public EventCallback ShowOperations { get; set; }
     [Parameter]
     public EventCallback ShowOperators { get; set; }
+    [Parameter]
+    public EventCallback<int> UpdateOperation { get; set; }
     [Parameter]
     public EventCallback<int> ShowSpecifications { get; set; }
     [Parameter]

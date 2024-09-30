@@ -7,14 +7,7 @@
         public string? OperationName { get; set; }
         public string? ProcessName { get; set; }
 
-        public int? ReviewerId { get; set; }
-        public User? Reviewer { get; set; }
-        public FileUpload? ReviewerSignatureImage { get; set; } = new();
-
-        public int? ApproverId { get; set; }
-        public User? Approver { get; set; }
-        public FileUpload? ApproverSignatureImage { get; set; } = new();
-
+    
         public string? TackTime { get; set; }
 
         public ICollection<Turn>? Turns { get; set; }
@@ -29,6 +22,9 @@
         public ICollection<Commentary>? Notes { get; set; } = new List<Commentary>();
         public DateTime? ApplicationMonth { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        public int? SOSDistributionAdditionalTimeId { get; set; }
+        public SOSDistributionAdditionalTime? SOSDistributionAdditionalTime { get; set; }
 
         public bool? IsActive { get; set; }
         public int SOSHubId { get; set; }

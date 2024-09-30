@@ -3760,7 +3760,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a SOS Program Review.
+        ///   Busca una cadena traducida similar a SOS Yearly Program Review.
         /// </summary>
         public static string sosProgram {
             get {
