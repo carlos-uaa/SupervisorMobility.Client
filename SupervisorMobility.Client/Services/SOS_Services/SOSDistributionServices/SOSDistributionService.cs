@@ -38,9 +38,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
             return SOSDistributionsRetorned;
         }
 
-        public async Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false)
+        public async Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false, bool includeTurns = false, bool includeTimes = false)
         {
-            var response = await _http.GetAsync($"SOS/Distribution/{SOSDistributionId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeImagesSOS={includeImagesSOS}");
+            var response = await _http.GetAsync($"SOS/Distribution/{SOSDistributionId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeImagesSOS={includeImagesSOS}&includeTurns={includeTurns}&includeTimes={includeTimes}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -67,19 +67,17 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
         }
 
 
-        public async Task<SOSDistribution> DeleteSOSDistribution(int SosEntity_id)
+        public async Task<bool> DeleteSOSDistribution(int SosEntity_id)
         {
             var response = await _http.DeleteAsync($"SOS/Distribution/{SosEntity_id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                return false;
             }
 
-            var SOSHubsRetorned = JsonSerializer.Deserialize<SOSDistribution>(content, _options);
-
-            return SOSHubsRetorned;
+            return true;
         }
 
 

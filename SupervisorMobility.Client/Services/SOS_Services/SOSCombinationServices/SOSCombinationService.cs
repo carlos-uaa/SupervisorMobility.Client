@@ -67,19 +67,18 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
         }
 
 
-        public async Task<SOSCombination> DeleteSOSCombination(int SosEntity_id)
+        public async Task<bool> DeleteSOSCombination(int SosEntity_id)
         {
             var response = await _http.DeleteAsync($"SOS/Combination/{SosEntity_id}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                return false;
             }
 
-            var SOSHubsRetorned = JsonSerializer.Deserialize<SOSCombination>(content, _options);
-
-            return SOSHubsRetorned;
+            
+            return true;
         }
 
 
