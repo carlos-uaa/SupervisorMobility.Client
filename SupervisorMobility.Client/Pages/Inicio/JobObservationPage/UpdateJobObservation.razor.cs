@@ -523,20 +523,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Change date modal and function
         private async void OpenCommentDialog()
         {
-            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "DeleteLup", EventCallback.Factory.Create<DateTime>(this, OnStartDateChanged) }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
             var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
             await dialog.Result;
         }
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
-        private void OnStartDateChanged(DateTime dt)
-        {
-            _jobObservation.StartDate = dt;
-            if (_jobObservation.EndDate == null || _jobObservation.EndDate < dt)
-            {
-                _jobObservation.EndDate = dt;
-            }
-        }
+
 
 
         public async Task ChangeDate()
