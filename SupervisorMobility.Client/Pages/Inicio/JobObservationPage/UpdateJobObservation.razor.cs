@@ -485,10 +485,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
-        private int[] ConvertStringToArray(string stringValue) =>
+        private int?[] ConvertStringToArray(string stringValue) =>
             string.IsNullOrEmpty(stringValue)
-               ? new int[5]
-               : stringValue.Split('|').Select(int.Parse).ToArray();
+                ? new int?[5] 
+                : stringValue.Split('|')
+                    .Select(s => int.TryParse(s, out var result) ? (int?)result : null) 
+                    .ToArray();
+
 
         private async Task GetUserAsync()
         {
@@ -1745,9 +1748,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
-        private int[] StepsNumber = new int[5];
-        private int[] DoubleManagment = new int[5];
-        private int[] Waiting = new int[5];
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
 
 
         private void UpdateValue(int operationId, int cycleIndex, double newValue)
@@ -1922,9 +1925,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
@@ -1936,9 +1939,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             productSpecification = specification;
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();

@@ -214,9 +214,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (iS) { iS = false; currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; }
                         if (Qa) { Qa = false; questionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, ChecklistAnswer>>("QAns") ?? new(); }
                         if (tT) { tT = false; taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; }
-                        if (sN) { sN = false; StepsNumber = await LocalStorage.GetItemAsync<int[]>("StepsNumber") ?? new int[5]; }
-                        if (dM) { dM = false; DoubleManagment = await LocalStorage.GetItemAsync<int[]>("DblManagement") ?? new int[5]; }
-                        if (w) { w = false; Waiting = await LocalStorage.GetItemAsync<int[]>("Waiting") ?? new int[5]; }
+                        if (sN) { sN = false; StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5]; }
+                        if (dM) { dM = false; DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; }
+                        if (w) { w = false; Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; }
                         if (CC) { CC = false; currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; }
                         if (hS) { hS = false; hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; }
 
@@ -618,9 +618,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
-        private int[] StepsNumber = new int[5];
-        private int[] DoubleManagment = new int[5];
-        private int[] Waiting = new int[5];
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
 
         private bool isTimerRunning2 = false;
 
@@ -743,9 +743,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             productSpecification = specification;
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if(selectedProduct != null)
@@ -2502,21 +2502,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SetAsCurrentJobObservation();
         }
 
-        private async Task StoreSteps(int value, int index)
+        private async Task StoreSteps(int? value, int index)
         {
             StepsNumber[index] = value;
             await LocalStorage.SetItemAsync("StepsNumber", StepsNumber);
             SetAsCurrentJobObservation();
         }
 
-        private async Task StoreManagement(int value, int index)
+        private async Task StoreManagement(int? value, int index)
         {
             DoubleManagment[index] = value;
             await LocalStorage.SetItemAsync("DblManagement", DoubleManagment);
             SetAsCurrentJobObservation();
         }
 
-        private async Task StoreWaiting(int value, int index)
+        private async Task StoreWaiting(int? value, int index)
         {
             Waiting[index] = value;
             await LocalStorage.SetItemAsync("Waiting", Waiting);
