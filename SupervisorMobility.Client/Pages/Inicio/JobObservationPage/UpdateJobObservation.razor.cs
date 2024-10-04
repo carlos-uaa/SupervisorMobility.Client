@@ -719,7 +719,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -941,14 +940,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
             if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1131,7 +1128,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1140,7 +1136,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1332,7 +1327,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1341,7 +1335,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -2712,6 +2705,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void HandleSignatureSaved()
         {
             currentImage = _signatureImageService.GetImage();
+
+        }
+
+        private void HandleClearSignature()
+        {
+            Console.WriteLine("Clean");
+            currentImage = "";
         }
 
         private async Task<AsyncVoidMethodBuilder> GenerateOperatorSignatureImage()

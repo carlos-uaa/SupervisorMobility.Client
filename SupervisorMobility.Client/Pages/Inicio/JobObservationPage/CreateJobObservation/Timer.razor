@@ -38,6 +38,19 @@
     <MudSimpleTable Dense="true" Elevation="0">
         <tbody>
             <tr>
+                <td>
+                    <MudText>@Localizer["Are the cycles continuous?"]</MudText>
+
+                </td>
+                <td >
+                    <MudToggleGroup T="bool" SelectionMode="SelectionMode.SingleSelection" @bind-Value="IsContinuous" Color="Color.Info" CheckMark Dense FixedContent>
+                        <MudToggleItem Value="@(true)" Text="@Localizer["yes"]" />
+                        <MudToggleItem Value="@(false)" Text="No" />
+                    </MudToggleGroup>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
                 <td style="width: 32%">
                     <div style="display:flex; align-items: center; margin-left: 55%">
                         <MudToggleIconButton Toggled="@isTimerRunning2" Color="Color.Info" @onclick="StartOrPauseTimer" Variant="Variant.Outlined" Class="mr-1"
@@ -184,7 +197,7 @@
                             {
                                 totalCycleColor = "";
                             }
-                            else if (totalCycleTime > upperBound)
+                            else if (totalCycleTime > upperBound  || totalCycleTime > taktTime)
                             {
                                 totalCycleColor = "red";
                                 totalStyle = "text-align: center;";
@@ -336,6 +349,8 @@
     private int currentOperationIndex = 0;
 
     private double previousOperationTime = 0.0;
+    private bool IsContinuous = true;
+
 
     private void StartOrPauseTimer()
     {
@@ -352,9 +367,9 @@
 
     private void StartTimer()
     {
-        int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
-        if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
-        {
+        // int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
+        // if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
+        // {
             errorflag = false;
             isTimerRunning2 = true;
             startTime2 = DateTime.Now;
@@ -362,12 +377,12 @@
             timer2.Elapsed += OnTimerTick;
             timer2.AutoReset = true;
             timer2.Enabled = true;
-        }
-        else
-        {
-            Snackbar.Add("primero llena los campos indicados", Severity.Warning);
-            errorflag = true;
-        }
+        // }
+        // else
+        // {
+        //     Snackbar.Add("primero llena los campos indicados", Severity.Warning);
+        //     errorflag = true;
+        // }
     }
 
     private void PauseTimer()
@@ -412,7 +427,7 @@
     {
         if (isTimerRunning2 && args.Code == "KeyN")
         {
-            NextOperation.InvokeAsync();
+            NextOp();
         }
     }
 
@@ -437,8 +452,12 @@
         if (currentOperationIndex >= _filteredOperations.Count)
         {
             currentOperationIndex = 0;
-            currentCycle += 1 ;
+            currentCycle += 1;
             PauseTimer();
+            if (currentCycle != 6 && IsContinuous)
+            {
+                StartTimer();
+            }
         }
     }
 

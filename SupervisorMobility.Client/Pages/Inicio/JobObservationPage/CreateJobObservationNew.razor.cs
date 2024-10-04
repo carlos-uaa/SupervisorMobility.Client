@@ -895,7 +895,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator payroll doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -1346,7 +1345,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -1463,7 +1461,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1474,7 +1471,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1549,7 +1545,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1560,7 +1555,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
-                currentImage = "";
                 return;
             }
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
@@ -1668,7 +1662,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
