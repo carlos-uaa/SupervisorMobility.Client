@@ -37,6 +37,48 @@ namespace SupervisorMobility.Client.Pages.Components
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
+        //New File Explorer
+        TreeItemData rootNodeHOE { get; set; } = new TreeItemData();
+        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
+        TreeItemData rootNodeGOS { get; set; } = new TreeItemData();
+        TreeItemData SelectedNodeHOE { get; set; }
+        TreeItemData SelectedNodeCCP { get; set; }
+        TreeItemData SelectedNodeGOS { get; set; }
+
+        CDMS_HOE_Directory HOEFolders { get; set; } = new CDMS_HOE_Directory();
+        CDMS_GOS_Directory GOSFolders { get; set; } = new CDMS_GOS_Directory();
+        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
+
+        bool isHoeFolder = false;
+        bool isGosFolder = false;
+        bool isCcpFolder = false;
+        private CDMS_HOE_Archives? HoeFilesInFolder;
+        private CDMS_CCP_Archives? CcpFilesInFolder;
+        private CDMS_GOS_Archives? GosFilesInFolder;
+
+        private bool folderHoeError = false;
+        private bool folderCCPError = false;
+        private bool folderGOSError = false;
+
+        public bool IsHOE { get; set; } = false;
+        public bool IsGOS { get; set; } = false;
+        public bool IsCCP { get; set; } = false;
+        public bool IsHOECD { get; set; } = false;
+        public bool IsGOSCD { get; set; } = false;
+        public bool IsCCPCD { get; set; } = false;
+        public bool ChangeDirectory { get; set; } = true;
+        private string _buttonText = "CDMS_File_Explorer";
+
+        //Tabs
+        private List<TreeItemData> openTabs = new List<TreeItemData>();
+        private int activeTabIndex = 0;
+
+        private string searchString = "";
+
+        bool LoadingContents = false;
+        private bool isFinalPath = false;
+
+
         protected async override Task OnInitializedAsync()
         {
             ShowLoading = true;
@@ -66,70 +108,16 @@ namespace SupervisorMobility.Client.Pages.Components
 
             try
             {
-                Path_Item = await TreeServices.getCodePath(Path_Id);
+                //Path_Item = await TreeServices.getCodePath(Path_Id);
+                await TreeServices.InitializeTreeData();
+                Path_Item = await AssyChartServices.GetCodePath(Path_Id);
                 searchCodeString = Path_Item.Code;
                 await TreeServices.setNodesByPath(Path_Item);
 
 
-                Node_CCP = await TreeServices.getNodeCCP();
-                Node_GOS = await TreeServices.getNodeGOS();
-                Node_HOE = await TreeServices.getNodeHOE();
-                Node_CCP_CD = await TreeServices.getNodeCCP_CD();
-                Node_GOS_CD = await TreeServices.getNodeGOS_CD();
-                Node_HOE_CD = await TreeServices.getNodeHOE_CD();
-
-
-                if (Node_CCP != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name CCP: " + Node_CCP.Name);
-
-                    await TreeServices.GetFilesInNodeCCP(Node_CCP.Is_Directory ? Node_CCP.TreeItems.FirstOrDefault() : Node_CCP);
-                    StateHasChanged();
-                }
-
-                if (Node_GOS != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name GOS: " + Node_GOS.Name);
-                    await TreeServices.GetFilesInNodeGOS(Node_GOS.Is_Directory ? Node_GOS.TreeItems.FirstOrDefault() : Node_GOS);
-                    // await TreeServices.GetFilesInNodeCCP(Node_CCP);
-                }
-
-                if (Node_HOE != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name HOE: " + Node_HOE.Name);
-                    await GetHOETab(Node_HOE);
-                    StateHasChanged();
-                }
-                //CommonDirection
-                if (Node_CCP_CD != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name CCP_CD: " + Node_CCP_CD.Name);
-
-                    await TreeServices.GetFilesInNodeCCP(Node_CCP_CD.Is_Directory ? Node_CCP_CD.TreeItems.FirstOrDefault() : Node_CCP_CD);
-                    StateHasChanged();
-                }
-
-                if (Node_GOS_CD != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name GOS_CD: " + Node_GOS_CD.Name);
-                    await TreeServices.GetFilesInNodeGOS(Node_GOS_CD.Is_Directory ? Node_GOS_CD.TreeItems.FirstOrDefault() : Node_GOS_CD);
-                    // await TreeServices.GetFilesInNodeCCP(Node_CCP);
-                }
-
-                if (Node_HOE_CD != null)
-                {
-                    // El nodo fue encontrado, si tiene archivos los optenemos
-                    Console.WriteLine("Name HOE_CD: " + Node_HOE_CD.Name);
-                    await GetHOETab(Node_HOE_CD);
-                    StateHasChanged();
-                }
-
-
+                rootNodeHOE = await TreeServices.getRootHOE();
+                rootNodeGOS = await TreeServices.getRootGOS();
+                rootNodeCCP = await TreeServices.getRootCCP();
             }
             catch (Exception ex)
             {
@@ -138,48 +126,32 @@ namespace SupervisorMobility.Client.Pages.Components
             }
             finally
             {
-                ShowLoading = false;
                 switch (panel)
                 {
                     case "HOE":
-                        if(Node_HOE != null)
-                        {
-                            selectPanel.ActivatePanel(panel_HOE);
-                        }
+                        SetButtonText(0);
+                        break;
+                    case "GOS":
+                        SetButtonText(1);
                         break;
                     case "CCP":
-                        if (Node_CCP != null)
-                        {
-                            selectPanel.ActivatePanel(panel_CCP);
-                        }
-                        break;
-
-                    case "GOS":
-                        if (Node_GOS != null)
-                        {
-                            selectPanel.ActivatePanel(panel_GOS);
-                        }
+                        SetButtonText(2);
                         break;
                     case "HOE_CD":
-                        if (Node_HOE_CD != null)
-                        {
-                            selectPanel.ActivatePanel(panel_HOE_CD);
-                        }
+                        SetButtonText(3);
+                        break;
+                    case "GOS_CD":
+                        SetButtonText(4);
                         break;
                     case "CCP_CD":
-                        if (Node_CCP_CD != null)
-                        {
-                            selectPanel.ActivatePanel(panel_CCP_CD);
-                        }
+                        SetButtonText(5);
                         break;
-
-                    case "GOS_CD":
-                        if (Node_GOS_CD != null)
-                        {
-                            selectPanel.ActivatePanel(panel_GOS_CD);
-                        }
+                    default:
+                        SetButtonText(0);
                         break;
                 }
+                ShowLoading = false;
+
             }
         }
 
@@ -320,6 +292,212 @@ namespace SupervisorMobility.Client.Pages.Components
 
         return new AsyncVoidMethodBuilder();
         }//end searchsring
+
+        private void SetButtonText(int id)
+        {
+            switch (id)
+            {
+                case 0:
+                    _buttonText = "HOE";
+                    IsHOE = true;
+                    IsCCP = false;
+                    IsGOS = false;
+                    ChangeFileExplorer();
+                    break;
+                case 1:
+                    _buttonText = "GOS";
+                    IsHOE = false;
+                    IsGOS = true;
+                    IsCCP = false;
+                    ChangeFileExplorer();
+                    break;
+                case 2:
+                    _buttonText = "CCP";
+                    IsHOE = false;
+                    IsGOS = false;
+                    IsCCP = true;
+                    ChangeFileExplorer();
+                    break;
+                case 3:
+                    _buttonText = "HOECD";
+                    IsHOE = true;
+                    IsCCP = false;
+                    IsGOS = false;
+                    IsHOECD = true;
+                    IsCCPCD = false;
+                    IsGOSCD = false;
+                    ChangeFileExplorer();
+                    break;
+                case 4:
+                    _buttonText = "GOSCD";
+                    IsHOE = false;
+                    IsGOS = true;
+                    IsCCP = false;
+                    IsHOECD = false;
+                    IsGOSCD = true;
+                    IsCCPCD = false;
+                    ChangeFileExplorer();
+                    break;
+                case 5:
+                    _buttonText = "CCPCD";
+                    IsHOE = false;
+                    IsGOS = false;
+                    IsCCP = true;
+                    IsHOECD = false;
+                    IsGOSCD = false;
+                    IsCCPCD = true;
+                    ChangeFileExplorer();
+                    break;
+            }
+        }
+        public void ChangeFileExplorer()
+        {
+            isFinalPath = false;
+
+            searchString = "";
+            openTabs.Clear();
+        
+
+            if (IsHOE && !IsHOECD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeHOE, Path_Item.HOE);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+            if (IsGOS && !IsGOSCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeGOS, Path_Item.GOS);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+             if (IsCCP && !IsCCPCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeCCP, Path_Item.CCP);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+            if (IsHOECD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeHOE, Path_Item.CommonDirectionHOE);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+            if (IsGOSCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeGOS, Path_Item.CommonDirectionGOS);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+             if (IsCCPCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeCCP, Path_Item.CommonDirectionCCP);
+                openTabs.AddRange(tabs);
+                OnNodeClick(openTabs.Last());
+            }
+
+            StateHasChanged();
+        }
+
+        private void RecreateFileExplorer()
+        {
+            isFinalPath = false;
+            searchString = "";
+            openTabs = openTabs.Take(activeTabIndex + 1).ToList();
+        }
+
+        private async void OnNodeClick(TreeItemData clickedNode)
+        {
+            isFinalPath = false;
+
+            LoadingContents = true;
+            searchString = "";
+            if (clickedNode.Is_Directory)
+            {
+                int clickedNodeIndex = openTabs.IndexOf(clickedNode);
+                if (clickedNodeIndex >= 0)
+                {
+                    openTabs = openTabs.Take(clickedNodeIndex + 1).ToList();
+                }
+                else
+                {
+                    openTabs.Add(clickedNode);
+                }
+
+                activeTabIndex = openTabs.IndexOf(clickedNode);
+
+                if (!clickedNode.TreeItems.Any())
+                {
+                    isFinalPath = true;
+
+
+                    if (IsHOE)
+                    {
+                        HoeFilesInFolder = await CDMSServices.GetFilesHOE(clickedNode.Path);
+                     
+
+                    }
+                    else if (IsGOS)
+                    {
+                        GosFilesInFolder = await CDMSServices.GetFilesGOS(clickedNode.Path);
+                        
+                    }
+                    else if (IsCCP)
+                    {
+                        CcpFilesInFolder = await CDMSServices.GetFilesCCP(clickedNode.Path);
+                        
+                    }
+                }
+            }
+            LoadingContents = false;
+            StateHasChanged();
+        }
+
+        private string GetIcon(TreeItemData item)
+        {
+            return Icons.Material.Filled.Folder;
+        }
+
+        private string GetFileIcon(object key)
+        {
+            return Icons.Material.Outlined.InsertDriveFile;
+        }
+
+        private Color GetIconColor(bool Is_Directory)
+        {
+            if (!Is_Directory)
+            {
+                return Color.Info;
+            }
+
+            return Color.Warning;
+        }
+
+        private bool FilterHOEFunc(HOEDocument element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
+        private bool FilterGOSFunc(GOSDocument element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
+        private bool FilterCCPFunc(CCPDocument element)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Nombre.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
     }
-        //end fragment code
+    //end fragment code
 }
