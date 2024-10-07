@@ -9,9 +9,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
         Task<SOSCombination> UpdateSOSCombination(SOSCombination SosEntity);
         Task<bool> DeleteSOSCombination(int SosEntity_id);
 
-        //Task<FileUpload> AddIllustrationToSOSCombination(MultipartFormDataContent? contentfiles, int SOS_SOSCombination_id);
-        //Task<string> ShowIlustrationSOSCombination(int idfile);
+        Task<FileUpload> AddIllustrationToSOSCombination(MultipartFormDataContent? contentfiles, int SOS_SOSCombination_id);
+        Task<string> ShowIlustrationSOSCombination(int idfile);
 
-        //Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSCombination_id, int ImageFile_id);
+        Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSCombination_id, int ImageFile_id);
     }
 }
