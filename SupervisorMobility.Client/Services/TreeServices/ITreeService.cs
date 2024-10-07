@@ -35,5 +35,7 @@ namespace SupervisorMobility.Client.Services.TreeServices
         Task<TreeItemData> getNodeCCP_CD();
         Task<TreeItemData> getNodeGOS_CD();
         Task<TreeItemData> getNodeHOE_CD();
+
+        List<TreeItemData> FindAncestorsByPath(TreeItemData rootNode, string path);
     }
 }

@@ -1,0 +1,251 @@
+﻿@page "/PathFileExplorer"
+@using SupervisorMobility.Client.Data.Entities.TreeStruct;
+@using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
+@using System.Text.RegularExpressions;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IAssyChartService AssyChartServices
+@inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
+@inject ITreeService TreeServices
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<Resource> Localizer
+
+<style>
+    .mud-td-hover {
+        transition: transform 0.1s ease-in-out;
+        cursor: pointer;
+    }
+
+        .mud-td-hover:hover {
+            transform: translateY(-2px);
+        }
+</style>
+
+<MudItem xs="12">
+    <MudCard Elevation="0">
+        <MudCardContent>
+
+            @if (ShowLoading)
+            {
+                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                            </MudItem>
+                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+            }
+            else
+            {
+                if (finalFilesSelection != (null, ""))
+                {
+                    <MudCard>
+                        <MudPaper Elevation="0">
+                     
+                            @{
+                                var path = @Regex.Replace(finalFilesSelection.Item2, @"§", string.Empty);
+                            }
+                            <MudTooltip Text="@path" Arrow="true" Placement="Placement.Top">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Color="Color.Error" OnClick="()=>ManipulateFinalList(finalFilesSelection.Item1, false, true)" Disabled="LoadingContents"></MudIconButton>
+                                <MudButton Variant="Variant.Text"
+                                           StartIcon="@(finalFilesSelection.Item1.GetType().GetProperty("Nombre")?.GetValue(finalFilesSelection.Item1) != null
+                                                      ? Icons.Material.Filled.InsertDriveFile : Icons.Material.Filled.SnippetFolder)"
+                                           IconColor="@Color.Info"
+                                           Size="Size.Small"
+                                           Disabled="LoadingContents"
+                                           OnClick="@(finalFilesSelection.Item1.GetType().GetProperty("Nombre") != null ? () => DownloadDocument(finalFilesSelection.Item1) : (Action)null)"
+                                           EndIcon="@(finalFilesSelection.Item1.GetType().GetProperty("Nombre")?.GetValue(finalFilesSelection.Item1) != null
+                                                      ? @Icons.Material.Filled.FileDownload : "" )">
+                                    @Regex.Replace((string)(finalFilesSelection.Item1.GetType().GetProperty("Nombre")?.GetValue(finalFilesSelection.Item1)
+                                             ?? finalFilesSelection.Item1.GetType().GetProperty("Name")?.GetValue(finalFilesSelection.Item1)), @"§", string.Empty)
+                                </MudButton>
+                            </MudTooltip>
+
+                            <br />
+                        </MudPaper>
+                    </MudCard>
+                }
+
+                @if (HOEFolders != null || GOSFolders != null || CCPFolders != null)
+                {
+                    @if (ChangeDirectory)
+                    {
+
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                        <MudButton>@_buttonText</MudButton>
+                        <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                            <MudMenuItem OnClick="() => SetButtonText(0)">Show HOE File Explorer</MudMenuItem>
+                            <MudMenuItem OnClick="() => SetButtonText(1)">Show GOS File Explorer</MudMenuItem>
+                            <MudMenuItem OnClick="() => SetButtonText(2)">Show CCP File Explorer</MudMenuItem>
+                        </MudMenu>
+                    </MudButtonGroup>
+                    }
+                
+                    @if (rootNodeHOE.TreeItems.Count > 0 || rootNodeGOS.TreeItems.Count > 0 || rootNodeCCP.TreeItems.Count > 0)
+                    {
+
+                        <MudTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10">
+                            @foreach (var tab in openTabs)
+                            {
+                               <MudTabPanel Text="@((openTabs.IndexOf(tab) == 0) ? (IsGOS ? "GOS" : IsCCP ? "CCP" : IsHOE ? "HOE" : "Default") : Regex.Replace(tab.Name, @"§", string.Empty))" 
+                                            @onclick="() => RecreateFileExplorer()" Icon="@(openTabs.IndexOf(tab) == 0 ? Icons.Material.Filled.FolderOpen : null)">
+
+
+                                    <MudPaper Elevation="0">
+                                        @if (LoadingContents)
+                                        {
+                                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                                <MudProgressCircular Color="Color.Info" Style="height:70px;width:70px;" Indeterminate="true" />
+                                            </MudItem>
+                                        }
+                                        else
+                                        {
+                                            @if (tab.TreeItems.Count > 0)
+                                            {
+                                                <MudTable T="TreeItemData" Items="tab.TreeItems" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                    <RowTemplate>
+                                                        <MudTd @onclick="() => OnNodeClick(context)"
+                                                               @onmouseover="() => OnMouseOver(context)"
+                                                               @onmouseout="() => OnMouseOut(context)"
+                                                               Class="mud-td-hover d-flex align-center">
+                                                            <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                         ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                            <MudButton Variant="Variant.Text"
+                                                                       StartIcon="@GetIcon(context)"
+                                                                       IconColor="@GetIconColor(true)"
+                                                                       @onclick="() => OnNodeClick(context)"
+                                                                       @onmouseover="() => OnMouseOver(context)"
+                                                                       @onmouseout="() => OnMouseOut(context)">
+                                                                @Regex.Replace(context.Name, @"§", string.Empty)
+                                                            </MudButton>
+                                                        </MudTd>
+                                                    </RowTemplate>
+                                                </MudTable>
+
+                                                @*  <MudTable Items="@HoeFilesInFolder!.operation" Filter="new Func<HOEDocument,bool>(FilterHOEFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                            <RowTemplate>
+                                                                <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                       @onmouseover="() => OnFileMouseOver(context)"
+                                                                       @onmouseout="() => OnFileMouseOut(context)"
+                                                                       Class="mud-td-hover d-flex align-center">
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudButton Variant="Variant.Text"
+                                                                               StartIcon="@GetFileIcon(context)"
+                                                                               IconColor="@GetIconColor(false)"
+                                                                               @onclick="() => OnFileNodeClick(context)"
+                                                                               @onmouseover="() => OnFileMouseOver(context)"
+                                                                               @onmouseout="() => OnFileMouseOut(context)">
+                                                                        @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                    </MudButton>
+                                                                </MudTd>
+                                                            </RowTemplate>
+                                                        </MudTable> *@
+                                            }
+                                            else
+                                            {
+                                                @if (isFinalPath)
+                                                {
+                                                    <MudItem Style="display:flex; align-items: center;">
+                                                        <MudTextField Immediate="true" @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                                                        @* <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="AddToFinalSelection" Size="Size.Small">Add Files To Selection</MudButton> *@
+                                                    </MudItem>
+                                                }
+                                                if (IsHOE)
+                                                {
+                                                    if (HoeFilesInFolder != null && HoeFilesInFolder.operation.Any())
+                                                    {
+                                                        <MudTable Items="@HoeFilesInFolder!.operation" Filter="new Func<HOEDocument,bool>(FilterHOEFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                            <RowTemplate>
+                                                                <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                       @onmouseover="() => OnFileMouseOver(context)"
+                                                                       @onmouseout="() => OnFileMouseOut(context)"
+                                                                       Class="mud-td-hover d-flex align-center">
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudButton Variant="Variant.Text"
+                                                                               StartIcon="@GetFileIcon(context)"
+                                                                               IconColor="@GetIconColor(false)"
+                                                                               @onclick="() => OnFileNodeClick(context)"
+                                                                               @onmouseover="() => OnFileMouseOver(context)"
+                                                                               @onmouseout="() => OnFileMouseOut(context)">
+                                                                        @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                    </MudButton>
+                                                                </MudTd>
+                                                            </RowTemplate>
+                                                        </MudTable>
+                                                    } 
+                                                }
+                                                else if (IsGOS)
+                                                {
+                                                    if (GosFilesInFolder != null && GosFilesInFolder.operation.Any())
+                                                    {
+                                                        <MudTable Items="@GosFilesInFolder!.operation" Filter="new Func<GOSDocument,bool>(FilterGOSFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                            <RowTemplate>
+                                                                <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                       @onmouseover="() => OnFileMouseOver(context)"
+                                                                       @onmouseout="() => OnFileMouseOut(context)"
+                                                                       Class="mud-td-hover d-flex align-center">
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudButton Variant="Variant.Text"
+                                                                               StartIcon="@GetFileIcon(context)"
+                                                                               IconColor="@GetIconColor(false)"
+                                                                               @onclick="() => OnFileNodeClick(context)"
+                                                                               @onmouseover="() => OnFileMouseOver(context)"
+                                                                               @onmouseout="() => OnFileMouseOut(context)">
+                                                                        @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                    </MudButton>
+                                                                </MudTd>
+                                                            </RowTemplate>
+                                                        </MudTable>
+
+                                                    }
+                                                }
+                                                else if(IsCCP)
+                                                {
+                                                    if (CcpFilesInFolder != null && CcpFilesInFolder.operation.Any())
+                                                    {
+                                                        <MudTable Items="@CcpFilesInFolder!.operation" Filter="new Func<CCPDocument,bool>(FilterCCPFunc)" Dense Style="max-height: 40vh; overflow-y: scroll; scrollbar-width: thin;" Hover>
+                                                            <RowTemplate>
+                                                                <MudTd @onclick="() => OnFileNodeClick(context)"
+                                                                       @onmouseover="() => OnFileMouseOver(context)"
+                                                                       @onmouseout="() => OnFileMouseOut(context)"
+                                                                       Class="mud-td-hover d-flex align-center">
+                                                                    <MudCheckBox T=bool Value="fileHoverStates[context].Item2" Color="Color.Primary" UnCheckedColor="Color.Default"
+                                                                                 ValueChanged="(e)=> HandleCheck(e, context)"></MudCheckBox>
+                                                                    <MudButton Variant="Variant.Text"
+                                                                               StartIcon="@GetFileIcon(context)"
+                                                                               IconColor="@GetIconColor(false)"
+                                                                               @onclick="() => OnFileNodeClick(context)"
+                                                                               @onmouseover="() => OnFileMouseOver(context)"
+                                                                               @onmouseout="() => OnFileMouseOut(context)">
+                                                                        @Regex.Replace(context.Nombre, @"§", string.Empty)
+                                                                    </MudButton>
+                                                                </MudTd>
+                                                            </RowTemplate>
+                                                        </MudTable>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    </MudPaper>
+                                </MudTabPanel>
+                            }
+                        </MudTabs>
+                    }
+                }
+               
+
+            }
+
+        </MudCardContent>
+    </MudCard>
+</MudItem>
+
+

@@ -529,5 +529,54 @@ namespace SupervisorMobility.Client.Services.TreeServices
             return new AsyncVoidMethodBuilder();
         }
 
+        public List<TreeItemData> FindAncestorsByPath(TreeItemData rootNode, string path)
+        {
+            var ancestors = new List<TreeItemData>();
+
+            string[] pathParts = path.Split('/');
+
+            TreeItemData currentNode = rootNode;
+
+            foreach (string part in pathParts)
+            {
+                ancestors.Add(currentNode);
+
+                var matchingNodes = currentNode.TreeItems.Where(child => child.Name == part);
+
+                if (!matchingNodes.Any())
+                {
+                    return ancestors;
+                }
+
+                if (matchingNodes.Count() > 1)
+                {
+                    int bestMatchLength = 0;
+                    TreeItemData bestMatchNode = null;
+
+                    foreach (var node in matchingNodes)
+                    {
+                        int matchLength = LongestCommonPrefixLength(path, node.Path);
+
+                        if (matchLength > bestMatchLength)
+                        {
+                            bestMatchLength = matchLength;
+                            bestMatchNode = node;
+                        }
+                    }
+
+                    currentNode = bestMatchNode;
+                }
+                else
+                {
+                    currentNode = matchingNodes.First();
+                }
+            }
+
+            ancestors.Add(currentNode);
+
+            return ancestors;
+
+        }
+
     }
 }
