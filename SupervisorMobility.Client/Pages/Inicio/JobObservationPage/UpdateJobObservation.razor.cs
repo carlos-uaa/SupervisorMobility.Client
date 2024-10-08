@@ -3022,6 +3022,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
+        private async Task AnswerChangeOption(string option, int id)
+        {
+            var answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == id);
+            answer.Answer = option;
+            //SetAsCurrentJobObservation();
+        }
+
         private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
         {
             int removed = 0;
