@@ -3022,6 +3022,59 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
+        private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
+        {
+            int removed = 0;
+            foreach (var pillar in question.Pillars)
+            {
+                switch (pillar)
+                {
+                    case 1:
+                        removed = area_ListS.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 2:
+                        removed = area_ListQ.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Quality Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 3:
+                        removed = area_ListD.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Delivery Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 4:
+                        removed = area_ListC.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Cost Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 5:
+                        removed = area_ListOther.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Other Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+
+                }
+            }
+
+            item.Show = true;
+            item.Edited = true;
+
+            StateHasChanged();
+            base.StateHasChanged();
+        }
+
         private void RemoveFromList(int pilarId, int indexRemove)
         {
             switch (pilarId)
