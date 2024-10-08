@@ -93,9 +93,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
         Dictionary<int, Dictionary<int, double>> OperationTimes = new();
-        private int[] StepsNumber = new int[5];
-        private int[] DoubleManagment = new int[5];
-        private int[] Waiting = new int[5];
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
         public int jobProductId = 0;
 
         List<Lup> SSV_LupList = new();
@@ -121,7 +121,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private bool visiblePhoto = false;
 
-        private int[] ConvertStringToArray(string stringValue) => string.IsNullOrEmpty(stringValue) ? new int[5] : stringValue.Split('|').Select(int.Parse).ToArray();
+        private int?[] ConvertStringToArray(string stringValue) =>
+            string.IsNullOrEmpty(stringValue)
+                ? new int?[5]
+                : stringValue.Split('|')
+                    .Select(s => int.TryParse(s, out var result) ? (int?)result : null)
+                    .ToArray();
 
         bool CodePathModalDisplay = false;
 
