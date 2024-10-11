@@ -334,6 +334,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async Task LoadSchedule()
         {
             loadingData = true;
+            StateHasChanged();
             //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
 
             GenerateCalendarHead();
@@ -1264,12 +1265,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         void Close() => visible = false;
 
-        IDialogReference dialog;
+        IDialogReference dialogDate;
         private async void OpenCommentDialog()
         {
             var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
-            dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
-            await dialog.Result;
+            dialogDate = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialogDate.Result;
         }
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         public string hour1 { get; set; }
@@ -1357,9 +1358,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
-                    NavigationManager.NavigateTo($"/sosDetails/{sosId}");
-                    //visible = false;
-                    //await LoadSchedule();
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    SOSDataServices.UpdateJobItem(_jobObservation);
+                    OnDateChanged(_yearMonth);
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1428,9 +1431,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
 
-                    NavigationManager.NavigateTo($"/sosDetails/{sosId}");
-                    //visible = false;
-                    //await LoadSchedule();
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    SOSDataServices.UpdateJobItem(_jobObservation);
+                    OnDateChanged(_yearMonth);
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert

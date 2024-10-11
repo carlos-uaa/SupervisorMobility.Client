@@ -537,11 +537,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        IDialogReference dialogDate;
         private async void OpenCommentDialog()
         {
             var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
-            var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
-            await dialog.Result;
+            dialogDate = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialogDate.Result;
         }
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         public string hour1 { get; set; }
@@ -628,7 +629,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+
+                    _jobObservations.Clear();
+                    dialogDate.Close();
+                    visible = false;
+
+                    StateHasChanged();
+                    
+                    await getData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -695,11 +703,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+
+                    _jobObservations.Clear();
+                    dialogDate.Close();
+                    visible = false;
+
+                    StateHasChanged();
+
+                    await getData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
             }
+        }
+
+        async Task getData()
+        {
+            _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId == 3? user.UserId:0);
+            switch (user.UserType)
+            {
+                case 1:
+                case 6:
+                    _jobObservations = _jobObservationsAux.ToList();
+                    break;
+                case 2:
+                    _jobObservations = _jobObservationsAux
+                    .Where(jobobs => jobobs.PlantId == plantId &&
+                                     user.Subordinates.Any(usr => usr.UserId == jobobs.SupervisorId))
+                    .ToList();
+                    break;
+                case 3:
+                    _jobObservations = _jobObservationsAux.ToList();
+                    break;
+                case 5:
+                    _jobObservations = _jobObservationsAux
+                    .Where(jobobs => jobobs.PlantId == plantId &&
+                                     user.Subordinates.Any(usr => usr.UserId == jobobs.Supervisor.SuperiorId))
+                    .ToList();
+                    break;
+            }
+            return;
         }
 
         void EditJobObservation(int jobObservationId)

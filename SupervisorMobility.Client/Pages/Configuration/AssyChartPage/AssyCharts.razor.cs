@@ -525,6 +525,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             CodePathModalDisplay = true;
             StateHasChanged();
 
+            ShowLoading = false;
 
             return new AsyncVoidMethodBuilder();
         }
