@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using System;
 using System.Globalization;
 using static MudBlazor.CategoryTypes;
@@ -888,16 +889,281 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
         private bool visible = false;
         private int jobId;
-        private void OpenDialog2(int id)
+        JobObservation _jobObservation = null;
+        TimeSpan? endHour { get; set; }
+        TimeSpan? startHour { get; set; }
+        DateTime? plannedStartDate = new();
+        DateTime? plannedEndDate = new();
+        private async void OpenDialog2(int id)
         {
-
             jobId = id;
+            _jobObservation = await JobObservationService.GetJobObservationById(jobId, true, true, true, includeCkAnswers: true);
+            startHour = _jobObservation.StartDate?.TimeOfDay;
+            endHour = _jobObservation.EndDate?.TimeOfDay;
+            if (_jobObservation.PlannedStartDate != null)
+            {
+                plannedStartDate = _jobObservation.PlannedStartDate;
+                plannedEndDate = _jobObservation.PlannedEndDate;
+            }
+            else
+            {
+                plannedStartDate = _jobObservation.StartDate;
+                plannedEndDate = _jobObservation.EndDate;
+            }
+
             visible = true;
         }
         void Close() => visible = false;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
+        IDialogReference dialogDate;
+        private async void OpenCommentDialog()
+        {
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
+            dialogDate = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialogDate.Result;
+        }
+        private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        public string hour1 { get; set; }
+        public string hour2 { get; set; }
+
+        DateTime newDate1;
+        DateTime newDate2;
+        public async Task ChangeDate()
+        {
+            if (_jobObservation.Justification == null || _jobObservation.Justification == "")
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add(Localizer["AddComment"], Severity.Error);
+                return;
+            }
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var formatedStartDate = _jobObservation.StartDate;
+                var formatedEndDate = _jobObservation.EndDate;
+
+                var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                var EnglishEndDate = formatedEndDate?.Month.ToString() + "/" + formatedEndDate?.Day.ToString() + "/" + formatedEndDate?.Year.ToString();
+                _jobObservation.StartDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+                _jobObservation.EndDate = DateTime.ParseExact(EnglishEndDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
+
+                if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Error in Date Start", Severity.Error);
+                    Console.WriteLine("Unable to parse '{0}'", hour1);
+                }
+
+
+                if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+                {
+                    Console.WriteLine(newDate2);
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateError"], Severity.Error);
+                    Console.WriteLine("Unable to parse '{0}'", hour2);
+                }
+
+                _jobObservation.StartDate = newDate1;
+                _jobObservation.EndDate = newDate2;
+
+                _jobObservation.PlannedStartDate = newDate1;
+                _jobObservation.PlannedEndDate = newDate2;
+
+                Console.WriteLine(_jobObservation.StartDate);
+                Console.WriteLine(_jobObservation.EndDate);
+
+
+                if (plannedStartDate == _jobObservation.StartDate && plannedEndDate == _jobObservation.EndDate)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
+                    return;
+                }
+
+                if (_jobObservation.Status == 3)
+                {
+                    _jobObservation.Status = 1;
+                }
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
+                if (result)
+                {
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+                    ReloadData();
+
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+            }
+            else
+            {
+                hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
+                hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
+
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                {
+                    Console.WriteLine(newDate1);
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateStartError"], Severity.Error);
+                    Console.WriteLine("Unable to parse '{0}'", hour1);
+                }
+
+
+                if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
+                {
+                    Console.WriteLine(newDate2);
+                }
+                else
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateEndError"], Severity.Error);
+                    Console.WriteLine("Unable to parse '{0}'", hour2);
+                }
+
+                _jobObservation.StartDate = newDate1;
+                _jobObservation.EndDate = newDate2;
+
+                _jobObservation.PlannedStartDate = newDate1;
+                _jobObservation.PlannedEndDate = newDate2;
+
+                Console.WriteLine(_jobObservation.StartDate);
+                Console.WriteLine(_jobObservation.EndDate);
+
+
+                if (plannedStartDate == _jobObservation.StartDate && plannedEndDate == _jobObservation.EndDate)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["YouNeedChangeDate"], Severity.Error);
+                    return;
+                }
+
+                if (_jobObservation.Status == 3)
+                {
+                    _jobObservation.Status = 1;
+                }
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
+
+                if (result)
+                {
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+                    ReloadData();
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+            }
+            StateHasChanged();
+        }
+
+        private async void ReloadData()
+        {
+            loadingData = true;
+            StateHasChanged();
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+            _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+            switch (user.UserType)
+            {
+                case 1:
+                case 6:
+                    _jobObservations = _allJobObservations;
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 2:
+                    _jobObservations.Clear();
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 3:
+                    _jobObservations.Clear();
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 5:
+                    _jobObservations.Clear();
+
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (plantId == jobobs.PlantId)
+                        {
+                            foreach (User usr in user.Subordinates)
+                            {
+                                if (jobobs.Supervisor.SuperiorId == usr.UserId)
+                                {
+                                    if (jobobs.Status != 7)
+                                    {
+                                        _jobObservations.Add(jobobs);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    //_allSupervisors = await UsersService.GetUserByType(3, true, false);
+                    break;
+            }
+            loadingData = false;
+            StateHasChanged();
+        }
 
         //Programmed Job observation Modal (SOS)
         private bool visible2 = false;

@@ -485,10 +485,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
-        private int[] ConvertStringToArray(string stringValue) =>
+        private int?[] ConvertStringToArray(string stringValue) =>
             string.IsNullOrEmpty(stringValue)
-               ? new int[5]
-               : stringValue.Split('|').Select(int.Parse).ToArray();
+                ? new int?[5] 
+                : stringValue.Split('|')
+                    .Select(s => int.TryParse(s, out var result) ? (int?)result : null) 
+                    .ToArray();
+
 
         private async Task GetUserAsync()
         {
@@ -523,20 +526,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Change date modal and function
         private async void OpenCommentDialog()
         {
-            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "DeleteLup", EventCallback.Factory.Create<DateTime>(this, OnStartDateChanged) }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
             var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
             await dialog.Result;
         }
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
-        private void OnStartDateChanged(DateTime dt)
-        {
-            _jobObservation.StartDate = dt;
-            if (_jobObservation.EndDate == null || _jobObservation.EndDate < dt)
-            {
-                _jobObservation.EndDate = dt;
-            }
-        }
+
 
 
         public async Task ChangeDate()
@@ -723,7 +719,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -945,14 +940,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
             if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1135,7 +1128,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1144,7 +1136,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1336,7 +1327,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1345,7 +1335,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1752,9 +1741,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
-        private int[] StepsNumber = new int[5];
-        private int[] DoubleManagment = new int[5];
-        private int[] Waiting = new int[5];
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
 
 
         private void UpdateValue(int operationId, int cycleIndex, double newValue)
@@ -1929,9 +1918,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
@@ -1943,9 +1932,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             productSpecification = specification;
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
@@ -2716,6 +2705,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void HandleSignatureSaved()
         {
             currentImage = _signatureImageService.GetImage();
+
+        }
+
+        private void HandleClearSignature()
+        {
+            Console.WriteLine("Clean");
+            currentImage = "";
         }
 
         private async Task<AsyncVoidMethodBuilder> GenerateOperatorSignatureImage()
@@ -3018,6 +3014,67 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
+
+            item.Show = true;
+            item.Edited = true;
+
+            StateHasChanged();
+            base.StateHasChanged();
+        }
+
+        private async Task AnswerChangeOption(string option, int id)
+        {
+            var answer = questionAnswers[id];
+            answer.Answer = option;
+            //SetAsCurrentJobObservation();
+        }
+
+        private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
+        {
+            Console.WriteLine("passed");
+            int removed = 0;
+            foreach (var pillar in question.Pillars)
+            {
+                switch (pillar)
+                {
+                    case 1:
+                        removed = area_ListS.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 2:
+                        removed = area_ListQ.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Quality Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 3:
+                        removed = area_ListD.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Delivery Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 4:
+                        removed = area_ListC.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Cost Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+                    case 5:
+                        removed = area_ListOther.RemoveAll(q => q.QuestionID == question.QuestionID);
+                        if (removed > 0)
+                        {
+                            Snackbar.Add("LUP removed in Other Pillar SECTION 3", Severity.Warning);
+                        }
+                        break;
+
+                }
+            }
 
             item.Show = true;
             item.Edited = true;

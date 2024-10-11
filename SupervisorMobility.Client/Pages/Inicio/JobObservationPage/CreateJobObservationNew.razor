@@ -214,6 +214,11 @@
                 <MudExpansionPanels Elevation="5" MultiExpansion="true">
                     @foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
                     {
+                        @if (category.Type != StructureType.Titular && (string.IsNullOrEmpty(productSpecification) || _jobObservation.SupervisorId == 0))
+                        {
+                            <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
+                            return;
+                        }
                         string title = $"Section {section}";
                         @switch (category.Type)
                         {
@@ -224,11 +229,6 @@
                                     ShowAreas=ShowAreas ShowDistributions=ShowDistributions OnStartDateChanged=OnStartDateChanged OnEndDateChanged=OnEndDateChanged ShowOperations=ShowOperations ShowOperators=ShowOperators
                                     UpdateOperator=UpdateOperator UpdateOperation=UpdateOperation ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes OnKPIChange=OnKPIChange
                                     ChangeOption=ChangeOption JobObservationContext_OnFieldChanged=JobObservationContext_OnFieldChanged />
-                                @if (string.IsNullOrEmpty(productSpecification) || _jobObservation.SupervisorId == 0)
-                                {
-                                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
-                                    return;
-                                }
                                 break;
                             case StructureType.Checklist:
                                 if (category.ChecklistQuestions.Count > 0)
@@ -237,7 +237,7 @@
                                         currentLanguage=@currentLanguage user=user _jobObservation=_jobObservation questionAnswers=questionAnswers
                                         AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))"
                                         OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" AnswerComentaryUpdate=AnswerComentaryUpdate
-                                        UpdateListEntry="@((args)=>UpdateListEntry(args.Item1, args.Item2, args.Item3))" />
+                                               UpdateListEntry="@((args)=>UpdateListEntry(args.Item1, args.Item2, args.Item3))" RemoveLupOpportunity="@((args)=>RemoveLupOppportunity(args.Item1, args.Item2, args.Item3))" />
                                 }
                                 break;
                             case StructureType.Timer:
@@ -265,7 +265,7 @@
             @if (!string.IsNullOrEmpty(_jobObservation.OperatorSignature))
             {
                 <MudItem Style="text-align:center; display: flex; justify-content: center;">
-                    <SignatureCmpt OnSignatureSaved="HandleSignatureSaved" ClearSignature="HandleClearSignature" title="@Localizer[" operatorsSignature"]" Image="@currentImage"/>
+                    <SignatureCmpt OnSignatureSaved="HandleSignatureSaved" ClearSignature="HandleClearSignature" Title="@Localizer["operatorsSignature"]" Image="@currentImage" />
                 </MudItem>
             }
 

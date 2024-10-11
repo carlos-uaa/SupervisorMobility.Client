@@ -108,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
 
-        public string productSpecification = "";
+        public string productSpecification = string.Empty;
         bool showLoading = true;
 
         string currentLanguage = "es-ES";
@@ -161,8 +161,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             bool confirm = false;
             if (checkForStoragedValues())
             {
-                if (!await SessionStorage.ContainKeyAsync("CJO"))
-                {
+                //if (!await SessionStorage.ContainKeyAsync("CJO"))
+                //{
                     var parameters = new DialogParameters
                     {
                         { "ContentText", "You had a previous unsaved Job Observation \n Do you wish to continue with it?" },
@@ -176,17 +176,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     if (!result.Canceled)
                     {
                         confirm = (bool)result.Data;
-                        await SessionStorage.SetItemAsync("CJO", true);
+                        //await SessionStorage.SetItemAsync("CJO", true);
                     }
                     else
                     {
                         confirm = false;
                     }
-                }
-                else
-                {
-                    confirm = true;
-                }
+                //}
+                //else
+                //{
+                //    confirm = true;
+                //}
             }
 
             if (confirm)
@@ -214,9 +214,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (iS) { iS = false; currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; }
                         if (Qa) { Qa = false; questionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, ChecklistAnswer>>("QAns") ?? new(); }
                         if (tT) { tT = false; taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; }
-                        if (sN) { sN = false; StepsNumber = await LocalStorage.GetItemAsync<int[]>("StepsNumber") ?? new int[5]; }
-                        if (dM) { dM = false; DoubleManagment = await LocalStorage.GetItemAsync<int[]>("DblManagement") ?? new int[5]; }
-                        if (w) { w = false; Waiting = await LocalStorage.GetItemAsync<int[]>("Waiting") ?? new int[5]; }
+                        if (sN) { sN = false; StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5]; }
+                        if (dM) { dM = false; DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; }
+                        if (w) { w = false; Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; }
                         if (CC) { CC = false; currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; }
                         if (hS) { hS = false; hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; }
 
@@ -519,7 +519,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
 
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
 
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
             _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -537,6 +537,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _assychart = null;
             jobProductId = 0;
             _specifications = new();
+            productSpecification = string.Empty;
 
             if (user.UserType == 1)
             {
@@ -557,7 +558,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.OperationId = 0;
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
 
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
@@ -594,6 +595,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _assychart = null;
             _specifications = new();
             jobProductId = 0;
+            productSpecification = string.Empty;
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
@@ -609,7 +611,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
 
             await Task.Delay(150);
 
@@ -618,9 +620,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
-        private int[] StepsNumber = new int[5];
-        private int[] DoubleManagment = new int[5];
-        private int[] Waiting = new int[5];
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
 
         private bool isTimerRunning2 = false;
 
@@ -658,7 +660,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     SyncLocalStorage.SetItem("OpTimes", OperationTimes);
                 }
 
-                SetAsCurrentJobObservation();
+                //SetAsCurrentJobObservation();
                 StateHasChanged();
             }
         }
@@ -743,9 +745,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             productSpecification = specification;
             _filteredOperations = new();
-            StepsNumber = new int[5];
-            DoubleManagment = new int[5];
-            Waiting = new int[5];
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if(selectedProduct != null)
@@ -781,7 +783,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
             SyncLocalStorage.SetItem("JobObs", _jobObservation);
             SyncLocalStorage.SetItem("OpTimes", OperationTimes);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
 
@@ -803,7 +805,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             jobProductId = id;
             _specifications = new();
-            productSpecification = "";
+            productSpecification = string.Empty;
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
             {
@@ -824,7 +826,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _jobObservation.ProductId = jobProductId;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
             StateHasChanged();
         }
 
@@ -895,7 +897,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator payroll doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -1346,7 +1347,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
 
-                    currentImage = "";
                     return;
                 }
                 if (currentImage == "")
@@ -1463,7 +1463,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1474,7 +1473,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
-                currentImage = "";
                 return;
             }
             if (currentImage == "")
@@ -1549,7 +1547,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1560,7 +1557,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
-                currentImage = "";
                 return;
             }
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
@@ -1668,7 +1664,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator's Signature is missing!", Severity.Error);
-                currentImage = "";
                 return;
             }
 
@@ -1996,10 +1991,69 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await dialog.Result;
             }
 
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
 
             item.Show = true;
             item.Edited = true;
+
+            StateHasChanged();
+            base.StateHasChanged();
+        }
+
+        private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
+        {
+            int removed = 0;
+            if (question.Pillars != null)
+            {
+                foreach (var pillar in question.Pillars)
+                {
+                    switch (pillar)
+                    {
+                        case 1:
+                            removed = area_ListS.RemoveAll(q => q.QuestionID == question.QuestionID);
+                            if (removed > 0)
+                            {
+                                SyncLocalStorage.SetItem("area_ListS", area_ListS);
+                                Snackbar.Add("LUP removed in Safety & Environment Pillar SECTION 3", Severity.Warning);
+                            }
+                            break;
+                        case 2:
+                            removed = area_ListQ.RemoveAll(q => q.QuestionID == question.QuestionID);
+                            if (removed > 0)
+                            {
+                                SyncLocalStorage.SetItem("area_ListQ", area_ListQ);
+                                Snackbar.Add("LUP removed in Quality Pillar SECTION 3", Severity.Warning);
+                            }
+                            break;
+                        case 3:
+                            removed = area_ListD.RemoveAll(q => q.QuestionID == question.QuestionID);
+                            if (removed > 0)
+                            {
+                                SyncLocalStorage.SetItem("area_ListD", area_ListD);
+                                Snackbar.Add("LUP removed in Delivery Pillar SECTION 3", Severity.Warning);
+                            }
+                            break;
+                        case 4:
+                            removed = area_ListC.RemoveAll(q => q.QuestionID == question.QuestionID);
+                            if (removed > 0)
+                            {
+                                SyncLocalStorage.SetItem("area_ListC", area_ListC);
+                                Snackbar.Add("LUP removed in Cost Pillar SECTION 3", Severity.Warning);
+                            }
+                            break;
+                        case 5:
+                            removed = area_ListOther.RemoveAll(q => q.QuestionID == question.QuestionID);
+                            if (removed > 0)
+                            {
+                                SyncLocalStorage.SetItem("area_ListOther", area_ListOther);
+                                Snackbar.Add("LUP removed in Other Pillar SECTION 3", Severity.Warning);
+                            }
+                            break;
+                    }
+                }
+            }
+
+            //SetAsCurrentJobObservation();
 
             StateHasChanged();
             base.StateHasChanged();
@@ -2428,7 +2482,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task JobObservationContext_OnFieldChanged()
         {
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task UpdateOperator()
@@ -2439,13 +2493,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.Operator = operatorUser;
             }
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task UpdateOperation()
         {
             jobProductId = 0;
             _specifications = new();
+            productSpecification = string.Empty;
             var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
             if (operation != null)
             {
@@ -2453,7 +2508,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
+            StateHasChanged();
         }
 
         private async Task OnKPIChange(int id)
@@ -2466,61 +2522,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             _jobObservation.StartDate = newDate;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task OnEndDateChanged(DateTime? newDate)
         {
             _jobObservation.EndDate = newDate;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task ChangeOption(int option)
         {
             _jobObservation.Option = option;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task AnswerChangeOption(string option, int id)
         {
             questionAnswers[id].Answer = option;
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
         private async Task AnswerComentaryUpdate()
         {
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task ChangeTaktTime(double newTime)
         {
             taktTime = newTime;
             await LocalStorage.SetItemAsync("taktTime", taktTime);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
-        private async Task StoreSteps(int value, int index)
+        private async Task StoreSteps(int? value, int index)
         {
             StepsNumber[index] = value;
             await LocalStorage.SetItemAsync("StepsNumber", StepsNumber);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
-        private async Task StoreManagement(int value, int index)
+        private async Task StoreManagement(int? value, int index)
         {
             DoubleManagment[index] = value;
             await LocalStorage.SetItemAsync("DblManagement", DoubleManagment);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
-        private async Task StoreWaiting(int value, int index)
+        private async Task StoreWaiting(int? value, int index)
         {
             Waiting[index] = value;
             await LocalStorage.SetItemAsync("Waiting", Waiting);
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
         private async Task UpdateAreaLists(int pillar)
@@ -2545,16 +2601,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 default:
                     return;
             }
-            SetAsCurrentJobObservation();
+            //SetAsCurrentJobObservation();
         }
 
-        private void SetAsCurrentJobObservation()
-        {
-            if (!session)
-            {
-                SyncSessionStorage.SetItem("CJO", session = true);
-            }
-        }
+        //private void SetAsCurrentJobObservation()
+        //{
+        //    if (!session)
+        //    {
+        //        SyncSessionStorage.SetItem("CJO", session = true);
+        //    }
+        //}
 
         private bool checkForStoragedValues()
         {

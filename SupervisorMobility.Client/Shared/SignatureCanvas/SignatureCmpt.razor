@@ -29,7 +29,6 @@
                 <MudChip Disabled="@(!hasDrawing)" OnClick="GenerateSignature" Color="Color.Info" Icon="@Icons.Material.Filled.SaveAs">Save Signature</MudChip>
             }
             @if(AllowClear)
-            
             {
                 <MudButton OnClick="ClearCanvas">Clear</MudButton>
             }
@@ -60,7 +59,6 @@
     {
         if (firstRender)
         {
-            Console.WriteLine(canvasRef.Id);
             await JS.InvokeVoidAsync("window.SignatureCanvasOperations.initializeCanvas", "SignatureRef");
         }
     }
@@ -70,8 +68,10 @@
         Image = null;
         await JS.InvokeVoidAsync("SignatureCanvasOperations.clearCanvas", "SignatureRef");
         hasDrawing = false;
+        _signatureImageService.SetImage("");
         signatureSaved = false;
         await ClearSignature.InvokeAsync();
+        await JS.InvokeVoidAsync("window.SignatureCanvasOperations.initializeCanvas", "SignatureRef");
     }
 
 
