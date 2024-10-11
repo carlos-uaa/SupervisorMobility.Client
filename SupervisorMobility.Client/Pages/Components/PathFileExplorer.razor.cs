@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Office2013.Excel;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using System.Xml.XPath;
 using Color = MudBlazor.Color;
 
 namespace SupervisorMobility.Client.Pages.Components
@@ -243,14 +244,7 @@ namespace SupervisorMobility.Client.Pages.Components
                     {
                         folderHoeError = false;
                         rootNodeHOE = TreeServices.Make_Tree_HOE(HOEFolders.operation);
-                        if (IsHOE)
-                        {
-                            openTabs.Add(rootNodeHOE);
-                            foreach (var file in rootNodeHOE.TreeItems)
-                            {
-                                fileHoverStates[file] = (false, false);
-                            }
-                        }
+                        
                     }
                     else
                     {
@@ -273,14 +267,7 @@ namespace SupervisorMobility.Client.Pages.Components
                     {
                         folderGOSError = false;
                         rootNodeGOS = TreeServices.Make_Tree_GOS(GOSFolders.operation);
-                        if (IsGOS)
-                        {
-                            openTabs.Add(rootNodeGOS);
-                            foreach (var file in rootNodeGOS.TreeItems)
-                            {
-                                fileHoverStates[file] = (false, false);
-                            }
-                        }
+                       
                     }
                     else
                     {
@@ -304,14 +291,7 @@ namespace SupervisorMobility.Client.Pages.Components
                     {
                         folderCCPError = false;
                         rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
-                        if (IsCCP)
-                        {
-                            openTabs.Add(rootNodeCCP);
-                            foreach (var file in rootNodeCCP.TreeItems)
-                            {
-                                fileHoverStates[file] = (false, false);
-                            }
-                        }
+                       
                     }
                     else
                     {
@@ -329,6 +309,7 @@ namespace SupervisorMobility.Client.Pages.Components
             finally
             {
                 ShowLoading = false;
+                ChangeFileExplorer();
             }
 
         }
@@ -377,28 +358,115 @@ namespace SupervisorMobility.Client.Pages.Components
             }
 
 
-            if (IsHOE)
+          
+
+
+            if (IsHOE && !IsHOECD)
             {
-                openTabs.Add(rootNodeHOE);
-                foreach (var file in rootNodeHOE.TreeItems)
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeHOE, InitialFileFolderSelection.Item2);
+
+                if(tabs.Count > 0)
                 {
-                    fileHoverStates[file] = (false, false);
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeHOE);
+                    foreach (var file in rootNodeHOE.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
                 }
             }
-            if (IsGOS)
+            if (IsGOS && !IsGOSCD)
             {
-                openTabs.Add(rootNodeGOS);
-                foreach (var file in rootNodeGOS.TreeItems)
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeGOS, InitialFileFolderSelection.Item2);
+
+                if (tabs.Count > 0)
                 {
-                    fileHoverStates[file] = (false, false);
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeGOS);
+                    foreach (var file in rootNodeGOS.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
                 }
             }
-            else if (IsCCP)
+            if (IsCCP && !IsCCPCD)
             {
-                openTabs.Add(rootNodeCCP);
-                foreach (var file in rootNodeCCP.TreeItems)
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeCCP, InitialFileFolderSelection.Item2);
+
+                if (tabs.Count > 0)
                 {
-                    fileHoverStates[file] = (false, false);
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeCCP);
+                    foreach (var file in rootNodeCCP.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
+                }
+            }
+            if (IsHOECD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeHOE, InitialFileFolderSelection.Item2);
+
+                if (tabs.Count > 0)
+                {
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeHOE);
+                    foreach (var file in rootNodeHOE.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
+                };
+            }
+            if (IsGOSCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeGOS, InitialFileFolderSelection.Item2);
+
+                if (tabs.Count > 0)
+                {
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeGOS);
+                    foreach (var file in rootNodeGOS.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
+                }
+            }
+            if (IsCCPCD)
+            {
+                var tabs = TreeServices.FindAncestorsByPath(rootNodeCCP, InitialFileFolderSelection.Item2);
+
+                if (tabs.Count > 0)
+                {
+                    openTabs.AddRange(tabs);
+                    OnNodeClick(openTabs.Last());
+                }
+                else
+                {
+                    openTabs.Add(rootNodeCCP);
+                    foreach (var file in rootNodeCCP.TreeItems)
+                    {
+                        fileHoverStates[file] = (false, false);
+                    }
                 }
             }
 
