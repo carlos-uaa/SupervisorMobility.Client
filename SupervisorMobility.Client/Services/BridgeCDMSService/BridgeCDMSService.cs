@@ -242,8 +242,9 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
-                    return result;
+                    //var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
+                    //return result;
+                    //Console.WriteLine($"Delete File TempCCP successfully");
                 }
                 else
                 {
@@ -680,8 +681,10 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
-                    return result;
+                    //Console.WriteLine($"Delete File TempGOS successfully");
+
+                    //var result = await response.Content.ReadFromJsonAsync<CDMS_General>();
+                    //return result;
                 }
                 else
                 {
