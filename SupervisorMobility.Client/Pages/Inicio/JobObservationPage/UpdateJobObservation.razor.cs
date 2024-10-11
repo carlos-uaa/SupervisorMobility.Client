@@ -3024,13 +3024,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task AnswerChangeOption(string option, int id)
         {
-            var answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == id);
+            var answer = questionAnswers[id];
             answer.Answer = option;
             //SetAsCurrentJobObservation();
         }
 
         private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
         {
+            Console.WriteLine("passed");
             int removed = 0;
             foreach (var pillar in question.Pillars)
             {

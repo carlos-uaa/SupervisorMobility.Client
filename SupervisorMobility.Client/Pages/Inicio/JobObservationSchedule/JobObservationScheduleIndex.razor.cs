@@ -917,11 +917,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
+        IDialogReference dialogDate;
         private async void OpenCommentDialog()
         {
             var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
-            var dialog = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
-            await dialog.Result;
+            dialogDate = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
+            await dialogDate.Result;
         }
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         public string hour1 { get; set; }
@@ -1008,7 +1009,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservationschedule",true);
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+                    ReloadData();
+
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1075,13 +1081,89 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservationschedule",true);
+                    visible = false;
+                    dialogDate.Close();
+                    StateHasChanged();
+                    _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+                    ReloadData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
             }
+            StateHasChanged();
         }
 
+        private async void ReloadData()
+        {
+            loadingData = true;
+            StateHasChanged();
+            GenerateCalendarHead();
+            GenerateCalendarBody();
+            _allJobObservations = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+            switch (user.UserType)
+            {
+                case 1:
+                case 6:
+                    _jobObservations = _allJobObservations;
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 2:
+                    _jobObservations.Clear();
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.Supervisor.SuperiorId == user.UserId && jobobs.PlantId == plantId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 3:
+                    _jobObservations.Clear();
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                        {
+                            _jobObservations.Add(jobobs);
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    break;
+                case 5:
+                    _jobObservations.Clear();
+
+                    foreach (var jobobs in _allJobObservations)
+                    {
+                        if (plantId == jobobs.PlantId)
+                        {
+                            foreach (User usr in user.Subordinates)
+                            {
+                                if (jobobs.Supervisor.SuperiorId == usr.UserId)
+                                {
+                                    if (jobobs.Status != 7)
+                                    {
+                                        _jobObservations.Add(jobobs);
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    _SOSJobobservation = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).ToList();
+                    totalProgrammed = _jobObservations.Where(j => j.Status == 7 && j.StartDate?.Month == _yearMonth?.Month && j.StartDate?.Year == _yearMonth?.Year).Count();
+                    //_allSupervisors = await UsersService.GetUserByType(3, true, false);
+                    break;
+            }
+            loadingData = false;
+            StateHasChanged();
+        }
 
         //Programmed Job observation Modal (SOS)
         private bool visible2 = false;
