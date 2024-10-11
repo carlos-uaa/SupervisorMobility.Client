@@ -264,12 +264,22 @@
                                 <td>
                                     @if (_tempLup.Count > 0)
                                     {
-                                        foreach (var lup in _tempLup)
+                                        foreach (var lup in _tempLup.Keys)
                                         {
                                             if (lup.Pillar == 1)
                                             {
                                                 <MudTooltip Text=@Localizer["lupWillBeCreatedWhenTheCreateJobObservationButtonIsClicked"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
                                                     <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                                         @if (_tempLup[lup].Count == 0)
+                                                        {
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup))" 
+                                                                                Color="Color.Info" 
+                                                                                Size="Size.Small" 
+                                                                                Icon="@Icons.Material.Filled.AddAPhoto">
+                                                                </MudIconButton>
+                                                            </MudTooltip>
+                                                        }
                                                         <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
                                                             @if (lup.Oportunity.Length < 50)
                                                             {
@@ -314,7 +324,7 @@
                                 <td>
                                     @if (_tempLup.Count > 0)
                                     {
-                                        foreach (var lup in _tempLup)
+                                        foreach (var lup in _tempLup.Keys)
                                         {
                                             if (lup.Pillar == 2)
                                             {
@@ -364,7 +374,7 @@
                                 <td>
                                     @if (_tempLup.Count > 0)
                                     {
-                                        foreach (var lup in _tempLup)
+                                        foreach (var lup in _tempLup.Keys)
                                         {
                                             if (lup.Pillar == 3)
                                             {
@@ -414,7 +424,7 @@
                                 <td>
                                     @if (_tempLup.Count > 0)
                                     {
-                                        foreach (var lup in _tempLup)
+                                        foreach (var lup in _tempLup.Keys)
                                         {
                                             if (lup.Pillar == 4)
                                             {
@@ -464,12 +474,19 @@
                                 <td>
                                     @if (_tempLup.Count > 0)
                                     {
-                                        foreach (var lup in _tempLup)
+                                        foreach (var lup in _tempLup.Keys)
                                         {
                                             if (lup.Pillar == 5)
                                             {
                                                 <MudTooltip Text=@Localizer["lupWillBeCreatedWhenTheCreateJobObservationButtonIsClicked"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true">
                                                     <MudButton Style="padding: 0px; margin-right: 10px; margin-top: 10px" Color="Color.Info" Variant="Variant.Outlined">
+                                                            <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                                <MudIconButton @onclick="(() => OpenCamera(lup))"
+                                                                               Color="Color.Info"
+                                                                               Size="Size.Small"
+                                                                               Icon="@Icons.Material.Filled.AddAPhoto">
+                                                                </MudIconButton>
+                                                            </MudTooltip>
                                                         <MudChip Color="Color.Info" OnClose="Closed" Size="Size.Small" CloseIcon="@Icons.Material.Filled.ChecklistRtl" Variant="Variant.Text" Style="cursor:pointer">
                                                             @if (lup.Oportunity.Length < 70)
                                                             {
@@ -483,6 +500,23 @@
                                                         <MudText>
                                                             <MudChip Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">New</MudChip>
                                                         </MudText>
+                                                        @if (_tempLup[lup].Count > 0)
+                                                        {
+                                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+
+                                                                @foreach (var (image, index) in _tempLup[lup].Select((image, index) => (image, index)))
+                                                                {
+                                                                    <MudItem Class="mr-8">
+                                                                        <MudItem Style="text-align:end !important; margin-right: -16px; margin-bottom: -20px; cursor:pointer">
+                                                                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" @onclick="() => RemoveImage.InvokeAsync(index)"></MudIcon>
+                                                                            </MudTooltip>
+                                                                        </MudItem>
+                                                                        <MudImage ObjectFit="ObjectFit.Cover" Height="40" Width="80" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                                    </MudItem>
+                                                                }
+                                                            </MudItem>
+                                                        }
                                                         <MudTooltip Text=@Localizer["deleteLupItem"] Color="Color.Error" Placement="Placement.Right" Arrow="true">
                                                             <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Small" @onclick="(() => DeleteLup.InvokeAsync(lup))"></MudIconButton>
                                                         </MudTooltip>
@@ -491,6 +525,7 @@
 
                                             }
                                         }
+                                        
                                     }
                                 </td>
                             </tr>
@@ -522,8 +557,9 @@
     [Parameter]
     public List<LupOpportunity> area_ListOther { get; set; } = new List<LupOpportunity>();
     [Parameter]
-    public List<Lup> _tempLup { get; set; } = new();
-
+    public Dictionary<Lup, List<string>> _tempLup { get; set; } = new ();
+    [Parameter]
+    public List<string> capturedImages { get; set; } = new List<string>();
     [Parameter]
     public EventCallback<(int, int)> RemoveFromList { get; set; }
     [Parameter]
@@ -531,7 +567,15 @@
     [Parameter]
     public EventCallback<int> AddTempLup { get; set; }
     [Parameter]
+    public EventCallback OpenCameraDialog { get; set; }
+    [Parameter]
+    public EventCallback<Lup> SetLup { get; set; }
+    [Parameter]
     public EventCallback<Lup> DeleteLup { get; set; }
+    [Parameter]
+    public EventCallback<int> RemoveImage { get; set; }
+    [Parameter]
+    public EventCallback<int> UploadEvidence { get; set; }
 
     private async void OpenGuideDialog(int pillarID)
     {
@@ -548,5 +592,27 @@
     void Closed(MudChip chip)
     {
         // react to chip closed
+    }
+
+    private DialogOptions dialogLup = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+    private async void OpenDialogLup(int id)
+    {
+        var parameters = new DialogParameters { { "lupId", id } };
+        var dialog = DialogService.Show<OpenLup_Dialog>("", parameters, dialogLup);
+        await dialog.Result;
+    }
+
+    public int lupPhotosId = 0;
+    public string oportunity = "";
+    public int photosPillar = 0;
+
+    private void OpenCamera(Lup lup)
+    {
+        photosPillar = lup.Pillar;
+        oportunity = lup.Oportunity;
+
+        SetLup.InvokeAsync(lup);
+        OpenCameraDialog.InvokeAsync();
     }
 }
