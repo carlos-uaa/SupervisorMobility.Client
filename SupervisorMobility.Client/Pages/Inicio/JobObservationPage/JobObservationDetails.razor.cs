@@ -52,10 +52,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string observer { get; set; } = "Juan";
         public string operator1 { get; set; } = "Pedro";
 
-        int[] models = new int[5];
-        string[] cycles = new string[5];
-        string[] HoeTimes = new string[5];
-
+  
     
         private bool searchAssychart = false;
 
@@ -241,7 +238,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                 }
 
-                if (_jobObservation.HOEStandardTimes == null)
+                if (string.IsNullOrEmpty(_jobObservation.HOEStandardTimes) || _jobObservation.HOEStandardTimes.Contains("|"))
                 {
                     hoeStandardTime = 0.0;
                 }

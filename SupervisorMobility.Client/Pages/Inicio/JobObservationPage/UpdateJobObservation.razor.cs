@@ -294,7 +294,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                     }
 
-                    if (_jobObservation.HOEStandardTimes == null)
+                    if (string.IsNullOrEmpty(_jobObservation.HOEStandardTimes) || _jobObservation.HOEStandardTimes.Contains("|"))
                     {
                         hoeStandardTime = 0.0;
                     }
