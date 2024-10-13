@@ -62,7 +62,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PathsRutesPage
 
         public bool HOEModalDisplay { get; set; } = false;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = false };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
 
         private List<Product> _products = new List<Product>();
@@ -219,6 +219,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.PathsRutesPage
                 ShowLoading = false;
                 if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
                     Find_all_tree = true;
+
+                if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
+                    ShowMoreInfo = true;
 
                 if (IndexProd != -1)
                     Find_Product = true;
@@ -381,18 +384,25 @@ namespace SupervisorMobility.Client.Pages.Configuration.PathsRutesPage
         {
 
             _plant = _plants.ElementAt(IndexPlant);
+            IndexArea = -1;
+            IndexDistr = -1;
+
             StateHasChanged();
         }
 
         void UpdateArea()
         {
             _area = _areas.ElementAt(IndexPlant).Value.ElementAt(IndexArea);
+            IndexDistr = -1;
             StateHasChanged();
         }
 
         void UpdateDistribution()
         {
             _distribution = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.ElementAt(IndexDistr);
+
+            if (IndexPlant != -1 && IndexArea != -1 && IndexDistr != -1)
+                ShowMoreInfo = true;
 
             StateHasChanged();
         }
