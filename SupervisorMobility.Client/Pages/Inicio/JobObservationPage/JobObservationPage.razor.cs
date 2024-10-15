@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Services.BreadcrumsService;
 using System;
@@ -61,6 +62,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string totalRejected;
         public string totalFinished;
         public string totalProgrammed;
+        public string totalTraining;
 
 
         public int plantId;
@@ -170,7 +172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Status != 7).Count() + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Status != 7 || j.Type == 4 ).Count() + ")";
             totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
             totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
             totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
@@ -178,6 +180,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).Count() + ")";
             totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).Count() + ")";
             totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).Count() + ")";
+            totalTraining = Localizer["VerifyTraining"] + " (" + _jobObservations.Where(j => j.Type == 4).Count() + ")";
+
         }
 
 
@@ -884,35 +888,33 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private DateTime lastTouchTime = DateTime.MinValue;
         private readonly TimeSpan doubleTouchInterval = TimeSpan.FromMilliseconds(300);
 
-        private void HandleTouchStart(int jobObsId)
-        {
-            DateTime now = DateTime.Now;
-            TimeSpan timeSinceLastTouch = now - lastTouchTime;
-
-            if (timeSinceLastTouch < doubleTouchInterval)
-            {
-                OpenDialog2(jobObsId);
-            }
-
-            lastTouchTime = now;
-        }
-
+  
         private int selectedRowNumber = -1;
         private MudTable<JobObservation> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<JobObservation> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<JobObservation> args)
         {
+            if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+            {
+                OpenDialog2(args.Item.JobObservationId);
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+            }
         }
-
 
         private string SelectedRowClassFunc(JobObservation element, int rowNumber)
         {
             if (selectedRowNumber == rowNumber)
             {
-                return string.Empty;
+                //SosHubId = element.SOSHubId;
+                return "selected"; // Mantener la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
+                //SosHubId = element.SOSHubId;
                 selectedRowNumber = rowNumber;
                 return "selected";
             }
@@ -921,6 +923,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return string.Empty;
             }
         }
+     
+
+
 
 
 
