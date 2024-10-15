@@ -2296,19 +2296,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     {
                         using var content = new MultipartFormDataContent();
 
-                        //for (int i = 0; i < answer.capturedImagesFiles.Count; i++)
-                        //{
-                        //    answer.NewFilesStreams.ElementAt(i).Position = 0;
-
-                        //    var fileContent = new StreamContent(answer.NewFilesStreams.ElementAt(i));
-                        //    fileContent.Headers.ContentType = new MediaTypeHeaderValue(answer.capturedImagesFiles.ElementAt(i).ContentType);
-
-                        //    content.Add(
-                        //        content: fileContent,
-                        //        name: "Files",
-                        //        fileName: answer.capturedImagesFiles.ElementAt(i).Name
-                        //    );
-                        //}
                         if (answer.MediaUris.Count > 0)
                             for (int i = 0; i < answer.MediaUris.Count; i++)
                             {
@@ -2482,7 +2469,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 var fileContent = new StreamContent(imageStream);
                                 fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
 
-                                content.Add(fileContent, "LupFiles", "CameraEvidence.png");
+                                content.Add(fileContent, "LupFiles", "CameraEvidences.png");
                             }
                             else
                             {
@@ -2501,18 +2488,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
 
-                    object sendLup = new {
+                    Lup sendLup = new Lup {
+                        LupId = 0,
                         JobObservationId = lup.Key.JobObservationId,
                         Oportunity = lup.Key.Oportunity,
                         IsActive = lup.Key.IsActive,
                         Pillar = lup.Key.Pillar,
-                        CratedDate = lup.Key.CreatedDate,
-                        Observer = _jobObservation.Supervisor.Name
+                        Q3 = null,
+                        Q4 = null,
+                        Justification = null,
+                        Status = 1,
+                        StatusOKNG = LUPStatus.Percent0,
+                        CreatedDate = lup.Key.CreatedDate,
+                        EndDate = null,
+                        DepartmentId = null,
+                        StdChange = null,
+                        StdUpdate = null,
+                        ChecklistQuestionId = null,
+                        Observer = null
                     };
 
-                    var jsonLup = JsonSerializer.Serialize(sendLup);
 
-                    content.Add(new StringContent(jsonLup, Encoding.UTF8, "application/json"), "LupCmp");
+
+                    content.Add(new StringContent(sendLup.JobObservationId.ToString()), "LupCmp.JobObservationId");
+                    content.Add(new StringContent(sendLup.Oportunity ?? ""), "LupCmp.Oportunity");
+                    content.Add(new StringContent(sendLup.IsActive.ToString()), "LupCmp.IsActive");
+                    content.Add(new StringContent(sendLup.Pillar.ToString()), "LupCmp.Pillar");
+                    content.Add(new StringContent(sendLup.Status.ToString()), "LupCmp.Status");
+                    content.Add(new StringContent(sendLup.StatusOKNG.ToString()), "LupCmp.StatusOKNG");
+                    content.Add(new StringContent(sendLup.CreatedDate.ToString()), "LupCmp.CreatedDate");
+
 
                     var result1 = await LupService.CreateEvidencesLup(content);
 

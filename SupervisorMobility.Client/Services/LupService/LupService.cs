@@ -28,7 +28,15 @@ namespace SupervisorMobility.Client.Services.LupService
 
         public async Task<Lup> CreateEvidencesLup(MultipartFormDataContent lup)
         {
-            var response = await _http.PostAsJsonAsync($"lup/evidencesLup", lup);
+            var response = await _http.PostAsync($"lup/evidencesLup", lup);
+
+            //var content = await response.Content.ReadAsStringAsync();
+
+            //if (!response.IsSuccessStatusCode)
+            //{
+            //    return null;
+            //}
+
             var newLup = await response.Content.ReadFromJsonAsync<Lup>();
 
             return newLup;
