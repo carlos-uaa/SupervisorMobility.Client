@@ -172,14 +172,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Status != 7 || j.Type == 4 ).Count() + ")";
-            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
-            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).Count() + ")";
-            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).Count() + ")";
-            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).Count() + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).Count() + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Type != 5 && j.Status != 7).Count() + ")";
+            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1 && j.Type != 5).Count() + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2 && j.Type != 5).Count() + ")";
+            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3 && j.Type != 5).Count() + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4 && j.Type != 5).Count() + ")";
+            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5 && j.Type != 5).Count() + ")";
+            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6 && j.Type != 5).Count() + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7 && j.Type != 5).Count() + ")";
             totalTraining = Localizer["VerifyTraining"] + " (" + _jobObservations.Where(j => j.Type == 4).Count() + ")";
 
         }
@@ -888,7 +888,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private DateTime lastTouchTime = DateTime.MinValue;
         private readonly TimeSpan doubleTouchInterval = TimeSpan.FromMilliseconds(300);
 
-  
+        private void HandleTouchStart(int jobObsId)
+        {
+            DateTime now = DateTime.Now;
+            TimeSpan timeSinceLastTouch = now - lastTouchTime;
+
+            if (timeSinceLastTouch < doubleTouchInterval)
+            {
+                OpenDialog2(jobObsId);
+            }
+
+            lastTouchTime = now;
+        }
+
         private int selectedRowNumber = -1;
         private MudTable<JobObservation> SelectTableEvent;
 
@@ -896,7 +908,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
             {
-                OpenDialog2(args.Item.JobObservationId);
+                HandleTouchStart(args.Item.JobObservationId);
             }
             else
             {
