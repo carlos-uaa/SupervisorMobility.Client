@@ -1271,19 +1271,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             base.StateHasChanged();
         }
+
         public void DeleteLup(Lup lup)
         {
-            switch (lup.Pillar)
+            if (_tempLup.ContainsKey(lup))
             {
-                case 1: areaS = ""; break;
-                case 2: areaQ = ""; break;
-                case 3: areaD = ""; break;
-                case 4: areaC = ""; break;
-                case 5: areaOther = ""; break;
+                switch (lup.Pillar)
+                {
+                    case 1: areaS = ""; break;
+                    case 2: areaQ = ""; break;
+                    case 3: areaD = ""; break;
+                    case 4: areaC = ""; break;
+                    case 5: areaOther = ""; break;
+                }
+
+                _tempLup.Remove(lup);
+
+                SyncLocalStorage.SetItem("LupToAdd", _tempLup.ToList());
             }
-            _tempLup.Remove(lup);
-            SyncLocalStorage.SetItem("LupToAdd", _tempLup);
+            else
+            {
+                Console.WriteLine("El lup no existe en _tempLup.");
+            }
         }
+
 
         //Past Job observation
 
@@ -2535,6 +2546,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             return new AsyncVoidMethodBuilder();
+        }
+
+
+        private void RemoveTempImage(Lup lup, int index)
+        {
+            if (index >= 0 && index < _tempLup[lup].Count)
+            {
+                _tempLup[lup].RemoveAt(index);
+
+                StateHasChanged();
+            }
         }
 
 
