@@ -412,49 +412,77 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
             DisableLegend = true
         };
 
+        private bool _cameraInitialized = false;
+        private bool _cameraAccessGranted = false;
 
-        private async void OnRenderedHandler()
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            frameCount = 0;
-
-            // Check camera-access or ask user, if it's not allowed currently
-            if (await CameraStreamerReference.GetCameraAccessAsync())
+            if (firstRender && !_cameraInitialized)
             {
-                // Reloading re-initializes the stream and starts the
-                // stream automatically if the Autostart parameter is set
-                await CameraStreamerReference.ReloadAsync();
+                try
+                {
 
-                // If Autostart is not set, you have to manually start the stream again
-                /* await CameraStreamerReference.StartAsync(); */
+                    frameCount = 0;
+                    _cameraAccessGranted = await CameraStreamerReference.GetCameraAccessAsync();
+
+                    if (_cameraAccessGranted)
+                    {
+                        await CameraStreamerReference.ReloadAsync();
+                        _cameraInitialized = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Permiso de acceso a la cámara no otorgado.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+                }
             }
+
+
         }
 
-        private async void Start()
-        {
-            await CameraStreamerReference.StartAsync();
-        }
 
         private async void Stop()
         {
+            frameCount = 0;
             await CameraStreamerReference.StopAsync();
         }
 
         private void OnFrameHandler(string _)
         {
-            ++frameCount;
+            try
+            {
+
+                ++frameCount;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+            }
         }
 
         private async void GetCurrentFrame()
         {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
-
-            if (!string.IsNullOrEmpty(imageData))
+            try
             {
-                capturedImages.Add(imageData);
+                imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+                if (!string.IsNullOrEmpty(imageData))
+                {
+                    capturedImages.Add(imageData);
+                }
+                visibleCamera = false;
+                StateHasChanged();
+                Stop();
             }
-            visibleCamera = false;
-            StateHasChanged();
-            Stop();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+            }
         }
         private bool IsValidBase64String(string base64String)
         {

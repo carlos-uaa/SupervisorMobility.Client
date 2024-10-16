@@ -10,7 +10,6 @@
                 <CameraStreamer @ref=CameraStreamerReference
                                 Width=1280
                                 Height=720
-                                OnRendered=OnRenderedHandler
                                 OnFrame=OnFrameHandler
                                 Style="max-height: 70vh; width: 100%; border-radius: 10px"
                                 Class="mud-elevation-4 rounded white"
@@ -54,25 +53,56 @@
     private string imageData;
 
 
-    private async void OnRenderedHandler()
+    private bool _cameraInitialized = false;
+    private bool _cameraAccessGranted = false;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-
-        frameCount = 0;
-        if (await CameraStreamerReference.GetCameraAccessAsync())
+        if (firstRender && !_cameraInitialized)
         {
-            await CameraStreamerReference.ReloadAsync();
+            try
+            {
 
+                frameCount = 0;
+                _cameraAccessGranted = await CameraStreamerReference.GetCameraAccessAsync();
+
+                if (_cameraAccessGranted)
+                {
+                    await CameraStreamerReference.ReloadAsync();
+                    _cameraInitialized = true;
+                }
+                else
+                {
+                    Console.WriteLine("Permiso de acceso a la cámara no otorgado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+            }
         }
+
+
     }
 
     private async void Stop()
     {
+        frameCount = 0;
         await CameraStreamerReference.StopAsync();
     }
 
     private void OnFrameHandler(string _)
     {
-        ++frameCount;
+        try
+        {
+
+            ++frameCount;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+        }
     }
 
     private async void GetCurrentFrame()
@@ -83,4 +113,6 @@
         await returnFrame.InvokeAsync(imageData);
         MudDialog.Close();
     }
+
+
 }
