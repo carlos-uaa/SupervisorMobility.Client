@@ -39,8 +39,8 @@
                             </td>
                             <td width="25%">
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="answer.Answer" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => { answer.Show = true; RemoveLupOpportunity.InvokeAsync(( answer, secNum, question)); })">Yes</MudRadio>
+                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID))" Disabled="@(_jobObservation.Status == 6)">
+                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="()=>OnChange(answer, secNum, question)">Yes</MudRadio>
                                         <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync(( answer, secNum, question)))">NG</MudRadio>
                                         <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
                                     </MudRadioGroup>
@@ -79,7 +79,7 @@
                                                     {
 
                                                         <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" @ontouchstart="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" OnTouch="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
                                                         </MudTooltip>
                                                     }
 
@@ -91,7 +91,7 @@
                                                     @if (answer.Evidences.ToList().Count > 0)
                                                     {
                                                         <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))" @ontouchstart="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))"></MudIcon>
+                                                            <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))" OnTouch="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))"></MudIcon>
                                                         </MudTooltip>
                                                     }
                                                     @if (answer.Evidences.ToList().Count > 0)
@@ -104,15 +104,15 @@
                                                                     <MudItem Style="display:flex; flex-direction: column; align-items: center;">
                                                                         <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                             <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" @ontouchstart="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" />
+                                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" OnTouch="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" />
                                                                             </MudTooltip>
                                                                             <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))" @ontouchstart="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))"></MudIcon>
                                                                             </MudTooltip>
                                                                         </MudItem>
 
                                                                         <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
-                                                                            <MudButton @onclick="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )" @ontouchstart="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )">
+                                                                            <MudButton @onclick="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )" OnTouch="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )">
                                                                                 <MudItem>
                                                                                     <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@(evidence?.FileName.Length > 13 ? evidence?.FileName.Substring(0,10) + "..." : evidence?.FileName )" Color="Color.Info" />
                                                                                 </MudItem>
@@ -132,7 +132,7 @@
                                                         <MudItem Class=" mr-8 mb-4">
                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                 <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" @ontouchstart="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
                                                                 </MudTooltip>
                                                             </MudItem>
                                                             <MudListItem Icon="@Icons.Material.Filled.PhotoSizeSelectActual" @key="@file">
@@ -146,7 +146,7 @@
                                                         <MudItem Class=" mr-8 mb-4">
                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                 <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" @ontouchstart="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
                                                                 </MudTooltip>
                                                             </MudItem>
                                                             <MudListItem Icon="@Icons.Material.Filled.CameraAlt" @key="@image">
@@ -186,9 +186,9 @@
                             </td>
                             <td width="25%">
                                 <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup @bind-SelectedOption="answer.Answer" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
-                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((answer, secNum, question)))">NG</MudRadio>
+                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID))" Disabled="@(_jobObservation.Status == 6)">
+                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="()=>OnChange(answer, secNum, question)">Yes</MudRadio>
+                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync(( answer, secNum, question)))">NG</MudRadio>
                                         <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
                                     </MudRadioGroup>
                                 </MudItem>
@@ -227,7 +227,7 @@
                                                     {
 
                                                         <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" @ontouchstart="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" OnTouch="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
                                                         </MudTooltip>
                                                     }
 
@@ -242,7 +242,7 @@
                                                         <MudItem Class=" mr-8 mb-4">
                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                 <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" @ontouchstart="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
                                                                 </MudTooltip>
                                                             </MudItem>
                                                             <MudListItem Icon="@Icons.Material.Filled.PictureInPicture" @key="@file">
@@ -258,7 +258,7 @@
                                                         <MudItem Class=" mr-8 mb-4">
                                                             <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
                                                                 <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" @ontouchstart="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
                                                                 </MudTooltip>
                                                             </MudItem>
                                                             <MudListItem Icon="@Icons.Material.Filled.Camera" @key="@image">
@@ -317,6 +317,9 @@
     [Parameter]
     public Dictionary<int, string> imageUrls { get; set; } = new Dictionary<int, string>();
 
+
+    [Parameter]
+    public EventCallback<(string, int)> AnswerChangeOption { get; set; }
     [Parameter]
     public EventCallback<(ChecklistAnswer, int, ChecklistQuestion)> AddLupOpportunity { get; set; }
     [Parameter]
@@ -337,4 +340,10 @@
     public EventCallback<(ChecklistAnswer, int)> RemoveImageAnswer { get; set; }
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
+
+    private void OnChange(ChecklistAnswer answer, int secNum, ChecklistQuestion question)
+    {
+        answer.Show = true;
+        _ = RemoveLupOpportunity.InvokeAsync((answer, secNum, question));
+    }
 }

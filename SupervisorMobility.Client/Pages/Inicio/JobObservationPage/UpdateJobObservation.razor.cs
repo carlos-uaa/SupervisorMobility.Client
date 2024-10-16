@@ -297,7 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         taktTime = double.Parse(_jobObservation.TaktTime, CultureInfo.InvariantCulture);
                     }
 
-                    if (_jobObservation.HOEStandardTimes == null)
+                    if (string.IsNullOrEmpty(_jobObservation.HOEStandardTimes) || _jobObservation.HOEStandardTimes.Contains("|"))
                     {
                         hoeStandardTime = 0.0;
                     }
@@ -3133,8 +3133,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
+        private async Task AnswerChangeOption(string option, int id)
+        {
+            var answer = questionAnswers[id];
+            answer.Answer = option;
+            //SetAsCurrentJobObservation();
+        }
+
         private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
         {
+            Console.WriteLine("passed");
             int removed = 0;
             foreach (var pillar in question.Pillars)
             {

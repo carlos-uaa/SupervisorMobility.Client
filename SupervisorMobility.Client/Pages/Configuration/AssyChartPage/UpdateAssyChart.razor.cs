@@ -4,6 +4,7 @@ using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 using SupervisorMobility.Client.Services.ProductsService;
+using System.Reflection.Emit;
 using static SupervisorMobility.Client.Pages.Configuration.AssyChartPage.CreateAssyChart;
 
 namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
@@ -82,6 +83,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 
 
         public int auxErgonomicsLevel = 0;
+
+
+        private (object, string) Hoe = (null, "");
+        private (object, string) HoeCD = (null, "");
+        private (object, string) Gos = (null, "");
+        private (object, string) GosCD = (null, "");
+        private (object, string) Ccp = (null, "");
+        private (object, string) CcpCD = (null, "");
+
+
 
         //Inizialize
         protected async override Task OnInitializedAsync()
@@ -361,7 +372,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             if_add_CD_GOS = CodePathDialog.CommonDirectionGOS != "";
             if_add_CD_HOE = CodePathDialog.CommonDirectionHOE != "";
 
-
+            Hoe = (itemselected.HOE, itemselected.HOE);
+            Gos = (itemselected.GOS, itemselected.GOS);
+            Ccp = (itemselected.CCP, itemselected.CCP);
+            HoeCD = (itemselected.CommonDirectionHOE, itemselected.CommonDirectionHOE);
+            GosCD = (itemselected.CommonDirectionGOS, itemselected.CommonDirectionGOS);
+            CcpCD = (itemselected.CommonDirectionCCP, itemselected.CommonDirectionCCP);
+            
+            
             ProductModalDisplay = true;
             StateHasChanged();
 
@@ -662,6 +680,46 @@ namespace SupervisorMobility.Client.Pages.Configuration.AssyChartPage
             StateHasChanged();
         }
 
+       
+        private void HandleFinaHOEChanged((object, string) finalFiles)
+        {
+            Hoe = finalFiles;
+            CodePathDialog.HOE = finalFiles.Item2;
+            StateHasChanged();
+        }
+
+        private void HandleFinaGOSChanged((object, string) finalFiles)
+        {
+            Gos = finalFiles;
+            CodePathDialog.GOS = finalFiles.Item2;
+            StateHasChanged();
+        }
+        private void HandleFinaCCPChanged((object, string) finalFiles)
+        {
+            Ccp = finalFiles;
+            CodePathDialog.CCP = finalFiles.Item2;
+            StateHasChanged();
+        }
+        private void HandleFinaHOECDChanged((object, string) finalFiles)
+        {
+            HoeCD = finalFiles;
+            CodePathDialog.CommonDirectionHOE = finalFiles.Item2;
+            StateHasChanged();
+        }
+
+        private void HandleFinaGOSCDChanged((object, string) finalFiles)
+        {
+            GosCD = finalFiles;
+            CodePathDialog.CommonDirectionGOS = finalFiles.Item2;
+            StateHasChanged();
+        }
+
+        private void HandleFinaCCPCDChanged((object, string) finalFiles)
+        {
+            CcpCD = finalFiles;
+            CodePathDialog.CommonDirectionCCP = finalFiles.Item2;
+            StateHasChanged();
+        }
 
     }
 }

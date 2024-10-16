@@ -155,6 +155,22 @@ namespace SupervisorMobility.Client.Pages.Components
             }
         }
 
+        private void TitleButtonClick()
+        {
+                if (IsHOE)
+            {
+                SetButtonText(0);
+            }
+            else if (IsGOS)
+            {
+                SetButtonText(1);
+            }
+            else if (IsCCP)
+            {
+                SetButtonText(2);
+            }
+            // Si no cumple ninguna condición, no hace nada
+        }
         private async Task GetHOETab(TreeItemData item)
         {
             try
