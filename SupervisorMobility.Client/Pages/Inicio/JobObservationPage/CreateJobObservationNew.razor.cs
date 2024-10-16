@@ -1272,7 +1272,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        public void DeleteLup(Lup lup)
+        public void DeleteTempLup(Lup lup)
         {
             if (_tempLup.ContainsKey(lup))
             {
@@ -2192,7 +2192,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private List<string> capturedImages = new List<string>();
 
-        private async void OpenCameraDialog()
+        private async void OpenTempCameraDialog()
         {
 
             var parameters = new DialogParameters { 
