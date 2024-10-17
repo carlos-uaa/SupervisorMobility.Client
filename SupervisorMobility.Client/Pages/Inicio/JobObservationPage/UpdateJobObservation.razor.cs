@@ -240,9 +240,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     {
                                         var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
                                         imageUrls[evidence.FileUploadId] = imageUrl;
-
                                     }
                                 }
+                                questionAnswers[question.QuestionID] = item;
                             }
                         }
                     }
