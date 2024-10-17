@@ -11,5 +11,7 @@
         Task<bool> UpdateLup(Lup lup);
         Task DeleteLup(int lup);
         Task<bool> RemoveEvidence(int lupId, int fileUploadId);
+        Task<Lup> CreateEvidencesLup(MultipartFormDataContent lup);
+
     }
 }

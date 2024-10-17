@@ -16,7 +16,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         [Inject] private IDialogService DialogService { get; set; }
         [Inject] private IBreadcrumbService BreadcrumbService { get; set; }
-        [Inject] private ISOSDataService SOSDataServices { get; set; }
+      
 
         private List<BreadcrumbItem> _links;
 
@@ -235,7 +235,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             else
             {
                 await GetUserAsync();
-                _sos_plan = await SOSServices.GetSOSById(sosId, true, true, true);
+                _sos_plan = await SOSPlanReviewServices.GetSOSById(sosId, true, true, true);
                 _distributions = await DistributionServices.GetDistributionsWithCollections((int)_sos_plan.PlantId, (int)_sos_plan.AreaId);
 
                 //Dist_Manager Son las distribuciones disponibles para crear una sugerencia
@@ -939,7 +939,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                    var result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                    var result = await SOSPlanReviewServices.CreateSOSRegister(_sos_plan.SOSid, month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
@@ -1049,7 +1049,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                    SOSRegisterJobObservation? result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                    SOSRegisterJobObservation? result = await SOSPlanReviewServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                     if (result != null)
                     {
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
@@ -1097,7 +1097,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 {
                     if(user.UserType == 3)
                     {
-                        var resultCreateSv = await SOSServices.CreateSOSRegUserOperation(_sos_plan.SOSid, user.UserId, OperationId);
+                        var resultCreateSv = await SOSPlanReviewServices.CreateSOSRegUserOperation(_sos_plan.SOSid, user.UserId, OperationId);
                         if (resultCreateSv != null)
                         {
                             context.Register = resultCreateSv;
@@ -1133,7 +1133,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-                        SOSRegisterJobObservation? result = await SOSServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
+                        SOSRegisterJobObservation? result = await SOSPlanReviewServices.CreateSOSRegister(_sos_plan.SOSid, parsedDate.Month, (int)_sos_plan.AplicationYear, _NewJobObservation);
                         if (result != null)
                         {
                             result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
@@ -1723,7 +1723,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     {
                         //Validar verificaion
 
-                        var result = await SOSServices.CreateSOSRegUserOperation(_sos_plan.SOSid, context.Register.Supervisor.UserId, op);
+                        var result = await SOSPlanReviewServices.CreateSOSRegUserOperation(_sos_plan.SOSid, context.Register.Supervisor.UserId, op);
                         if (result != null)
                         {
                             context.Register = result;
@@ -1784,7 +1784,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                     {
                                         case true:
                                             //Todos los reguistros Unicamente en la misma distribucion
-                                            var result1 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 1);
+                                            var result1 = await SOSPlanReviewServices.UpdateSOSRegUserOperation(context.Register, 1);
                                             if (result1 != null)
                                             {
                                                 ShowTable = false;
@@ -1808,7 +1808,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                                         case false:
                                             //Todos los reguistros en la SOS
-                                            var result2 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 2);
+                                            var result2 = await SOSPlanReviewServices.UpdateSOSRegUserOperation(context.Register, 2);
                                             if (result2 != null)
                                             {
                                                 ShowTable = false;
@@ -1833,7 +1833,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                                         case null:
                                             //Todos los reguistros en la operacion ROW
-                                            var result3 = await SOSServices.UpdateSOSRegUserOperation(context.Register, 3);
+                                            var result3 = await SOSPlanReviewServices.UpdateSOSRegUserOperation(context.Register, 3);
                                             if (result3 != null)
                                             {
                                                 ShowTable = false;
@@ -1859,7 +1859,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                         SOS_Registers_UserOperationRelationship.Clear();
                                         OperationsInDistributionCount.Clear();
                                         Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
-                                        _SosRegistersrUserOperation = await SOSServices.GetSOSRegUserOperation(_sos_plan.SOSid);
+                                        _SosRegistersrUserOperation = await SOSPlanReviewServices.GetSOSRegUserOperation(_sos_plan.SOSid);
 
                                         foreach (var item in _SosRegistersrUserOperation)
                                         {
@@ -2192,7 +2192,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             //mandar absolutamente todas las existentes
 
-            var result = await SOSServices.ApplyMassiveSuggest(_sos_plan.SOSid, SOSDataServices._All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
+            var result = await SOSPlanReviewServices.ApplyMassiveSuggest(_sos_plan.SOSid, SOSDataServices._All_Suggested_SOSJobobservation, Dist_Manager.Where(item => item.isSelected).ToList());
             if (result)
             {
                 StateHasChanged();

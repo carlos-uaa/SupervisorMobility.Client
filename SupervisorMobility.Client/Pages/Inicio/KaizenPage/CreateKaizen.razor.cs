@@ -316,7 +316,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             visibleCamera = true;
         }
 
-        private CameraStreamer CameraStreamerReference;
+        private CameraStreamer CameraStreamerReference = new();
 
         private string? cameraId = null;
 
@@ -324,44 +324,85 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
 
         private string imageData;
 
-        private async void OnRenderedHandler()
+        private bool _cameraInitialized = false;
+        private bool _cameraAccessGranted = false;
+
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            frameCount = 0;
-
-            if (await CameraStreamerReference.GetCameraAccessAsync())
+            if (firstRender && !_cameraInitialized)
             {
-                await CameraStreamerReference.ReloadAsync();
+                try
+                {
 
+                    frameCount = 0;
+                    _cameraAccessGranted = await CameraStreamerReference.GetCameraAccessAsync();
+
+                    if (_cameraAccessGranted)
+                    {
+                        await CameraStreamerReference.ReloadAsync();
+                        _cameraInitialized = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Permiso de acceso a la cámara no otorgado.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+                }
             }
+
+
         }
+
 
         private async void Stop()
         {
+            frameCount = 0;
             await CameraStreamerReference.StopAsync();
         }
 
         private void OnFrameHandler(string _)
         {
-            ++frameCount;
+            try
+            {
+
+                ++frameCount;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+            }
         }
 
         private async void GetCurrentFrame()
         {
-            imageData = await CameraStreamerReference.GetCurrentFrameAsync();
-
-            if (!string.IsNullOrEmpty(imageData))
+            try
             {
-                if(imageIndex == 1) { 
-                    capturedImages.Add(imageData);
-                }
-                else
+
+                imageData = await CameraStreamerReference.GetCurrentFrameAsync();
+
+                if (!string.IsNullOrEmpty(imageData))
                 {
-                    capturedImagesThen.Add(imageData);
+                    if (imageIndex == 1)
+                    {
+                        capturedImages.Add(imageData);
+                    }
+                    else
+                    {
+                        capturedImagesThen.Add(imageData);
+                    }
                 }
+                visibleCamera = false;
+                Stop();
+                StateHasChanged();
             }
-            visibleCamera = false;
-            StateHasChanged();
-            Stop();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+            }
         }
 
         private void RemoveImage(int index, int imgIndex)

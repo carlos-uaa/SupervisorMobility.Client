@@ -47,6 +47,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         List<Product> _products { get; set; } = new();
         List<User> _supervisors { get; set; } = new();
 
+        Dictionary<Lup, List<string>> _tempLup = new();
+
         private AssyChart _assychart { get; set; } = new AssyChart();
         private string messageErrorFolders;
         private bool searchAssychart = false;
@@ -168,9 +170,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<LupOpportunity> area_ListOther = new List<LupOpportunity>();
 
         List<Lup> lupInsidences = new();
-        List<Lup> _tempLup { get; set; } = new();
 
         public bool flag = false;
+        public Lup? selectedLup = null;
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -237,9 +240,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     {
                                         var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
                                         imageUrls[evidence.FileUploadId] = imageUrl;
-
                                     }
                                 }
+                                questionAnswers[question.QuestionID] = item;
                             }
                         }
                     }
@@ -613,7 +616,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
@@ -682,6 +686,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (result)
                 {
 
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
@@ -808,7 +813,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Updated", Severity.Info);
@@ -867,7 +872,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Updated", Severity.Info);
@@ -1031,7 +1036,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
@@ -1095,7 +1100,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
@@ -1218,7 +1223,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Rejected", Severity.Info);
@@ -1276,7 +1281,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Rejected", Severity.Info);
@@ -1418,6 +1423,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (result)
                 {
 
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
@@ -1473,7 +1479,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
@@ -1650,6 +1656,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public async void ModifyKPI(int kpi)
         {
             kpiID = kpi;
+        
+        }
+
+
+        //Temp Lup
+        private async void OpenTempCameraDialog()
+        {
+
+            var parameters = new DialogParameters {
+                { "Prompt", $"LUP Evidence" },
+                { "returnFrame", EventCallback.Factory.Create<string>(this, GetCurrentFrame) } };
+            var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
+            await dialog.Result;
+        }
+
+        private void SetLup(Lup lup)
+        {
+            selectedLup = lup;
+        }
+
+        public void DeleteTempLup(Lup lup)
+        {
+            if (_tempLup.ContainsKey(lup))
+            {
+                switch (lup.Pillar)
+                {
+                    case 1: areaS = ""; break;
+                    case 2: areaQ = ""; break;
+                    case 3: areaD = ""; break;
+                    case 4: areaC = ""; break;
+                    case 5: areaOther = ""; break;
+                }
+
+                _tempLup.Remove(lup);
+
+            }
+            else
+            {
+                Console.WriteLine("El lup no existe en _tempLup.");
+            }
+        }
+
+        private void RemoveTempImage(Lup lup, int index)
+        {
+            if (index >= 0 && index < _tempLup[lup].Count)
+            {
+                _tempLup[lup].RemoveAt(index);
+
+                StateHasChanged();
+            }
         }
 
         //Past Job Observations Modal
@@ -2275,11 +2331,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string? cameraId = null;
 
         private int frameCount;
+
         private async void GetCurrentFrame(string imageData)
         {
             if (!string.IsNullOrEmpty(imageData))
             {
-                capturedImages.Add(imageData);
+                if (selectedLup != null && _tempLup.ContainsKey(selectedLup))
+                {
+                    var lupKey = _tempLup.FirstOrDefault(l => l.Key == selectedLup);
+                    _tempLup[lupKey.Key].Add(imageData);
+                    selectedLup = null;
+                }
+                else
+                {
+                    capturedImages.Add(imageData);
+                }
             }
             StateHasChanged();
         }
@@ -2664,6 +2730,99 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             return new AsyncVoidMethodBuilder();
         }
 
+
+
+        private async Task<AsyncVoidMethodBuilder> GenerateLups()
+        {
+            if (_tempLup?.Count > 0)
+            {
+                foreach (var lup in _tempLup)
+                {
+                    using var content = new MultipartFormDataContent();
+
+                    foreach (var imageData in lup.Value)
+                    {
+                        if (!string.IsNullOrEmpty(imageData))
+                        {
+                            var base64Data = imageData.Replace("data:image/png;base64,", "");
+
+                            if (IsValidBase64String(base64Data))
+                            {
+                                var imageBytes = Convert.FromBase64String(base64Data);
+                                var imageStream = new MemoryStream(imageBytes);
+                                imageStream.Position = 0;
+                                var fileContent = new StreamContent(imageStream);
+                                fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                                content.Add(fileContent, "LupFiles", "CameraEvidences.png");
+                            }
+                            else
+                            {
+                                Snackbar.Clear();
+                                Snackbar.Add("Invalid image data, Update Evidences", Severity.Error);
+                            }
+                        }
+                        else
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Add("No image data to upload, Update Evidences", Severity.Warning);
+                        }
+                    }
+
+                    lup.Key.JobObservationId = _jobObservation.JobObservationId;
+                    lup.Key.IsActive = true;
+                    lup.Key.CreatedDate = DateTime.Now;
+
+                    Lup sendLup = new Lup
+                    {
+                        LupId = 0,
+                        JobObservationId = lup.Key.JobObservationId,
+                        Oportunity = lup.Key.Oportunity,
+                        IsActive = lup.Key.IsActive,
+                        Pillar = lup.Key.Pillar,
+                        Q3 = null,
+                        Q4 = null,
+                        Justification = null,
+                        Status = 1,
+                        StatusOKNG = LUPStatus.Percent0,
+                        CreatedDate = lup.Key.CreatedDate,
+                        EndDate = null,
+                        DepartmentId = null,
+                        StdChange = null,
+                        StdUpdate = null,
+                        ChecklistQuestionId = null,
+                        Observer = null
+                    };
+
+
+
+                    content.Add(new StringContent(sendLup.JobObservationId.ToString()), "LupCmp.JobObservationId");
+                    content.Add(new StringContent(sendLup.Oportunity ?? ""), "LupCmp.Oportunity");
+                    content.Add(new StringContent(sendLup.IsActive.ToString()), "LupCmp.IsActive");
+                    content.Add(new StringContent(sendLup.Pillar.ToString()), "LupCmp.Pillar");
+                    content.Add(new StringContent(sendLup.Status.ToString()), "LupCmp.Status");
+                    content.Add(new StringContent(sendLup.StatusOKNG.ToString()), "LupCmp.StatusOKNG");
+                    content.Add(new StringContent(sendLup.CreatedDate.ToString()), "LupCmp.CreatedDate");
+
+
+                    var result1 = await LupService.CreateEvidencesLup(content);
+
+                    if (result1 != null)
+                    {
+                        Snackbar.Add($"Job observation Question item Update Evidences", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Error in Question Update Evidences", Severity.Error);
+                    }
+                }
+            }
+
+
+
+            return new AsyncVoidMethodBuilder();
+        }
+
         private async Task UploadFiles(InputFileChangeEventArgs e, ChecklistAnswer item)
         {
             if (e.File.ContentType.StartsWith("image/"))
@@ -2762,57 +2921,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             return new AsyncVoidMethodBuilder();
         }
-
-        //Lup
-        public async Task AddLup(Lup lup)
-        {
-
-            var result = await LupService.CreateLup(lup);
-            if (result != null)
-            {
-                _lupJobObservations = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
-
-                await GetUserAsync();
-
-                pastjobObservations = new();
-                pastLup = new();
-                if (user != null)
-                {
-                    pastJobs = await JobObservationService.GetAllJobObservations();
-
-                    foreach (var job in pastJobs)
-                    {
-                        if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date < Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                            && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
-                        {
-
-                            pastjobObservations.Add(job);
-
-                            pastJob = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, false);
-                            foreach (var lups in pastJob.Lup)
-                            {
-                                pastLup.Add(lups);
-                            }
-                        }
-
-                    }
-
-                }
-                pastjobObservations = pastjobObservations.OrderBy(x => x.StartDate).ToList();
-                StateHasChanged();
-
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Lup Created", Severity.Info);
-            }
-            else
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error in Lup", Severity.Error);
-            }
-        }
-
 
         //LUP
         public async void AddTempLup(int pillar)
@@ -2945,7 +3053,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 LupItem.CreatedDate = DateTime.Now;
                 LupItem.IsActive = true;
 
-                await AddLup(LupItem);
+                if (!_tempLup.ContainsKey(LupItem))
+                {
+                    _tempLup.Add(LupItem, new List<string>());
+                }
             }
             lup = new();
 
