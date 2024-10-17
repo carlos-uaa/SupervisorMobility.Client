@@ -2499,7 +2499,47 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
 
-                    Lup sendLup = new Lup {
+
+                    startHour = DateTime.Now.TimeOfDay;
+
+                    if (CultureInfo.CurrentCulture.Name == "en-US")
+                    {
+                        var formatedStartDate = lup.Key.CreatedDate;
+
+                        var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                        lup.Key.CreatedDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour}";
+
+
+                        if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+                        }
+
+                        lup.Key.CreatedDate = newDate1;
+                    }
+                    else
+                    {
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
+
+                        if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+
+                            lup.Key.CreatedDate = newDate1;
+                    }
+
+
+
+                Lup sendLup = new Lup {
                         LupId = 0,
                         JobObservationId = lup.Key.JobObservationId,
                         Oportunity = lup.Key.Oportunity,
