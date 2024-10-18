@@ -2633,7 +2633,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 foreach (var question in questionAnswers)
                 {
-                    if (question.Value.Answer != "" || question.Value.Edited)
+                    if ((question.Value.Answer != "" || question.Value.Edited) && !_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.Key))
                     {
                         using var content = new MultipartFormDataContent();
                         for (int i = 0; i < question.Value.capturedImagesFiles.Count; i++)
