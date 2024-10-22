@@ -11,6 +11,8 @@
             bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false, int year = 0, int month = 0,
             int SOSAnualId = 0, int idUser = 0);
 
+        Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year);
+
         // Get job observation by Id
         Task<JobObservation> GetJobObservationById(int jobObservationId, bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false);
 

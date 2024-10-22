@@ -23,7 +23,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public Dictionary<int, SOSRegUserOperationRelationship?> SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
         //Resume Operations In Distribution
         public Dictionary<int, SosJobCount> OperationsInDistributionCount { get; set; } = new Dictionary<int, SosJobCount>();
-       
+
         //Suggest
         //Control de jobs Observations suggestion
         public List<JobObservationNulls> _All_Suggested_SOSJobobservation { get; set; } = new();
@@ -335,9 +335,11 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect>  Dist_Manager,
-            List<User> SV_Manager,  int diasSeparate, DateTime Startday, int JobsPorDia)
+        public async Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+            List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia)
         {
+            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+
             this.diasSeparate = diasSeparate;
             this.Startday = Startday;
             this.JobsPorDia = JobsPorDia;
@@ -356,59 +358,115 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                         {
                             foreach (var op in item.distribution.Operations)
                             {
-                                //check if exist
+                                // Obtener el SupervisorId de SV_Manager usando el índice calculado
+                                int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                                int supervisorId = SV_Manager[supervisorIndex].UserId;
+
                                 if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
                                 {
+                                    JobObservation? findedJob = availableJobs.Find(j => j.DistributionId == item.distribution.DistributionId && j.OperationId == op.OperationId || j.SupervisorId == supervisorId);
 
-                                    JobObservationNulls _newSuggestion = new();
+                                    if (findedJob != null)
+                                    {
+                                        JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
 
-                                    int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
-
-                                    // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                                    int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-                                    // Asignar el SupervisorId a _newSuggestion
-                                    _newSuggestion.SupervisorId = supervisorId;
-
-
-                                    SOSRegUserOperationRelationship regAux = new();
-                                    regAux.Register = new();
-                                    regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                    regAux.Register.OperationId = op.OperationId;
-                                    regAux.Register.SupervisorId = supervisorId;
-                                    regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+                                        // Asignar el SupervisorId a _newSuggestion
+                                        if (findedJob.SupervisorId == null)
+                                        {
+                                            _newSuggestionExist.SupervisorId = supervisorId;
+                                        }
 
 
-                                    regAux.Exist = false;
-                                    regAux.StateUpdate = true;
-                                    Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+                                        SOSRegUserOperationRelationship regAuxExist = new();
+                                        regAuxExist.Register = new();
+                                        regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
+                                        regAuxExist.Register.OperationId = op.OperationId;
+                                        regAuxExist.Register.SupervisorId = supervisorId;
+                                        regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
 
-                                    _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                    _newSuggestion.Plant = _sos_plan.Plant;
-                                    _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                    _newSuggestion.Area = _sos_plan.Area;
-
-                                    _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                    _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-
-                                    _newSuggestion.Operation = op;
-                                    _newSuggestion.OperationId = op.OperationId;
-                                    _newSuggestion.Option = 2;
-                                    _newSuggestion.Type = 3;
-                                    _newSuggestion.Status = 7;
-                                    _newSuggestion.SectionIds = jobCategoryStructureIds;
-
-                                    _newSuggestion.IsActive = true;
-
-                                    DateTime parsedDate = Startday;
-                                    parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                    _newSuggestion.StartDate = parsedDate;
-                                    _newSuggestion.PlannedStartDate = parsedDate;
+                                        regAuxExist.Exist = false;
+                                        regAuxExist.StateUpdate = true;
+                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
 
 
-                                    _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                                        _newSuggestionExist.Plant = _sos_plan.Plant;
+                                        _newSuggestionExist.Area = _sos_plan.Area;
+                                        _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                        _newSuggestionExist.Operation = op;
+                                        if (_newSuggestionExist.OperationId == 0)
+                                        {
+                                            _newSuggestionExist.OperationId = op.OperationId;
+                                        }
+
+                                        _newSuggestionExist.Option = 2;
+                                        _newSuggestionExist.Type = 3;
+                                        _newSuggestionExist.Status = 7;
+                                        _newSuggestionExist.SectionIds = jobCategoryStructureIds;
+
+                                        _newSuggestionExist.IsActive = true;
+
+                                        DateTime parsedDate = Startday;
+                                        parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
+
+                                        _newSuggestionExist.StartDate = parsedDate;
+                                        _newSuggestionExist.PlannedStartDate = parsedDate;
+
+
+                                        availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
+
+                                        _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
+                                    }
+                                    else
+                                    {
+
+                                        JobObservationNulls _newSuggestion = new();
+
+
+                                        // Asignar el SupervisorId a _newSuggestion
+                                        _newSuggestion.SupervisorId = supervisorId;
+
+
+                                        SOSRegUserOperationRelationship regAux = new();
+                                        regAux.Register = new();
+                                        regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
+                                        regAux.Register.OperationId = op.OperationId;
+                                        regAux.Register.SupervisorId = supervisorId;
+                                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+                                        regAux.Exist = false;
+                                        regAux.StateUpdate = true;
+                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+
+
+                                        _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+                                        _newSuggestion.Plant = _sos_plan.Plant;
+                                        _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+                                        _newSuggestion.Area = _sos_plan.Area;
+
+                                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+
+                                        _newSuggestion.Operation = op;
+                                        _newSuggestion.OperationId = op.OperationId;
+                                        _newSuggestion.Option = 2;
+                                        _newSuggestion.Type = 3;
+                                        _newSuggestion.Status = 7;
+                                        _newSuggestion.SectionIds = jobCategoryStructureIds;
+
+                                        _newSuggestion.IsActive = true;
+
+                                        DateTime parsedDate = Startday;
+                                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+                                        _newSuggestion.StartDate = parsedDate;
+                                        _newSuggestion.PlannedStartDate = parsedDate;
+
+
+                                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                                    }
+
                                 }
 
                             }
@@ -453,6 +511,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public async Task<AsyncVoidMethodBuilder> SetNewConfigSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
             List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom)
         {
+
+            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
@@ -501,58 +562,114 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                         if (!_All_SOSJobobservation.Any(j => j.OperationId == op.OperationId))
                         {
 
-                            JobObservationNulls _newSuggestion = new();
-
                             int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
                             // Obtener el SupervisorId de SV_Manager usando el índice calculado
                             int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                            // Asignar el SupervisorId a _newSuggestion
-                            _newSuggestion.SupervisorId = supervisorId;
+                            JobObservation? findedJob = availableJobs.Find(j => j.OperationId == op.OperationId || j.SupervisorId == supervisorId);
+
+                            if (findedJob != null)
+                            {
+                                JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
+
+                                // Asignar el SupervisorId a _newSuggestion
+                                if (findedJob.SupervisorId == null)
+                                {
+                                    _newSuggestionExist.SupervisorId = supervisorId;
+                                }
 
 
-                            SOSRegUserOperationRelationship regAux = new();
-                            regAux.Register = new();
-                            regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                            regAux.Register.OperationId = op.OperationId;
-                            regAux.Register.SupervisorId = supervisorId;
-                            regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+                                SOSRegUserOperationRelationship regAuxExist = new();
+                                regAuxExist.Register = new();
+                                regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
+                                regAuxExist.Register.OperationId = op.OperationId;
+                                regAuxExist.Register.SupervisorId = supervisorId;
+                                regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
 
-                            regAux.Exist = false;
-                            regAux.StateUpdate = true;
-                            Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+                                regAuxExist.Exist = false;
+                                regAuxExist.StateUpdate = true;
+                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
+
+                                _newSuggestionExist.Plant = _sos_plan.Plant;
+                                _newSuggestionExist.Area = _sos_plan.Area;
+                                _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                
+                                if(_newSuggestionExist.OperationId == 0)
+                                {
+                                    _newSuggestionExist.OperationId = op.OperationId;
+                                }
+
+                                _newSuggestionExist.Operation = op;
+
+
+                                _newSuggestionExist.Option = 2;
+                                _newSuggestionExist.Type = 3;
+                                _newSuggestionExist.Status = 7;
+                                _newSuggestionExist.SectionIds = jobCategoryStructureIds;
+
+                                _newSuggestionExist.IsActive = true;
+
+                                DateTime parsedDate = Startday;
+                                parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
+
+                                _newSuggestionExist.StartDate = parsedDate;
+                                _newSuggestionExist.PlannedStartDate = parsedDate;
+
+
+                                availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
+                                _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
+                            }
+                            else
+                            {
+                                JobObservationNulls _newSuggestion = new();
+                                // Asignar el SupervisorId a _newSuggestion
+                                _newSuggestion.SupervisorId = supervisorId;
+
+
+                                SOSRegUserOperationRelationship regAux = new();
+                                regAux.Register = new();
+                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
+                                regAux.Register.OperationId = op.OperationId;
+                                regAux.Register.SupervisorId = supervisorId;
+                                regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+                                regAux.Exist = false;
+                                regAux.StateUpdate = true;
+                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
 
 
 
-                            _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                            _newSuggestion.Plant = _sos_plan.Plant;
-                            _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                            _newSuggestion.Area = _sos_plan.Area;
+                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+                                _newSuggestion.Plant = _sos_plan.Plant;
+                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+                                _newSuggestion.Area = _sos_plan.Area;
 
-                            _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                            _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+                                _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+                                _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
 
-                            _newSuggestion.Operation = op;
-                            _newSuggestion.OperationId = op.OperationId;
-
-
-                            _newSuggestion.Option = 2;
-                            _newSuggestion.Type = 3;
-                            _newSuggestion.Status = 7;
-                            _newSuggestion.SectionIds = jobCategoryStructureIds;
-                            _newSuggestion.IsActive = true;
-
-                            DateTime parsedDate = Startday;
-                            parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                            _newSuggestion.StartDate = parsedDate;
-                            _newSuggestion.PlannedStartDate = parsedDate;
+                                _newSuggestion.Operation = op;
+                                _newSuggestion.OperationId = op.OperationId;
 
 
+                                _newSuggestion.Option = 2;
+                                _newSuggestion.Type = 3;
+                                _newSuggestion.Status = 7;
+                                _newSuggestion.SectionIds = jobCategoryStructureIds;
+                                _newSuggestion.IsActive = true;
 
-                            _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                                DateTime parsedDate = Startday;
+                                parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+                                _newSuggestion.StartDate = parsedDate;
+                                _newSuggestion.PlannedStartDate = parsedDate;
+
+
+
+                                _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+                            }
                         }
                     }
                 }
