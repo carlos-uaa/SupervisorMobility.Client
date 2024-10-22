@@ -172,14 +172,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void JobObservationsTotalCount()
         {
-            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Type != 5 && j.Status != 7).Count() + ")";
-            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1 && j.Type != 5).Count() + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2 && j.Type != 5).Count() + ")";
-            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3 && j.Type != 5).Count() + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4 && j.Type != 5).Count() + ")";
-            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5 && j.Type != 5).Count() + ")";
-            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6 && j.Type != 5).Count() + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7 && j.Type != 5).Count() + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Status != 7).Count() + ")";
+            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1).Count() + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2).Count() + ")";
+            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3).Count() + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4).Count() + ")";
+            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5).Count() + ")";
+            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6).Count() + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7).Count() + ")";
             totalTraining = Localizer["VerifyTraining"] + " (" + _jobObservations.Where(j => j.Type == 4).Count() + ")";
 
         }
@@ -422,6 +422,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public void ClearStatus()
         {
             statusId = new();
+            selectedRowNumber = -1;
         }
 
         //Local storage user
@@ -827,19 +828,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void OpenDialog2(int id)
         {
             jobId = id;
-            _jobObservation = await JobObservationService.GetJobObservationById(jobId, true, true, true, includeCkAnswers: true);
-            startHour = _jobObservation.StartDate?.TimeOfDay;
-            endHour = _jobObservation.EndDate?.TimeOfDay;
-            if (_jobObservation.PlannedStartDate != null)
+            _jobObservation = null;
+            _ = Task.Run(async () =>
             {
-                plannedStartDate = _jobObservation.PlannedStartDate;
-                plannedEndDate = _jobObservation.PlannedEndDate;
-            }
-            else
-            {
-                plannedStartDate = _jobObservation.StartDate;
-                plannedEndDate = _jobObservation.EndDate;
-            }
+                // Obtener JobObservation en segundo plano
+                _jobObservation = await JobObservationService.GetJobObservationById(jobId, true, true, true, includeCkAnswers: true);
+
+                // Ejecutar las asignaciones una vez que se obtenga la observación del trabajo
+                startHour = _jobObservation.StartDate?.TimeOfDay;
+                endHour = _jobObservation.EndDate?.TimeOfDay;
+
+                if (_jobObservation.PlannedStartDate != null)
+                {
+                    plannedStartDate = _jobObservation.PlannedStartDate;
+                    plannedEndDate = _jobObservation.PlannedEndDate;
+                }
+                else
+                {
+                    plannedStartDate = _jobObservation.StartDate;
+                    plannedEndDate = _jobObservation.EndDate;
+                }
+
+                // Aquí podrías forzar la actualización de la interfaz si es necesario
+                InvokeAsync(StateHasChanged);
+            });
 
             visible = true;
         }
@@ -904,40 +916,97 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private int selectedRowNumber = -1;
         private MudTable<JobObservation> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<JobObservation> args)
+        private void RowClickEvent(TableRowClickEventArgs<JobObservation> args, int tableId)
         {
-            if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+            List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
+            switch (tableId)
             {
-                HandleTouchStart(args.Item.JobObservationId);
+                case 0:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
+                    break;
+                case 1:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
+                    break;
+                case 2:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2).ToList();
+                    break;
+                case 3:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
+                    break;
+                case 4:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
+                    break;
+                case 5:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
+                    break;
+                case 6:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
+                    break;
+                case 7:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
+                    break;
+                case 8:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
+                    break;
+            }
+            // Obtiene el índice dentro del subconjunto filtrado
+            var rowIndex = filteredItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                // Si la fila ya está seleccionada, se abre el diálogo (doble clic simulado)
+                OpenDialog2(args.Item.JobObservationId);
             }
             else
             {
-                SelectTableEvent.SelectedItem = args.Item;
-                selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+                // Cambia la fila seleccionada en el subconjunto filtrado
+                selectedRowNumber = rowIndex;
+                SelectTableEvent.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                StateHasChanged(); // Actualiza la UI
             }
         }
 
-        private string SelectedRowClassFunc(JobObservation element, int rowNumber)
+        private string SelectedRowClassFunc(JobObservation element, int rowNumber, int tableId)
         {
-            if (selectedRowNumber == rowNumber)
+            List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
+            switch (tableId)
             {
-                //SosHubId = element.SOSHubId;
-                return "selected"; // Mantener la fila seleccionada
+                case 0:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
+                    break;
+                case 1:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
+                    break;
+                case 2:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2 ).ToList();
+                    break;
+                case 3:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
+                    break;
+                case 4:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
+                    break;
+                case 5:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
+                    break;
+                case 6:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
+                    break;
+                case 7:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
+                    break;
+                case 8:
+                    filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
+                    break;
             }
-            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+
+            // Solo devuelve la clase "selected" si el número de fila coincide con el seleccionado en el subconjunto filtrado
+            if (filteredItems.IndexOf(element) == selectedRowNumber)
             {
-                //SosHubId = element.SOSHubId;
-                selectedRowNumber = rowNumber;
                 return "selected";
             }
-            else
-            {
-                return string.Empty;
-            }
+            return string.Empty;
         }
-     
-
-
 
 
 

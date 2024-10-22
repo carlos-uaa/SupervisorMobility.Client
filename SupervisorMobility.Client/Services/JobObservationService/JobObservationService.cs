@@ -62,6 +62,20 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             return _mapper.Map<List<JobObservation>>(jobObservation);
         }
+          public async Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year)
+        {
+            var response = await _http.GetAsync($"jobobservations/NextYear?plantId={plantId}&areaId={areaId}&year={year}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var jobObservation = JsonSerializer.Deserialize<List<JobObservationNulls>>(content, _options);
+
+            return _mapper.Map<List<JobObservation>>(jobObservation);
+        }
 
         public async Task<List<JobObservationHistoryVersion>> GetAllHistoryJobObservations(int jobObservationId)
         {
