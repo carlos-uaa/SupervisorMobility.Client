@@ -2013,6 +2013,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private void StartCreateNewSuggestion()
         {
+            enableCreateSuggestion = true;
+            _yearMonth = Startday;
+            StateHasChanged();
+
             if (Startday.Date == DateTime.Now.AddDays(-1).Date)
             {
                 DialogService.ShowMessageBox("Warning", "Select Day To Start!", yesText: "OK!");
@@ -2048,11 +2052,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task CreateNewSuggestion()
         {
+            DateTime StartdayUTC = Startday.ToUniversalTime(); // Para asegurarte de que siempre sea UTC
 
 
-
-            // Llama a los servicios necesarios para configurar la nueva sugerencia
-            await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, startDate, JobsPorDia, OptionRandom);
+            await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom);
             await PrepareSuggestDataTable();
 
             // Una vez completada la configuración, muestra un mensaje informativo

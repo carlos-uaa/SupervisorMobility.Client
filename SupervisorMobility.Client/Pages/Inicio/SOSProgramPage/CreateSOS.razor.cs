@@ -313,59 +313,59 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             _sosReview.Status = 1;
             _sosReview.IsActive = true;
 
-            var findExistSOS = await SOSReviewServices.FindSOS(_sosReview.PlantId, _sosReview.AreaId, _sosReview.CreationDate.Value.Year - 1 );
-            if (findExistSOS != null)
-            {
-                bool? msgOption = await DialogService.ShowMessageBox("Warning",
-                  "Se encontro un plan del año anterior, quieres usarlo como base?!",
-                 yesText: "Si", cancelText: "No");
-                var state = msgOption == null ? "No - Crear Nuevo" : "Si - Usar!";
-                StateHasChanged();
+            //var findExistSOS = await SOSReviewServices.FindSOS(_sosReview.PlantId, _sosReview.AreaId, _sosReview.CreationDate.Value.Year - 1 );
+            //if (findExistSOS != null)
+            //{
+            //    bool? msgOption = await DialogService.ShowMessageBox("Warning",
+            //      "Se encontro un plan del año anterior, quieres usarlo como base?!",
+            //     yesText: "Si", cancelText: "No");
+            //    var state = msgOption == null ? "No - Crear Nuevo" : "Si - Usar!";
+            //    StateHasChanged();
 
-                if (state == "No - Crear Nuevo")
-                {
-                    if (_sosReview.Supervisors == null)
-                    {
-                        _sosReview.Supervisors = new List<User>();
-                    }
+            //    if (state == "No - Crear Nuevo")
+            //    {
+            //        if (_sosReview.Supervisors == null)
+            //        {
+            //            _sosReview.Supervisors = new List<User>();
+            //        }
 
-                    switch (user.UserType)
-                    {
-                        case 2:
-                            //Si lo hace el SSV Añade a sus subordinados
-                            _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
-                            break;
-                        case 3:
-                            //Si lo hace el SV se añadade a el
-                            _sosReview.Supervisors.Add(user);
-                            break;
-                    }
+            //        switch (user.UserType)
+            //        {
+            //            case 2:
+            //                //Si lo hace el SSV Añade a sus subordinados
+            //                _sosReview.Supervisors.ToList().AddRange(user.Subordinates);
+            //                break;
+            //            case 3:
+            //                //Si lo hace el SV se añadade a el
+            //                _sosReview.Supervisors.Add(user);
+            //                break;
+            //        }
 
 
-                    var result = await SOSReviewServices.CreateSOSReview(_sosReview);
-                    if (result != null)
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"New SOS Created", Severity.Info);
-                        NavigationManager.NavigateTo($"sosProgram");
-                    }
-                    else
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add($"Error in SOS", Severity.Error);
-                    }
+            //        var result = await SOSReviewServices.CreateSOSReview(_sosReview);
+            //        if (result != null)
+            //        {
+            //            Snackbar.Clear();
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add($"New SOS Created", Severity.Info);
+            //            NavigationManager.NavigateTo($"sosProgram");
+            //        }
+            //        else
+            //        {
+            //            Snackbar.Clear();
+            //            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //            Snackbar.Add($"Error in SOS", Severity.Error);
+            //        }
 
-                }
-                else
-                {
-                    //usar el plan del año pasado
-                    Console.WriteLine("Se usa la del año pasado");
-                }
-            }
-            else
-            {
+            //    }
+            //    else
+            //    {
+            //        //usar el plan del año pasado
+            //        Console.WriteLine("Se usa la del año pasado");
+            //    }
+            //}
+            //else
+            //{
                 if (_sosReview.Supervisors == null)
                 {
                     _sosReview.Supervisors = new List<User>();
@@ -399,14 +399,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     Snackbar.Add($"Error in SOS", Severity.Error);
                 }
 
-            }
-
-            //busacr existente
-
-
-            //buscar una incidencia 
-
-
+            //}
 
         }
     }
