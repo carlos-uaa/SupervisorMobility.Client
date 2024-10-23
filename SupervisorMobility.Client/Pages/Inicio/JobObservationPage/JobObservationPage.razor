@@ -88,18 +88,19 @@
         </MudItem>
     </MudItem>
     <MudTabs Elevation="4" Rounded="true" Color="@Color.Info">
-        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text=@totalJobObservations>
-            <MudTable Items="_jobObservations.Where(j => j.Type != 5 && j.Status != 7 )" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.BubbleChart" Text=@totalJobObservations @onclick="(() => ClearStatus(default))">
+            @* Filter="new Func<JobObservation,bool>(FilterFunc)" *@
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                 HorizontalScrollbar="true" >
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status != 7).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -111,7 +112,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -121,7 +122,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _jobObservations.Where(j => j.DistributionId == type.DistributionId && j.Status != 7).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -146,8 +147,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status != 7).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -165,7 +166,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status != 7).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -181,7 +182,7 @@
 
                                 @foreach (var status in new[] { 1, 2, 3, 4, 5, 6 })
                                 {
-                                    var statusCount = _jobObservations.Where(j => j.Status == status).ToList().Count;
+                                    var statusCount = JOCounting.StatusCount.First(p=>p.id == status).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="@status" Disabled="@isDisabled">
@@ -206,12 +207,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
               
@@ -253,6 +254,9 @@
                                 case 6:
                                     <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                                     break;
+                                case 7:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                                    break;
                             }
                         </MudText>
                     </MudTd>
@@ -281,22 +285,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.Info" Text="@totalProgrammed" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 7 && j.Type != 5)" T="JobObservation" Hover Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.Info" Text="@totalProgrammed" @onclick="(() => ClearStatus(7))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Hover Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true">
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 7).ToList().Count == 0 && !filters)
+                    else if (JOCounting.StatusCount.First(p=>p.id==7).count == 0 && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -308,7 +312,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -318,7 +322,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 7).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p => p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -343,8 +347,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 7).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -362,7 +366,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 7).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p => p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -387,12 +391,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -442,22 +446,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalPlanned" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 1 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.PlayCircle" Text="@totalPlanned" @onclick="(() => ClearStatus(1))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true">
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 1).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -469,7 +473,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -479,7 +483,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 1).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p => p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -504,8 +508,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 1).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -523,7 +527,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 1).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p => p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -548,12 +552,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -602,22 +606,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.StopCircle" Text="@totalInProgress" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 2 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.StopCircle" Text="@totalInProgress" @onclick="(() => ClearStatus(2))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true" >
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 2).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -629,7 +633,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -639,7 +643,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 2).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -664,8 +668,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 2).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -683,7 +687,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 2).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -708,12 +712,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -763,12 +767,12 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.RemoveCircle" Text="@totalLate" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 3 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.RemoveCircle" Text="@totalLate" @onclick="(() => ClearStatus(3))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true" 
             >
                 <ToolBarContent>
@@ -776,10 +780,10 @@
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 3).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -791,7 +795,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -801,7 +805,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 3).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -826,8 +830,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 3).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -845,7 +849,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 3).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -870,12 +874,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -923,22 +927,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.IncompleteCircle" Text="@totalUnderReview" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 4 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.IncompleteCircle" Text="@totalUnderReview" @onclick="(() => ClearStatus(4))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true" >
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 4).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -950,7 +954,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -960,7 +964,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 4).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -985,8 +989,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 4).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -1004,7 +1008,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 4).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -1029,12 +1033,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -1082,22 +1086,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.Cancel" Text="@totalRejected" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 5 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.Cancel" Text="@totalRejected" @onclick="(() => ClearStatus(5))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true" >
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 5).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -1109,7 +1113,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -1119,7 +1123,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 5).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -1144,8 +1148,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 5).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -1163,7 +1167,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 5).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -1188,12 +1192,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -1241,22 +1245,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.Circle" Text="@totalFinished" @onclick="(() => ClearStatus())">
-            <MudTable Items="@_jobObservations.Where(j => j.Status == 6 && j.Type != 5)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.Circle" Text="@totalFinished" @onclick="(() => ClearStatus(6))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true" >
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status == 6).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -1268,7 +1272,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -1278,7 +1282,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _filterJobObservation.Where(j => j.DistributionId == type.DistributionId && j.Status == 6).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p=>p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem  Value="type.DistributionId" Disabled="@isDisabled">
@@ -1303,8 +1307,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status == 6).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -1322,7 +1326,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status == 6).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p=>p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId"  Disabled="@isDisabled">
@@ -1347,12 +1351,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -1400,22 +1404,22 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>
-        <MudTabPanel Icon="@Icons.Material.Filled.ModelTraining" Text="@totalTraining" @onclick="(() => ClearStatus())">
-            <MudTable Items="_jobObservations.Where(j => j.Type == 4)" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<JobObservation,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
+        <MudTabPanel Icon="@Icons.Material.Filled.ModelTraining" Text="@totalTraining" @onclick="(() => ClearStatus(default, 4))">
+            <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Class="styled-table table-striped" FixedHeader=true Height="55vh" OnRowClick="RowClickEvent" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent"
                       HorizontalScrollbar="true">
                 <ToolBarContent>
                     @if (plantId == new int())
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;"> @Localizer["firstSelectAPlant"]</MudAlert>
                         <MudSpacer />
-                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         <MudSpacer />
                     }
-                    else if (_jobObservations.Where(j => j.Status != 7).ToList().Count == 0 && !filters)
+                    else if (anyItems && !filters)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="my-2" Style="text-align:center;">@Localizer["thisPlantDoesNotHaveJobObservatoins"]</MudAlert>
                     }
@@ -1427,7 +1431,7 @@
                         @if (filters == false)
                         {
                             <MudSpacer />
-                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5"></MudTextField>
+                            <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" TextChanged="Filters"></MudTextField>
                         }
                         <MudSpacer />
                         @if (filters == true)
@@ -1437,7 +1441,7 @@
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["notSelected"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    var statusCount = _jobObservations.Where(j => j.DistributionId == type.DistributionId && j.Status != 7).ToList().Count;
+                                    var statusCount = JOCounting.DistributionCount.First(p => p.id == type.DistributionId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.DistributionId" Disabled="@isDisabled">
@@ -1462,8 +1466,8 @@
                                     <MudSelectItem Disabled="true" Value="0" @onclick="(() => ShowError())">@Localizer["notSelected"]</MudSelectItem>
                                     @foreach (var type in _operations)
                                     {
-
-                                        var statusCount = _jobObservations.Where(j => j.OperationId == type.OperationId && j.Status != 7).ToList().Count;
+                                        var operation = JOCounting.OperationCount.FirstOrDefault(p => p.id == type.OperationId);
+                                        var statusCount = operation?.count ?? 0;
                                         var isDisabled = statusCount == 0;
 
                                         <MudSelectItem Value="type.OperationId" Disabled="@isDisabled">
@@ -1481,7 +1485,7 @@
                                 @foreach (var type in operatorUsers)
                                 {
 
-                                    var statusCount = _jobObservations.Where(j => j.OperatorId == type.UserId && j.Status != 7).ToList().Count;
+                                    var statusCount = JOCounting.OperatorCount.First(p => p.id == type.UserId).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="type.UserId" Disabled="@isDisabled">
@@ -1497,7 +1501,7 @@
 
                                 @foreach (var status in new[] { 1, 2, 3, 4, 5, 6 })
                                 {
-                                    var statusCount = _jobObservations.Where(j => j.Status == status).ToList().Count;
+                                    var statusCount = JOCounting.StatusCount.First(p => p.id == status).count;
                                     var isDisabled = statusCount == 0;
 
                                     <MudSelectItem Value="@status" Disabled="@isDisabled">
@@ -1522,12 +1526,12 @@
                     <col />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.JobObservationId)">Id</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Distribution?.Description)" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operation?.Description)">@Localizer["operation"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x.StartDate)">@Localizer["startDate"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Operator?.Name)">@Localizer["operator"]</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<JobObservation, object>(x=>x?.Status)">@Localizer["status"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="id_field" T="JobObservation">Id</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
                     <MudTh Style="text-align: center">@Localizer["actions"]</MudTh>
                 </HeaderContent>
                 <GroupHeaderTemplate>
@@ -1570,6 +1574,9 @@
                                 case 6:
                                     <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                                     break;
+                                case 7:
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                                    break;
                             }
                         </MudText>
                     </MudTd>
@@ -1598,7 +1605,7 @@
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions="new int[]{10,25,50}"/>
                 </PagerContent>
             </MudTable>
         </MudTabPanel>

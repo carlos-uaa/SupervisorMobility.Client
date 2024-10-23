@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.PaginationEntities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Services.BreadcrumsService;
@@ -39,15 +40,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int operatorId;
         public int statusId;
         public int idFilter;
+        public int typeId;
 
         //Filters
-        public List<JobObservation> _filterJobObservation { get; set; } = new();
+        //public List<JobObservation> _filterJobObservation { get; set; } = new();
 
 
 
         //Job observations status lists.
-        public List<JobObservation> _jobObservations { get; set; } = new();
-        public List<JobObservation> _jobObservationsAux { get; set; } = new();
+        //public List<JobObservation> _jobObservations { get; set; } = new();
+        //public List<JobObservation> _jobObservationsAux { get; set; } = new();
+
+        JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto{ DistributionCount = new(),
+            OperationCount = new(),
+            OperatorCount = new(),
+            StatusCount = new()
+        };
+        bool anyItems { get; set; }
+        int TotalItems { get; set; }
 
 
         //Admin
@@ -100,29 +110,38 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             await GetUserAsync();
-            _jobObservations.Clear();
-            ClearFilters();
+            //_jobObservations.Clear();
+            //ClearFilters();
 
             if (user != null)
             {
-                var jobObservationsTask = user.UserType != 3
-                    ? JobObservationService.GetAllJobObservations(true, true)
-                    : JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId);
-
+                //var jobObservationsTask = user.UserType != 3
+                //    ? JobObservationService.GetAllJobObservations(true, true)
+                //    : JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId);
                 Task<List<Plant>> plantsTask = null;
-                if (user.UserType == 1 || user.UserType == 5)
-                {
-                    plantsTask = PlantServices.GetPlants();
-                }
-
                 Task<List<Area>> areasTask = null;
-                if (user.UserType == 2 || user.UserType == 5)
+                if (user.UserType == 3)
                 {
                     plantId = (int)user.PlantId;
-                    areasTask = AreaServices.GetAreas(plantId);
+                    areaId = (int)user.AreaId;
+                    _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
+                    operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
+                }
+                else
+                {
+                    if (user.UserType == 1 || user.UserType == 5)
+                    {
+                        plantsTask = PlantServices.GetPlants();
+                    }
+
+                    if (user.UserType == 2 || user.UserType == 5)
+                    {
+                        plantId = (int)user.PlantId;
+                        areasTask = AreaServices.GetAreas(plantId);
+                    }
                 }
 
-                _jobObservationsAux = await jobObservationsTask;
+                //_jobObservationsAux = await jobObservationsTask;
 
                 if (plantsTask != null)
                 {
@@ -134,53 +153,81 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _areas = (await areasTask).OrderBy(a => a.Description).ToList();
                 }
 
-                if (user.UserType == 1 || user.UserType == 6)
-                {
-                    _jobObservations = _jobObservationsAux.ToList();
-                }
-                else if (user.UserType == 2)
-                {
-                    plantId = (int)user.PlantId;
-                    _jobObservations = _jobObservationsAux
-                        .Where(jobobs => jobobs.PlantId == plantId &&
-                                         user.Subordinates.Any(usr => usr.UserId == jobobs.SupervisorId))
-                        .ToList();
-                }
-                else if (user.UserType == 3)
-                {
-                    plantId = (int)user.PlantId;
-                    areaId = (int)user.AreaId;
-                    _jobObservations = _jobObservationsAux.ToList();
-                    _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
-                    operatorUsers = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 4, true, false);
-                }
-                else if (user.UserType == 5)
-                {
-                    plantId = (int)user.PlantId;
-                    _jobObservations = _jobObservationsAux
-                        .Where(jobobs => jobobs.PlantId == plantId &&
-                                         user.Subordinates.Any(usr => usr.UserId == jobobs.Supervisor.SuperiorId))
-                        .ToList();
-                }
+                //if (user.UserType == 1 || user.UserType == 6)
+                //{
+                //    _jobObservations = _jobObservationsAux.ToList();
+                //}
+                //else if (user.UserType == 2)
+                //{
+                //    plantId = (int)user.PlantId;
+                //    _jobObservations = _jobObservationsAux
+                //        .Where(jobobs => jobobs.PlantId == plantId &&
+                //                         user.Subordinates.Any(usr => usr.UserId == jobobs.SupervisorId))
+                //        .ToList();
+                //}
+                //else if (user.UserType == 3)
+                //{
+                //    plantId = (int)user.PlantId;
+                //    areaId = (int)user.AreaId;
+                //    _jobObservations = _jobObservationsAux.ToList();
+                //}
+                //else if (user.UserType == 5)
+                //{
+                //    plantId = (int)user.PlantId;
+                //    _jobObservations = _jobObservationsAux
+                //        .Where(jobobs => jobobs.PlantId == plantId &&
+                //                         user.Subordinates.Any(usr => usr.UserId == jobobs.Supervisor.SuperiorId))
+                //        .ToList();
+                //}
 
-                _filterJobObservation = _jobObservations;
-                JobObservationsTotalCount();
+                //_filterJobObservation = _jobObservations;
+                //JobObservationsTotalCount();
                 StateHasChanged(); 
             }
         }
 
+        async Task<TableData<JobObservation>> LoadJobObs(TableState state)
+        {
+            (int Total, List<JobObservation> JobObservations, JOCountPaginationDto Count) response = new();
+
+            DateTime? dateToFilter = filterDate ?? default;
+
+            response = await JobObservationService.GetAllJobObservationsByFilters(dateToFilter.Value, dateToFilter.Value, idFilter, plantId, areaId, 
+                distributionId, operationId, default, statusId, user.UserId, typeId, searchString, state.Page+1, state.PageSize, (int)state.SortDirection, state.SortLabel);
+
+            var pps = response.JobObservations.ToArray();
+
+            JOCounting = response.Count;
+
+            if (typeId == default && statusId == default)
+            {
+                TotalItems = response.Total;
+            }
+            else
+            {
+                TotalItems = response.Count.StatusCount.Sum(item=>item.count);
+            }
+            
+            anyItems = response.Total == 0;
+
+            JobObservationsTotalCount();
+
+            StateHasChanged();
+
+            return new TableData<JobObservation>() { Items = pps, TotalItems = response.Total };
+        }
 
         private void JobObservationsTotalCount()
         {
-            totalJobObservations = Localizer["allJobObservations"] + " (" + _jobObservations.Where(j => j.Type != 5 && j.Status != 7).Count() + ")";
-            totalPlanned = Localizer["planned"] + " (" + _jobObservations.Where(j => j.Status == 1 && j.Type != 5).Count() + ")";
-            totalInProgress = Localizer["inProgress"] + " (" + _jobObservations.Where(j => j.Status == 2 && j.Type != 5).Count() + ")";
-            totalLate = Localizer["late"] + " (" + _jobObservations.Where(j => j.Status == 3 && j.Type != 5).Count() + ")";
-            totalUnderReview = Localizer["underReview"] + " (" + _jobObservations.Where(j => j.Status == 4 && j.Type != 5).Count() + ")";
-            totalRejected = Localizer["rejected"] + " (" + _jobObservations.Where(j => j.Status == 5 && j.Type != 5).Count() + ")";
-            totalFinished = Localizer["finished"] + " (" + _jobObservations.Where(j => j.Status == 6 && j.Type != 5).Count() + ")";
-            totalProgrammed = Localizer["programmed"] + " (" + _jobObservations.Where(j => j.Status == 7 && j.Type != 5).Count() + ")";
-            totalTraining = Localizer["VerifyTraining"] + " (" + _jobObservations.Where(j => j.Type == 4).Count() + ")";
+            totalJobObservations = Localizer["allJobObservations"] + " (" + TotalItems + ")";
+            totalPlanned = Localizer["planned"] + " (" + JOCounting.StatusCount[0].count + ")";
+            totalInProgress = Localizer["inProgress"] + " (" + JOCounting.StatusCount[1].count + ")";
+            totalLate = Localizer["late"] + " (" + JOCounting.StatusCount[2].count + ")";
+            totalUnderReview = Localizer["underReview"] + " (" + JOCounting.StatusCount[3].count + ")";
+            totalRejected = Localizer["rejected"] + " (" + JOCounting.StatusCount[4].count + ")";
+            totalFinished = Localizer["finished"] + " (" + JOCounting.StatusCount[5].count + ")";
+            totalProgrammed = Localizer["programmed"] + " (" + JOCounting.StatusCount[6].count + ")";
+            totalTraining = Localizer["VerifyTraining"] + " (" + JOCounting.StatusCount[7].count + ")";
 
         }
 
@@ -192,15 +239,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 areaId = 0;
                 ClearFilters();
-                _jobObservations = new();
-                foreach (var jobobs in _jobObservationsAux)
-                {
-
-                    _jobObservations.Add(jobobs);
-
-                }
-                _filterJobObservation = _jobObservations;
-                JobObservationsTotalCount();
+                await SelectTableEvent.ReloadServerData();
                 StateHasChanged();
                 return;
 
@@ -211,21 +250,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             filters = false;
             ClearFilters();
             operatorUsers.Clear();
-            _jobObservations.Clear();
 
 
-            foreach (var jobobs in _jobObservationsAux)
-            {
-                if (plantId == jobobs.PlantId)
-                {
-
-                    _jobObservations.Add(jobobs);
-
-                }
-            }
-
-            _filterJobObservation = _jobObservations;
-            JobObservationsTotalCount();
+            await SelectTableEvent.ReloadServerData();
 
 
             _areas = await AreaServices.GetAreas(plantId);
@@ -244,41 +271,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
             ClearFilters();
-            _jobObservations.Clear();
             operatorUsers.Clear();
 
-            var filteredJobObs = _jobObservationsAux.Where(jobobs => jobobs.PlantId == plantId && jobobs.AreaId == areaId).ToList();
-
-            switch (user.UserType)
-            {
-                case 1:
-                case 6:
-                    _jobObservations = filteredJobObs;
-                    break;
-
-                case 2:
-                    var subordinateIds = user.Subordinates.Select(s => s.UserId).ToHashSet();
-                    _jobObservations = filteredJobObs
-                        .Where(jobobs => subordinateIds.Contains(jobobs.SupervisorId))
-                        .ToList();
-                    break;
-
-                case 3:
-                    _jobObservations = filteredJobObs
-                        .Where(jobobs => jobobs.SupervisorId == user.UserId)
-                        .ToList();
-                    break;
-
-                case 5:
-                    var superiorIds = user.Subordinates.Select(s => s.UserId).ToHashSet();
-                    _jobObservations = filteredJobObs
-                        .Where(jobobs => jobobs.Supervisor?.SuperiorId.HasValue == true && superiorIds.Contains(jobobs.Supervisor.SuperiorId.Value))
-                        .ToList();
-                    break;
-            }
-
-            _filterJobObservation = _jobObservations;
-            JobObservationsTotalCount();
+            await SelectTableEvent.ReloadServerData();
 
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
@@ -298,9 +293,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             filters = !filters;
 
-            _jobObservations = _filterJobObservation;
-            JobObservationsTotalCount();
-
             idFilter = new();
             distributionId = new();
             operationFlag = false;
@@ -308,6 +300,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             filterDate = null;
             operatorId = new();
             statusId = new();
+
+            SelectTableEvent.ReloadServerData();
 
             if (color == Color.Info)
             {
@@ -323,7 +317,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public void ClearFilters()
         {
-            _jobObservations = _filterJobObservation;
 
             idFilter = new();
             distributionId = new();
@@ -333,6 +326,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorId = new();
             statusId = new();
 
+            SelectTableEvent.ReloadServerData();
             StateHasChanged();
         }
 
@@ -342,86 +336,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if(distributionId == 0)
             {
-                _jobObservations = _filterJobObservation;
+                SelectTableEvent.ReloadServerData();
                 return;
             }
 
             operationId = new();
-            _jobObservations = _filterJobObservation;
 
 
             operationFlag = true;
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == distributionId)].Operations;
 
 
-            _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-
-            if (statusId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
-
-            }
-            if (operatorId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-
-            }
-            if (filterDate != null)
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-
-            }
-            if (idFilter != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-
-            }
-            JobObservationsTotalCount();
-
+            SelectTableEvent.ReloadServerData();
         }
 
         private void Filters()
         {
-            _jobObservations = _filterJobObservation;
-
-
-            if (distributionId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
-
-            }
-            if (operationId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperationId == operationId).ToList();
-
-            }
-            if (statusId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
-
-            }
-            if (operatorId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
-
-            }
-            if (filterDate != null)
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
-
-            }
-            if (idFilter != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
-
-            }
-
-            JobObservationsTotalCount();
+            SelectTableEvent.ReloadServerData();
         }
 
-        public void ClearStatus()
+        public void ClearStatus(int sts,int filterType=default)
         {
-            statusId = new();
+            statusId = sts;
+            typeId = filterType == 4? 4:default;
         }
 
         //Local storage user
@@ -467,74 +404,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         async Task DeleteJobObservation(int jobObservationId)
         {
-            _jobObservations.RemoveAll(jobObservation => jobObservation.JobObservationId == jobObservationId);
             await JobObservationService.DeleteJobObservation(jobObservationId);
             ClearFilters();
 
-
-            if (user.UserType == 1)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId && areaId == jobobs.AreaId)
-                    {
-
-                        _jobObservations.Add(jobobs);
-
-
-                    }
-                }
-            }
-            else if (user.UserType == 2)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId)
-                    {
-                        foreach (User usr in user.Subordinates)
-                        {
-                            if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
-                            {
-
-                                _jobObservations.Add(jobobs);
-
-                            }
-                        }
-                    }
-                }
-            }
-            else if (user.UserType == 3)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId && jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
-                    {
-
-                        _jobObservations.Add(jobobs);
-
-                    }
-                }
-            }
-            else if (user.UserType == 5)
-            {
-                foreach (var jobobs in _jobObservationsAux)
-                {
-                    if (plantId == jobobs.PlantId)
-                    {
-                        foreach (User usr in user.Subordinates)
-                        {
-                            if (jobobs.Supervisor.SuperiorId == usr.UserId && jobobs.AreaId == areaId)
-                            {
-
-                                _jobObservations.Add(jobobs);
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            JobObservationsTotalCount();
+            await SelectTableEvent.ReloadServerData();
 
             visibleDelete = false;
 
@@ -634,13 +507,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
-                    _jobObservations.Clear();
                     dialogDate.Close();
                     visible = false;
 
                     StateHasChanged();
-                    
-                    await getData();
+
+                    await SelectTableEvent.ReloadServerData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -708,45 +580,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
-                    _jobObservations.Clear();
                     dialogDate.Close();
                     visible = false;
 
                     StateHasChanged();
 
-                    await getData();
+                    await SelectTableEvent.ReloadServerData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
             }
-        }
-
-        async Task getData()
-        {
-            _jobObservationsAux = await JobObservationService.GetAllJobObservations(true, true, idUser: user.UserId == 3? user.UserId:0);
-            switch (user.UserType)
-            {
-                case 1:
-                case 6:
-                    _jobObservations = _jobObservationsAux.ToList();
-                    break;
-                case 2:
-                    _jobObservations = _jobObservationsAux
-                    .Where(jobobs => jobobs.PlantId == plantId &&
-                                     user.Subordinates.Any(usr => usr.UserId == jobobs.SupervisorId))
-                    .ToList();
-                    break;
-                case 3:
-                    _jobObservations = _jobObservationsAux.ToList();
-                    break;
-                case 5:
-                    _jobObservations = _jobObservationsAux
-                    .Where(jobobs => jobobs.PlantId == plantId &&
-                                     user.Subordinates.Any(usr => usr.UserId == jobobs.Supervisor.SuperiorId))
-                    .ToList();
-                    break;
-            }
-            return;
         }
 
         void EditJobObservation(int jobObservationId)

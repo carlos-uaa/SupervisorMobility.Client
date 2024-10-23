@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.PaginationEntities;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
@@ -61,6 +62,14 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             var jobObservation = JsonSerializer.Deserialize<List<JobObservationNulls>>(content, _options);
 
             return _mapper.Map<List<JobObservation>>(jobObservation);
+        }
+
+        public async Task<(int Total, List<JobObservation>JobObservations, JOCountPaginationDto Count)> GetAllJobObservationsByFilters(DateTime startDate, DateTime endDate, int JobObsId, int plantId,
+            int areaId, int distributionId, int operationId, int supervisorId, int status, int userId, int typeId,
+            string searchString, int page, int entries, int? sortO, string? sortL)
+        {
+            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/filters?startDate={startDate}&endDate={endDate}&jobObsId={JobObsId}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&supervisorId={supervisorId}&status={status}&userId={userId}&typeId={typeId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
+            return (response.Total, _mapper.Map<List<JobObservation>>(response.JobObservations), response.CountPagination);
         }
 
         public async Task<List<JobObservationHistoryVersion>> GetAllHistoryJobObservations(int jobObservationId)
