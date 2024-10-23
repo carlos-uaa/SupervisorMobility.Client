@@ -811,42 +811,45 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private string SelectedRowClassFunc(JobObservation element, int rowNumber, int tableId)
         {
-            List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
-            switch (tableId)
+            if (SelectTableEvent.Items != null)
             {
-                case 0:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
-                    break;
-                case 1:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
-                    break;
-                case 2:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2 ).ToList();
-                    break;
-                case 3:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
-                    break;
-                case 4:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
-                    break;
-                case 5:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
-                    break;
-                case 6:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
-                    break;
-                case 7:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
-                    break;
-                case 8:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
-                    break;
-            }
+                List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
+                switch (tableId)
+                {
+                    case 0:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
+                        break;
+                    case 1:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
+                        break;
+                    case 2:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2).ToList();
+                        break;
+                    case 3:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
+                        break;
+                    case 4:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
+                        break;
+                    case 5:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
+                        break;
+                    case 6:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
+                        break;
+                    case 7:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
+                        break;
+                    case 8:
+                        filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
+                        break;
+                }
 
-            // Solo devuelve la clase "selected" si el número de fila coincide con el seleccionado en el subconjunto filtrado
-            if (filteredItems.IndexOf(element) == selectedRowNumber)
-            {
-                return "selected";
+                // Solo devuelve la clase "selected" si el número de fila coincide con el seleccionado en el subconjunto filtrado
+                if (filteredItems.IndexOf(element) == selectedRowNumber)
+                {
+                    return "selected";
+                }
             }
             return string.Empty;
         }
