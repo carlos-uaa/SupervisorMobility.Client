@@ -268,8 +268,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private int selectedRowNumber = -1;
         private MudTable<User> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<User> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<User> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                    NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{args.Item.UserId}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private void CreateHci(int UserId)
@@ -279,19 +292,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
         private string SelectedRowClassFunc(User element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{element.UserId}");
-
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

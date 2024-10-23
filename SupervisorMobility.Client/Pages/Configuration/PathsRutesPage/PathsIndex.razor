@@ -422,10 +422,10 @@ else
         {
             if (element.AssyChart.AssyChardId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                 return true;
-                
+
             if (element.AssyChart.PlantId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                 return true; 
-                
+
             if (element.AssyChart.AreaId.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
                 return true;
 
@@ -435,10 +435,10 @@ else
             if(element.AssyChart.Plant != null)
             {
                 if (element.AssyChart.Plant.Code.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
-                return true;
-                
+                    return true;
+
                 if (element.AssyChart.Plant.Description.ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
-                return true;
+                    return true;
             }
 
         }
@@ -451,27 +451,34 @@ else
     private int selectedRowNumber = -1;
     private MudTable<SOSCodePath> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<SOSCodePath> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<SOSCodePath> args)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+        var rowIndex = visibleItems.IndexOf(args.Item);
+
+        if (selectedRowNumber == rowIndex)
+        {
+                NavigationManager.NavigateTo($"/PathsRoute/PathDetails/{args.Item.SOSCodePathId}");
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = rowIndex;
+            StateHasChanged();
+        }
     }
 
     private string SelectedRowClassFunc(SOSCodePath element, int rowNumber)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-               
-
-                NavigationManager.NavigateTo($"/PathsRoute/PathDetails/{element.SOSCodePathId}");
-
-            }
-            return string.Empty;
+            return "selected"; // Marca la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
-            selectedRowNumber = rowNumber;
+            selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
             return "selected";
         }
         else

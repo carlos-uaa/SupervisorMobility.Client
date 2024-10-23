@@ -111,24 +111,35 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private int selectedRowNumber = -1;
         private MudTable<JobCategoryStructure> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<JobCategoryStructure> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<JobCategoryStructure> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                
+                    NavigationManager.NavigateTo($"checklistcategories/category/{args.Item.JobCategoryStructureId}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private string SelectedRowClassFunc(JobCategoryStructure element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element) && element.Type == StructureType.Checklist)
-                {
-                    NavigationManager.NavigateTo($"checklistcategories/category/{element.JobCategoryStructureId}");
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

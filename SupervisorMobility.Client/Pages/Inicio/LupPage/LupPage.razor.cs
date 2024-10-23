@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
+﻿using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -425,28 +426,88 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
         private int selectedRowNumber = -1;
         private MudTable<LupWithDistribution> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<LupWithDistribution> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<LupWithDistribution> args, int tableId)
         {
-        }
-
-
-        private string SelectedRowClassFunc(LupWithDistribution element, int rowNumber)
-        {
-            if (selectedRowNumber == rowNumber)
+            List<LupWithDistribution> filteredItems = SelectTableEvent.Items.ToList();
+            switch (tableId)
             {
-                return string.Empty;
+                case 0:
+                    filteredItems = SelectTableEvent.FilteredItems.ToList();
+                    break;
+                case 1:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 1).ToList();
+                    break;
+                case 2:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 2).ToList();
+                    break;
+                case 3:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 3).ToList();
+                    break;
+                case 4:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 4).ToList();
+                    break;
+                case 5:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 5).ToList();
+                    break;
+             
+                
             }
-            else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+            // Obtiene el índice dentro del subconjunto filtrado
+            var rowIndex = filteredItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
             {
-                selectedRowNumber = rowNumber;
-                return "selected";
+                // Si la fila ya está seleccionada, se abre el diálogo (doble clic simulado)
+                OpenDialog2(args.Item.Lup.LupId);
             }
             else
             {
-                return string.Empty;
+                // Cambia la fila seleccionada en el subconjunto filtrado
+                selectedRowNumber = rowIndex;
+                SelectTableEvent.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                StateHasChanged(); // Actualiza la UI
             }
         }
 
+
+        private string SelectedRowClassFunc(LupWithDistribution element, int rowNumber, int tableId)
+        {
+            List<LupWithDistribution> filteredItems = SelectTableEvent.Items.ToList();
+            switch (tableId)
+            {
+                case 0:
+                    filteredItems = SelectTableEvent.FilteredItems.ToList();
+                    break;
+                case 1:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 1).ToList();
+                    break;
+                case 2:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 2).ToList();
+                    break;
+                case 3:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 3).ToList();
+                    break;
+                case 4:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 4).ToList();
+                    break;
+                case 5:
+                    filteredItems = SelectTableEvent.Items.Where(l => l.Lup.Pillar == 5).ToList();
+                    break;
+
+            }
+
+            // Solo devuelve la clase "selected" si el número de fila coincide con el seleccionado en el subconjunto filtrado
+            if (filteredItems.IndexOf(element) == selectedRowNumber)
+            {
+                return "selected";
+            }
+            return string.Empty;
+        }
+
+        public void ClearStatus()
+        {
+            selectedRowNumber = -1;
+        }
 
         //Filters
         private void Filters()
