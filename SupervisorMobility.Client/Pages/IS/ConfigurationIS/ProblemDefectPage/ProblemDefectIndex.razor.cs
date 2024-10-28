@@ -150,24 +150,34 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
         private int selectedRowNumber = -1;
         private MudTable<ProblemDefect> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<ProblemDefect> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<ProblemDefect> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                    ProblemDefectsDetails(args.Item.ProblemDefectId);
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private string SelectedRowClassFunc(ProblemDefect element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    ProblemDefectsDetails(element.ProblemDefectId);
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

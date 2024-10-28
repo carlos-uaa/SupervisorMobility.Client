@@ -89,7 +89,7 @@
             </MudTd>
         </RowTemplate>
     </MudTable>
-    @code {
+@code {
     // Breadcrumb links
     private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
@@ -168,24 +168,35 @@
     private int selectedRowNumber = -1;
     private MudTable<Pillar> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<Pillar> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<Pillar> args)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+        var rowIndex = visibleItems.IndexOf(args.Item);
+
+        if (selectedRowNumber == rowIndex)
+        {
+            
+                PillarDetails(args.Item.PillarId);
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = rowIndex;
+            StateHasChanged();
+        }
     }
 
     private string SelectedRowClassFunc(Pillar element, int rowNumber)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                PillarDetails(element.PillarId);
-            }
-            return string.Empty;
+            return "selected"; // Marca la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
-            selectedRowNumber = rowNumber;
+            selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
             return "selected";
         }
         else

@@ -1852,7 +1852,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private void RowClickEventDocument(TableRowClickEventArgs<object> args)
         {
 
-
             if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
             {
                 //HoeDetails(args.Item.SOSHubId);

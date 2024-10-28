@@ -157,24 +157,35 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
         private int selectedRowNumber = -1;
         private MudTable<DataPanel> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<DataPanel> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<DataPanel> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                    DataPanelDetails(args.Item.DataPanelId);
+               
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private string SelectedRowClassFunc(DataPanel element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    DataPanelDetails(element.DataPanelId);
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

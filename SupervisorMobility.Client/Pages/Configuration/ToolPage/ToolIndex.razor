@@ -197,24 +197,35 @@ else
     private int selectedRowNumber = -1;
     private MudTable<Tool> SelectTableEvent;
 
-    private void RowClickEvent(TableRowClickEventArgs<Tool> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<Tool> args)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+        var rowIndex = visibleItems.IndexOf(args.Item);
+
+        if (selectedRowNumber == rowIndex)
+        {
+                ToolDetails(args.Item.ToolId);
+            
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = rowIndex;
+            StateHasChanged();
+        }
     }
 
     private string SelectedRowClassFunc(Tool element, int rowNumber)
     {
+        var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                ToolDetails(element.ToolId);
-            }
-            return string.Empty;
+            return "selected"; // Marca la fila seleccionada
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
-            selectedRowNumber = rowNumber;
+            selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
             return "selected";
         }
         else

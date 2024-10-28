@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
 {
@@ -87,8 +88,21 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         private int selectedRowNumber = -1;
         private MudTable<Area> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<Area> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<Area> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                NavigationManager.NavigateTo($"plants/{PlantId}/areas/{args.Item.AreaId}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         void FuncUpdatePlant(int plantId)
@@ -97,18 +111,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         }
         private string SelectedRowClassFunc(Area element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{element.AreaId}");
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

@@ -104,25 +104,34 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage
         private int selectedRowNumber = -1;
         private MudTable<Distribution> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<Distribution> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<Distribution> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{args.Item.DistributionId}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private string SelectedRowClassFunc(Distribution element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{element.DistributionId}");
-
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else
