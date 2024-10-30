@@ -302,81 +302,6 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="2">
-                        <div class="d-flex">
-                            @if (_jobObservation.DistributionId != 0)
-                            {
-                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync(id.FirstOrDefault())">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                                    @foreach (var type in _products)
-                                    {
-                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudSelect T="int" Label=@Localizer["product"] Disabled Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
-                                </MudSelect>
-                            }
-                            @if (jobProductId != 0)
-                            {
-                                <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="(selected)=>InitializeCycleTimes.InvokeAsync(selected.FirstOrDefault())">
-                                    <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                    @foreach (var type in _specifications)
-                                    {
-                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudSelect T="int" Label=@Localizer["specification"] Disabled Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAProduct"]</MudSelectItem>
-                                </MudSelect>
-                            }
-                            <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync(id.FirstOrDefault())">
-                                <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
-                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                            </MudSelect>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <MudRadioGroup T="int" SelectedOption="_jobObservation.Option" Style="width:100%;" SelectedOptionChanged="(opt)=>ChangeOption.InvokeAsync(opt)">
-                            <MudRadio Option="1" Color="Color.Info" Size="Size.Small">@Localizer["verifyTraining"]</MudRadio>
-                            <MudRadio Option="2" Color="Color.Info" Size="Size.Small">@Localizer["mantainAndOrImproveTheWorkArea"]</MudRadio>
-                            <MudRadio Option="3" Color="Color.Info" Size="Size.Small">
-                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Management of the anomaly"))
-                                {
-                                    Glosary word;
-                                    word = _glosaryInfo["Management of the anomaly"];
-                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                            <MudText>@Localizer["managementOfTheAnomaly"]</MudText>
-                                        </MudBadge>
-                                    </MudTooltip>
-                                }
-                                else
-                                {
-                                    <span>@Localizer["managementOfTheAnomaly"]</span>
-                                }
-                            </MudRadio>
-                            @if (_jobObservation.Option == 3)
-                            {
-                                <MudTextField T="string" @bind-Value="_jobObservation.Anomaly" Label=@Localizer["writeTheAnomaly"] Placeholder=@Localizer["anomaly"] Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" TextChanged="()=>JobObservationContext_OnFieldChanged.InvokeAsync()" />
-                            }
-                        </MudRadioGroup>
-
-                    </td>
-                </tr>
             </tbody>
         </MudSimpleTable>
     </ChildContent>
@@ -405,12 +330,6 @@
     [Parameter]
     public List<Product> _products { get; set; } = new();
     [Parameter]
-    public List<string> _specifications { get; set; } = new();
-    [Parameter]
-    public int kpiID { get; set; } = 0;
-    [Parameter]
-    public string productSpecification { get; set; } = "";
-    [Parameter]
     public Dictionary<string, Glosary> _glosaryInfo { get; set; }
 
     [Parameter]
@@ -429,14 +348,6 @@
     public EventCallback UpdateOperator { get; set; }
     [Parameter]
     public EventCallback UpdateOperation { get; set; }
-    [Parameter]
-    public EventCallback<int> ShowSpecifications { get; set; }
-    [Parameter]
-    public EventCallback<string> InitializeCycleTimes { get; set; }
-    [Parameter]
-    public EventCallback<int> OnKPIChange { get; set; }
-    [Parameter]
-    public EventCallback<int> ChangeOption { get; set; }
     [Parameter]
     public EventCallback JobObservationContext_OnFieldChanged { get; set; }
 }

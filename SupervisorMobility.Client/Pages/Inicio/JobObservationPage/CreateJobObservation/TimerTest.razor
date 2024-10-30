@@ -1,0 +1,590 @@
+﻿@using System.Globalization
+@using System.Timers
+@using static SupervisorMobility.Client.Pages.TestCreateJobObservationTimer
+@inject IStringLocalizer<Resource> Localizer
+@inject ISnackbar Snackbar
+
+<MudExpansionPanel Text="Section 2" IsInitiallyExpanded=true Style="min-width: 100%">
+    <MudSimpleTable Dense="true" Elevation="0">
+        <tbody>
+            <tr>
+                <td width="25%">
+                    <MudTextField T="string" Value="taktTime.ToString().Replace(',','.')" Label="Takt Time" Variant="Variant.Outlined" Margin="Margin.Dense" AdornmentText="cs" Adornment="Adornment.End" ReadOnly />
+                </td>
+                <td>
+                </td>
+            </tr>
+        </tbody>
+
+    </MudSimpleTable>
+    <MudItem Style="text-align:center">
+        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("HOE Time"))
+        {
+            Glosary word;
+            word = _glosaryInfo["HOE Time"];
+            <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                    <MudText Style="text-align:center; font-weight:bold;">@Localizer["HOETime"]</MudText>
+                </MudBadge>
+            </MudTooltip>
+        }
+        else
+        {
+            <span style="text-align:center; font-weight:bold;">@Localizer["HOETime"]</span>
+        }
+    </MudItem>
+    <MudSimpleTable Dense="true" Elevation="0">
+        <tbody>
+            <tr>
+                <td>
+                    <MudText>@Localizer["Are the cycles continuous?"]</MudText>
+
+                </td>
+                <td >
+                    <MudToggleGroup T="bool" SelectionMode="SelectionMode.SingleSelection" @bind-Value="IsContinuous" Color="Color.Info" CheckMark Dense FixedContent>
+                        <MudToggleItem Value="@(true)" Text="@Localizer["yes"]" />
+                        <MudToggleItem Value="@(false)" Text="No" />
+                    </MudToggleGroup>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="width: 32%">
+                    <div style="display:flex; align-items: center; margin-left: 55%">
+                        <MudToggleIconButton Toggled="@isTimerRunning2" Color="Color.Info" @onclick="StartOrPauseTimer" Variant="Variant.Outlined" Class="mr-1"
+                                             Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" @onkeydown="HandleKeyDown" />
+                        @if (isTimerRunning2)
+                        {
+                            <MudText Color="Color.Error">Restart Cycle</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Primary">Start</MudText>
+                        }
+                    </div>
+                </td>
+                <td style="width: 32%">
+                    <MudTextField T="string" Label="Time" Variant="Variant.Outlined" Value="cronometerTime.Replace(',','.')" ReadOnly />
+
+                </td>
+                <td style="width: 32%">
+                    <MudButton @onclick="()=>NextOp()" Disabled="!isTimerRunning2" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Info" @onkeydown="HandleKeyDown">
+                        Next operation
+                    </MudButton>
+                </td>
+            </tr>
+        </tbody>
+
+    </MudSimpleTable>
+        <MudSimpleTable Hover="true" Dense="true" Elevation="0">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        <MudSelect T="int" Disabled="@(DistributionId == 0)" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductIds[0]" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync((id.FirstOrDefault(), 0))">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                            @foreach (var type in _products)
+                            {
+                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </th>
+                    <th>
+                        <MudSelect T="int" Disabled="@(DistributionId == 0)" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductIds[1]" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync((id.FirstOrDefault(), 1))">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                            @foreach (var type in _products)
+                            {
+                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </th>
+                    <th>
+                        <MudSelect T="int" Disabled="@(DistributionId == 0)" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductIds[2]" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync((id.FirstOrDefault(), 2))">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                            @foreach (var type in _products)
+                            {
+                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </th>
+                    <th>
+                        <MudSelect T="int" Disabled="@(DistributionId == 0)" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductIds[3]" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync((id.FirstOrDefault(), 3))">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                            @foreach (var type in _products)
+                            {
+                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </th>
+                    <th>
+                        <MudSelect T="int" Disabled="@(DistributionId == 0)" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductIds[4]" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync((id.FirstOrDefault(), 4))">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
+                            @foreach (var type in _products)
+                            {
+                                <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>
+                        @if(jobProductIds[0] != 0)
+                        {
+                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
+                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                       @bind-Value="productSpecification[0]">
+                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                @if (_specifications.Count > 0 && _specifications[0] != null)
+                                {
+                                    @foreach (var type in _specifications[0])
+                                    {
+                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    </th>
+                    <th>
+                        @if (jobProductIds[1] != 0)
+                        {
+                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
+                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                       @bind-Value="productSpecification[1]">
+                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                @if (_specifications.Count > 0 && _specifications[1] != null)
+                                {
+                                    @foreach (var type in _specifications[1])
+                                    {
+                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    </th>
+                    <th>
+                        @if (jobProductIds[2] != 0)
+                        {
+                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
+                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                       @bind-Value="productSpecification[2]">
+                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                @if (_specifications.Count > 0 && _specifications[2] != null)
+                                {
+                                    @foreach (var type in _specifications[2])
+                                    {
+                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    </th>
+                    <th>
+                        @if (jobProductIds[3] != 0)
+                        {
+                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
+                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                       @bind-Value="productSpecification[3]">
+                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                @if (_specifications.Count > 0 && _specifications[3] != null)
+                                {
+                                    @foreach (var type in _specifications[3])
+                                    {
+                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    </th>
+                    <th>
+                        @if (jobProductIds[4] != 0)
+                        {
+                            <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
+                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                       @bind-Value="productSpecification[4]">
+                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                @if (_specifications.Count > 0 && _specifications[4] != null)
+                                {
+                                    @foreach (var type in _specifications[4])
+                                    {
+                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        }
+                    </th>
+                </tr>
+                <tr>
+                    <th>Distribution Standard time (cs)</th>
+                    <th>
+                        @if (_products.Any(p => p.ProductId == jobProductIds[0] &&
+                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
+                        )
+                        {
+                            var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[0]).Code)?.StandardTime;
+
+                            @standardTime
+                        }
+                    </th>
+                    <th>
+                        @if (_products.Any(p => p.ProductId == jobProductIds[1] &&
+                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
+                        )
+                        {
+                            var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[1]).Code)?.StandardTime;
+
+                            @standardTime
+                        }
+                    </th>
+                    <th>
+                        @if (_products.Any(p => p.ProductId == jobProductIds[2] &&
+                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
+                        )
+                        {
+                            var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[2]).Code)?.StandardTime;
+
+                            @standardTime
+                        }
+                    </th>
+                    <th>
+                        @if (_products.Any(p => p.ProductId == jobProductIds[3] &&
+                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
+                        )
+                        {
+                            var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[3]).Code)?.StandardTime;
+
+                            @standardTime
+                        }
+                    </th>
+                    <th>
+                        @if (_products.Any(p => p.ProductId == jobProductIds[4] &&
+                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
+                        )
+                        {
+                            var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[4]).Code)?.StandardTime;
+
+                            @standardTime
+                        }
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Localizer["Cycle Time"]</td>
+                    <td>
+                        <MudTextField T="string" Value="CycleTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="CycleTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="CycleTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="CycleTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="CycleTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Localizer["Aditional Time"]</td>
+                    <td>
+                        <MudTextField T="string" Value="AdditionalTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense"/>
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="AdditionalTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="AdditionalTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="AdditionalTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                    </td>
+                    <td>
+                        <MudTextField T="string" Value="AdditionalTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense"  />
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Localizer["stepsNumber"]</td>
+                    <td>
+                        <MudTextField T="int?" Value="StepsNumber[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps.InvokeAsync((v,0))" Error="checkIfError(1, StepsNumber[0])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="StepsNumber[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps.InvokeAsync((v,1))" Error="checkIfError(2, StepsNumber[1])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="StepsNumber[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps.InvokeAsync((v,2))" Error="checkIfError(3, StepsNumber[2])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="StepsNumber[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps.InvokeAsync((v,3))" Error="checkIfError(4, StepsNumber[3])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="StepsNumber[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreSteps.InvokeAsync((v,4))" Error="checkIfError(5, StepsNumber[4])" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>@Localizer["doubleManagment"]</td>
+                    <td>
+                        <MudTextField T="int?" Value="DoubleManagment[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement.InvokeAsync((v,0))" Error="checkIfError(1, DoubleManagment[0])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="DoubleManagment[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement.InvokeAsync((v,1))" Error="checkIfError(2, DoubleManagment[1])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="DoubleManagment[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement.InvokeAsync((v,2))" Error="checkIfError(3, DoubleManagment[2])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="DoubleManagment[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement.InvokeAsync((v,3))" Error="checkIfError(4, DoubleManagment[3])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="DoubleManagment[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreManagement.InvokeAsync((v,4))" Error="checkIfError(5, DoubleManagment[4])" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>@Localizer["waiting"]</td>
+                    <td>
+                        <MudTextField T="int?" Value="Waiting[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting.InvokeAsync((v,0))" Error="checkIfError(1, Waiting[0])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="Waiting[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting.InvokeAsync((v,1))" Error="checkIfError(2, Waiting[1])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="Waiting[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting.InvokeAsync((v,2))" Error="checkIfError(3, Waiting[2])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="Waiting[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting.InvokeAsync((v,3))" Error="checkIfError(4, Waiting[3])" />
+                    </td>
+                    <td>
+                        <MudTextField T="int?" Value="Waiting[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="(v)=>StoreWaiting.InvokeAsync((v,4))" Error="checkIfError(5, Waiting[4])" />
+                    </td>
+                </tr>
+
+
+
+            </tbody>
+
+
+
+        </MudSimpleTable>
+        <MudItem Style="display: flex; align-items: center;">
+            <MudButton @onclick="()=>{ currentOperationIndex = 0; StartOver.InvokeAsync(); }" EndIcon="@Icons.Material.Filled.RestartAlt" Variant="Variant.Filled" Color="Color.Info">
+                Start over
+            </MudButton>
+            <MudSelect T="int" @bind-Value="currentCycle" Label="Select Cycle" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 40%;" SelectedValuesChanged="(args)=>ChangeCycle.InvokeAsync(args.First())">
+                <MudSelectItem Value="1">1</MudSelectItem>
+                <MudSelectItem Value="2">2</MudSelectItem>
+                <MudSelectItem Value="3">3</MudSelectItem>
+                <MudSelectItem Value="4">4</MudSelectItem>
+                <MudSelectItem Value="5">5</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+</MudExpansionPanel>
+
+@code {
+    [Parameter]
+    public double taktTime { get; set; }
+    [Parameter]
+    public double hoeStandardTime { get; set; }
+    [Parameter]
+    public Dictionary<string, Glosary> _glosaryInfo { get; set; }
+    [Parameter]
+    public int currentCycle { get; set; } = 1;
+    [Parameter]
+    public Dictionary<int, Dictionary<int, double>> OperationTimes { get; set; } = new Dictionary<int, Dictionary<int, double>>();
+    [Parameter]
+    public int?[] StepsNumber { get; set; } = new int?[5];
+    [Parameter]
+    public int?[] DoubleManagment { get; set; } = new int?[5];
+    [Parameter]
+    public int?[] Waiting { get; set; } = new int?[5];
+    [Parameter]
+    public string?[] CycleTimes { get; set; } = new string?[5];
+    [Parameter]
+    public string?[] AdditionalTimes { get; set; } = new string?[5];
+    [Parameter]
+    public List<Operation> _filteredOperations { get; set; }
+    [Parameter]
+    public List<List<string>> _specifications { get; set; }
+    [Parameter]
+    public int[] jobProductIds { get; set; } = new int[5];
+    [Parameter]
+    public List<Product> _products { get; set; } = new();
+    [Parameter]
+    public ProductAndStandardTime[] _productAndSpecification { get; set; }
+    [Parameter]
+    public int DistributionId { get; set; }
+    [Parameter]
+    public string[] productSpecification { get; set; } = new string[5];
+    [Parameter]
+    public EventCallback NextOperation { get; set; }
+    [Parameter]
+    public EventCallback StartOver { get; set; }
+    [Parameter]
+    public EventCallback PauseTime { get; set; }
+    [Parameter]
+    public EventCallback<(int?, int)> StoreWaiting { get; set; }
+    [Parameter]
+    public EventCallback<(int?, int)> StoreManagement { get; set; }
+    [Parameter]
+    public EventCallback<(int?, int)> StoreSteps { get; set; }
+    [Parameter]
+    public EventCallback<int> ChangeCycle { get; set; }
+    [Parameter]
+    public EventCallback<(int, int)> ShowSpecifications { get; set; }
+
+
+    private bool isTimerRunning2 = false;
+    bool errorflag = false;
+    private DateTime startTime2;
+    private System.Timers.Timer timer2;
+
+    private string elapsedTime2 = "00:00:00.000";
+    private string cronometerTime = "0.00";
+    private int currentOperationIndex = 0;
+
+    private double previousOperationTime = 0.0;
+    private bool IsContinuous = true;
+
+    public int[] jobSpecificationIds = new int[5];
+
+
+
+    private void StartOrPauseTimer()
+    {
+        if (isTimerRunning2)
+        {
+            PauseTimer();
+        }
+        else
+        {
+            StartTimer();
+        }
+
+    }
+
+    private void StartTimer()
+    {
+        // int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
+        // if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
+        // {
+            errorflag = false;
+            isTimerRunning2 = true;
+            startTime2 = DateTime.Now;
+            timer2 = new System.Timers.Timer(1);
+            timer2.Elapsed += OnTimerTick;
+            timer2.AutoReset = true;
+            timer2.Enabled = true;
+        // }
+        // else
+        // {
+        //     Snackbar.Add("primero llena los campos indicados", Severity.Warning);
+        //     errorflag = true;
+        // }
+    }
+
+    private void PauseTimer()
+    {
+        cronometerTime = "0.00";
+        isTimerRunning2 = false;
+        timer2.Enabled = false;
+        currentOperationIndex = 0;
+        PauseTime.InvokeAsync();
+
+        previousOperationTime = 0.0;
+        foreach (var operationId in OperationTimes.Keys)
+        {
+            OperationTimes[operationId][currentCycle] = 0.0;
+        }
+    }
+
+    private void OnTimerTick(object? sender, ElapsedEventArgs e)
+    {
+        if (isTimerRunning2)
+        {
+            TimeSpan hundreths;
+            double centiseconds = 0.0;
+            if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+            {
+                centiseconds = hundreths.TotalMilliseconds / 60000.0;
+            }
+            else
+            {
+                Console.WriteLine("Wrong timestamp format.");
+            }
+
+            cronometerTime = string.Format("{0:0.000}", centiseconds);
+        }
+
+        DateTime currentTime = e.SignalTime;
+        elapsedTime2 = $"{currentTime.Subtract(startTime2)}".Substring(0, 12);
+        StateHasChanged();
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (isTimerRunning2 && args.Code == "KeyN")
+        {
+            NextOp();
+        }
+    }
+
+    public bool checkIfError(int i, int? value)
+    {
+        if (errorflag)
+        {
+            bool check = currentCycle - 1 == i;
+            bool chekV = value == 0;
+            return check && chekV;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void NextOp()
+    {
+        NextOperation.InvokeAsync();
+        currentOperationIndex+=1;
+        if (currentOperationIndex >= _filteredOperations.Count)
+        {
+            currentOperationIndex = 0;
+            currentCycle += 1;
+            PauseTimer();
+            if (currentCycle != 6 && IsContinuous)
+            {
+                StartTimer();
+            }
+        }
+    }
+
+    public double GetElapsedCentiseconds()
+    {
+        TimeSpan hundreths;
+        double centiseconds = 0.0;
+        if (TimeSpan.TryParseExact(elapsedTime2, "hh\\:mm\\:ss\\.fff", CultureInfo.InvariantCulture, out hundreths))
+        {
+            centiseconds = hundreths.TotalMilliseconds / 60000.0;
+        }
+        else
+        {
+            Console.WriteLine("Wrong timestamp format.");
+        }
+
+        return Math.Round(centiseconds, 2);
+    }
+
+}
