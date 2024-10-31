@@ -133,7 +133,7 @@
                         {
                             <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4"
                                        AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                       @bind-Value="productSpecification[0]">
+                                    @bind-Value="productSpecification[0]" SelectedValuesChanged="(selected)=>InitializeCycleTimes.InvokeAsync((selected.FirstOrDefault(), 0))">
                                 <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
                                 @if (_specifications.Count > 0 && _specifications[0] != null)
                                 {
@@ -281,21 +281,67 @@
             <tbody>
                 <tr>
                     <td>@Localizer["Cycle Time"]</td>
-                    <td>
-                        <MudTextField T="string" Value="CycleTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </td>
-                    <td>
-                        <MudTextField T="string" Value="CycleTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </td>
-                    <td>
-                        <MudTextField T="string" Value="CycleTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </td>
-                    <td>
-                        <MudTextField T="string" Value="CycleTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </td>
-                    <td>
-                        <MudTextField T="string" Value="CycleTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </td>
+
+                    @if(jobProductIds.All(id => id!=0)){
+                        @for (int i = 0; i < 5; i++)
+                        {
+
+                        double value;
+                        if (!double.TryParse(CycleTimes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                        {
+                            value = 0.0; 
+                        }
+                        var standardTime = _productAndSpecification
+                            .FirstOrDefault(ps => ps.ProductName == _products
+                            .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+
+                            if (double.TryParse(standardTime, out double standardTimeValue))
+                            {
+                                var lowerBound = standardTimeValue * 0.95;
+                                var upperBound = standardTimeValue * 1.05;
+
+                                var percentageDifference = Math.Abs((value - standardTimeValue) / standardTimeValue) * 100;
+
+                                var cycleColor = "";
+
+                                if (value == 0.0 || standardTimeValue == 0.0)
+                                {
+                                    cycleColor = "";
+                                }
+                                else if (value > upperBound)
+                                {
+                                    cycleColor = "red";
+                                }
+                                else if (value < lowerBound)
+                                {
+                                    cycleColor = "yellow";
+                                }
+                                else if (value >= lowerBound && value <= upperBound)
+                                {
+                                    cycleColor = "green";
+                                }
+
+                                if (i == currentCycle)
+                                {
+                                    cycleColor += " current-time";
+                                }
+
+                                <td>
+                                    <MudTextField T="string" Value="@value.ToString().Replace(',','.')" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly Class="@cycleColor" />
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <MudTextField T="double" ReadOnly Value="@value" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                </td>
+                            }
+
+                        }
+
+
+                    }
+
                 </tr>
                 <tr>
                     <td>@Localizer["Aditional Time"]</td>
@@ -401,7 +447,7 @@
     [Parameter]
     public Dictionary<string, Glosary> _glosaryInfo { get; set; }
     [Parameter]
-    public int currentCycle { get; set; } = 1;
+    public int currentCycle { get; set; } = 0;
     [Parameter]
     public Dictionary<int, Dictionary<int, double>> OperationTimes { get; set; } = new Dictionary<int, Dictionary<int, double>>();
     [Parameter]
@@ -414,8 +460,6 @@
     public string?[] CycleTimes { get; set; } = new string?[5];
     [Parameter]
     public string?[] AdditionalTimes { get; set; } = new string?[5];
-    [Parameter]
-    public List<Operation> _filteredOperations { get; set; }
     [Parameter]
     public List<List<string>> _specifications { get; set; }
     [Parameter]
@@ -444,7 +488,8 @@
     public EventCallback<int> ChangeCycle { get; set; }
     [Parameter]
     public EventCallback<(int, int)> ShowSpecifications { get; set; }
-
+    [Parameter]
+    public EventCallback<(string, int)> InitializeCycleTimes { get; set; }
 
     private bool isTimerRunning2 = false;
     bool errorflag = false;
@@ -480,13 +525,13 @@
         // int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
         // if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
         // {
-            errorflag = false;
-            isTimerRunning2 = true;
-            startTime2 = DateTime.Now;
-            timer2 = new System.Timers.Timer(1);
-            timer2.Elapsed += OnTimerTick;
-            timer2.AutoReset = true;
-            timer2.Enabled = true;
+        errorflag = false;
+        isTimerRunning2 = true;
+        startTime2 = DateTime.Now;
+        timer2 = new System.Timers.Timer(1);
+        timer2.Elapsed += OnTimerTick;
+        timer2.AutoReset = true;
+        timer2.Enabled = true;
         // }
         // else
         // {
@@ -558,17 +603,16 @@
     public void NextOp()
     {
         NextOperation.InvokeAsync();
-        currentOperationIndex+=1;
-        if (currentOperationIndex >= _filteredOperations.Count)
+        if (currentCycle == 4)
         {
-            currentOperationIndex = 0;
-            currentCycle += 1;
+            currentCycle = 0;
             PauseTimer();
-            if (currentCycle != 6 && IsContinuous)
-            {
-                StartTimer();
-            }
         }
+        else if (IsContinuous)
+        {
+            StartTimer();
+        }
+        StateHasChanged();
     }
 
     public double GetElapsedCentiseconds()

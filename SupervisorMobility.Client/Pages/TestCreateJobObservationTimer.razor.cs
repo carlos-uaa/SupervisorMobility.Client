@@ -554,7 +554,6 @@ namespace SupervisorMobility.Client.Pages
             _supervisors.Clear();
             _assychart = null;
             jobProductId = 0;
-            _specifications = new();
             //productSpecification = string.Empty;
 
             if (user.UserType == 1)
@@ -688,42 +687,74 @@ namespace SupervisorMobility.Client.Pages
         private bool isTimerRunning2 = false;
 
         private int currentOperationIndex = 0;
-        private int currentCycle = 1;
+        private int currentCycle = 0;
 
         private double previousOperationTime = 0.0;
 
         TimerTest Timer;
 
+        public void InitializeCycleTimes(string specification, int index)
+        {
+            productSpecification[index] = specification;
+            _filteredOperations = new();
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            if (selectedProduct != null)
+            {
+                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+
+            }
+            var standardTimeIndex = _specifications[index].FindIndex(s => s == productSpecification[index]);
+
+            foreach (var op in _filteredOperations)
+            {
+                if (op.StandardTime != null)
+                {
+
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
+                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
+                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
+                    Console.WriteLine(hoeStandardTime);
+                }
+            }
+            foreach (var op in _filteredOperations)
+            {
+                if (!OperationTimes.ContainsKey(op.OperationId))
+                {
+                    OperationTimes[op.OperationId] = new Dictionary<int, double>();
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        OperationTimes[op.OperationId][i] = 0.0;
+                    }
+                }
+            }
+
+            //_jobObservation.ModelsSpecification = productSpecification;
+            //SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
+            //SyncLocalStorage.SetItem("JobObs", _jobObservation);
+            //SyncLocalStorage.SetItem("OpTimes", OperationTimes);
+            //SetAsCurrentJobObservation();
+        }
+
+
+
+
         private void NextOperation()
         {
-            if (currentOperationIndex < _filteredOperations.Count)
+
+            if (currentCycle < 5)
             {
-                var currentOperation = _filteredOperations[currentOperationIndex];
-
-                if (currentOperationIndex > 0)
-                {
-                    double elapsedCentiseconds = Timer.GetElapsedCentiseconds() - previousOperationTime;
-                    OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
-                }
-                else
-                {
-                    OperationTimes[currentOperation.OperationId][currentCycle] = Timer.GetElapsedCentiseconds();
-                }
-
-                previousOperationTime = Timer.GetElapsedCentiseconds();
-
-                currentOperationIndex++;
-                if (currentOperationIndex >= _filteredOperations.Count)
-                {
-                    currentOperationIndex = 0;
-                    currentCycle++;
-                    SyncLocalStorage.SetItem("CC", currentCycle);
-                    SyncLocalStorage.SetItem("OpTimes", OperationTimes);
-                }
-
-                //SetAsCurrentJobObservation();
-                StateHasChanged();
+                double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
+                CycleTimes[currentCycle] = Math.Round(elapsedCentiseconds, 2).ToString();
+                SyncLocalStorage.SetItem("CC", currentCycle);
+                currentCycle++;
             }
+
+            //SetAsCurrentJobObservation();
+            StateHasChanged();
         }
 
         public void ChangeCycle(int cycle)
@@ -743,6 +774,9 @@ namespace SupervisorMobility.Client.Pages
                 OperationTimes[operationId][currentCycle] = 0.0;
             }
         }
+
+
+
 
         private void StartOver()
         {
@@ -819,21 +853,22 @@ namespace SupervisorMobility.Client.Pages
 
         private async Task ShowSpecifications(int id, int productIndex)
         {
-            Console.WriteLine($"{id} - {productIndex}");
             jobProductIds[productIndex] = id;
             _specifications[productIndex] = new List<string>();
 
+
+
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
+            Console.WriteLine(_products.Count);
+
 
             if (prodName != null)
             {
-                Console.WriteLine("aa");
                 var op = _operations.Where(o => o.OperationId == _jobObservation.OperationId)
                                     .FirstOrDefault(p => p.ProductName == prodName?.Code);
 
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
-                    Console.WriteLine("bb");
 
                     var names = op.NameTime.Replace(',', '.').Split("§");
                     for (int i = 0; i < 5; i++)
@@ -849,7 +884,7 @@ namespace SupervisorMobility.Client.Pages
 
 
 
-            _jobObservation.ProductId = id;
+            //_jobObservation.ProductId = id;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             StateHasChanged();
         }
