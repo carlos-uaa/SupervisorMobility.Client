@@ -392,7 +392,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             if (operationId != default(int))
             {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperationId == operationId).ToList();
+                _jobObservations = _jobObservations.Where(jobObs => jobObs.Operations?.FirstOrDefault().OperationId == operationId).ToList();
 
             }
             if (statusId != default(int))
@@ -867,7 +867,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return true;
             if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Operations.FirstOrDefault().Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;

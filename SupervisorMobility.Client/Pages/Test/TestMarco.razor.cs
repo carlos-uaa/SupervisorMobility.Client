@@ -1,7 +1,8 @@
-ï»¿using BlazorCameraStreamer;
+using BlazorCameraStreamer;
 using Blazorise.Extensions;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -18,9 +19,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Timers;
 
-namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Test
 {
-    public partial class CreateJobObservationNew
+    public partial class TestMarco
     {
 
         [Parameter]
@@ -134,6 +135,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public Lup? selectedLup = null;
 
+
+
+
         protected async override Task OnInitializedAsync()
         {
             try
@@ -167,25 +171,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 //if (!await SessionStorage.ContainKeyAsync("CJO"))
                 //{
-                    var parameters = new DialogParameters
+                var parameters = new DialogParameters
                     {
                         { "ContentText", "You had a previous unsaved Job Observation \n Do you wish to continue with it?" },
                         { "ButtonText", "Continue" },
                         { "CancelText", "New JO" }
                     };
 
-                    var dialog = await DialogService.ShowAsync<Shared.Confirmation>("Load Data?", parameters, options);
-                    var result = await dialog.Result;
+                var dialog = await DialogService.ShowAsync<Shared.Confirmation>("Load Data?", parameters, options);
+                var result = await dialog.Result;
 
-                    if (!result.Canceled)
-                    {
-                        confirm = (bool)result.Data;
-                        //await SessionStorage.SetItemAsync("CJO", true);
-                    }
-                    else
-                    {
-                        confirm = false;
-                    }
+                if (!result.Canceled)
+                {
+                    confirm = (bool)result.Data;
+                    //await SessionStorage.SetItemAsync("CJO", true);
+                }
+                else
+                {
+                    confirm = false;
+                }
                 //}
                 //else
                 //{
@@ -206,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     try
                     {
                         if (jo) { jo = false; _jobObservation = await LocalStorage.GetItemAsync<JobObservation>("JobObs") ?? throw new ArgumentNullException("Error Retriving Job Observation", nameof(_jobObservation)); fake = true; }
-                        if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes);  }
+                        if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes); }
                         if (la) { la = false; var _tempLupList = await LocalStorage.GetItemAsync<List<KeyValuePair<Lup, List<string>>>>("LupToAdd") ?? new(); _tempLup = _tempLupList.ToDictionary(pair => pair.Key, pair => pair.Value); }
                         if (aS) { aS = false; area_ListS = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListS") ?? new(); }
                         if (aQ) { aQ = false; area_ListQ = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListQ") ?? new(); }
@@ -224,9 +228,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (CC) { CC = false; currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; }
                         if (hS) { hS = false; hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; }
 
-                        jobProductId = _jobObservation.ProductId??0;
+                        jobProductId = _jobObservation.ProductId ?? 0;
                         productSpecification = _jobObservation.ModelsSpecification;
-                        kpiID = _jobObservation.KpiId ??0;
+                        kpiID = _jobObservation.KpiId ?? 0;
 
                         bool skipQA = !questionAnswers.Any();
                         bool skipIFF = !imagesFromFile.Any();
@@ -241,13 +245,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 newChAnswer.QuestionID = question.QuestionID;
                                 newChAnswer.Prompt = question.Prompt;
                                 if (skipQA) questionAnswers.Add(question.QuestionID, newChAnswer);
-                                if (skipIFF) { imagesFromFile.Add(question.QuestionID, new ()); }
-                                else if (!skipQA) 
+                                if (skipIFF) { imagesFromFile.Add(question.QuestionID, new()); }
+                                else if (!skipQA)
                                 {
                                     foreach (var item in imagesFromFile[question.QuestionID])
                                         questionAnswers[question.QuestionID].MediaUris.Add(item.Value[1]);
                                 }
-                                if (skipIFC) { imagesFromCamera.Add(question.QuestionID, new ()); }
+                                if (skipIFC) { imagesFromCamera.Add(question.QuestionID, new()); }
                                 else if (!skipQA) { questionAnswers[question.QuestionID].capturedImages.AddRange(imagesFromCamera[question.QuestionID]); }
                             }
                         }
@@ -257,7 +261,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (_jobObservation.ProductId != null)
                         {
                             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                            if(selectedProduct != null)
+                            if (selectedProduct != null)
                             {
                                 _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
                             }
@@ -319,7 +323,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 folderCCPError = true;
             }
 
-    }
+        }
 
         private async Task InitializeJobObservation()
         {
@@ -352,8 +356,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     newChAnswer.QuestionID = question.QuestionID;
                     newChAnswer.Prompt = question.Prompt;
                     if (skipQA) questionAnswers.Add(question.QuestionID, newChAnswer);
-                    if (skipIFF) imagesFromFile.Add(question.QuestionID, new ());
-                    if (skipIFC) imagesFromCamera.Add(question.QuestionID, new ());
+                    if (skipIFF) imagesFromFile.Add(question.QuestionID, new());
+                    if (skipIFC) imagesFromCamera.Add(question.QuestionID, new());
                 }
             }
 
@@ -376,7 +380,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
                 var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-                // Leer los valores de los parÃ¡metros
+                // Leer los valores de los parámetros
                 var PatPlantId = queryString["PlantId"];
                 var PatAreaId = queryString["AreaId"];
                 var PatDistributionId = queryString["DistributionId"];
@@ -572,7 +576,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async void ShowOperators()
         {
-            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
 
             if (user.UserType == 1 || user.UserType == 2)
@@ -604,6 +608,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
 
+            //_jobObservation.OperationId = 0;
             _jobObservation.Operations = new List<Operation>();
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
             _operations = _operations.OrderBy(o => o.Description).ToList();
@@ -635,7 +640,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private double previousOperationTime = 0.0;
 
-        CreateJobObservation.Timer Timer;
+        Inicio.JobObservationPage.CreateJobObservation.Timer Timer;
 
         private void NextOperation()
         {
@@ -660,7 +665,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     currentOperationIndex = 0;
                     currentCycle++;
-                    SyncLocalStorage.SetItem("CC",currentCycle);
+                    SyncLocalStorage.SetItem("CC", currentCycle);
                     SyncLocalStorage.SetItem("OpTimes", OperationTimes);
                 }
 
@@ -754,7 +759,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            if(selectedProduct != null)
+            if (selectedProduct != null)
             {
                 _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
@@ -763,9 +768,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             foreach (var op in _filteredOperations)
             {
-                if(op.StandardTime != null) {
+                if (op.StandardTime != null)
+                {
 
-                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("Â§");
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
                     hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
                     hoeStandardTime = Math.Round(hoeStandardTime, 2);
                     Console.WriteLine(hoeStandardTime);
@@ -813,10 +819,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
             {
-                var op = _operations.Where(o=>o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
-                    var names = op.NameTime.Replace(',', '.').Split("Â§");
+                    var names = op.NameTime.Replace(',', '.').Split("§");
                     for (int i = 0; i < 5; i++)
                     {
                         if (!string.IsNullOrEmpty(names[i]))
@@ -837,7 +843,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int) _jobObservation.Operations?.FirstOrDefault().OperationId);
+            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -848,7 +854,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 foreach (var job in pastJobs)
                 {
                     if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault().OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId)
+                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault()?.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId)
                     {
 
                         pastjobObservations.Add(job);
@@ -1836,7 +1842,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
-        
+
 
         //Files Path
         private CDMS_CCP_Archives? CcpFilesInFolder;
@@ -1890,7 +1896,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         MudTabPanel GOS;
         MudTabPanel GOSCD;
 
-        
+
 
         SOSCodePath CodePathDialogDisplay { get; set; }
 
@@ -2195,7 +2201,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void OpenTempCameraDialog()
         {
 
-            var parameters = new DialogParameters { 
+            var parameters = new DialogParameters {
                 { "Prompt", $"LUP Evidence" },
                 { "returnFrame", EventCallback.Factory.Create<string>(this, GetCurrentFrame) } };
             var dialog = await DialogService.ShowAsync<AnswerCamera_Dialog>("", parameters, dialogCameraOptions);
@@ -2204,7 +2210,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void SetLup(Lup lup)
         {
-            selectedLup = lup;   
+            selectedLup = lup;
         }
 
         private string? cameraId = null;
@@ -2214,7 +2220,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             if (!string.IsNullOrEmpty(imageData))
             {
-                if(selectedLup != null && _tempLup.ContainsKey(selectedLup))
+                if (selectedLup != null && _tempLup.ContainsKey(selectedLup))
                 {
                     var lupKey = _tempLup.FirstOrDefault(l => l.Key == selectedLup);
                     _tempLup[lupKey.Key].Add(imageData);
@@ -2285,7 +2291,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     item?.capturedImagesFiles?.RemoveAt(index);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine("Nutin'", ex.Message);
                 }
@@ -2381,7 +2387,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             {
                                 if (!string.IsNullOrEmpty(imageData))
                                 {
-                                    // Elimina la cabecera si estÃ¡ presente
+                                    // Elimina la cabecera si está presente
                                     var base64Data = imageData.Replace("data:image/png;base64,", "");
 
                                     if (IsValidBase64String(base64Data))
@@ -2499,7 +2505,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
 
-                    Lup sendLup = new Lup {
+                    Lup sendLup = new Lup
+                    {
                         LupId = 0,
                         JobObservationId = lup.Key.JobObservationId,
                         Oportunity = lup.Key.Oportunity,
@@ -2596,7 +2603,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         name: "\"file\"",
                         fileName: "evidence.png");
 
-                    // Llama a tu servicio de carga de archivos aquÃ­
+                    // Llama a tu servicio de carga de archivos aquí
 
                     content.Add(content: new StringContent(_jobObservation.JobObservationId.ToString()), name: "JobObservationId");
                     var result1 = await JobObservationService.CreateOperatorSignature(content);
@@ -2647,6 +2654,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             jobProductId = 0;
             _specifications = new();
             productSpecification = string.Empty;
+            var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId);
+            //if (operation != null)
+            //{
+            //    _jobObservation.Operation = operation;
+            //}
+
+            await LocalStorage.SetItemAsync("JobObs", _jobObservation);
+            //SetAsCurrentJobObservation();
+            StateHasChanged();
+        }
+        private async Task UpdateSelectOperations()
+        {
+            jobProductId = 0;
+            _specifications = new();
+            productSpecification = string.Empty;
             //var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
             //if (operation != null)
             //{
@@ -2661,7 +2683,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task OnKPIChange(int id)
         {
             _jobObservation.KpiId = kpiID = id;
-            await JobObservationContext_OnFieldChanged(); 
+            await JobObservationContext_OnFieldChanged();
         }
 
         private async Task OnStartDateChanged(DateTime? newDate)
@@ -2813,7 +2835,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _distributions = _distributions.OrderBy(d => d.Description).ToList();
             }
 
-            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
 
             if (_jobObservation.SupervisorId != 0)
@@ -2864,7 +2886,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
                     if (op != null && !string.IsNullOrEmpty(op.NameTime))
                     {
-                        var names = op.NameTime.Replace(',', '.').Split("Â§");
+                        var names = op.NameTime.Replace(',', '.').Split("§");
                         for (int i = 0; i < 5; i++)
                         {
                             if (!string.IsNullOrEmpty(names[i]))
@@ -2876,13 +2898,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
-            
+
             StateHasChanged();
         }
 
         private void ClearJOStorage()
         {
-            SyncLocalStorage.RemoveItems(new string[]{ 
+            SyncLocalStorage.RemoveItems(new string[]{
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"

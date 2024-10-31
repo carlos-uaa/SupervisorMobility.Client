@@ -194,7 +194,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                             try
                             {
-                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+                                _assychart = await AssychartServices.GetAssyChartAdvance(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId,(int) _jobObservation.Operations?.FirstOrDefault().OperationId);
                                 if (_assychart == null)
                                     messageErrorFolders = Localizer["theFoldersWithTheInformationWereNotLocated"];
                                 else
@@ -233,7 +233,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (searchAssychart)
             {
-                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operation.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
+                listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operations?.FirstOrDefault().Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                 FilterOperation = true;
             }
         }
@@ -260,7 +260,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Add($"Select the End Date first", Severity.Warning);
                 return;
             }
-            if (_jobObservation.OperationId == 0)
+            if (_jobObservation.Operations.Count() == 0)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
