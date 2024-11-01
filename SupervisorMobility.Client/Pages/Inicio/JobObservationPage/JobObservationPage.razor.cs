@@ -867,7 +867,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return true;
             if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Operations.FirstOrDefault()?.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Operations.FirstOrDefault().Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
