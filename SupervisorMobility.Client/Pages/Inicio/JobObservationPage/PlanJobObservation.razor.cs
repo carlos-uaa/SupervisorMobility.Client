@@ -286,7 +286,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void ShowOperators()
         {
-            if(_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
+            if(_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
             operatorUsers = new();
             _jobObservation.OperatorId = 0;
@@ -320,7 +320,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId,(int) _jobObservation.Operations?.FirstOrDefault().OperationId);
+            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId,(int) _jobObservation.Operations?.FirstOrDefault()?.OperationId);
             pastjobObservations = new();
             pastLup = new();
             if (user != null)
@@ -330,7 +330,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 foreach (var job in pastJobs)
                 {
                     if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault().OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId)
+                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault()?.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId)
                     {
 
                         pastjobObservations.Add(job);

@@ -848,7 +848,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 foreach (var job in pastJobs)
                 {
                     if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault().OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId)
+                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault()?.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId)
                     {
 
                         pastjobObservations.Add(job);
