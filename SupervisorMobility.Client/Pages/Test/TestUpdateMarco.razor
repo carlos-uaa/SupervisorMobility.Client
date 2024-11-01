@@ -1,0 +1,399 @@
+﻿@page "/TestUpdateMarco/{jobobservationId:int}"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using System.Globalization;
+@using System.Net.Http.Json;
+@using System.Diagnostics;
+@using Microsoft.Identity.Client;
+@using System.Threading.Tasks;
+@using System.Text.RegularExpressions;
+@using MudBlazor;
+@using AutoMapper;
+@using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.UpdateJobObsCmpts
+@using SupervisorMobility.Client.Shared.SignatureCanvas
+
+@inject IJSRuntime JSRuntime
+@inject IGroupService GroupService
+@inject IJobStructureService JobStructureCategoriesService
+@inject IDialogService DialogService
+@inject IPlantService PlantServices
+@inject IProductService ProductService
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionService
+@inject IOperationService OperationService
+@inject IJobObservationService JobObservationService
+@inject IGlosaryService GlosaryService
+@inject ILupService LupService
+@inject ISnackbar Snackbar
+@inject IBridgeCDMSService CDMSServices
+@inject IUserService UsersService
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ITreeService TreeServices
+@inject IJSRuntime JS
+@inject IAssyChartService AssychartServices
+@inject IFileUploadAndDownloadService FilesServices
+@inject ILupService LupServices
+@inject IJobStructureService JobStructureCategoriesService
+@inject IChecklistAnswerService ChecklistAnswerServices
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper;
+@inject SignatureImageService _signatureImageService
+
+<style>
+
+    .green {
+        background: var(--mud-palette-success-hover);
+        border: 1px solid var(--mud-palette-success);
+        border-radius: 6px;
+    }
+
+    .yellow {
+        background: var(--mud-palette-warning-hover);
+        border: 1px solid var(--mud-palette-warning);
+        border-radius: 6px;
+    }
+
+    .red {
+        background: var(--mud-palette-error-hover);
+        border: 1px solid var(--mud-palette-error);
+        border-radius: 6px;
+    }
+
+    .current-time {
+        border: 3px solid var(--mud-palette-success);
+        border-radius: 6px;
+    }
+
+    .canvas-container {
+        border: 1px dashed #000;
+        box-shadow: 5px 5px 5px rgb(218, 214, 213);
+        border-radius: 10px;
+        transition: all 0.3s ease-out;
+    }
+
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px; 
+        overflow-y: auto; 
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px); 
+        margin: 5px;
+    }
+</style>
+
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["jobObservations"]</PageTitle>
+@*Breadcrumb links*@
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <MudItem Style="text-align: end">
+        <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4 mb-3" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
+    </MudItem>
+</div>
+@if (showLoading)
+{
+    <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+        <MudItem lg="10" md="12" sm="12" xs="12">
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.JOBones />
+        </MudItem>
+    </MudGrid>
+}
+@if (logged == true)
+{
+    @* Job Observation Form*@
+    <EditForm Model="_jobObservation" OnValidSubmit="SaveProgressJobObservation">
+        <DataAnnotationsValidator />
+        <MudItem Style="text-align: end">
+
+
+
+        </MudItem>
+        <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
+            <MudItem lg="10" md="12" sm="12" xs="12">
+                <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+
+                    <MudItem Class="d-flex justify-space-between">
+                        <MudItem Style="text-align: start">
+                            @if (_assychart != null)
+                            {
+                                <MudItem Class="d-flex flex-row align-start justify-center">
+
+                                    @if (_assychart.RoutesProductsAssyChart?.Count > 0)
+                                    {
+                                        <MudMenu Dense=true AnchorOrigin="Origin.BottomCenter" Style="display: flex" TransformOrigin="Origin.TopCenter">
+                                            <ActivatorContent>
+                                                <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">Directorys</MudButton>
+                                            </ActivatorContent>
+                                            <ChildContent>
+                                                <MudExpansionPanels Elevation="0">
+                                                    <MudCheckBox T="bool" @bind-Checked="@FilterOperation" Label="Filter By Operation" />
+
+                                                    @if (!FilterOperation)
+                                                    {
+                                                        <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=_assychart.RoutesProductsAssyChart.ToList() />
+                                                    }
+                                                    else
+                                                    {
+
+                                                        @if (listFilter.Count > 0)
+                                                        {
+                                                            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=listFilter />
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudAlert Severity="Severity.Info">
+                                                                @Localizer1["ACNoProductsFilter"]
+                                                            </MudAlert>
+                                                        }
+                                                    }
+                                                </MudExpansionPanels>
+                                            </ChildContent>
+                                        </MudMenu>
+                                    }
+                                    else
+                                    {
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer1["ACNoProducts"]
+                                        </MudAlert>
+                                    }
+                                </MudItem>
+                            }
+                            else
+                            {
+                                @if (_jobObservation.PlantId == 0 && _assychart is null)
+                                {
+                                    <MudPaper Elevation="0">
+
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAPlant"]
+                                        </MudAlert>
+                                    </MudPaper>
+                                }
+                                else if (_jobObservation.PlantId != 0 && _jobObservation.AreaId == 0 && _assychart is null)
+                                {
+                                    <MudPaper Elevation="0">
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["firstSelectAnArea"]
+                                        </MudAlert>
+                                    </MudPaper>
+                                }
+                                else if (_jobObservation.PlantId != 0 && _jobObservation.AreaId != 0 && _jobObservation.DistributionId == 0 && _assychart is null)
+                                {
+                                    <MudPaper Elevation="0">
+                                        <MudAlert Severity="Severity.Info">
+                                            @Localizer["selectADistributionFirst"]
+                                        </MudAlert>
+                                    </MudPaper>
+                                }
+                                else if (_assychart != null)
+                                {
+                                    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+                                }
+                                else if (_assychart is null)
+                                {
+                                    <MudItem class="d-flex flex-column justify-center align-self-start">
+                                        <MudPaper Elevation="0">
+                                            <MudAlert Severity="Severity.Info">
+                                                No Job Allocation Found
+                                            </MudAlert>
+                                        </MudPaper>
+                                    </MudItem>
+                                }
+                                else
+                                {
+                                    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+                                }
+
+
+                            }
+                        </MudItem>
+                        <MudItem Class="d-flex flex-column align-end justify-center">
+                            <MudChip OnClick="@history" Variant="Variant.Outlined" Color="Color.Info" Icon="@Icons.Material.Filled.History" Class="pl-3">@Localizer["historyVersions"]</MudChip>
+                        </MudItem>
+                    </MudItem>
+
+                </MudItem>
+                <MudExpansionPanels Elevation="5" MultiExpansion="true">
+                    @foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
+                    {
+                        string title = $"Section {section}";
+                        if (ids.Any(id => id == category.JobCategoryStructureId.ToString()))
+                        {
+                            @switch (category.Type)
+                            {
+                                case StructureType.Titular:
+                                    <TitularTest user=user _jobObservation=_jobObservation _plants=_plants _areas=_areas _distributions=_distributions _supervisors=_supervisors _operations=_operations
+                                             operatorUsers=operatorUsers _products=_products _specifications=_specifications jobProductId=jobProductId productSpecification=@productSpecification kpiID=kpiID _glosaryInfo=_glosaryInfo
+                                             ShowAreas=ShowAreas ShowDistributions=ShowDistributions ShowOperations=ShowOperations ShowOperators=ShowOperators ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes
+                                             ModifyKPI="ModifyKPI" UpdateOperation="UpdateOperation" UpdateShowOperations=UpdateShowOperations />
+                                    break;
+                                case StructureType.Checklist:
+                                    if (category.ChecklistQuestions.Count > 0)
+                                    {
+                                        <Checklist title=@title currentLanguage=@currentLanguage
+                                                   user=user category=category section=section _jobObservation=_jobObservation questionAnswers=questionAnswers imageUrls=imageUrls
+                                                   AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))" OpenPhotoDialog="@((args)=>OpenPhotoDialog(args.Item1,args.Item2))"
+                                                   OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" RemoveEvidenceAnswer="@((args)=>RemoveEvidenceAnswer(args.Item1,args.Item2))"
+                                                   UpdateListEntry="@((args)=>UpdateListEntry(args.Item1, args.Item2, args.Item3))" DownloadFile="@((args)=>DownloadFile(args.Item1,args.Item2))" RemoveLupOpportunity="@((args)=>RemoveLupOppportunity(args.Item1, args.Item2, args.Item3))" />
+                                    }
+                                    break;
+                                case StructureType.Timer:
+                                    <Timer @ref=Timer title=@title
+                                           taktTime=taktTime hoeStandardTime=hoeStandardTime _glosaryInfo=_glosaryInfo currentCycle=currentCycle OperationTimes=OperationTimes _jobObservation=_jobObservation
+                                           StepsNumber=StepsNumber DoubleManagment=DoubleManagment Waiting=Waiting productSpecification=@productSpecification _filteredOperations=_filteredOperations _specifications=_specifications
+                                           NextOperation=NextOperation StartOver=StartOver ChangeCycle=ChangeCycle PauseTime=PauseTimer />
+                                    break;
+                                case StructureType.LUP:
+                                    
+                                    break;
+                                case StructureType.Signature:
+                                    <JobObsSignatures title=@title _glosaryInfo=_glosaryInfo user=user _jobObservation=_jobObservation
+                                                      OpenSignComment=OpenSignComment />
+                                    break;
+                            }
+
+                        }
+
+
+                    }
+                </MudExpansionPanels>
+                @if (productSpecification == "0" || _jobObservation.SupervisorId == 0 || jobProductId == 0)
+                {
+
+                }
+                else
+                {
+
+                    @if (!operatorSignatureSigned)
+                    {
+                        <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                            <SignatureCmpt OnSignatureSaved="HandleSignatureSaved" ClearSignature="HandleClearSignature" Title="@Localizer["operatorsSignature"]" Image="@currentImage" AllowClear="true" />
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                            <div class="container drawing-container pa-8">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-12 text-center">
+                                        <h3>@Localizer["operatorsSignature"]</h3>
+                                        <img src="@currentImage" style="display:block" class="canvas-container" />
+                                    </div>
+                                </div>
+                            </div>
+                        </MudItem>
+                    }
+
+                }
+                <MudCardActions>
+                    <MudItem Class="ml-auto mt-4">
+
+                        @if (_jobObservation.Status != 6)
+                        {
+                            if (user.UserType == 1 || user.UserType == 3)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
+                            }
+                            if ((_jobObservation.Status == 1 || _jobObservation.Status == 3) && user.UserType != 4)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">@Localizer["changeDate"]</MudButton>
+                            }
+                            if (user.UserType == 1 || user.UserType == 4 || user.UserType == 3)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">@Localizer["underReview"]</MudButton>
+                            }
+                            <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelUpdateJobObservation())">@Localizer["cancel"]</MudButton>
+                        }
+                        else
+                        {
+                            @if (user.UserType == 1 || user.UserType == 5)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.Feedback" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto mr-4" @onclick="(() => AddReleasedFeedback())">@Localizer["addFeedback"]</MudButton>
+                            }
+                            <MudButton Variant="Variant.Filled" Class="ml-auto" @onclick="(() => CancelUpdateJobObservation())">@Localizer["goBack"]</MudButton>
+                        }
+                    </MudItem>
+                </MudCardActions>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+}
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="NoData" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    JobObserbation No Encontrada
+                </MudText>
+                <div class="preloader_2">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <MudText>
+                    Lo sentimos, el documento que estás buscando no está disponible en este momento.
+                    Por favor, asegúrate de que el enlace que has proporcionado sea correcto o intenta de nuevo más tarde.
+                    Si crees que esto es un error, por favor contáctanos para que podamos ayudarte. Gracias por tu comprensión.
+
+                </MudText>
+            </MudItem>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
+        <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("jobobservation") )">Entendido</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowOperationsDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:60vh;" Class="gap-4">
+
+            <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+
+
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" @bind-attributes="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+                @foreach (Operation operation in FilteredOperations)
+                {
+                    <div class="toggle-column">
+
+                        <MudToggleItem Value="@(operation)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            @($"{operation.Code} - {operation.Description}")
+                            @switch (operation.CriticalType)
+                            {
+                                case 1:
+                                    <MudItem>
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 2:
+                                    <MudItem>
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 3:
+                                    <MudItem>
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                            }
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="@(() => CloseOperations())">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>

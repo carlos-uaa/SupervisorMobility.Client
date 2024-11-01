@@ -1203,7 +1203,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 return true;
             if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Operations.FirstOrDefault().Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
