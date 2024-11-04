@@ -148,6 +148,8 @@ namespace SupervisorMobility.Client.Pages
         ProductAndStandardTime[] _productAndSpecification =
             new ProductAndStandardTime[5].Select(x => new ProductAndStandardTime()).ToArray();
 
+        private bool isWaitingTimeActive = false;
+
         protected async override Task OnInitializedAsync()
         {
             try
@@ -533,7 +535,14 @@ namespace SupervisorMobility.Client.Pages
             _jobObservation.SupervisorId = 0;
             _assychart = null;
             jobProductId = 0;
-            _specifications = new();
+            _specifications = new List<List<string>>
+            {
+                new List<string>(), // Product 1
+                new List<string>(), // Product 2
+                new List<string>(), // Product 3
+                new List<string>(), // Product 4
+                new List<string>()  // Product 5
+            };
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
 
@@ -610,7 +619,13 @@ namespace SupervisorMobility.Client.Pages
         private async void ShowOperations()
         {
             _assychart = null;
-            _specifications = new();
+            _specifications = new List<List<string>> {
+                new List<string>(), // Product 1
+                new List<string>(), // Product 2
+                new List<string>(), // Product 3
+                new List<string>(), // Product 4
+                new List<string>()  // Product 5
+            };
             jobProductId = 0;
             //productSpecification = string.Empty;
 
@@ -682,7 +697,7 @@ namespace SupervisorMobility.Client.Pages
         private int?[] DoubleManagment = new int?[5];
         private int?[] Waiting = new int?[5];
         private string?[] CycleTimes = new string?[5] { "", "", "", "", "" };
-        private string?[] AdditionalTimes = new string?[5] { "", "", "", "", "" };
+        private string?[] WaitingTimes = new string?[5] { "", "", "", "", "" };
 
         private bool isTimerRunning2 = false;
 
@@ -744,16 +759,40 @@ namespace SupervisorMobility.Client.Pages
 
         private void NextOperation()
         {
+            double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
 
-            if (currentCycle < 5)
+            if (isWaitingTimeActive)
             {
-                double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
+                double cycleTime = double.Parse(CycleTimes[currentCycle], CultureInfo.InvariantCulture);
+                double waitingTime = Math.Round(elapsedCentiseconds - cycleTime, 2);
+
+                WaitingTimes[currentCycle] = waitingTime.ToString();
+
+                isWaitingTimeActive = false;
+            }
+            else
+            {
                 CycleTimes[currentCycle] = Math.Round(elapsedCentiseconds, 2).ToString();
-                SyncLocalStorage.SetItem("CC", currentCycle);
-                currentCycle++;
+            }
+            SyncLocalStorage.SetItem("CC", currentCycle);
+            currentCycle++;
+           
+            if(currentCycle > 4){
+                currentCycle = 0;
             }
 
             //SetAsCurrentJobObservation();
+            StateHasChanged();
+        }
+
+        private void WaitingTime()
+        {
+            double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
+            CycleTimes[currentCycle] = Math.Round(elapsedCentiseconds, 2).ToString();
+
+            isWaitingTimeActive = true;
+            _ = StoreWaiting(1, currentCycle);
+
             StateHasChanged();
         }
 
@@ -854,12 +893,11 @@ namespace SupervisorMobility.Client.Pages
         private async Task ShowSpecifications(int id, int productIndex)
         {
             jobProductIds[productIndex] = id;
-            _specifications[productIndex] = new List<string>();
+            _specifications[productIndex] = new();
 
 
 
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
-            Console.WriteLine(_products.Count);
 
 
             if (prodName != null)
@@ -2743,7 +2781,7 @@ namespace SupervisorMobility.Client.Pages
         private async Task UpdateOperation()
         {
             jobProductId = 0;
-            _specifications = new();
+            _specifications = new List<List<string>> { new List<string>(), new List<string>(), new List<string>(), new List<string>(), new List<string>() };
             //productSpecification = string.Empty;
             var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
             if (operation != null)
