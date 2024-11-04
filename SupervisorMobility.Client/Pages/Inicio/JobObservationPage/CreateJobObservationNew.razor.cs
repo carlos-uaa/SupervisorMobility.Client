@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public JobObservation pastJob = new();
 
         public Distribution distribution = new Distribution();
-        public Operation operation = new();
+        public Operation? operation = new();
 
         public bool flag = false;
         public bool session = false;
@@ -572,7 +572,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async void ShowOperators()
         {
-            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
 
             if (user.UserType == 1 || user.UserType == 2)
@@ -837,7 +837,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int) _jobObservation.Operations?.FirstOrDefault().OperationId);
+
+            if (_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault().OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -2499,7 +2501,47 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
 
-                    Lup sendLup = new Lup {
+
+                    startHour = DateTime.Now.TimeOfDay;
+
+                    if (CultureInfo.CurrentCulture.Name == "en-US")
+                    {
+                        var formatedStartDate = lup.Key.CreatedDate;
+
+                        var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                        lup.Key.CreatedDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour}";
+
+
+                        if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+                        }
+
+                        lup.Key.CreatedDate = newDate1;
+                    }
+                    else
+                    {
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
+
+                        if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+
+                            lup.Key.CreatedDate = newDate1;
+                    }
+
+
+
+                Lup sendLup = new Lup {
                         LupId = 0,
                         JobObservationId = lup.Key.JobObservationId,
                         Oportunity = lup.Key.Oportunity,

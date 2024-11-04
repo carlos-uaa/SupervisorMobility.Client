@@ -74,6 +74,18 @@
         border-radius: 10px;
         transition: all 0.3s ease-out;
     }
+
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px);
+        margin: 5px;
+    }
 </style>
 
 
@@ -223,8 +235,7 @@
                                         user=user _jobObservation=_jobObservation _plants=_plants _areas=_areas _distributions=_distributions _supervisors=_supervisors _operations=_operations
                                         operatorUsers=operatorUsers _products=_products _specifications=_specifications jobProductId=jobProductId productSpecification=@productSpecification kpiID=kpiID _glosaryInfo=_glosaryInfo
                                         ShowAreas=ShowAreas ShowDistributions=ShowDistributions ShowOperations=ShowOperations ShowOperators=ShowOperators ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes
-                                        ModifyKPI="ModifyKPI" UpdateOperation="UpdateOperation"
-                                    />
+                                             ModifyKPI="ModifyKPI" UpdateOperation="UpdateOperation" UpdateShowOperations=UpdateShowOperations />
                                     break;
                                 case StructureType.Checklist:
                                     if (category.ChecklistQuestions.Count > 0)
@@ -347,5 +358,49 @@
     <DialogActions>
         @*<MudIconButton @onclick="(() => JobObservationUpdate(jobId))" Color="Color.Info" Icon="@Icons.Material.Filled.Edit"></MudIconButton>*@
         <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("jobobservation") )">Entendido</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowOperationsDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:60vh;" Class="gap-4">
+
+            <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+
+
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" @bind-attributes="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+                @foreach (Operation operation in FilteredOperations)
+                {
+                    <div class="toggle-column">
+
+                        <MudToggleItem Value="@(operation)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            @($"{operation.Code} - {operation.Description}")
+                            @switch (operation.CriticalType)
+                            {
+                                case 1:
+                                    <MudItem>
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 2:
+                                    <MudItem>
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 3:
+                                    <MudItem>
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                            }
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="@(() => CloseOperations())">Cerrar</MudButton>
     </DialogActions>
 </MudDialog>

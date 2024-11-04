@@ -366,6 +366,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 {
                                     JobObservation? findedJob = availableJobs.Find(j => j.DistributionId == item.distribution.DistributionId && j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
 
+                                    //JobObservation? findedJob = availableJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
+
                                     if (findedJob != null)
                                     {
                                         JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
@@ -396,7 +398,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
 
                                         var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
-                                        operationsList.Add(operationsList.First(o => o.OperationId == op.OperationId));
+                                        operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
                                         _newSuggestionExist.Operations = operationsList;
 
                                         //_newSuggestionExist.Operation = op;
@@ -458,7 +460,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                         //_newSuggestion.OperationId = op.OperationId;
 
                                         var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
-                                        operationsList.Add(operationsList.First(o => o.OperationId == op.OperationId));
+                                        operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
                                         _newSuggestion.Operations = operationsList;
 
                                         _newSuggestion.Option = 2;
@@ -567,7 +569,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
-                    //foreach (var op in _All_Operations)
+                    
                     foreach (var op in _All_Operations)
                     {
                         if (!_All_SOSJobobservation.Any(j => j.Operations?.FirstOrDefault().OperationId == op.OperationId))
@@ -575,16 +577,16 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                             int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                            // Obtener el SupervisorId de SV_Manager usando el índice calculado
+                            
                             int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                            JobObservation? findedJob = availableJobs.Find(j => j.Operations?.FirstOrDefault().OperationId == op.OperationId || j.SupervisorId == supervisorId);
+                            JobObservation? findedJob = availableJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
 
                             if (findedJob != null)
                             {
                                 JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
 
-                                // Asignar el SupervisorId a _newSuggestion
+                                
                                 if (findedJob.SupervisorId == null)
                                 {
                                     _newSuggestionExist.SupervisorId = supervisorId;
@@ -615,7 +617,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 //_newSuggestionExist.Operation = op;
 
                                 var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
-                                operationsList.Add(operationsList.First(o => o.OperationId == op.OperationId));
+                                operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
                                 _newSuggestionExist.Operations = operationsList;
 
                                 _newSuggestionExist.Option = 2;
@@ -668,7 +670,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 //_newSuggestion.OperationId = op.OperationId;
 
                                 var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
-                                operationsList.Add(operationsList.First(o => o.OperationId == op.OperationId));
+                                operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
                                 _newSuggestion.Operations = operationsList;
 
 

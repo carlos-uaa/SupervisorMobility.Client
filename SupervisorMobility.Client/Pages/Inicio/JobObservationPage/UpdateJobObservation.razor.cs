@@ -240,9 +240,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     {
                                         var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
                                         imageUrls[evidence.FileUploadId] = imageUrl;
-
                                     }
                                 }
+                                questionAnswers[question.QuestionID] = item;
                             }
                         }
                     }
@@ -616,7 +616,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (result)
                 {
-                    _ = await GenerateLups();
                     _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -1595,8 +1594,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
+            if (_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -2633,7 +2632,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 foreach (var question in questionAnswers)
                 {
-                    if (question.Value.Answer != "" || question.Value.Edited)
+                    if ((question.Value.Answer != "" || question.Value.Edited) && !_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.Key))
                     {
                         using var content = new MultipartFormDataContent();
                         for (int i = 0; i < question.Value.capturedImagesFiles.Count; i++)
@@ -2771,6 +2770,43 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.JobObservationId = _jobObservation.JobObservationId;
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
+
+                    startHour = DateTime.Now.TimeOfDay;
+
+                    if (CultureInfo.CurrentCulture.Name == "en-US")
+                    {
+                        var formatedStartDate = lup.Key.CreatedDate;
+
+                        var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
+                        lup.Key.CreatedDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour}";
+
+
+                        if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+                        }
+
+                        lup.Key.CreatedDate = newDate1;
+                    }
+                    else
+                    {
+                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
+
+                        if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
+                        {
+                            Console.WriteLine(newDate1);
+                        }
+                        else
+                            Console.WriteLine("Unable to parse '{0}'", hour1);
+
+                        lup.Key.CreatedDate = newDate1;
+                    }
 
                     Lup sendLup = new Lup
                     {
@@ -3284,6 +3320,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
         }
+        bool ShowOperationsDialog { get; set; } = false;
+
+
+
+        private async void UpdateShowOperations()
+        {
+            ShowOperationsDialog = true;
+
+            StateHasChanged();
+
+        }
+
+        private async void CloseOperations()
+        {
+            ShowOperationsDialog = false;
+
+            StateHasChanged();
+
+        }
+
+        private string searchTerm = "";
+        private IEnumerable<Operation> FilteredOperations =>
+            _operations.Where(op =>
+                string.IsNullOrEmpty(searchTerm) ||
+                (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
 
     }//end class
