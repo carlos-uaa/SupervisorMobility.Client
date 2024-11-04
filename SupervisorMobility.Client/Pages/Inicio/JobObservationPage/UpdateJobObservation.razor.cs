@@ -1594,8 +1594,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
+            if (_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -3320,6 +3320,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
         }
+        bool ShowOperationsDialog { get; set; } = false;
+
+
+
+        private async void UpdateShowOperations()
+        {
+            ShowOperationsDialog = true;
+
+            StateHasChanged();
+
+        }
+
+        private async void CloseOperations()
+        {
+            ShowOperationsDialog = false;
+
+            StateHasChanged();
+
+        }
+
+        private string searchTerm = "";
+        private IEnumerable<Operation> FilteredOperations =>
+            _operations.Where(op =>
+                string.IsNullOrEmpty(searchTerm) ||
+                (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
 
     }//end class

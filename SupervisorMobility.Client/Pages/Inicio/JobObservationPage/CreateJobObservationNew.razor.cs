@@ -74,7 +74,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public JobObservation pastJob = new();
 
         public Distribution distribution = new Distribution();
-        public Operation operation = new();
+        public Operation? operation = new();
 
         public bool flag = false;
         public bool session = false;
@@ -572,7 +572,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async void ShowOperators()
         {
-            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
 
             if (user.UserType == 1 || user.UserType == 2)
@@ -837,7 +837,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int) _jobObservation.Operations?.FirstOrDefault().OperationId);
+
+            if (_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault().OperationId);
 
             pastjobObservations = new();
             pastLup = new();

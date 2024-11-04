@@ -43,13 +43,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public int typeId;
 
         //Filters
-        //public List<JobObservation> _filterJobObservation { get; set; } = new();
+        public List<JobObservation> _filterJobObservation { get; set; } = new();
 
 
 
         //Job observations status lists.
-        //public List<JobObservation> _jobObservations { get; set; } = new();
-        //public List<JobObservation> _jobObservationsAux { get; set; } = new();
+        public List<JobObservation> _jobObservations { get; set; } = new();
+        public List<JobObservation> _jobObservationsAux { get; set; } = new();
 
         JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto{ DistributionCount = new(),
             OperationCount = new(),

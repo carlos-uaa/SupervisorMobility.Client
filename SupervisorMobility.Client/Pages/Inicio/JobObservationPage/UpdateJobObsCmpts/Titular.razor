@@ -126,36 +126,69 @@
                 </tr>
                 <tr>
                     <td>
-                        @*Mud select of Operations *@
-                        <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="(id)=>UpdateOperation.InvokeAsync(id.FirstOrDefault())">
-                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
-                            @foreach (var type in _operations)
-                            {
-                                <MudSelectItem Value="type.OperationId">
-                                    <div style="display: flex;    align-items: center;    justify-content: space-between; margin-top: -1px">
-                                        @($"{type.Code} - {type.Description}")
-                                        @switch (type.CriticalType)
+                        @if (_jobObservation.DistributionId != 0)
+                        {
+
+                            <MudCard Elevation="0">
+                                <MudCardContent>
+                                    <MudText>Operations</MudText>
+                                    <div class="toggle-group-container">
+                                        @foreach (Operation operation in _jobObservation.Operations)
                                         {
-                                            case 1:
-                                                <MudItem>
-                                                    <img src="Images/A.png" Height="25" Width="25" />
-                                                </MudItem>
-                                                break;
-                                            case 2:
-                                                <MudItem>
-                                                    <img src="Images/B.png" Height="25" Width="25" />
-                                                </MudItem>
-                                                break;
-                                            case 3:
-                                                <MudItem>
-                                                    <img src="Images/C.png" Height="25" Width="25" />
-                                                </MudItem>
-                                                break;
+                                            <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column">
+                                                @($"{operation.Code} - {operation.Description}")
+                                                @switch (operation.CriticalType)
+                                                {
+                                                    case 1:
+                                                        <MudItem>
+                                                            <img src="Images/A.png" Height="25" Width="25" />
+                                                        </MudItem>
+                                                        break;
+                                                    case 2:
+                                                        <MudItem>
+                                                            <img src="Images/B.png" Height="25" Width="25" />
+                                                        </MudItem>
+                                                        break;
+                                                    case 3:
+                                                        <MudItem>
+                                                            <img src="Images/C.png" Height="25" Width="25" />
+                                                        </MudItem>
+                                                        break;
+                                                }
+                                            </MudChip>
                                         }
                                     </div>
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
+                                    <MudButton OnClick="()=>UpdateShowOperations.InvokeAsync()"
+                                               Variant="Variant.Outlined"
+                                               EndIcon="@Icons.Material.Filled.Assignment"
+                                               Color="Color.Secondary">
+                                        @if (_jobObservation.Operations.Count() > 0)
+                                        {
+                                            <MudText>
+                                                Edit Operation
+                                            </MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>
+                                                Select Operation
+                                            </MudText>
+                                        }
+                                    </MudButton>
+                                </MudCardContent>
+                            </MudCard>
+
+
+
+
+
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label=@Localizer["operation"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Disabled="true" Value="0">First select a distribution</MudSelectItem>
+                            </MudSelect>
+                        }
                     </td>
                     <td style="display: flex; justify-content: space-between;">
                         @*class="d-flex mt-3"*@
@@ -208,87 +241,6 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="2">
-                        <div class="d-flex mr-4">
-
-                            @if (_jobObservation.DistributionId != 0)
-                            {
-                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mr-4 ml-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="@jobProductId" SelectedValuesChanged="(id)=>ShowSpecifications.InvokeAsync(id.First())">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAProduct"]</MudSelectItem>
-                                    @foreach (var type in _products)
-                                    {
-                                        <MudSelectItem Value="type.ProductId">@($"{type.Code}")</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudSelect T="int" Label=@Localizer["product"] Class="mr-4 ml-4" Disabled Variant="Variant.Text" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
-                                </MudSelect>
-                            }
-                            @if (jobProductId != 0)
-                            {
-                                <MudSelect T="string" Label=@Localizer["specification"] Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info" @bind-Value="productSpecification" SelectedValuesChanged="(selected)=>InitializeCycleTimes.InvokeAsync(selected.FirstOrDefault())">
-                                    <MudSelectItem Disabled="true" Value="@("0")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                    @foreach (var type in _specifications)
-                                    {
-                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudSelect T="int" Label=@Localizer["specification"] Disabled Variant="Variant.Text" Class="mr-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAProduct"]</MudSelectItem>
-                                </MudSelect>
-                            }
-
-
-                            <MudSelect T="int" Class="mr-4" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(param)=>ModifyKPI.InvokeAsync(param.First())">
-                                <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                <MudSelectItem Value="1">@($"S & E")</MudSelectItem>
-                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                <MudSelectItem Value="5">@($"Other")</MudSelectItem>
-                            </MudSelect>
-                        </div>
-
-
-
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <MudRadioGroup @bind-SelectedOption="_jobObservation.Option" style="width:100%;">
-                            <MudRadio Option="1" Color="Color.Info" Size="Size.Small">Verify training</MudRadio>
-                            <MudRadio Option="2" Color="Color.Info" Size="Size.Small">Maintain and/or improve the work area</MudRadio>
-                            <MudRadio Option="3" Color="Color.Info" Size="Size.Small">
-                                @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("Management of the anomaly"))
-                                {
-                                    Glosary word;
-                                    word = _glosaryInfo["Management of the anomaly"];
-                                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                                            <MudText>@Localizer["managementOfTheAnomaly"]</MudText>
-                                        </MudBadge>
-                                    </MudTooltip>
-                                }
-                                else
-                                {
-                                    <span>@Localizer["managementOfTheAnomaly"]</span>
-                                }
-                            </MudRadio>
-                            @if (_jobObservation.Option == 3)
-                            {
-                                <MudTextField @bind-Value="_jobObservation.Anomaly" T="string" Label=@Localizer["writeTheAnomaly"] Placeholder=@Localizer["anomaly"] Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            }
-                        </MudRadioGroup>
-                    </td>
-                </tr>
             </tbody>
         </MudSimpleTable>
     </ChildContent>
@@ -298,6 +250,8 @@
     <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
     return;
 }
+
+
 
 @code {
     [Parameter]
@@ -341,6 +295,8 @@
     [Parameter]
     public EventCallback<int> UpdateOperation { get; set; }
     [Parameter]
+    public EventCallback<bool> UpdateShowOperations { get; set; }
+    [Parameter]
     public EventCallback<int> ShowSpecifications { get; set; }
     [Parameter]
     public EventCallback<string> InitializeCycleTimes { get; set; }
@@ -358,4 +314,6 @@
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
         Snackbar.Add(Localizer["btnChangeDate"], Severity.Info);
     }
+
+
 }
