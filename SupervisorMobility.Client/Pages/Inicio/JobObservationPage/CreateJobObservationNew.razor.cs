@@ -2725,9 +2725,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
         }
 
-        private async Task AnswerChangeOption(string option, int id)
+        private async Task AnswerChangeOption(string option, int id, int section, int catId)
         {
             questionAnswers[id].Answer = option;
+            var entry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.QuestionID == id);
+            if (section == 1 && (entry.CategorySequence == 4 || entry.CategorySequence == 5))
+            {
+                var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
+                var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
+                var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
+
+                string kpi = "";
+                if (entry.CategorySequence == 4)
+                {
+                    kpi = option == "YES" ? "S&P" : "";
+                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
+                        kpi += kpi.IsNullOrEmpty() ? "Q" : "/Q";
+                }
+                else //if(entry.CategorySequence == 5)
+                {
+                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
+                        kpi += "S&P";
+                    kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
+                }
+
+                questionAnswers[specialEntry].CommentarySV = kpi;
+                await OnKPIChange(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 });
+
+            }
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
             //SetAsCurrentJobObservation();
         }
