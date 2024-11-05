@@ -226,7 +226,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     try
                     {
                         if (jo) { jo = false; _jobObservation = await LocalStorage.GetItemAsync<JobObservation>("JobObs") ?? throw new ArgumentNullException("Error Retriving Job Observation", nameof(_jobObservation)); fake = true; }
-                        if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes);  }
+                        //if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes);  }
                         if (la) { la = false; var _tempLupList = await LocalStorage.GetItemAsync<List<KeyValuePair<Lup, List<string>>>>("LupToAdd") ?? new(); _tempLup = _tempLupList.ToDictionary(pair => pair.Key, pair => pair.Value); }
                         if (aS) { aS = false; area_ListS = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListS") ?? new(); }
                         if (aQ) { aQ = false; area_ListQ = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListQ") ?? new(); }
@@ -697,7 +697,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
+        private Dictionary<string, double[]> OperationTimes = new Dictionary<string, double[]>
+        {
+            { "CycleTime", new double[5] },
+            { "WaitingTime", new double[5] }
+        }; 
         private int?[] StepsNumber = new int?[5];
         private int?[] DoubleManagment = new int?[5];
         private int?[] Waiting = new int?[5];
@@ -723,12 +727,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 double waitingTime = Math.Round(elapsedCentiseconds - cycleTime, 2);
 
                 WaitingTimes[currentCycle] = waitingTime.ToString();
+                OperationTimes["WaitingTime"][currentCycle] = waitingTime;
 
                 isWaitingTimeActive = false;
             }
             else
             {
-                CycleTimes[currentCycle] = Math.Round(elapsedCentiseconds, 2).ToString();
+                var cycleTime = Math.Round(elapsedCentiseconds, 2);
+                CycleTimes[currentCycle] = cycleTime.ToString();
+                OperationTimes["CycleTime"][currentCycle] = cycleTime;
+
             }
             SyncLocalStorage.SetItem("CC", currentCycle);
             currentCycle++;
@@ -745,7 +753,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void WaitingTime()
         {
             double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
-            CycleTimes[currentCycle] = Math.Round(elapsedCentiseconds, 2).ToString();
+            var cycleTime = Math.Round(elapsedCentiseconds, 2);
+
+            CycleTimes[currentCycle] = cycleTime.ToString();
+            OperationTimes["CycleTime"][currentCycle] = cycleTime;
 
             isWaitingTimeActive = true;
             _ = StoreWaiting(1, currentCycle);
@@ -809,7 +820,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             if (currentOperationIndex < _operations.Count)
             {
                 var currentOperation = _operations[currentOperationIndex];
-                OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
+                //OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
 
                 currentOperationIndex++;
 
@@ -857,17 +868,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Console.WriteLine(hoeStandardTime);
                 }
             }
-            foreach (var op in _filteredOperations)
-            {
-                if (!OperationTimes.ContainsKey(op.OperationId))
-                {
-                    OperationTimes[op.OperationId] = new Dictionary<int, double>();
-                    for (int i = 1; i <= 5; i++)
-                    {
-                        OperationTimes[op.OperationId][i] = 0.0;
-                    }
-                }
-            }
+            //foreach (var op in _filteredOperations)
+            //{
+            //    if (!OperationTimes.ContainsKey(op.OperationId))
+            //    {
+            //        OperationTimes[op.OperationId] = new Dictionary<int, double>();
+            //        for (int i = 1; i <= 5; i++)
+            //        {
+            //            OperationTimes[op.OperationId][i] = 0.0;
+            //        }
+            //    }
+            //}
 
             //_jobObservation.ModelsSpecification = productSpecification;
             //SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
@@ -1035,19 +1046,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
+        private string BuildOperationTimesJson()
+        {
+            var operationTimes = new
+            {
+                CycleTime = OperationTimes["CycleTime"],
+                WaitingTime = OperationTimes["WaitingTime"]
+            };
+
+            return JsonSerializer.Serialize(operationTimes);
+        }
 
         public async Task FillJobObservationData()
         {
             //_jobObservation.OperationId = 0;
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
             //_jobObservation.ModelsSpecification = productSpecification;
-            _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
-            _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
-            _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
+            _jobObservation.StepsNumber = string.Join("|", StepsNumber);
+            _jobObservation.DoubleManagment = string.Join("|", DoubleManagment);
+            _jobObservation.Waiting = string.Join("|", Waiting);
             _jobObservation.TaktTime = taktTime.ToString().Replace(",", ".");
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString().Replace(",", ".");
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
+            _jobObservation.ProductIds = string.Join("|", jobProductIds);
+            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             startHour = DateTime.Now.TimeOfDay;
 
