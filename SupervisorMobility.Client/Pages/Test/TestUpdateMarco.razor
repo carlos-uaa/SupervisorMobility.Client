@@ -1,4 +1,4 @@
-﻿@page "/jobobservation/updatejobobservation/{jobobservationId:int}"
+﻿@page "/TestUpdateMarco/{jobobservationId:int}"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -78,32 +78,30 @@
     .toggle-group-container {
         display: flex;
         flex-wrap: wrap;
-        max-height: 400px;
-        overflow-y: auto;
+        max-height: 400px; 
+        overflow-y: auto; 
     }
 
     .toggle-column {
-        flex-basis: calc(25% - 10px);
+        flex-basis: calc(25% - 10px); 
         margin: 5px;
     }
 </style>
 
 
-
-
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["jobObservations"]</PageTitle>
-    @*Breadcrumb links*@
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <MudItem Style="text-align: end">
-            <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4 mb-3" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
-        </MudItem>
-    </div>
-    @if (showLoading)
+@*Breadcrumb links*@
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <MudItem Style="text-align: end">
+        <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4 mb-3" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
+    </MudItem>
+</div>
+@if (showLoading)
 {
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="10" md="12" sm="12" xs="12">
-            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.JOBones/>
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.JOBones />
         </MudItem>
     </MudGrid>
 }
@@ -139,14 +137,14 @@
 
                                                     @if (!FilterOperation)
                                                     {
-                                                        <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=_assychart.RoutesProductsAssyChart.ToList()/>
+                                                        <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=_assychart.RoutesProductsAssyChart.ToList() />
                                                     }
                                                     else
                                                     {
 
                                                         @if (listFilter.Count > 0)
                                                         {
-                                                            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=listFilter/>
+                                                            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.SOSPaths PathsList=listFilter />
                                                         }
                                                         else
                                                         {
@@ -218,12 +216,12 @@
                         </MudItem>
                         <MudItem Class="d-flex flex-column align-end justify-center">
                             <MudChip OnClick="@history" Variant="Variant.Outlined" Color="Color.Info" Icon="@Icons.Material.Filled.History" Class="pl-3">@Localizer["historyVersions"]</MudChip>
-                            </MudItem>
                         </MudItem>
-
                     </MudItem>
-                    <MudExpansionPanels Elevation="5" MultiExpansion="true">
-                        @foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
+
+                </MudItem>
+                <MudExpansionPanels Elevation="5" MultiExpansion="true">
+                    @foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
                     {
                         string title = $"Section {section}";
                         if (ids.Any(id => id == category.JobCategoryStructureId.ToString()))
@@ -231,40 +229,33 @@
                             @switch (category.Type)
                             {
                                 case StructureType.Titular:
-                                    <Titular 
-                                        user=user _jobObservation=_jobObservation _plants=_plants _areas=_areas _distributions=_distributions _supervisors=_supervisors _operations=_operations
-                                        operatorUsers=operatorUsers _products=_products _specifications=_specifications jobProductId=jobProductId productSpecification=@productSpecification kpiID=kpiID _glosaryInfo=_glosaryInfo
-                                        ShowAreas=ShowAreas ShowDistributions=ShowDistributions ShowOperations=ShowOperations ShowOperators=ShowOperators ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes
+                                    <TitularTest user=user _jobObservation=_jobObservation _plants=_plants _areas=_areas _distributions=_distributions _supervisors=_supervisors _operations=_operations
+                                             operatorUsers=operatorUsers _products=_products _specifications=_specifications jobProductId=jobProductId productSpecification=@productSpecification kpiID=kpiID _glosaryInfo=_glosaryInfo
+                                             ShowAreas=ShowAreas ShowDistributions=ShowDistributions ShowOperations=ShowOperations ShowOperators=ShowOperators ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes
                                              ModifyKPI="ModifyKPI" UpdateOperation="UpdateOperation" UpdateShowOperations=UpdateShowOperations />
                                     break;
                                 case StructureType.Checklist:
                                     if (category.ChecklistQuestions.Count > 0)
                                     {
-                                        <Checklist title=@title currentLanguage=@currentLanguage 
-                                            user=user category=category section=section _jobObservation=_jobObservation questionAnswers=questionAnswers imageUrls=imageUrls
-                                            AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))" OpenPhotoDialog="@((args)=>OpenPhotoDialog(args.Item1,args.Item2))"
-                                            OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" RemoveEvidenceAnswer="@((args)=>RemoveEvidenceAnswer(args.Item1,args.Item2))"
+                                        <Checklist title=@title currentLanguage=@currentLanguage
+                                                   user=user category=category section=section _jobObservation=_jobObservation questionAnswers=questionAnswers imageUrls=imageUrls
+                                                   AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))" OpenPhotoDialog="@((args)=>OpenPhotoDialog(args.Item1,args.Item2))"
+                                                   OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" RemoveEvidenceAnswer="@((args)=>RemoveEvidenceAnswer(args.Item1,args.Item2))"
                                                    UpdateListEntry="@((args)=>UpdateListEntry(args.Item1, args.Item2, args.Item3))" DownloadFile="@((args)=>DownloadFile(args.Item1,args.Item2))" RemoveLupOpportunity="@((args)=>RemoveLupOppportunity(args.Item1, args.Item2, args.Item3))" />
                                     }
                                     break;
                                 case StructureType.Timer:
                                     <Timer @ref=Timer title=@title
-                                        taktTime=taktTime hoeStandardTime=hoeStandardTime _glosaryInfo=_glosaryInfo currentCycle=currentCycle OperationTimes=OperationTimes _jobObservation=_jobObservation
-                                        StepsNumber=StepsNumber DoubleManagment=DoubleManagment Waiting=Waiting productSpecification=@productSpecification _filteredOperations=_filteredOperations _specifications=_specifications 
-                                        NextOperation=NextOperation StartOver=StartOver ChangeCycle=ChangeCycle PauseTime=PauseTimer 
-                                    />
+                                           taktTime=taktTime hoeStandardTime=hoeStandardTime _glosaryInfo=_glosaryInfo currentCycle=currentCycle OperationTimes=OperationTimes _jobObservation=_jobObservation
+                                           StepsNumber=StepsNumber DoubleManagment=DoubleManagment Waiting=Waiting productSpecification=@productSpecification _filteredOperations=_filteredOperations _specifications=_specifications
+                                           NextOperation=NextOperation StartOver=StartOver ChangeCycle=ChangeCycle PauseTime=PauseTimer />
                                     break;
                                 case StructureType.LUP:
-                                    <LUPComponent title=@title _glosaryInfo=_glosaryInfo auxErgonomicsLevel=auxErgonomicsLevel capturedImages=capturedImages UploadEvidence=UploadEvidence _tempLup=_tempLup SetLup=SetLup DeleteTempLup=DeleteTempLup RemoveTempImage="@((args) => RemoveTempImage(args.Item1, args.Item2))"
-                                                  area_ListS=area_ListS area_ListQ=area_ListQ area_ListD=area_ListD area_ListC=area_ListC area_ListOther=area_ListOther _lupJobObservations=_lupJobObservations OpenTempCameraDialog=OpenTempCameraDialog
-                                        RemoveFromList="@((args)=>RemoveFromList(args.Item1, args.Item2))" OpenDeleteDialog=OpenDeleteDialog AddTempLup=AddTempLup OpenCameraDialog=OpenCameraDialog RemoveImage=RemoveImage
-                                    />
+                                    
                                     break;
                                 case StructureType.Signature:
-                                    <JobObsSignatures
-                                        title=@title _glosaryInfo=_glosaryInfo user=user _jobObservation=_jobObservation 
-                                        OpenSignComment=OpenSignComment 
-                                    />
+                                    <JobObsSignatures title=@title _glosaryInfo=_glosaryInfo user=user _jobObservation=_jobObservation
+                                                      OpenSignComment=OpenSignComment />
                                     break;
                             }
 
@@ -277,20 +268,23 @@
                 {
 
                 }
-                else{
+                else
+                {
 
-                    @if(!operatorSignatureSigned){
-                         <MudItem Style="text-align:center; display: flex; justify-content: center;">
-                            <SignatureCmpt OnSignatureSaved="HandleSignatureSaved"  ClearSignature="HandleClearSignature" Title="@Localizer["operatorsSignature"]" Image="@currentImage" AllowClear="true"/>
+                    @if (!operatorSignatureSigned)
+                    {
+                        <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                            <SignatureCmpt OnSignatureSaved="HandleSignatureSaved" ClearSignature="HandleClearSignature" Title="@Localizer["operatorsSignature"]" Image="@currentImage" AllowClear="true" />
                         </MudItem>
                     }
-                    else{
-                         <MudItem Style="text-align:center; display: flex; justify-content: center;">
+                    else
+                    {
+                        <MudItem Style="text-align:center; display: flex; justify-content: center;">
                             <div class="container drawing-container pa-8">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12 text-center">
                                         <h3>@Localizer["operatorsSignature"]</h3>
-                                        <img src="@currentImage" style="display:block" class="canvas-container"/>
+                                        <img src="@currentImage" style="display:block" class="canvas-container" />
                                     </div>
                                 </div>
                             </div>
@@ -332,7 +326,7 @@
     </EditForm>
 }
 
-                                    
+
 <MudDialog DisableSidePadding="false" @bind-IsVisible="NoData" Options="dialogOptions">
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
@@ -347,10 +341,10 @@
                     <span></span>
                 </div>
                 <MudText>
-                    Lo sentimos, el documento que estás buscando no está disponible en este momento. 
+                    Lo sentimos, el documento que estás buscando no está disponible en este momento.
                     Por favor, asegúrate de que el enlace que has proporcionado sea correcto o intenta de nuevo más tarde.
                     Si crees que esto es un error, por favor contáctanos para que podamos ayudarte. Gracias por tu comprensión.
-                
+
                 </MudText>
             </MudItem>
         </MudContainer>
@@ -360,7 +354,6 @@
         <MudButton Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("jobobservation") )">Entendido</MudButton>
     </DialogActions>
 </MudDialog>
-
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="ShowOperationsDialog" Options="dialogOptions">
     <DialogContent>

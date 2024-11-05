@@ -1,0 +1,468 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+<style>
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px; 
+        overflow-y: auto; 
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px); 
+        margin: 5px;
+    }
+</style>
+
+
+<MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="text-align: center;">
+            @Localizer["jobObservacionCiclycalCard"]
+            <MudChip Variant="Variant.Text" Color="Color.Surface" Class="pl-3">Eventual</MudChip>
+        </MudText>
+    </TitleContent>
+    <ChildContent>
+        <MudSimpleTable Style="overflow-x: auto;" Dense=true Elevation="0">
+            <tbody>
+                <tr>
+                    <td style="width:50%">
+                        <div class="d-flex">
+                            @if (user.UserType == 1)
+                            {
+                                @*Mud select for Plants for Admin*@
+                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="()=>ShowAreas.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
+                                    @foreach (var type in _plants)
+                                    {
+                                        <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                @*Mud select for Plants *@
+                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.PlantId" For="@(() => _jobObservation.PlantId)" SelectedValuesChanged="()=>ShowAreas.InvokeAsync()">
+                                    @foreach (var type in _plants)
+                                    {
+                                        if (type.PlantId == user.PlantId)
+                                        {
+                                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            }
+
+
+                            @if (_jobObservation.PlantId != 0 && user.UserType == 1)
+                            {
+                                @*Mud select for Areas for Admin *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="()=>ShowDistributions.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                    @foreach (var type in _areas)
+                                    {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else if (_jobObservation.PlantId != 0 && user.UserType == 2)
+                            {
+                                @*Mud select for Areas for SSV *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="()=>ShowDistributions.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                    @if (user.Areas != null)
+                                    {
+                                        foreach (var type in user.Areas)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            }
+                            else if (_jobObservation.PlantId != 0)
+                            {
+                                @*Mud select for Areas for SV *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="()=>ShowDistributions.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
+                                    @foreach (var type in _areas)
+                                    {
+                                        if (type.AreaId == user.AreaId)
+                                        {
+                                            <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                @*Mud select for Areas *@
+                                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.AreaId" For="@(() => _jobObservation.AreaId)" SelectedValuesChanged="()=>ShowDistributions.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                                </MudSelect>
+                            }
+                        </div>
+                    </td>
+                    <td class="d-flex">
+                        @if (_jobObservation.StartDate > _jobObservation.EndDate)
+                        {
+                            _jobObservation.EndDate = _jobObservation.StartDate;
+                        }
+                        <MudDatePicker Date="_jobObservation.StartDate" DateChanged="(args)=>OnStartDateChanged.InvokeAsync(args)" Label=@Localizer["startDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" Class="mr-4 pt-2" />
+                        <MudDatePicker Date="_jobObservation.EndDate" DateChanged="(args)=>OnEndDateChanged.InvokeAsync(args)" Label=@Localizer["endDate"] PickerVariant="PickerVariant.Inline" Color="Color.Info" AdornmentColor="Color.Info" MinDate="_jobObservation.StartDate" Class="pt-2" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        @*Mud select for Distribution *@
+                        @if (_jobObservation.AreaId != 0)
+                        {
+                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
+                                <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                                @foreach (var type in _distributions)
+                                {
+                                    <MudSelectItem Value="type.DistributionId">
+                                        @(
+                                            $"{type.Code} - {type.Description}"
+                                            )
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
+                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                            </MudSelect>
+                        }
+                    </td>
+                    <td class="d-flex mt-3">
+                        @if (user.UserType == 1)
+                        {
+                            @if (_jobObservation.AreaId != 0)
+                            {
+                                @if (_supervisors.Count > 0)
+                                {
+                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="()=>ShowOperators.InvokeAsync()">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
+                                        @foreach (var type in _supervisors)
+                                        {
+                                            <MudSelectItem Value="type.UserId">
+                                                @type.Name
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                        @Localizer["thisAreaDoesNotHaveSupervisors"]
+                                    </MudAlert>
+                                }
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                </MudSelect>
+                            }
+
+                        }
+                        else if (user.UserType == 2)
+                        {
+                            @if (_jobObservation.AreaId != 0)
+                            {
+                                @if (_supervisors.Count > 0)
+                                {
+                                    <MudSelect T="int" Label=@Localizer["observer"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId" For="@(() => _jobObservation.SupervisorId)" SelectedValuesChanged="()=>ShowOperators.InvokeAsync()">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
+                                        @foreach (var type in _supervisors)
+                                        {
+                                            <MudSelectItem Value="type.UserId">
+                                                @type.Name
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                        @Localizer["thisAreaDoesNotHaveSupervisors"]
+                                    </MudAlert>
+                                }
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["observer"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.SupervisorId">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                                </MudSelect>
+                            }
+                        }
+                        else if (user.UserType == 3)
+                        {
+                            <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label=@Localizer["observer"] ReadOnly />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div >
+                            @if (_jobObservation.DistributionId != 0)
+                            {
+                                <div class="toggle-group-container">
+                                    @foreach (Operation operation in _jobObservation.Operations)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column">
+                                            @($"{operation.Code}")
+                                            @switch (operation.CriticalType)
+                                            {
+                                                case 1:
+                                                    <MudItem>
+                                                        <img src="Images/A.png" Height="25" Width="25" />
+                                                    </MudItem>
+                                                    break;
+                                                case 2:
+                                                    <MudItem>
+                                                        <img src="Images/B.png" Height="25" Width="25" />
+                                                    </MudItem>
+                                                    break;
+                                                case 3:
+                                                    <MudItem>
+                                                        <img src="Images/C.png" Height="25" Width="25" />
+                                                    </MudItem>
+                                                    break;
+                                            }
+                                        </MudChip>
+                                    }
+                                </div>
+                                    <MudButton OnClick="OpenOperations"
+                                               Variant="Variant.Outlined"
+                                               EndIcon="@Icons.Material.Filled.Assignment"
+                                               Color="Color.Secondary">
+                                        @if (_jobObservation.Operations.Count() > 0)
+                                        {
+                                            <MudText>
+                                                Edit Operation
+                                            </MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>
+                                                Select Operation
+                                            </MudText>
+                                        }
+                                    </MudButton>
+
+
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operation"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="0">First select a distribution</MudSelectItem>
+                                </MudSelect>
+                            }
+                        </div>
+                    </td>
+                    <td style="display: flex; justify-content: space-between;">
+                        <div style="width: 80%;">
+                            @if (_jobObservation.SupervisorId != 0)
+                            {
+                                @if (operatorUsers.Count > 0)
+                                {
+                                    @*Mud select for Operator *@
+                                    <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)" SelectedValuesChanged="()=>UpdateOperator.InvokeAsync()">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
+                                        @foreach (var type in operatorUsers)
+                                        {
+                                            <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                        @Localizer["thisSupervisorDoesNotHaveOperators"]
+                                    </MudAlert>
+                                }
+
+                            }
+                            else
+                            {
+                                <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASupervisor"]</MudSelectItem>
+                                </MudSelect>
+                            }
+                        </div>
+                        <div>
+                            @if (_jobObservation.OperatorId != 0 && _jobObservation.Operator != null)
+                            {
+                                @if (_jobObservation.Operator.ILURegisers != null && _jobObservation.Operator.ILURegisers?.Count > 0 && _jobObservation.DistributionId != 0)
+                                {
+                                    var latestContext = _jobObservation.Operator.ILURegisers.Where(r => r.DistributionId == _jobObservation.DistributionId).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                    @if (latestContext != null)
+                                    {
+
+                                        @switch (latestContext.ILULevelId)
+                                        {
+                                            case 1:
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="I" Label="ILU Level" ReadOnly />
+                                                break;
+                                            case 2:
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="L" Label="ILU Level" ReadOnly />
+                                                break;
+                                            case 3:
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="U" Label="ILU Level" ReadOnly />
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No ILU Level found" Label="ILU Level" ReadOnly />
+                                    }
+                                }
+                                else
+                                {
+                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No ILU Level found" Label="ILU Level" ReadOnly />
+                                }
+                            }
+                            else
+                            {
+                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No operator selected" Label="ILU Level" ReadOnly />
+                            }
+                        </div>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </MudSimpleTable>
+    </ChildContent>
+
+</MudExpansionPanel>
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowOperationsDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:60vh;" Class="gap-4">
+           
+            <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable/>
+
+
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+                @foreach (Operation operation in FilteredOperations)
+                {
+                    <div class="toggle-column">
+
+                        <MudToggleItem Value="@(operation)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            @($"{operation.Code} - {operation.Description}")
+                            @switch (operation.CriticalType)
+                            {
+                                case 1:
+                                    <MudItem>
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 2:
+                                    <MudItem>
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 3:
+                                    <MudItem>
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                            }
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="@(() => CloseOperations())">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [Parameter]
+    public User user { get; set; } = new();
+
+    [Parameter]
+    public List<Plant> _plants { get; set; } = new();
+    [Parameter]
+    public JobObservation _jobObservation { get; set; } = new();
+    [Parameter]
+    public List<Distribution> _distributions { get; set; } = new();
+    [Parameter]
+    public List<Operation> _operations { get; set; } = new();
+    [Parameter]
+    public List<Area> _areas { get; set; } = new();
+    [Parameter]
+    public List<User> _supervisors { get; set; } = new();
+    [Parameter]
+    public List<User> operatorUsers { get; set; } = new();
+    [Parameter]
+    public int jobProductId { get; set; } = 0;
+    [Parameter]
+    public List<Product> _products { get; set; } = new();
+    [Parameter]
+    public List<string> _specifications { get; set; } = new();
+    [Parameter]
+    public int kpiID { get; set; } = 0;
+    [Parameter]
+    public string productSpecification { get; set; } = "";
+    [Parameter]
+    public Dictionary<string, Glosary> _glosaryInfo { get; set; }
+
+    [Parameter]
+    public EventCallback ShowAreas { get; set; }
+    [Parameter]
+    public EventCallback ShowDistributions { get; set; }
+    [Parameter]
+    public EventCallback<DateTime?> OnStartDateChanged { get; set; }
+    [Parameter]
+    public EventCallback<DateTime?> OnEndDateChanged { get; set; }
+    [Parameter]
+    public EventCallback ShowOperations { get; set; }
+    [Parameter]
+    public EventCallback ShowOperators { get; set; }
+    [Parameter]
+    public EventCallback UpdateOperator { get; set; }
+    [Parameter]
+    public EventCallback<int> ShowSpecifications { get; set; }
+    [Parameter]
+    public EventCallback<string> InitializeCycleTimes { get; set; }
+    [Parameter]
+    public EventCallback<int> OnKPIChange { get; set; }
+    [Parameter]
+    public EventCallback<int> ChangeOption { get; set; }
+    [Parameter]
+    public EventCallback JobObservationContext_OnFieldChanged { get; set; }
+
+    bool ShowOperationsDialog { get; set; } = false;
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+    private async void OpenOperations()
+    {
+        ShowOperationsDialog = true;
+
+        StateHasChanged();
+
+    }
+
+    private async void CloseOperations()
+    {
+        ShowOperationsDialog = false;
+
+        StateHasChanged();
+
+    }
+
+    private string searchTerm = ""; 
+    private IEnumerable<Operation> FilteredOperations =>
+        _operations.Where(op =>
+            string.IsNullOrEmpty(searchTerm) ||
+            (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
+}

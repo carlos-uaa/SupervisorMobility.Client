@@ -79,7 +79,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public JobObservation pastJob = new();
 
         public Distribution distribution = new Distribution();
-        public Operation operation = new();
+        public Operation? operation = new();
 
         public bool flag = false;
 
@@ -244,7 +244,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         {
             _jobObservation.AreaId = 0;
             _jobObservation.DistributionId = 0;
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
             _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
@@ -278,7 +278,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
             StateHasChanged();
@@ -286,8 +286,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void ShowOperators()
         {
-            if(_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
+            if(_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
+
             operatorUsers = new();
             _jobObservation.OperatorId = 0;
             //operator User
@@ -307,7 +308,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
 
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
             _operations = _operations.OrderBy(o => o.Description).ToList();
 
@@ -320,7 +321,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+
+            if(_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId,(int) _jobObservation.Operations?.FirstOrDefault().OperationId);
+            
             pastjobObservations = new();
             pastLup = new();
             if (user != null)
@@ -330,7 +334,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 foreach (var job in pastJobs)
                 {
                     if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault()?.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId)
                     {
 
                         pastjobObservations.Add(job);
@@ -628,6 +632,33 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
         TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-     
+
+
+        bool ShowOperationsDialog { get; set; } = false;
+
+
+        private async void OpenOperations()
+        {
+            ShowOperationsDialog = true;
+
+            StateHasChanged();
+
+        }
+
+        private async void CloseOperations()
+        {
+            ShowOperationsDialog = false;
+
+            StateHasChanged();
+
+        }
+
+        private string searchTerm = "";
+        private IEnumerable<Operation> FilteredOperations =>
+            _operations.Where(op =>
+                string.IsNullOrEmpty(searchTerm) ||
+                (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
     }
 }
