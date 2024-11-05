@@ -1,5 +1,20 @@
 ﻿@inject IStringLocalizer<Resource> Localizer
 
+<style>
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px);
+        margin: 5px;
+    }
+</style>
+
+
 <MudExpansionPanel Text="Section 1" IsInitiallyExpanded=true Style="min-width: 100%;">
     <TitleContent>
         <MudText Typo="Typo.h6" Style="text-align: center;">
@@ -190,43 +205,61 @@
                 </tr>
                 <tr>
                     <td>
-                        <div class="d-flex">
+                        <div>
                             @if (_jobObservation.DistributionId != 0)
                             {
-                                <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId" SelectedValuesChanged="()=>UpdateOperation.InvokeAsync()">
-
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperation"]</MudSelectItem>
-                                    @foreach (var operation in _operations)
-                                    {
-                                        <MudSelectItem Value="operation.OperationId">
-                                            <div style="display: flex;    align-items: center;    justify-content: space-between; margin-top: -1px">
-                                                @($"{operation.Code} - {operation.Description}")
-                                                @switch (operation.CriticalType)
-                                                {
-                                                    case 1:
-                                                        <MudItem>
-                                                            <img src="Images/A.png" Height="25" Width="25" />
-                                                        </MudItem>
-                                                        break;
-                                                    case 2:
-                                                        <MudItem>
-                                                            <img src="Images/B.png" Height="25" Width="25" />
-                                                        </MudItem>
-                                                        break;
-                                                    case 3:
-                                                        <MudItem>
-                                                            <img src="Images/C.png" Height="25" Width="25" />
-                                                        </MudItem>
-                                                        break;
-                                                }
-                                            </div>
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
+                                <MudCard Elevation="0">
+                                    <MudCardContent>
+                                        <MudText>Operations</MudText>
+                                        <div class="toggle-group-container">
+                                            @foreach (Operation operation in _jobObservation.Operations)
+                                            {
+                                                <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column">
+                                                    @($"{operation.Code} - {operation.Description}")
+                                                    @switch (operation.CriticalType)
+                                                    {
+                                                        case 1:
+                                                            <MudItem>
+                                                                <img src="Images/A.png" Height="25" Width="25" />
+                                                            </MudItem>
+                                                            break;
+                                                        case 2:
+                                                            <MudItem>
+                                                                <img src="Images/B.png" Height="25" Width="25" />
+                                                            </MudItem>
+                                                            break;
+                                                        case 3:
+                                                            <MudItem>
+                                                                <img src="Images/C.png" Height="25" Width="25" />
+                                                            </MudItem>
+                                                            break;
+                                                    }
+                                                </MudChip>
+                                            }
+                                        </div>
+                                        <MudButton OnClick="OpenOperations"
+                                                   Variant="Variant.Outlined"
+                                                   EndIcon="@Icons.Material.Filled.Assignment"
+                                                   Color="Color.Secondary">
+                                            @if (_jobObservation.Operations.Count() > 0)
+                                            {
+                                                <MudText>
+                                                    Edit Operation
+                                                </MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText>
+                                                    Select Operation
+                                                </MudText>
+                                            }
+                                        </MudButton>
+                                    </MudCardContent>
+                                </MudCard>
                             }
                             else
                             {
-                                <MudSelect T="int" Label=@Localizer["operation"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperationId">
+                                <MudSelect T="int" Label=@Localizer["operation"] Disabled Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                                     <MudSelectItem Disabled="true" Value="0">First select a distribution</MudSelectItem>
                                 </MudSelect>
                             }
@@ -302,10 +335,56 @@
                         </div>
                     </td>
                 </tr>
+
             </tbody>
         </MudSimpleTable>
     </ChildContent>
+
 </MudExpansionPanel>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowOperationsDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:60vh;" Class="gap-4">
+
+            <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+
+
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+                @foreach (Operation operation in FilteredOperations)
+                {
+                    <div class="toggle-column">
+
+                        <MudToggleItem Value="@(operation)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            @($"{operation.Code} - {operation.Description}")
+                            @switch (operation.CriticalType)
+                            {
+                                case 1:
+                                    <MudItem>
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 2:
+                                    <MudItem>
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 3:
+                                    <MudItem>
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                            }
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="@(() => CloseOperations())">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
 
 @code {
     [Parameter]
@@ -330,6 +409,12 @@
     [Parameter]
     public List<Product> _products { get; set; } = new();
     [Parameter]
+    public List<string> _specifications { get; set; } = new();
+    [Parameter]
+    public int kpiID { get; set; } = 0;
+    [Parameter]
+    public string productSpecification { get; set; } = "";
+    [Parameter]
     public Dictionary<string, Glosary> _glosaryInfo { get; set; }
 
     [Parameter]
@@ -347,7 +432,41 @@
     [Parameter]
     public EventCallback UpdateOperator { get; set; }
     [Parameter]
-    public EventCallback UpdateOperation { get; set; }
+    public EventCallback<int> ShowSpecifications { get; set; }
+    [Parameter]
+    public EventCallback<string> InitializeCycleTimes { get; set; }
+    [Parameter]
+    public EventCallback<int> OnKPIChange { get; set; }
+    [Parameter]
+    public EventCallback<int> ChangeOption { get; set; }
     [Parameter]
     public EventCallback JobObservationContext_OnFieldChanged { get; set; }
+
+    bool ShowOperationsDialog { get; set; } = false;
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+
+    private async void OpenOperations()
+    {
+        ShowOperationsDialog = true;
+
+        StateHasChanged();
+
+    }
+
+    private async void CloseOperations()
+    {
+        ShowOperationsDialog = false;
+
+        StateHasChanged();
+
+    }
+
+    private string searchTerm = "";
+    private IEnumerable<Operation> FilteredOperations =>
+        _operations.Where(op =>
+            string.IsNullOrEmpty(searchTerm) ||
+            (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
 }

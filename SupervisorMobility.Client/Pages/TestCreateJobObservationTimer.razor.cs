@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
+using Timer = SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation.Timer;
 
 namespace SupervisorMobility.Client.Pages
 {
@@ -86,7 +87,7 @@ namespace SupervisorMobility.Client.Pages
         public JobObservation pastJob = new();
 
         public Distribution distribution = new Distribution();
-        public Operation operation = new();
+        public Operation? operation = new();
 
         public bool flag = false;
         public bool session = false;
@@ -139,11 +140,6 @@ namespace SupervisorMobility.Client.Pages
         List<Lup> lupInsidences = new();
 
         public Lup? selectedLup = null;
-
-        public class ProductAndStandardTime {
-            public string ProductName { get; set; }
-            public string StandardTime { get; set; }
-        }
 
         ProductAndStandardTime[] _productAndSpecification =
             new ProductAndStandardTime[5].Select(x => new ProductAndStandardTime()).ToArray();
@@ -446,7 +442,7 @@ namespace SupervisorMobility.Client.Pages
                         _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
                         _operations = _operations.OrderBy(o => o.Description).ToList();
 
-                        _jobObservation.OperationId = int.Parse(PatOperationId ?? "0");
+                        //_jobObservation.OperationId = int.Parse(PatOperationId ?? "0");
 
                         if (user.UserType == 1)
                         {
@@ -530,7 +526,7 @@ namespace SupervisorMobility.Client.Pages
         {
             _jobObservation.AreaId = 0;
             _jobObservation.DistributionId = 0;
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
             _assychart = null;
@@ -581,7 +577,7 @@ namespace SupervisorMobility.Client.Pages
 
             _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             //SetAsCurrentJobObservation();
@@ -594,7 +590,7 @@ namespace SupervisorMobility.Client.Pages
 
         private async void ShowOperators()
         {
-            if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
                 ShowPastJobObservations();
 
             if (user.UserType == 1 || user.UserType == 2)
@@ -632,7 +628,7 @@ namespace SupervisorMobility.Client.Pages
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
 
-            _jobObservation.OperationId = 0;
+            _jobObservation.Operations = new List<Operation>();
 
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
             _operations = _operations.OrderBy(o => o.Description).ToList();
@@ -706,7 +702,7 @@ namespace SupervisorMobility.Client.Pages
 
         private double previousOperationTime = 0.0;
 
-        TimerTest Timer;
+        Timer Timer;
 
         public void InitializeCycleTimes(string specification, int index)
         {
@@ -902,8 +898,7 @@ namespace SupervisorMobility.Client.Pages
 
             if (prodName != null)
             {
-                var op = _operations.Where(o => o.OperationId == _jobObservation.OperationId)
-                                    .FirstOrDefault(p => p.ProductName == prodName?.Code);
+                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
 
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
@@ -932,7 +927,9 @@ namespace SupervisorMobility.Client.Pages
         private async void ShowPastJobObservations()
         {
             flag = true;
-            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, _jobObservation.OperationId);
+
+            if (_jobObservation.Operations.Count() > 0)
+                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault().OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -943,7 +940,7 @@ namespace SupervisorMobility.Client.Pages
                 foreach (var job in pastJobs)
                 {
                     if (job.SupervisorId == _jobObservation.SupervisorId && Convert.ToDateTime(job.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(_jobObservation.StartDate?.ToShortDateString()).Date
-                        && job.DistributionId == _jobObservation.DistributionId && job.OperationId == _jobObservation.OperationId)
+                        && job.DistributionId == _jobObservation.DistributionId && job.Operations?.FirstOrDefault()?.OperationId == _jobObservation.Operations?.FirstOrDefault()?.OperationId)
                     {
 
                         pastjobObservations.Add(job);
@@ -970,6 +967,7 @@ namespace SupervisorMobility.Client.Pages
 
             StateHasChanged();
         }
+
 
 
         private async Task CreateNewJobObservation()
@@ -2783,11 +2781,11 @@ namespace SupervisorMobility.Client.Pages
             jobProductId = 0;
             _specifications = new List<List<string>> { new List<string>(), new List<string>(), new List<string>(), new List<string>(), new List<string>() };
             //productSpecification = string.Empty;
-            var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
-            if (operation != null)
-            {
-                _jobObservation.Operation = operation;
-            }
+            //var operation = _operations.FirstOrDefault(p => p.OperationId == _jobObservation.OperationId);
+            //if (operation != null)
+            //{
+            //    _jobObservation.Operation = operation;
+            //}
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             //SetAsCurrentJobObservation();
@@ -2949,7 +2947,7 @@ namespace SupervisorMobility.Client.Pages
                 _distributions = _distributions.OrderBy(d => d.Description).ToList();
             }
 
-            if (_jobObservation.DistributionId != 0 && _jobObservation.OperationId != 0)
+            if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault().OperationId != 0)
                 ShowPastJobObservations();
 
             if (_jobObservation.SupervisorId != 0)
