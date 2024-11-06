@@ -848,8 +848,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         private async Task PrepareSuggestDataTable(int id_distribution = 0)
         {
-
-
+            //Debugear esta parte Ver por que el id mandado no responde
+            Console.WriteLine($"Prepare SuggestDist: {id_distribution} - {DateTime.Now} ");
             if (ScheduleView && id_distribution == 0)
             {
                 //traer toda las cosas por mes
@@ -864,6 +864,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 {
                     _All_Suggested_SOSJobobservation?.Clear();
                     Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+                    //El problema debe estar en la funcion Get_Suggest_AllSos_Dist
                     _All_Suggested_SOSJobobservation = SOSDataServices.Get_Suggest_AllSos_Dist(id_distribution);
                     Suggested_SOS_Registers_UserOperationRelationship = SOSDataServices.Get_Suggested_SOS_Registers_UserOperationRelationship(id_distribution);
                 }
@@ -1710,13 +1711,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         //
 
-        private async void ShowBtnPress(int nr)
+        private async void ShowBtnPress(int distribution_Id)
         {
-            Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == nr);
+            Console.WriteLine($"Btn Press dist: {distribution_Id} - {DateTime.Now}");
+            Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == distribution_Id);
 
             if (tmpdist != null)
             {
-                Distribution? AnotherOpenDistExist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != nr);
+                Distribution? AnotherOpenDistExist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != distribution_Id);
 
                 if (AnotherOpenDistExist != null)
                 {
@@ -1736,6 +1738,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         await PrepareDataTable(tmpdist.DistributionId);
                     }
                 }
+
             }
         }
 
