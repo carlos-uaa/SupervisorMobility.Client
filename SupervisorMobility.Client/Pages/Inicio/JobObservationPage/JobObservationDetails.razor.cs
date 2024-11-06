@@ -207,7 +207,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
                     {
                         var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-                        Console.WriteLine($"{productName}: {roundedStandardTime}");
 
                         _productAndSpecification[i] = new ProductAndStandardTime
                         {
@@ -217,7 +216,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                     else
                     {
-                        Console.WriteLine($"{productName}: Invalid StandardTime");
                         _productAndSpecification[i] = new ProductAndStandardTime
                         {
                             ProductName = productName,
@@ -239,19 +237,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (jobProductId != 0)
                     _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
-                var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-
-                Console.WriteLine(_jobObservation);
 
                 if (!string.IsNullOrEmpty(_jobObservation.ProductIds))
                 {
                     string[] productIdsArray = _jobObservation.ProductIds.Split('|');
-                    Console.WriteLine("Contenido de productIdsArray:");
-
-                    for (int i = 0; i < productIdsArray.Length; i++)
-                    {
-                        Console.WriteLine($"productIdsArray[{i}] = '{productIdsArray[i]}'");  // Muestra cada valor en el arreglo
-                    }
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -264,31 +253,33 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             jobProductIds[i] = 0;
                         }
                     }
+
+                    for (int i = 0; i < 5; i++)
+                    {
+
+                        var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
+                        _specifications[i] = new();
+
+                        if (prodName != null)
+                        {
+                            var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+
+                            if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                            {
+
+                                var names = op.NameTime.Replace(',', '.').Split("§");
+                                for (int j = 0; j < 5; j++)
+                                {
+                                    if (!string.IsNullOrEmpty(names[j]))
+                                    {
+                                        _specifications[i].Add(names[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
-                // Imprime el resultado de `jobProductIds` para verificar si se asignaron correctamente
-                for (int i = 0; i < jobProductIds.Length; i++)
-                {
-                    Console.WriteLine($"jobProductIds[{i}] = {jobProductIds[i]}");
-                }
-
-
-                //if (prodName != null)
-                //{
-                //    var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
-                //    if (op != null && !string.IsNullOrEmpty(op.NameTime))
-                //    {
-                //        var names = op.NameTime.Replace(',', '.').Split("§");
-                //        for (int i = 0; i < 5; i++)
-                //        {
-                //            if (!string.IsNullOrEmpty(names[i]))
-                //            {
-                //                _specifications.Add(names[i]);
-                //            }
-                //        }
-
-                //    }
-                //}
 
                 StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                 DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
@@ -392,9 +383,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-
-
-                string[] productSpecification = new string[5];
 
                 if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
                     _jobObservation.ProductSpecifications != "||||")

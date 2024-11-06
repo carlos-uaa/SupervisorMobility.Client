@@ -777,10 +777,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             currentOperationIndex = 0;
 
             previousOperationTime = 0.0;
-            foreach (var operationId in OperationTimes.Keys)
-            {
-                OperationTimes[operationId][currentCycle] = 0.0;
-            }
+            //foreach (var operationId in OperationTimes.Keys)
+            //{
+            //    OperationTimes[operationId][currentCycle] = 0.0;
+            //}
         }
 
         private void StartOver()
@@ -791,7 +791,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             previousOperationTime = 0.0;
             foreach (var operationId in OperationTimes.Keys)
             {
-                for (int cycle = 1; cycle <= 5; cycle++)
+                for (int cycle = 0; cycle < 5; cycle++)
                 {
                     OperationTimes[operationId][cycle] = 0.0;
                 }
@@ -926,7 +926,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         if (!string.IsNullOrEmpty(names[i]))
                         {
                             _specifications[productIndex].Add(names[i]);
-                            Console.WriteLine(_specifications[productIndex]);
                         }
                     }
                 }
@@ -1835,7 +1834,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             endHour = DateTime.Now.TimeOfDay;
 
             //_jobObservation.OperationId = 0;
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
             //_jobObservation.ModelsSpecification = productSpecification;
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
