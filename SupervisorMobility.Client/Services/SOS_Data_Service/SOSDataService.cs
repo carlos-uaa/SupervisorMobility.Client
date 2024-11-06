@@ -364,9 +364,12 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                                 if (!_All_SOSJobobservation.Any(j => j.Operations?.FirstOrDefault().OperationId == op.OperationId))
                                 {
-                                    JobObservation? findedJob = availableJobs.Find(j => j.DistributionId == item.distribution.DistributionId && j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
-
-                                    //JobObservation? findedJob = availableJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
+                                    //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
+                                    List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == item.distribution.DistributionId).ToList();
+                                    //(En caso de que esten incompletas)
+                                    //Buscar alguna que tenga la operacion
+                                    //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
+                                    JobObservation? findedJob = findedJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId) ?? findedJobs.Find(j => j.SupervisorId == supervisorId);
 
                                     if (findedJob != null)
                                     {
@@ -396,6 +399,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                         _newSuggestionExist.Area = _sos_plan.Area;
                                         _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
 
+                                        _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
                                         var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
                                         operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
@@ -420,14 +424,13 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                         _newSuggestionExist.StartDate = parsedDate;
                                         _newSuggestionExist.PlannedStartDate = parsedDate;
 
-
+                                        //se elimina la job del siguiene año para evitar duplicados
                                         availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
 
                                         _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
                                     }
                                     else
                                     {
-
                                         JobObservationNulls _newSuggestion = new();
 
 
@@ -458,6 +461,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                                         //_newSuggestion.Operation = op;
                                         //_newSuggestion.OperationId = op.OperationId;
+
+
+                                        _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
                                         var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
                                         operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
@@ -564,6 +570,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
             TimeSpan? startHour = new TimeSpan(00, 00, 00);
 
+            List<Distribution> selectedDistributions = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).ToList();
             try
             {
 
@@ -580,7 +587,18 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                             
                             int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                            JobObservation? findedJob = availableJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId || j.SupervisorId == supervisorId);
+                           
+                            //Buscamos el id de distribucion al que pertenece la operacion
+                            int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
+
+                            //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
+                            List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == distID).ToList();
+                            //(En caso de que esten incompletas)
+                            //Buscar alguna que tenga la operacion
+                            //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
+                            JobObservation? findedJob = findedJobs.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId) ?? findedJobs.Find(j => j.SupervisorId == supervisorId);
+
+
 
                             if (findedJob != null)
                             {
@@ -615,6 +633,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 //}
 
                                 //_newSuggestionExist.Operation = op;
+
+
+                                _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
                                 var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
                                 operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
@@ -673,6 +694,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
                                 _newSuggestion.Operations = operationsList;
 
+
+                                _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
                                 _newSuggestion.Option = 2;
                                 _newSuggestion.Type = 3;
@@ -885,6 +908,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         public List<JobObservationNulls> Get_Suggest_AllSos_Dist(int dist_Id)
         {
+            Console.WriteLine($"Get_Suggest_AllSos_Dist: {dist_Id} - {DateTime.Now}");
             return _All_Suggested_SOSJobobservation.Where(j => j.DistributionId == dist_Id).ToList();
         }
 
