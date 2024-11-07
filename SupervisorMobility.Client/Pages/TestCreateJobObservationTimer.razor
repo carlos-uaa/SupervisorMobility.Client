@@ -1,4 +1,4 @@
-﻿@page "/TestMarco/{date}"
+﻿@page "/jobobservation/createnewjobobservationtimer/{date}"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
@@ -107,14 +107,14 @@
 
                                 @if (!FilterOperation)
                                 {
-                                    <SOSPaths PathsList=_assychart.RoutesProductsAssyChart.ToList()/>
+                                    <SOSPaths PathsList=_assychart.RoutesProductsAssyChart.ToList() />
                                 }
                                 else
                                 {
 
                                     @if (listFilter.Count > 0)
                                     {
-                                        <SOSPaths PathsList=listFilter/>
+                                        <SOSPaths PathsList=listFilter />
                                     }
                                     else
                                     {
@@ -206,7 +206,7 @@
 
             @if (showLoading)
             {
-                <JOBones/>
+                <JOBones />
             }
             else
             {
@@ -214,7 +214,7 @@
                 <MudExpansionPanels Elevation="5" MultiExpansion="true">
                     @foreach (var (category, section) in _checklistCategoriesAndQuestions.Select((category, section) => (category, section)))
                     {
-                        @if (category.Type != StructureType.Titular && (string.IsNullOrEmpty(productSpecification) || _jobObservation.SupervisorId == 0))
+                        @if (category.Type != StructureType.Titular && _jobObservation.SupervisorId == 0)
                         {
                             <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">@Localizer["firstCompleteTheformAbove"]</MudAlert>
                             return;
@@ -223,38 +223,36 @@
                         @switch (category.Type)
                         {
                             case StructureType.Titular:
-                                <TitularTest user=user _plants=_plants _jobObservation=_jobObservation _distributions=_distributions _operations=_operations _areas=_areas _supervisors=_supervisors
-                                    operatorUsers=operatorUsers jobProductId=jobProductId _products=_products _specifications=_specifications kpiID=kpiID productSpecification=@productSpecification _glosaryInfo=_glosaryInfo
-                                    ShowAreas=ShowAreas ShowDistributions=ShowDistributions OnStartDateChanged=OnStartDateChanged OnEndDateChanged=OnEndDateChanged ShowOperations=ShowOperations ShowOperators=ShowOperators
-                                    UpdateOperator=UpdateOperator ShowSpecifications=ShowSpecifications InitializeCycleTimes=InitializeCycleTimes OnKPIChange=OnKPIChange
-                                    ChangeOption=ChangeOption JobObservationContext_OnFieldChanged=JobObservationContext_OnFieldChanged
-                                              />
-                               
+                                <Titular user=user _plants=_plants _jobObservation=_jobObservation _distributions=_distributions _operations=_operations _areas=_areas _supervisors=_supervisors
+                                         operatorUsers=operatorUsers jobProductId=jobProductId _products=_products  _glosaryInfo=_glosaryInfo
+                                         ShowAreas=ShowAreas ShowDistributions=ShowDistributions OnStartDateChanged=OnStartDateChanged OnEndDateChanged=OnEndDateChanged ShowOperations=ShowOperations ShowOperators=ShowOperators
+                                         UpdateOperator=UpdateOperator  OnKPIChange=OnKPIChange
+                                         ChangeOption=ChangeOption JobObservationContext_OnFieldChanged=JobObservationContext_OnFieldChanged />
                                 break;
                             case StructureType.Checklist:
                                 if (category.ChecklistQuestions.Count > 0)
                                 {
                                     <Checklist title=@title category=@category section=section
-                                        currentLanguage=@currentLanguage user=user _jobObservation=_jobObservation questionAnswers=questionAnswers
-                                        AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))"
-                                        OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" AnswerComentaryUpdate=AnswerComentaryUpdate
+                                               currentLanguage=@currentLanguage user=user _jobObservation=_jobObservation questionAnswers=questionAnswers
+                                               AnswerChangeOption="@((args)=>AnswerChangeOption(args.Item1, args.Item2))" AddLupOpportunity="@((args)=>AddLupOpportunity(args.Item1, args.Item2, args.Item3))" UploadFiles="@((args)=>UploadFiles(args.Item1, args.Item2))"
+                                               OpenCameraAnswerDialog=OpenCameraAnswerDialog RemoveImageFileAnswer="@((args)=>RemoveImageFileAnswer(args.Item1, args.Item2))" RemoveImageAnswer="@((args)=>RemoveImageAnswer(args.Item1, args.Item2))" AnswerComentaryUpdate=AnswerComentaryUpdate
                                                UpdateListEntry="@((args)=>UpdateListEntry(args.Item1, args.Item2, args.Item3))" RemoveLupOpportunity="@((args)=>RemoveLupOppportunity(args.Item1, args.Item2, args.Item3))" />
                                 }
                                 break;
                             case StructureType.Timer:
-@*                                 <Timer @ref=Timer
-                                    taktTime=taktTime hoeStandardTime=hoeStandardTime _glosaryInfo=_glosaryInfo currentCycle=currentCycle OperationTimes=OperationTimes
-                                    StepsNumber=StepsNumber DoubleManagment=DoubleManagment Waiting=Waiting productSpecification=@productSpecification _filteredOperations=_filteredOperations _specifications=_specifications ChangeCycle=ChangeCycle PauseTime=PauseTimer
-                                    NextOperation=NextOperation StartOver=StartOver StoreWaiting="@((args)=>StoreWaiting(args.Item1, args.Item2))" StoreManagement="@((args)=>StoreManagement(args.Item1, args.Item2))" StoreSteps="@((args)=>StoreSteps(args.Item1, args.Item2))" 
-                                       /> *@
+                                <Timer @ref=Timer
+                                           taktTime=taktTime hoeStandardTime=hoeStandardTime _glosaryInfo=_glosaryInfo currentCycle=currentCycle _products=_products DistributionId="_jobObservation.DistributionId" CycleTimes="CycleTimes" WaitingTimes="WaitingTimes" ShowSpecifications="@((args)=>ShowSpecifications(args.Item1, args.Item2))" isWaitingTimeActive="isWaitingTimeActive"
+                                           StepsNumber=StepsNumber DoubleManagment=DoubleManagment Waiting=Waiting _specifications=_specifications ChangeCycle=ChangeCycle PauseTime=PauseTimer _productAndSpecification="_productAndSpecification" productSpecification="productSpecification" InitializeCycleTimes="@((args)=> InitializeCycleTimes(args.Item1, args.Item2))"
+                                           NextOperation=NextOperation WaitingTime=WaitingTime StartOver=StartOver StoreWaiting="@((args)=>StoreWaiting(args.Item1, args.Item2))" StoreManagement="@((args)=>StoreManagement(args.Item1, args.Item2))" StoreSteps="@((args)=>StoreSteps(args.Item1, args.Item2))" />
                                 break;
                             case StructureType.LUP:
-                               
+                                <LUPComponent title=@title _glosaryInfo=_glosaryInfo auxErgonomicsLevel=auxErgonomicsLevel capturedImages=capturedImages SetLup=SetLup
+                                              area_ListS=area_ListC area_ListQ=area_ListQ area_ListD=area_ListD area_ListC=area_ListC area_ListOther=area_ListOther _tempLup=_tempLup RemoveTempImage="@((args) => RemoveTempImage(args.Item1, args.Item2))"
+                                              RemoveFromList="@((args)=>RemoveFromList(args.Item1, args.Item2))" UpdateAreaLists=UpdateAreaLists AddTempLup=AddTempLup OpenTempCameraDialog=OpenTempCameraDialog DeleteTempLup=DeleteTempLup />
                                 break;
                             case StructureType.Signature:
-                                <JobObsSignatures title=@title _glosaryInfo=_glosaryInfo user=user _jobObservation=_jobObservation 
-                                    OpenSignComment=OpenSignComment JobObservationContext_OnFieldChanged=JobObservationContext_OnFieldChanged
-                                    />
+                                <JobObsSignatures title=@title _glosaryInfo=_glosaryInfo user=user _jobObservation=_jobObservation
+                                                  OpenSignComment=OpenSignComment JobObservationContext_OnFieldChanged=JobObservationContext_OnFieldChanged />
                                 break;
                         }
                     }
