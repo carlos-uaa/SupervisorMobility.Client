@@ -38,13 +38,57 @@
                                 <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @(currentLanguage == "es-ES" ? question.Prompt : question.PromptEN) </MudText>
                             </td>
                             <td width="25%">
-                                <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID))" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="()=>OnChange(answer, secNum, question)">Yes</MudRadio>
-                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync(( answer, secNum, question)))">NG</MudRadio>
-                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="() => OnChange(answer, secNum, question)">N/A</MudRadio>
-                                    </MudRadioGroup>
-                                </MudItem>
+                                @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
+                                {
+                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
+                                            <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">Yes</MudRadio>
+                                            <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">NG</MudRadio>
+                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
+                                        </MudRadioGroup>
+                                    </MudItem>
+                                }
+                                else if (question.CategorySequence <= 5)
+                                {
+                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
+                                            <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">NO</MudRadio>
+                                            <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">Yes</MudRadio>
+                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
+                                        </MudRadioGroup>
+                                    </MudItem>
+                                }
+                                else
+                                {
+                                    var id1 = category.ChecklistQuestions.First(p => p.CategorySequence == 4).QuestionID;
+                                    var id2 = category.ChecklistQuestions.First(p => p.CategorySequence == 5).QuestionID;
+                                    var flag1 = questionAnswers[id1].Answer == "N/A" || questionAnswers[id1].Answer == "NG";
+                                    var flag2 = questionAnswers[id2].Answer == "N/A" || questionAnswers[id2].Answer == "NG";
+                                    if ((string.IsNullOrEmpty(questionAnswers[id1].Answer) || flag1)
+                                        && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
+                                    )
+                                    {
+                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync(id.FirstOrDefault())">
+                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                            @if (questionAnswers[id1].Answer != "NG")
+                                            {
+                                                <MudSelectItem Value="1">@($"S&P")</MudSelectItem>
+                                            }
+                                            @if (questionAnswers[id2].Answer != "NG")
+                                            {
+                                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
+                                            }
+                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
+                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
+                                            <MudSelectItem Value="5">@($"E")</MudSelectItem>
+                                            <MudSelectItem Value="6">@($"Other")</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
+                                    }
+                                }
                             </td>
                             <td>
                                 <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
@@ -185,13 +229,57 @@
                                 <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @(currentLanguage == "es-ES" ? question.Prompt : question.PromptEN) </MudText>
                             </td>
                             <td width="25%">
-                                <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID))" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="()=>OnChange(answer, secNum, question)">Yes</MudRadio>
-                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync(( answer, secNum, question)))">NG</MudRadio>
-                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="() => OnChange(answer, secNum, question)">N/A</MudRadio>
-                                    </MudRadioGroup>
-                                </MudItem>
+                                @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
+                                {
+                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
+                                            <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">Yes</MudRadio>
+                                            <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">NG</MudRadio>
+                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
+                                        </MudRadioGroup>
+                                    </MudItem>
+                                }
+                                else if (question.CategorySequence <= 5)
+                                {
+                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
+                                            <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">NO</MudRadio>
+                                            <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">Yes</MudRadio>
+                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
+                                        </MudRadioGroup>
+                                    </MudItem>
+                                }
+                                else
+                                {
+                                    var id1 = category.ChecklistQuestions.First(p => p.CategorySequence == 4).QuestionID;
+                                    var id2 = category.ChecklistQuestions.First(p => p.CategorySequence == 5).QuestionID;
+                                    var flag1 = questionAnswers[id1].Answer == "N/A" || questionAnswers[id1].Answer == "NG";
+                                    var flag2 = questionAnswers[id2].Answer == "N/A" || questionAnswers[id2].Answer == "NG";
+                                    if ((string.IsNullOrEmpty(questionAnswers[id1].Answer) || flag1)
+                                        && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
+                                    )
+                                    {
+                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync(id.FirstOrDefault())">
+                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
+                                            @if (questionAnswers[id1].Answer != "NG")
+                                            {
+                                                <MudSelectItem Value="1">@($"S&P")</MudSelectItem>
+                                            }
+                                            @if (questionAnswers[id2].Answer != "NG")
+                                            {
+                                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
+                                            }
+                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
+                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
+                                            <MudSelectItem Value="5">@($"E")</MudSelectItem>
+                                            <MudSelectItem Value="6">@($"Other")</MudSelectItem>
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
+                                    }
+                                }
                             </td>
 
                             <td>
@@ -317,9 +405,11 @@
     [Parameter]
     public Dictionary<int, string> imageUrls { get; set; } = new Dictionary<int, string>();
 
+    [Parameter]
+    public int kpiID { get; set; }
 
     [Parameter]
-    public EventCallback<(string, int)> AnswerChangeOption { get; set; }
+    public EventCallback<(string, int, int, int)> AnswerChangeOption { get; set; }
     [Parameter]
     public EventCallback<(ChecklistAnswer, int, ChecklistQuestion)> AddLupOpportunity { get; set; }
     [Parameter]
@@ -340,6 +430,8 @@
     public EventCallback<(ChecklistAnswer, int)> RemoveImageAnswer { get; set; }
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
+    [Parameter]
+    public EventCallback<int> OnKPIChange { get; set; }
 
     private void OnChange(ChecklistAnswer answer, int secNum, ChecklistQuestion question)
     {
