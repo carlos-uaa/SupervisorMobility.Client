@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto{ DistributionCount = new(),
             OperationCount = new(),
             OperatorCount = new(),
-            StatusCount = new()
+            StatusCount = new List<JOCount> { new(), new(), new(), new(), new(), new(), new(), new() }
         };
         bool anyItems { get; set; }
         int TotalItems { get; set; }
@@ -352,39 +352,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void Filters()
         {
-            _jobObservations = _filterJobObservation;
+            SelectTableEvent.ReloadServerData();
+            //_jobObservations = _filterJobObservation;
 
 
-            if (distributionId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
+            //if (distributionId != default(int))
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.DistributionId == distributionId).ToList();
 
-            }
-            if (operationId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.Operations?.FirstOrDefault()?.OperationId == operationId).ToList();
+            //}
+            //if (operationId != default(int))
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.Operations?.FirstOrDefault()?.OperationId == operationId).ToList();
 
-            }
-            if (statusId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
+            //}
+            //if (statusId != default(int))
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.Status == statusId).ToList();
 
-            }
-            if (operatorId != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
+            //}
+            //if (operatorId != default(int))
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.OperatorId == operatorId).ToList();
 
-            }
-            if (filterDate != null)
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
+            //}
+            //if (filterDate != null)
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.StartDate?.ToShortDateString() == filterDate?.ToShortDateString()).ToList();
 
-            }
-            if (idFilter != default(int))
-            {
-                _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
+            //}
+            //if (idFilter != default(int))
+            //{
+            //    _jobObservations = _jobObservations.Where(jobObs => jobObs.JobObservationId == idFilter).ToList();
 
-            }
+            //}
 
             JobObservationsTotalCount();
         }
