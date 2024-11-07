@@ -460,14 +460,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     if (!string.IsNullOrEmpty(_jobObservation.OperationTimesJson) && _jobObservation.OperationTimesJson != "||||")
                     {
-                        var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
-                        if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
+                        OperationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
+                        if (OperationTimes != null && OperationTimes.ContainsKey("CycleTime") && OperationTimes.ContainsKey("WaitingTime"))
                         {
                             for (int i = 0; i < 5; i++)
                             {
-                                if (i < operationTimes["CycleTime"].Length)
+                                if (i < OperationTimes["CycleTime"].Length)
                                 {
-                                    CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
+                                    CycleTimes[i] = OperationTimes["CycleTime"][i].ToString();
                                 }
                                 else
                                 {
@@ -475,9 +475,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 }
 
                                 // Accede a los valores de WaitingTime
-                                if (i < operationTimes["WaitingTime"].Length)
+                                if (i < OperationTimes["WaitingTime"].Length)
                                 {
-                                    WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
+                                    WaitingTimes[i] = OperationTimes["WaitingTime"][i].ToString();
                                 }
                                 else
                                 {
@@ -487,6 +487,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
 
                     }
+
 
                     if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
                         _jobObservation.ProductSpecifications != "||||")
@@ -884,7 +885,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
-
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
             _jobObservation.Waiting = Waiting[0] + "|" + Waiting[1] + "|" + Waiting[2] + "|" + Waiting[3] + "|" + Waiting[4];
