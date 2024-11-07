@@ -826,6 +826,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
+        private string BuildOperationTimesJson()
+        {
+            var operationTimes = new
+            {
+                CycleTime = OperationTimes["CycleTime"],
+                WaitingTime = OperationTimes["WaitingTime"]
+            };
+
+            return JsonSerializer.Serialize(operationTimes);
+        }
+
         //In progress
         private async Task SaveProgressJobObservation()
         {
@@ -870,7 +881,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             startHour = DateTime.Now.TimeOfDay;
 
 
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -879,6 +890,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
+            _jobObservation.ProductIds = string.Join("|", jobProductIds);
+            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1091,7 +1104,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await GenerateOperatorSignatureImage();
             }
 
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1100,6 +1113,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
+            _jobObservation.ProductIds = string.Join("|", jobProductIds);
+            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1284,7 +1299,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1293,6 +1308,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
+            _jobObservation.ProductIds = string.Join("|", jobProductIds);
+            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1484,7 +1501,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             endHour = DateTime.Now.TimeOfDay;
 
-            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
+            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1493,6 +1510,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
+            _jobObservation.ProductIds = string.Join("|", jobProductIds);
+            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
