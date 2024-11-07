@@ -176,7 +176,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, includeCkAnswers: true);
 
             StateHasChanged();
-            if(_jobObservation != null)
+            if (_jobObservation != null)
             {
                 //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
                 _products = await ProductService.GetProducts();
@@ -357,32 +357,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
-                if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
+                if (!string.IsNullOrEmpty(_jobObservation.OperationTimesJson) && _jobObservation.OperationTimesJson != "||||")
                 {
-                    for (int i = 0; i < 5; i++)
+                    var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
+                    if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
                     {
-                        if (i < operationTimes["CycleTime"].Length)
+                        for (int i = 0; i < 5; i++)
                         {
-                            CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
-                        }
-                        else
-                        {
-                            CycleTimes[i] = "0";
-                        }
+                            if (i < operationTimes["CycleTime"].Length)
+                            {
+                                CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
+                            }
+                            else
+                            {
+                                CycleTimes[i] = "0";
+                            }
 
-                        // Accede a los valores de WaitingTime
-                        if (i < operationTimes["WaitingTime"].Length)
-                        {
-                            WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
-                        }
-                        else
-                        {
-                            WaitingTimes[i] = "0";
+                            // Accede a los valores de WaitingTime
+                            if (i < operationTimes["WaitingTime"].Length)
+                            {
+                                WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
+                            }
+                            else
+                            {
+                                WaitingTimes[i] = "0";
+                            }
                         }
                     }
                 }
-
 
                 if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
                     _jobObservation.ProductSpecifications != "||||")

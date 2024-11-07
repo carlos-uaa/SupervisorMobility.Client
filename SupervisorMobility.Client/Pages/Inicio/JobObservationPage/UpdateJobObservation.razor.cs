@@ -235,8 +235,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 _jobObservation.Supervisor = new();
                 _jobObservation = await JobObservationService.GetJobObservationById(JobObservationId, true, true, true, false, true);
-                
-                if(_jobObservation == null)
+
+                if (_jobObservation == null)
                 {
                     NoData = true;
                     _jobObservation = new();
@@ -315,8 +315,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         .GroupBy(op => op.ProductName)
                         .Select(g => new ProductAndStandardTime
                         {
-                        ProductName = g.Key,
-                        StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
+                            ProductName = g.Key,
+                            StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
                         })
                         .ToList();
 
@@ -442,49 +442,51 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Waiting = ConvertStringToArray(_jobObservation?.Waiting);
 
                     if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
-                {
-                    var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
-                    currentImage = imageUrl;
-                    operatorSignatureSigned = true;
-                }
-
-                if (user.UserType == 1)
-                {
-                    _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
-                    _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-
-                }
-
-                _jobObservation.TaktTime = "1.46";
-                taktTime = 1.46;
-
-
-                    var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
-                    if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
                     {
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (i < operationTimes["CycleTime"].Length)
-                            {
-                                CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
-                            }
-                            else
-                            {
-                                CycleTimes[i] = "0";
-                            }
-
-                            // Accede a los valores de WaitingTime
-                            if (i < operationTimes["WaitingTime"].Length)
-                            {
-                                WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
-                            }
-                            else
-                            {
-                                WaitingTimes[i] = "0";
-                            }
-                        }
+                        var imageUrl = await FilesServices.ShowOperatorSignature(_jobObservation.SignatureImage.FileUploadId);
+                        currentImage = imageUrl;
+                        operatorSignatureSigned = true;
                     }
 
+                    if (user.UserType == 1)
+                    {
+                        _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_jobObservation.PlantId, _jobObservation.AreaId, 3, false, false);
+                        _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+
+                    }
+
+                    _jobObservation.TaktTime = "1.46";
+                    taktTime = 1.46;
+
+                    if (!string.IsNullOrEmpty(_jobObservation.OperationTimesJson) && _jobObservation.OperationTimesJson != "||||")
+                    {
+                        var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
+                        if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
+                        {
+                            for (int i = 0; i < 5; i++)
+                            {
+                                if (i < operationTimes["CycleTime"].Length)
+                                {
+                                    CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
+                                }
+                                else
+                                {
+                                    CycleTimes[i] = "0";
+                                }
+
+                                // Accede a los valores de WaitingTime
+                                if (i < operationTimes["WaitingTime"].Length)
+                                {
+                                    WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
+                                }
+                                else
+                                {
+                                    WaitingTimes[i] = "0";
+                                }
+                            }
+                        }
+
+                    }
 
                     if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
                         _jobObservation.ProductSpecifications != "||||")
@@ -2014,6 +2016,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             OperationTimes["CycleTime"][currentCycle] = cycleTime;
 
             isWaitingTimeActive = true;
+            Waiting[currentCycle] = 1;
 
             StateHasChanged();
         }
