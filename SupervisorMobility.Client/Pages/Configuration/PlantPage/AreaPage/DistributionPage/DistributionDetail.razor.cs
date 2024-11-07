@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise.Extensions;
+using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Pages.Configuration.ProductPage;
@@ -177,27 +178,52 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         private MudTable<Operation> SelectTableEvent;
         private MudTable<Product> SelectTableEventProduct;
 
-        private void RowClickEvent(TableRowClickEventArgs<Operation> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<Operation> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/detailsoperation/{args.Item.OperationId}");
+
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         } 
-        void RowClickEventProduct(TableRowClickEventArgs<Product> tableRowClickEventArgs)
+
+        void RowClickEventProduct(TableRowClickEventArgs<Product> args)
         {
+            var visibleItems = SelectTableEventProduct.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                    NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{args.Item.ProductId}/details");
+            }
+            else
+            {
+                SelectTableEventProduct.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
         }
 
         private string SelectedRowClassFunc(Operation element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-                {
-                    NavigationManager.NavigateTo($"plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/operations/detailsoperation/{element.OperationId}");
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else
@@ -208,19 +234,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         
         private string SelectedRowClassFuncProduct(Product element, int rowNumber)
         {
+            var visibleItems = SelectTableEventProduct.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEventProduct.SelectedItem != null && SelectTableEventProduct.SelectedItem.Equals(element))
-                {
-                    NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}/product/{element.ProductId}/details");
-
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEventProduct.SelectedItem != null && SelectTableEventProduct.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

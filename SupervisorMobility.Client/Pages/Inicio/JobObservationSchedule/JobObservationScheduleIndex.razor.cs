@@ -1203,7 +1203,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 return true;
             if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Operation.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Operations.FirstOrDefault().Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.StartDate.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
@@ -1242,6 +1242,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         private DialogOptions scheduleFiltersDialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
 
+
+
+        private Color GetColor(int? status)
+        {
+            return status switch
+            {
+                1 => Color.Warning,  // Planned
+                2 => Color.Info,     // In Progress
+                3 => Color.Error,    // Late
+                4 => Color.Info,     // Under Review
+                5 => Color.Error,    // Rejected
+                6 => Color.Success,  // Finalized
+                _ => Color.Default
+            };
+        }
+
+        private string GetIcon(int? status)
+        {
+            return status switch
+            {
+                1 => Icons.Material.Filled.PlayCircle,    // Planned
+                2 => Icons.Material.Filled.StopCircle,    // In Progress
+                3 => Icons.Material.Filled.RemoveCircle,  // Late
+                4 => Icons.Material.Filled.IncompleteCircle, // Under Review
+                5 => Icons.Material.Filled.Cancel,        // Rejected
+                6 => Icons.Material.Filled.Circle,        // Finalized
+                _ => Icons.Material.Filled.Help // Default icon
+            };
+        }
 
     }
 

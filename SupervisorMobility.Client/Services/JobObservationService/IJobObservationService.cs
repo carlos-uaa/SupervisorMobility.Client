@@ -1,4 +1,6 @@
-﻿namespace SupervisorMobility.Client.Services.JobObservationService
+﻿using SupervisorMobility.Client.Data.Entities.PaginationEntities;
+
+namespace SupervisorMobility.Client.Services.JobObservationService
 {
     public interface IJobObservationService
     {
@@ -10,6 +12,11 @@
             bool includeLup = false, bool includeHistory = false,
             bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false, int year = 0, int month = 0,
             int SOSAnualId = 0, int idUser = 0);
+
+        Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year);
+        Task<(int Total, List<JobObservation>JobObservations, JOCountPaginationDto Count)> GetAllJobObservationsByFilters(DateTime startDate, DateTime endDate, int JobObsId, int plantId,
+            int areaId, int distributionId, int operationId, int supervisorId, int status, int userId, int typeId,
+            string searchString, int page, int entries, int? sortO, string? sortL);
 
         // Get job observation by Id
         Task<JobObservation> GetJobObservationById(int jobObservationId, bool includeTree = false, bool includePeople = false, bool includeLup = false, bool includeHistory = false, bool includeCkAnswers = false);

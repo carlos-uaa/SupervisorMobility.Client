@@ -10,7 +10,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public Plant? Plant { get; set; }
         public Area? Area { get; set; }
         public Distribution? Distribution { get; set; }
-        public Operation? Operation { get; set; }
+        public IEnumerable<Operation>? Operations { get; set; } = new List<Operation>();
+
         public ICollection<Lup> Lup { get; set; } = new List<Lup>();
 
         public User? Supervisor { get; set; }
@@ -26,7 +27,7 @@ namespace SupervisorMobility.Client.Data.Entities
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Distribution")]
         public int? DistributionId { get; set; }
-        public int? OperationId { get; set; }
+    
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please indicate a Supervisor")]
         public int? SupervisorId { get; set; }
@@ -64,6 +65,9 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? TaktTime { get; set; }
         public string? Questions { get; set; }
         public int? ProductId { get; set; }
+
+        public string? ProductIds { get; set; }
+        public string? ProductSpecifications { get; set; }
 
         public string? OperationTimesJson { get; set; }
         public string? StepsNumber { get; set; }

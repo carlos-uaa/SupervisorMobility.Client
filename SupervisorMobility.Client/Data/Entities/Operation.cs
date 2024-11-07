@@ -15,5 +15,19 @@
 
         public bool? IsActive { get; set; } = false;
         public int AreaId { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Operation other)
+            {
+                return this.OperationId == other.OperationId;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return OperationId.GetHashCode();
+        }
     }
 }

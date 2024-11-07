@@ -100,23 +100,35 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private int selectedRowNumber = -1;
         private MudTable<ChecklistQuestion> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<ChecklistQuestion> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<ChecklistQuestion> args)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                NavigationManager.NavigateTo($"checklistcategories/category/{CategoryId}/updatequestion/{args.Item.QuestionID}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();
+            }
+
         }
 
         private string SelectedRowClassFunc(ChecklistQuestion element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-               
-                NavigationManager.NavigateTo($"checklistcategories/category/{CategoryId}/updatequestion/{element.QuestionID}");
-
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

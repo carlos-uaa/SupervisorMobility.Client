@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Pages.Components;
 using static MudBlazor.CategoryTypes;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
@@ -108,23 +109,35 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage
         private int selectedRowNumber = -1;
         private MudTable<Plant> SelectTableEvent;
 
-        private void RowClickEvent(TableRowClickEventArgs<Plant> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<Plant> args)
         {
+           
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+            var rowIndex = visibleItems.IndexOf(args.Item);
+
+            if (selectedRowNumber == rowIndex)
+            {
+                NavigationManager.NavigateTo($"plants/{args.Item.PlantId}");
+            }
+            else
+            {
+                SelectTableEvent.SelectedItem = args.Item;
+                selectedRowNumber = rowIndex;
+                StateHasChanged();  
+            }
         }
 
         private string SelectedRowClassFunc(Plant element, int rowNumber)
         {
+            var visibleItems = SelectTableEvent.FilteredItems.ToList();
+
             if (selectedRowNumber == rowNumber)
             {
-                selectedRowNumber = -1;
-                if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element)){
-                    NavigationManager.NavigateTo($"plants/{element.PlantId}");
-                }
-                return string.Empty;
+                return "selected"; // Marca la fila seleccionada
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = rowNumber;
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
                 return "selected";
             }
             else

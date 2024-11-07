@@ -1,27 +1,28 @@
-ï»¿using BlazorCameraStreamer;
+using BlazorCameraStreamer;
 using Blazorise.Extensions;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Presentation;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
+using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
-using SupervisorMobility.Client.Services.BreadcrumsService;
+using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Timers;
-using System.Timers;
-using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.UpdateJobObsCmpts;
 
-
-namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
+namespace SupervisorMobility.Client.Pages.Test
 {
-    public partial class UpdateJobObservation
+    public partial class TestUpdateMarco
     {
 
         [Parameter]
@@ -147,6 +148,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
         public int jobProductId = 0;
         bool showLoading = true;
+        public string productSpecification = "0";
+        List<string> _specifications { get; set; } = new();
         List<Operation> _filteredOperations = new();
         string[] ids { get; set; }
         string currentLanguage = "es-ES";
@@ -173,35 +176,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public bool flag = false;
         public Lup? selectedLup = null;
 
-
-        public Dictionary<string, double[]> OperationTimes = new Dictionary<string, double[]>
-        {
-            { "CycleTime", new double[5] },
-            { "WaitingTime", new double[5] }
-        };
-        private int?[] StepsNumber = new int?[5];
-        private int?[] DoubleManagment = new int?[5];
-        private int?[] Waiting = new int?[5];
-        private string?[] CycleTimes = new string?[5] { "", "", "", "", "" };
-        private string?[] WaitingTimes = new string?[5] { "", "", "", "", "" };
-        public string[] productSpecification = new string[5];
-
-
-        List<List<string>> _specifications { get; set; } = new List<List<string>>
-        {
-            new List<string>(), // Product 1
-            new List<string>(), // Product 2
-            new List<string>(), // Product 3
-            new List<string>(), // Product 4
-            new List<string>()  // Product 5
-        };
-
-        public int[] jobProductIds = new int[5];
-
-        ProductAndStandardTime[] _productAndSpecification =
-            new ProductAndStandardTime[5].Select(x => new ProductAndStandardTime()).ToArray();
-
-        private bool isWaitingTimeActive = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -268,9 +242,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     {
                                         var imageUrl = await FilesServices.ShowImageEvidence(evidence.FileUploadId);
                                         imageUrls[evidence.FileUploadId] = imageUrl;
+
                                     }
                                 }
-                                questionAnswers[question.QuestionID] = item;
                             }
                         }
                     }
@@ -309,45 +283,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
                     _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
-
-
-                    var groupedOperations = _operations
-                        .GroupBy(op => op.ProductName)
-                        .Select(g => new ProductAndStandardTime
-                        {
-                            ProductName = g.Key,
-                            StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
-                        })
-                        .ToList();
-
-                    int count = Math.Min(groupedOperations.Count, 5);
-                    _productAndSpecification = new ProductAndStandardTime[count];
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        var productName = groupedOperations[i].ProductName;
-
-                        var standardTimeParts = groupedOperations[i].StandardTime.Split('Â§');
-                        if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
-                        {
-                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-
-                            _productAndSpecification[i] = new ProductAndStandardTime
-                            {
-                                ProductName = productName,
-                                StandardTime = roundedStandardTime
-                            };
-                        }
-                        else
-                        {
-                            _productAndSpecification[i] = new ProductAndStandardTime
-                            {
-                                ProductName = productName,
-                                StandardTime = "0.00"
-                            };
-                        }
-                    }
-
 
                     if (_jobObservation.KpiId != null)
                     {
@@ -394,52 +329,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     if (jobProductId != 0)
                         _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
-
-                    if (!string.IsNullOrEmpty(_jobObservation.ProductIds))
+                    var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                    if (prodName != null)
                     {
-                        string[] productIdsArray = _jobObservation.ProductIds.Split('|');
-
-                        for (int i = 0; i < 5; i++)
+                        var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+                        if (op != null && !string.IsNullOrEmpty(op.NameTime))
                         {
-                            if (i < productIdsArray.Length && int.TryParse(productIdsArray[i].Trim(), out int productId))
+                            var names = op.NameTime.Replace(',', '.').Split("§");
+                            for (int i = 0; i < 5; i++)
                             {
-                                jobProductIds[i] = productId;
-                            }
-                            else
-                            {
-                                jobProductIds[i] = 0;
-                            }
-                        }
-
-                        for (int i = 0; i < 5; i++)
-                        {
-
-                            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
-                            _specifications[i] = new();
-
-                            if (prodName != null)
-                            {
-                                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
-
-                                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                                if (!string.IsNullOrEmpty(names[i]))
                                 {
-
-                                    var names = op.NameTime.Replace(',', '.').Split("Â§");
-                                    for (int j = 0; j < 5; j++)
-                                    {
-                                        if (!string.IsNullOrEmpty(names[j]))
-                                        {
-                                            _specifications[i].Add(names[j]);
-                                        }
-                                    }
+                                    _specifications.Add(names[i]);
                                 }
                             }
+
                         }
                     }
+
+                    string operationTimesJson = _jobObservation.OperationTimesJson != null ? (string)_jobObservation.OperationTimesJson : string.Empty;
+                    if (operationTimesJson.Length > 8)
+                        OperationTimes = JsonSerializer.Deserialize<Dictionary<int, Dictionary<int, double>>>(operationTimesJson);
 
                     StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
                     Waiting = ConvertStringToArray(_jobObservation?.Waiting);
+
+                    if (!string.IsNullOrEmpty(_jobObservation.ModelsSpecification) && _jobObservation.ModelsSpecification != "0|0|0|0|0")
+                    {
+                        productSpecification = _jobObservation.ModelsSpecification;
+                    }
+
 
                     if (_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png")
                     {
@@ -457,58 +377,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     _jobObservation.TaktTime = "1.46";
                     taktTime = 1.46;
-
-                    if (!string.IsNullOrEmpty(_jobObservation.OperationTimesJson) && _jobObservation.OperationTimesJson != "||||")
-                    {
-                        var operationTimes = JsonSerializer.Deserialize<Dictionary<string, double[]>>(_jobObservation.OperationTimesJson);
-                        if (operationTimes != null && operationTimes.ContainsKey("CycleTime") && operationTimes.ContainsKey("WaitingTime"))
-                        {
-                            for (int i = 0; i < 5; i++)
-                            {
-                                if (i < operationTimes["CycleTime"].Length)
-                                {
-                                    CycleTimes[i] = operationTimes["CycleTime"][i].ToString();
-                                }
-                                else
-                                {
-                                    CycleTimes[i] = "0";
-                                }
-
-                                // Accede a los valores de WaitingTime
-                                if (i < operationTimes["WaitingTime"].Length)
-                                {
-                                    WaitingTimes[i] = operationTimes["WaitingTime"][i].ToString();
-                                }
-                                else
-                                {
-                                    WaitingTimes[i] = "0";
-                                }
-                            }
-                        }
-
-                    }
-
-                    if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
-                        _jobObservation.ProductSpecifications != "||||")
-                    {
-                        string[] specificationsArray = _jobObservation.ProductSpecifications.Split('|');
-
-                        for (int i = 0; i < specificationsArray.Length && i < productSpecification.Length; i++)
-                        {
-                            productSpecification[i] = specificationsArray[i];
-                        }
-                    }
-                    else
-                    {
-                        for (int i = 0; i < productSpecification.Length; i++)
-                        {
-                            productSpecification[i] = "";
-                        }
-                    }
-
-
                     StateHasChanged();
-                await GetUserAsync();
+                    await GetUserAsync();
 
                     if (user != null)
                     {
@@ -616,7 +486,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-          
+
             StateHasChanged();
         }
 
@@ -626,6 +496,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 : stringValue.Split('|')
                     .Select(s => int.TryParse(s, out var result) ? (int?)result : null)
                     .ToArray();
+
 
         private async Task GetUserAsync()
         {
@@ -748,6 +619,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 if (result)
                 {
                     _ = await GenerateLups();
+                    _ = await GenerateLups();
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
@@ -828,17 +700,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
 
-        private string BuildOperationTimesJson()
-        {
-            var operationTimes = new
-            {
-                CycleTime = OperationTimes["CycleTime"],
-                WaitingTime = OperationTimes["WaitingTime"]
-            };
-
-            return JsonSerializer.Serialize(operationTimes);
-        }
-
         //In progress
         private async Task SaveProgressJobObservation()
         {
@@ -883,7 +744,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             startHour = DateTime.Now.TimeOfDay;
 
 
-            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -892,8 +753,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
-            _jobObservation.ProductIds = string.Join("|", jobProductIds);
-            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1053,7 +912,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     if (string.IsNullOrEmpty(answer.Answer))
                                     {
                                         Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
-                                        return true; 
+                                        return true;
                                     }
                                 }
                                 else
@@ -1106,7 +965,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await GenerateOperatorSignatureImage();
             }
 
-            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1115,8 +974,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
-            _jobObservation.ProductIds = string.Join("|", jobProductIds);
-            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1301,7 +1158,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1310,8 +1167,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
-            _jobObservation.ProductIds = string.Join("|", jobProductIds);
-            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1503,7 +1358,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             endHour = DateTime.Now.TimeOfDay;
 
-            _jobObservation.OperationTimesJson = BuildOperationTimesJson();
+            _jobObservation.OperationTimesJson = JsonSerializer.Serialize(OperationTimes);
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
             _jobObservation.DoubleManagment = DoubleManagment[0] + "|" + DoubleManagment[1] + "|" + DoubleManagment[2] + "|" + DoubleManagment[3] + "|" + DoubleManagment[4];
@@ -1512,8 +1367,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
             _jobObservation.ProductId = jobProductId;
-            _jobObservation.ProductIds = string.Join("|", jobProductIds);
-            _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1675,6 +1528,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Operations = new List<Operation>();
             _jobObservation.OperatorId = 0;
             _jobObservation.SupervisorId = 0;
+            productSpecification = "0";
             jobProductId = 0;
             _specifications = new();
             _assychart = null;
@@ -1706,7 +1560,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _jobObservation.OperatorId = 0;
             _jobObservation.DistributionId = 0;
+            //_jobObservation.OperationId = 0;
             _jobObservation.Operations = new List<Operation>();
+            productSpecification = "0";
             jobProductId = 0;
 
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
@@ -1742,8 +1598,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowPastJobObservations()
         {
             flag = true;
-            if (_jobObservation.Operations.Count() > 0)
-                operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
+
+            operation = await OperationService.GetOperationById(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId, (int)_jobObservation.Operations?.FirstOrDefault()?.OperationId);
 
             pastjobObservations = new();
             pastLup = new();
@@ -1786,22 +1642,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async void ShowOperations()
         {
 
+            productSpecification = "0";
             jobProductId = 0;
             _specifications = new();
+            _jobObservation.Operations = new List<Operation>();
+
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 
         private async void UpdateOperation(int id)
         {
-           
+            //_jobObservation.OperationId = id;
             jobProductId = 0;
             _specifications = new();
         }
 
+    
+
         public async void ModifyKPI(int kpi)
         {
             kpiID = kpi;
-        
+
         }
 
 
@@ -1941,25 +1802,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
 
+        private Dictionary<int, Dictionary<int, double>> OperationTimes = new Dictionary<int, Dictionary<int, double>>();
+        private int?[] StepsNumber = new int?[5];
+        private int?[] DoubleManagment = new int?[5];
+        private int?[] Waiting = new int?[5];
+
+
         private void UpdateValue(int operationId, int cycleIndex, double newValue)
         {
-            //if (!OperationTimes.ContainsKey(operationId))
-            //{
-            //    OperationTimes[operationId] = new Dictionary<int, double>();
-            //}
+            if (!OperationTimes.ContainsKey(operationId))
+            {
+                OperationTimes[operationId] = new Dictionary<int, double>();
+            }
 
-            //OperationTimes[operationId][cycleIndex] = newValue;
-            //StateHasChanged();
+            OperationTimes[operationId][cycleIndex] = newValue;
+            StateHasChanged();
 
-            //Console.WriteLine("Diccionario actualizado:");
-            //foreach (var kvp in OperationTimes)
-            //{
-            //    Console.WriteLine($"OperationId: {kvp.Key}");
-            //    foreach (var cycleKvp in kvp.Value)
-            //    {
-            //        Console.WriteLine($"  CycleIndex: {cycleKvp.Key}, Value: {cycleKvp.Value}");
-            //    }
-            //}
+            Console.WriteLine("Diccionario actualizado:");
+            foreach (var kvp in OperationTimes)
+            {
+                Console.WriteLine($"OperationId: {kvp.Key}");
+                foreach (var cycleKvp in kvp.Value)
+                {
+                    Console.WriteLine($"  CycleIndex: {cycleKvp.Key}, Value: {cycleKvp.Value}");
+                }
+            }
 
         }
 
@@ -1969,56 +1836,42 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private System.Timers.Timer timer2;
 
         private int currentOperationIndex = 0;
-        private int currentCycle = 0;
+        private int currentCycle = 1;
         private string cronometerTime = "0.00";
 
         private double previousOperationTime = 0.0;
 
-        UpdateJobObsCmpts.Timer Timer;
+        Inicio.JobObservationPage.UpdateJobObsCmpts.Timer Timer;
         private void NextOperation()
         {
-            double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
-
-            if (isWaitingTimeActive)
+            if (currentOperationIndex < _filteredOperations.Count)
             {
-                double cycleTime = double.Parse(CycleTimes[currentCycle], CultureInfo.InvariantCulture);
-                double waitingTime = Math.Round(elapsedCentiseconds - cycleTime, 2);
+                var currentOperation = _filteredOperations[currentOperationIndex];
 
-                WaitingTimes[currentCycle] = waitingTime.ToString();
-                OperationTimes["WaitingTime"][currentCycle] = waitingTime;
+                if (currentOperationIndex > 0)
+                {
+                    double elapsedCentiseconds = Timer.GetElapsedCentiseconds() - previousOperationTime;
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Math.Round(elapsedCentiseconds, 2);
+                }
+                else
+                {
+                    OperationTimes[currentOperation.OperationId][currentCycle] = Timer.GetElapsedCentiseconds();
+                }
 
-                isWaitingTimeActive = false;
+                previousOperationTime = Timer.GetElapsedCentiseconds();
+
+                currentOperationIndex++;
+                if (currentOperationIndex >= _filteredOperations.Count)
+                {
+                    currentOperationIndex = 0;
+                    currentCycle++;
+                    currentCycle = currentCycle == 6 ? 1 : currentCycle;
+                    PauseTimer();
+                    cronometerTime = "0.00";
+                }
+
+                StateHasChanged();
             }
-            else
-            {
-                var cycleTime = Math.Round(elapsedCentiseconds, 2);
-                CycleTimes[currentCycle] = cycleTime.ToString();
-                OperationTimes["CycleTime"][currentCycle] = cycleTime;
-
-            }
-            currentCycle++;
-
-            if (currentCycle > 4)
-            {
-                currentCycle = 0;
-            }
-
-            //SetAsCurrentJobObservation();
-            StateHasChanged();
-        }
-
-        private void WaitingTime()
-        {
-            double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
-            var cycleTime = Math.Round(elapsedCentiseconds, 2);
-
-            CycleTimes[currentCycle] = cycleTime.ToString();
-            OperationTimes["CycleTime"][currentCycle] = cycleTime;
-
-            isWaitingTimeActive = true;
-            Waiting[currentCycle] = 1;
-
-            StateHasChanged();
         }
 
         public void ChangeCycle(int cycle)
@@ -2079,87 +1932,99 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public void actualizarCampo()
         {
-            //if (currentOperationIndex < _operations.Count)
-            //{
-            //    var currentOperation = _operations[currentOperationIndex];
-            //    OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
+            if (currentOperationIndex < _operations.Count)
+            {
+                var currentOperation = _operations[currentOperationIndex];
+                OperationTimes[currentOperation.OperationId][currentCycle] = GetRandomNumber(0.1, 0.9);
 
-            //    currentOperationIndex++;
+                currentOperationIndex++;
 
-            //    if (currentOperationIndex >= _operations.Count && currentCycle < 5)
-            //    {
-            //        currentCycle++;
-            //        currentOperationIndex = 0;
-            //    }
+                if (currentOperationIndex >= _operations.Count && currentCycle < 5)
+                {
+                    currentCycle++;
+                    currentOperationIndex = 0;
+                }
 
-            //    StateHasChanged();
-            //}
-            //else
-            //{
-            //    currentCycle = 1;
-            //    currentOperationIndex = 0;
-            //    StateHasChanged();
-            //}
+                StateHasChanged();
+            }
+            else
+            {
+                currentCycle = 1;
+                currentOperationIndex = 0;
+                StateHasChanged();
+            }
         }
 
-        private async Task ShowSpecifications(int id, int productIndex)
+        private void ShowSpecifications(int id)
         {
-            jobProductIds[productIndex] = id;
-            _specifications[productIndex] = new();
-
-
-
-            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
-
-
+            jobProductId = id;
+            _specifications = new();
+            productSpecification = "0";
+            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
             if (prodName != null)
             {
-                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
-
+                var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
-
-                    var names = op.NameTime.Replace(',', '.').Split("Â§");
+                    var names = op.NameTime.Replace(',', '.').Split("§");
                     for (int i = 0; i < 5; i++)
                     {
                         if (!string.IsNullOrEmpty(names[i]))
                         {
-                            _specifications[productIndex].Add(names[i]);
+                            _specifications.Add(names[i]);
                         }
                     }
+
                 }
             }
 
-            StateHasChanged();
-        }
 
-        public void InitializeCycleTimes(string specification, int index)
-        {
-            productSpecification[index] = specification;
             _filteredOperations = new();
             StepsNumber = new int?[5];
             DoubleManagment = new int?[5];
             Waiting = new int?[5];
 
             var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-            if (selectedProduct != null)
-            {
-                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
-            }
-            var standardTimeIndex = _specifications[index].FindIndex(s => s == productSpecification[index]);
+
+            StateHasChanged();
+        }
+        public void InitializeCycleTimes(string specification)
+        {
+            productSpecification = specification;
+            _filteredOperations = new();
+            StepsNumber = new int?[5];
+            DoubleManagment = new int?[5];
+            Waiting = new int?[5];
+
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+            var standardTimeIndex = _specifications.FindIndex(s => s == productSpecification);
 
             foreach (var op in _filteredOperations)
             {
                 if (op.StandardTime != null)
                 {
 
-                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("Â§");
+                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
                     hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
                     hoeStandardTime = Math.Round(hoeStandardTime, 2);
                     Console.WriteLine(hoeStandardTime);
                 }
             }
+            foreach (var op in _filteredOperations)
+            {
+                if (!OperationTimes.ContainsKey(op.OperationId))
+                {
+                    OperationTimes[op.OperationId] = new Dictionary<int, double>();
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        OperationTimes[op.OperationId][i] = 0.0;
+                    }
+                }
+            }
+            _jobObservation.ModelsSpecification = productSpecification;
         }
 
 
@@ -2528,7 +2393,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     if (!string.IsNullOrEmpty(imageData))
                     {
-                        // Elimina la cabecera si estÃ¡ presente
+                        // Elimina la cabecera si está presente
                         var base64Data = imageData.Replace("data:image/png;base64,", "");
 
                         if (IsValidBase64String(base64Data))
@@ -2546,7 +2411,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 name: "\"file\"",
                                 fileName: "evidence.png");
 
-                            // Llama a tu servicio de carga de archivos aquÃ­
+                            // Llama a tu servicio de carga de archivos aquí
                             var result = await FilesServices.UploadEvidences(content, lupPhotosId);
 
                             if (result is not null)
@@ -2578,7 +2443,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
 
-                // Limpia la lista de imÃ¡genes capturadas despuÃ©s de cargarlas
+                // Limpia la lista de imágenes capturadas después de cargarlas
                 capturedImages.Clear();
             }
             else
@@ -2626,7 +2491,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     List<int> listaExistente = questionDelete[item.QuestionID];
 
-                    // Agrega el nuevo nÃºmero a la lista
+                    // Agrega el nuevo número a la lista
                     listaExistente.Add(elementRemove.FileUploadId);
                 }
                 else
@@ -2682,7 +2547,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             {
                                 if (!string.IsNullOrEmpty(imageData))
                                 {
-                                    // Elimina la cabecera si estÃ¡ presente
+                                    // Elimina la cabecera si está presente
                                     var base64Data = imageData.Replace("data:image/png;base64,", "");
 
                                     if (IsValidBase64String(base64Data))
@@ -2775,7 +2640,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 foreach (var question in questionAnswers)
                 {
-                    if ((question.Value.Answer != "" || question.Value.Edited) && !_jobObservation.ChecklistAnswers.Any(cka => cka.QuestionID == question.Key))
+                    if (question.Value.Answer != "" || question.Value.Edited)
                     {
                         using var content = new MultipartFormDataContent();
                         for (int i = 0; i < question.Value.capturedImagesFiles.Count; i++)
@@ -2798,7 +2663,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             if (!string.IsNullOrEmpty(imageData))
                             {
 
-                                // Elimina la cabecera si estÃ¡ presente
+                                // Elimina la cabecera si está presente
                                 var base64Data = imageData.Replace("data:image/png;base64,", "");
 
                                 if (IsValidBase64String(base64Data))
@@ -2913,43 +2778,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     lup.Key.JobObservationId = _jobObservation.JobObservationId;
                     lup.Key.IsActive = true;
                     lup.Key.CreatedDate = DateTime.Now;
-
-                    startHour = DateTime.Now.TimeOfDay;
-
-                    if (CultureInfo.CurrentCulture.Name == "en-US")
-                    {
-                        var formatedStartDate = lup.Key.CreatedDate;
-
-                        var EnglishStartDate = formatedStartDate?.Month.ToString() + "/" + formatedStartDate?.Day.ToString() + "/" + formatedStartDate?.Year.ToString();
-                        lup.Key.CreatedDate = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
-
-                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour}";
-
-
-                        if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                        {
-                            Console.WriteLine(newDate1);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Unable to parse '{0}'", hour1);
-                        }
-
-                        lup.Key.CreatedDate = newDate1;
-                    }
-                    else
-                    {
-                        hour1 = lup.Key.CreatedDate?.ToShortDateString() + $" {startHour?.ToString("hh\\:mm\\:ss")}";
-
-                        if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
-                        {
-                            Console.WriteLine(newDate1);
-                        }
-                        else
-                            Console.WriteLine("Unable to parse '{0}'", hour1);
-
-                        lup.Key.CreatedDate = newDate1;
-                    }
 
                     Lup sendLup = new Lup
                     {
@@ -3071,7 +2899,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         name: "\"file\"",
                         fileName: "evidence.png");
 
-                    // Llama a tu servicio de carga de archivos aquÃ­
+                    // Llama a tu servicio de carga de archivos aquí
 
                     content.Add(content: new StringContent(_jobObservation.JobObservationId.ToString()), name: "JobObservationId");
                     var result1 = await JobObservationService.CreateOperatorSignature(content);
@@ -3311,36 +3139,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             base.StateHasChanged();
         }
 
-        private async Task AnswerChangeOption(string option, int id, int section, int catId)
+        private async Task AnswerChangeOption(string option, int id)
         {
             var answer = questionAnswers[id];
             answer.Answer = option;
-
-            var entry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.QuestionID == id);
-            if (section == 1 && (entry.CategorySequence == 4 || entry.CategorySequence == 5))
-            {
-                var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
-                var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
-                var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
-
-                string kpi = "";
-                if (entry.CategorySequence == 4)
-                {
-                    kpi = option == "YES" ? "S&P" : "";
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += kpi.IsNullOrEmpty() ? "Q" : "/Q";
-                }
-                else //if(entry.CategorySequence == 5)
-                {
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += "S&P";
-                    kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
-                }
-
-                questionAnswers[specialEntry].CommentarySV = kpi;
-                ModifyKPI(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 });
-
-            }
             //SetAsCurrentJobObservation();
         }
 
@@ -3489,9 +3291,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
         }
+
         bool ShowOperationsDialog { get; set; } = false;
 
-
+      
 
         private async void UpdateShowOperations()
         {
@@ -3499,7 +3302,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             StateHasChanged();
 
-        }
+        }   
 
         private async void CloseOperations()
         {
@@ -3516,7 +3319,5 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
-
     }//end class
-
-}//end namespace
+}

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
+using FuzzyString;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -847,8 +848,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         private async Task PrepareSuggestDataTable(int id_distribution = 0)
         {
-
-
+            //Debugear esta parte Ver por que el id mandado no responde
+            Console.WriteLine($"Prepare SuggestDist: {id_distribution} - {DateTime.Now} ");
             if (ScheduleView && id_distribution == 0)
             {
                 //traer toda las cosas por mes
@@ -863,6 +864,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 {
                     _All_Suggested_SOSJobobservation?.Clear();
                     Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+                    //El problema debe estar en la funcion Get_Suggest_AllSos_Dist
                     _All_Suggested_SOSJobobservation = SOSDataServices.Get_Suggest_AllSos_Dist(id_distribution);
                     Suggested_SOS_Registers_UserOperationRelationship = SOSDataServices.Get_Suggested_SOS_Registers_UserOperationRelationship(id_distribution);
                 }
@@ -920,7 +922,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                     _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
                     _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
-                    _NewJobObservation.OperationId = OperationId;
+
+
+                    var operationsList = _NewJobObservation.Operations?.ToList() ?? new List<Operation>();
+                    operationsList.Add(operationsList.First(o => o.OperationId == OperationId));
+                    _NewJobObservation.Operations = operationsList;
+
                     _NewJobObservation.DistributionId = DistributionId;
 
                     _NewJobObservation.SupervisorId = (int)context.Register.SupervisorId;
@@ -943,7 +950,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     if (result != null)
                     {
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
-                        result.JobObservation.Operation = result.Operation;
+                        //result.JobObservation.Operation = result.Operation;
+                        
+                        var resultoperationsList = result.JobObservation.Operations?.ToList() ?? new List<Operation>();
+                        operationsList.Add(operationsList.First(o => o.OperationId == OperationId));
+                        result.JobObservation.Operations = operationsList;
+
+
                         result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
                             result.JobObservation.JobObservationId = (int)result.JobObservationId;
                         SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
@@ -1030,7 +1043,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                     _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
                     _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
-                    _NewJobObservation.OperationId = OperationId;
+
+                    var operationsList = _NewJobObservation.Operations?.ToList() ?? new List<Operation>();
+                    operationsList.Add(operationsList.First(o => o.OperationId == OperationId));
+                    _NewJobObservation.Operations = operationsList;
+
                     _NewJobObservation.DistributionId = DistributionId;
 
                     _NewJobObservation.SupervisorId = (int)context.Register.SupervisorId;
@@ -1053,7 +1070,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     if (result != null)
                     {
                         result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
-                        result.JobObservation.Operation = result.Operation;
+                        
+                        var operationsListres = result.JobObservation.Operations?.ToList() ?? new List<Operation>();
+                        operationsListres.Add(operationsList.First(o => o.OperationId == OperationId));
+                        result.JobObservation.Operations = operationsList;
+
                         result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
                             result.JobObservation.JobObservationId = (int)result.JobObservationId;
                         SOSDataServices._All_SOSJobobservation.Add(result.JobObservation);
@@ -1114,7 +1135,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                         _NewJobObservation.PlantId = (int)_sos_plan.PlantId;
                         _NewJobObservation.AreaId = (int)_sos_plan.AreaId;
-                        _NewJobObservation.OperationId = OperationId;
+                        
+                        var operationsList = _NewJobObservation.Operations?.ToList() ?? new List<Operation>();
+                        operationsList.Add(operationsList.First(o => o.OperationId == OperationId));
+                        _NewJobObservation.Operations = operationsList;
+
+
                         _NewJobObservation.DistributionId = DistributionId;
 
                         _NewJobObservation.SupervisorId = (int)context.Register.SupervisorId;
@@ -1137,7 +1163,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         if (result != null)
                         {
                             result.Operation = SOSDataServices._All_Operations.Find(o => o.OperationId == OperationId);
-                            result.JobObservation.Operation = result.Operation;
+                            
+                         
+                            var resultoperationsList = _NewJobObservation.Operations?.ToList() ?? new List<Operation>();
+                            resultoperationsList.Add(operationsList.First(o => o.OperationId == OperationId));
+                            result.JobObservation.Operations = operationsList;
+
                             result.JobObservation.Distribution = SOSDataServices._distributions.Find(d => d.DistributionId == DistributionId);
                             result.JobObservation.JobObservationId = (int)result.JobObservationId;
                             var jobToAdd = await JobObsServices.GetJobObservationById((int)result.JobObservationId);
@@ -1231,7 +1262,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             if (!AddOperation)
             {
-                _NewJobObservation.OperationId = 0;
+                //_NewJobObservation.OperationId = 0;
             }
 
             StateHasChanged();
@@ -1680,13 +1711,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         //
 
-        private async void ShowBtnPress(int nr)
+        private async void ShowBtnPress(int distribution_Id)
         {
-            Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == nr);
+            Console.WriteLine($"Btn Press dist: {distribution_Id} - {DateTime.Now}");
+            Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == distribution_Id);
 
             if (tmpdist != null)
             {
-                Distribution? AnotherOpenDistExist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != nr);
+                Distribution? AnotherOpenDistExist = _distributions.Find(dist => dist.ShowDetails && dist.DistributionId != distribution_Id);
 
                 if (AnotherOpenDistExist != null)
                 {
@@ -1706,6 +1738,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         await PrepareDataTable(tmpdist.DistributionId);
                     }
                 }
+
             }
         }
 
@@ -2013,6 +2046,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private void StartCreateNewSuggestion()
         {
+            enableCreateSuggestion = true;
+            _yearMonth = Startday;
+            StateHasChanged();
+
             if (Startday.Date == DateTime.Now.AddDays(-1).Date)
             {
                 DialogService.ShowMessageBox("Warning", "Select Day To Start!", yesText: "OK!");
@@ -2048,11 +2085,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async Task CreateNewSuggestion()
         {
+            DateTime StartdayUTC = Startday.ToUniversalTime(); // Para asegurarte de que siempre sea UTC
 
 
-
-            // Llama a los servicios necesarios para configurar la nueva sugerencia
-            await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, startDate, JobsPorDia, OptionRandom);
+            await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom);
             await PrepareSuggestDataTable();
 
             // Una vez completada la configuración, muestra un mensaje informativo
@@ -2167,7 +2203,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             if (Suggested_SOS_Registers_UserOperationRelationship.TryGetValue(op, out var context))
             {
                 context.StateUpdate = true;
-                var SearchJob = _All_Suggested_SOSJobobservation.Find(j => j.OperationId == op);
+                var SearchJob = _All_Suggested_SOSJobobservation.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op);
                 SearchJob.SupervisorId = context.Register.Supervisor.UserId;
 
                 Console.WriteLine($"Update SV");
@@ -2302,14 +2338,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async void CloseToReprogramSuggestion()
         {
             ShowLoading = true;
-            int opid = (int)_Selected_Suggested_SOSJobobservatio_Null.OperationId;
+            int opid = (int)_Selected_Suggested_SOSJobobservatio_Null.Operations?.FirstOrDefault()?.OperationId;
             int distid = (int)_Selected_Suggested_SOSJobobservatio_Null.DistributionId;
             DateTime? oldDate = _Selected_Suggested_SOSJobobservatio_Null.StartDate;
             DateTime? newDate= _Selected_Suggested_SOSJobobservation.PlannedStartDate;
 
             if (Suggested_Registers_Matrix.TryGetValue((distid, oldDate.Value.Month), out var Suggestcontext))
             {
-                var itemToMove = Suggestcontext.Find(j => j.StartDate.Value.Month == oldDate.Value.Month && j.OperationId == opid);
+                var itemToMove = Suggestcontext.Find(j => j.StartDate.Value.Month == oldDate.Value.Month && j.Operations?.FirstOrDefault()?.OperationId == opid);
 
                 if (itemToMove != null)
                 {
