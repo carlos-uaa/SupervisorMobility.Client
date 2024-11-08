@@ -2016,10 +2016,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             OperationTimes["CycleTime"][currentCycle] = cycleTime;
 
             isWaitingTimeActive = true;
-            Waiting[currentCycle] = 1;
+            //Waiting[currentCycle] = 1;
 
             StateHasChanged();
         }
+
+        private async Task StoreSteps(int? value, int index)
+        {
+            StepsNumber[index] = value;
+            //SetAsCurrentJobObservation();
+        }
+
+        private async Task StoreManagement(int? value, int index)
+        {
+            DoubleManagment[index] = value;
+            //SetAsCurrentJobObservation();
+        }
+
+        private async Task StoreWaiting(int? value, int index)
+        {
+            Waiting[index] = value;
+            //SetAsCurrentJobObservation();
+        }
+
+
 
         public void ChangeCycle(int cycle)
         {

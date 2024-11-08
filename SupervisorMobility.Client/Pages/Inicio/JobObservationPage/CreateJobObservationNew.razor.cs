@@ -759,7 +759,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             OperationTimes["CycleTime"][currentCycle] = cycleTime;
 
             isWaitingTimeActive = true;
-            _ = StoreWaiting(1, currentCycle);
+            //_ = StoreWaiting(1, currentCycle);
 
             StateHasChanged();
         }
