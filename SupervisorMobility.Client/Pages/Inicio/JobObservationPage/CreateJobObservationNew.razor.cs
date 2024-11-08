@@ -2817,10 +2817,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
-        private async Task OnKPIChange(int id)
+        private async Task OnKPIChange(int id, int catId)
         {
+            var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
             _jobObservation.KpiId = kpiID = id;
+
+            var Comentary = id switch { 1 => "S&P", 2 => "Q", 3 => "D", 4 => "C", 5 => "E", 6 => "Other", _ => "S&P/Q" };
+
+            questionAnswers[specialEntry].CommentarySV = Comentary;
+            questionAnswers[specialEntry].Answer = "YES";
             await JobObservationContext_OnFieldChanged(); 
+        }
+
+        private async Task OnKPIChangeByQuestion(int id, int catId)
+        {
+            var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
+            _jobObservation.KpiId = kpiID = id;
+
+            questionAnswers[specialEntry].Answer = "YES";
+            await JobObservationContext_OnFieldChanged();
         }
 
         private async Task OnStartDateChanged(DateTime? newDate)
@@ -2869,7 +2884,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 questionAnswers[specialEntry].CommentarySV = kpi;
-                await OnKPIChange(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 });
+                questionAnswers[specialEntry].Answer = "YES";
+
+                await OnKPIChangeByQuestion(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 }, catId);
 
             }
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
