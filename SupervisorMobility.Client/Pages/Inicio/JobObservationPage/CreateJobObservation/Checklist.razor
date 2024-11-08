@@ -63,7 +63,7 @@
                                     && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
                                 )
                                 {
-                                    <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync(id.FirstOrDefault())">
+                                    <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync((id.FirstOrDefault(),category.JobCategoryStructureId))">
                                         <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
                                         @if (questionAnswers[id1].Answer != "NG")
                                         {
@@ -87,7 +87,10 @@
                         </td>
 
                         <td>
-                            <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                            @if (section != 1 || question.CategorySequence != 6)
+                            {
+                                <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                            }
                         </td>
                     </tr>
                     @if (answer.Show)
@@ -225,7 +228,7 @@
     [Parameter]
     public EventCallback AnswerComentaryUpdate { get; set; }
     [Parameter]
-    public EventCallback<int> OnKPIChange { get; set; }
+    public EventCallback<(int,int)> OnKPIChange { get; set; }
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
 

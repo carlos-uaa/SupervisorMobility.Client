@@ -1,7 +1,5 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -1796,12 +1794,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _specifications = new();
         }
 
-        public async void ModifyKPI(int kpi)
+        public async void ModifyKPI(int kpi, int catId)
         {
             kpiID = kpi;
-        
+            var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
+
+            var Comentary = kpi switch { 1 => "S&P", 2 => "Q", 3 => "D", 4 => "C", 5 => "E", 6 => "Other", _ => "S&P/Q" };
+
+            questionAnswers[specialEntry].CommentarySV = Comentary;
+            questionAnswers[specialEntry].Answer = "YES";
         }
 
+        public async void ModifyKPIByQuestion(int kpi, int catId)
+        {
+            kpiID = kpi;
+            var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
+            questionAnswers[specialEntry].Answer = "YES";
+        }
 
         //Temp Lup
         private async void OpenTempCameraDialog()
@@ -3318,6 +3327,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
                 var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
+                
                 var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
 
                 string kpi = "";
@@ -3334,8 +3344,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
                 }
 
+
                 questionAnswers[specialEntry].CommentarySV = kpi;
-                ModifyKPI(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 });
+                questionAnswers[specialEntry].Answer = "YES";
+
+                ModifyKPIByQuestion(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 }, catId);
 
             }
             //SetAsCurrentJobObservation();
