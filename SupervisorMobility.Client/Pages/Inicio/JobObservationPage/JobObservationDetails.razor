@@ -1083,8 +1083,6 @@
                                                 <tr>
                                                     <td>@Localizer["Cycle Time"]</td>
 
-                                                    @if (jobProductIds.All(id => id != 0))
-                                                    {
                                                         @for (int i = 0; i < 5; i++)
                                                         {
 
@@ -1093,9 +1091,14 @@
                                                             {
                                                                 value = 0.0;
                                                             }
-                                                            var standardTime = _productAndSpecification
-                                                            .FirstOrDefault(ps => ps.ProductName == _products
-                                                            .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+
+                                                           var standardTime = "0.0";
+                                                            if(jobProductIds[i] != 0)
+                                                            {
+                                                                   standardTime = _productAndSpecification
+                                                                        .FirstOrDefault(ps => ps.ProductName == _products
+                                                                        .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                                                            }
 
                                                             if (double.TryParse(standardTime, out double standardTimeValue))
                                                             {
@@ -1138,19 +1141,8 @@
                                                         }
 
 
-                                                    }
-                                                    else
-                                                    {
-                                                        @for (int i = 0; i < 5; i++)
-                                                        {
-                                                            <td>
-                                                                <MudTextField T="string" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" />
-                                                            </td>
-                                                        }
-
-                                                    }
                                                 </tr>
-                                                <tr>
+@*                                              <tr>
                                                     <td>@Localizer["Waiting Time"]</td>
                                                     @for (int i = 0; i < 5; i++)
                                                     {
@@ -1159,13 +1151,11 @@
                                                             <MudTextField T="string" Value="@(WaitingTimes[i] ?? "")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly />
                                                         </td>
                                                     }
-                                                </tr>
+                                                </tr> *@
                                                 <tr style="background: #f5f5f5">
                                                     <td>
                                                         <MudText Typo="Typo.body1">Total Cycle Time</MudText>
                                                     </td>
-                                                    @if (jobProductIds.All(id => id != 0))
-                                                    {
                                                         @for (int i = 0; i < 5; i++)
                                                         {
                                                             double totalCycleTime;
@@ -1173,22 +1163,26 @@
                                                             {
                                                                 totalCycleTime = 0.0;
                                                             }
-
+@* 
                                                             double waitingTime;
                                                             if (!double.TryParse(WaitingTimes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out waitingTime))
                                                             {
                                                                 waitingTime = 0.0;
                                                             }
 
-                                                            totalCycleTime += waitingTime;
+                                                            totalCycleTime += waitingTime; *@
 
 
                                                             var totalCycleColor = "";
                                                             var totalStyle = "";
 
-                                                            var standardTime = _productAndSpecification
-                                                            .FirstOrDefault(ps => ps.ProductName == _products
-                                                            .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                                                            var standardTime = "0.0";
+                                                            if (jobProductIds[i] != 0)
+                                                            {
+                                                                standardTime = _productAndSpecification
+                                                                .FirstOrDefault(ps => ps.ProductName == _products
+                                                                .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                                                            }
 
                                                             if (double.TryParse(standardTime, out double standardTimeValue))
                                                             {
@@ -1220,22 +1214,21 @@
                                                             }
 
                                                             <td>
-                                                            <MudText ReadOnly Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2).ToString().Replace(',', '.')</MudText>
-
+@*                                                             <MudText ReadOnly Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2).ToString().Replace(',', '.')</MudText>
+ *@
                                                                 @if ((double.TryParse(standardTime, out double standardTimeValue2) && standardTimeValue2 > 0) && totalCycleTime != 0.0)
                                                                 {
                                                                     double balancePercentage = ((totalCycleTime - standardTimeValue2) / standardTimeValue2) * 100;
 
                                                                     string balanceStatus = (totalCycleTime >= standardTimeValue2 * 0.95 && totalCycleTime <= standardTimeValue2 * 1.05) ? "OK" : "NG";
 
-                                                                    <MudText>
+                                                                    <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">
                                                                         @($"{Math.Round(Math.Abs(balancePercentage), 0)}% {balanceStatus}")
                                                                     </MudText>
                                                                 }
                                                             </td>
 
                                                         }
-                                                    }
                                                 </tr>
 
                                                 <tr>

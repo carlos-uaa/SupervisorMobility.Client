@@ -51,11 +51,11 @@
             <tr>
                 <td style="width: 32%">
                     <div style="display:flex; align-items: center; margin-left: 55%">
-                        <MudToggleIconButton Toggled="@isTimerRunning2" Color="Color.Info" @onclick="StartOrPauseTimer" Variant="Variant.Outlined" Class="mr-1" Disabled="@(!jobProductIds.All(id => id!=0))"
-                                             Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="Color.Error" @onkeydown="HandleKeyDown" />
+                        <MudToggleIconButton Toggled="@isTimerRunning2" Color="Color.Info" @onclick="StartOrPauseTimer" Variant="Variant.Outlined" Class="mr-1" 
+                                             Icon="@Icons.Material.Filled.PlayArrow" ToggledIcon="@Icons.Material.Filled.Pause" ToggledColor="Color.Error" @onkeydown="HandleKeyDown" />
                         @if (isTimerRunning2)
                         {
-                            <MudText Color="Color.Error">Restart Cycle</MudText>
+                            <MudText Color="Color.Error">Pause Cycle</MudText>
                         }
                         else
                         {
@@ -68,12 +68,12 @@
 
                 </td>
                 <td style="width: 32%">
-                    <MudButton @onclick="()=>NextOp()" Disabled="!isTimerRunning2" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Primary" @onkeydown="HandleKeyDown">
+                    <MudButton @onclick="()=>NextOp()" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Primary" @onkeydown="HandleKeyDown">
                         Next Cycle
                     </MudButton>
-                    <MudButton @onclick="()=>WaitTime()" Disabled="!isTimerRunning2 || isWaitingTimeActive" StartIcon="@Icons.Material.Filled.Timer" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Info" @onkeydown="HandleKeyDown" Class="mt-4">
+  @*                   <MudButton @onclick="()=>WaitTime()" Disabled="!isTimerRunning2 || isWaitingTimeActive" StartIcon="@Icons.Material.Filled.Timer" EndIcon="@Icons.Material.Filled.NavigateNext" Variant="Variant.Filled" Color="Color.Info" @onkeydown="HandleKeyDown" Class="mt-4">
                         Waiting Time
-                    </MudButton>
+                    </MudButton> *@
                 </td>
             </tr>
         </tbody>
@@ -282,19 +282,23 @@
                 <tr>
                     <td>@Localizer["Cycle Time"]</td>
 
-                    @if(jobProductIds.All(id => id!=0))
+                    @for (int i = 0; i < 5; i++)
                     {
-                        @for (int i = 0; i < 5; i++)
-                        {
 
                         double value;
                         if (!double.TryParse(CycleTimes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out value))
                         {
                             value = 0.0; 
                         }
-                        var standardTime = _productAndSpecification
-                            .FirstOrDefault(ps => ps.ProductName == _products
-                            .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+
+
+                        var standardTime = "0.0";
+                        if(jobProductIds[i] != 0)
+                        {
+                               standardTime = _productAndSpecification
+                                    .FirstOrDefault(ps => ps.ProductName == _products
+                                    .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                        }
 
                             if (double.TryParse(standardTime, out double standardTimeValue))
                             {
@@ -322,7 +326,7 @@
                                     cycleColor = "green";
                                 }
 
-                                if (i == currentCycle && !isWaitingTimeActive)
+                                if (i == currentCycle)
                                 {
                                     cycleColor += " current-time";
                                 }
@@ -333,42 +337,35 @@
                             }
                             else
                             {
+                                var cycleColor = "";
+
+                                if (i == currentCycle)
+                                {
+                                    cycleColor += " current-time";
+                                }
+
                                 <td>
-                                    <MudTextField T="double" ReadOnly Value="@value" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    <MudTextField T="double" ReadOnly Value="@value" Variant="Variant.Outlined" Margin="Margin.Dense" Class="@cycleColor" />
                                 </td>
                             }
 
                     }
-
-
-                }
-                else
-                {
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <td>
-                            <MudTextField T="string" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" />
-                        </td>                        
-                    }
-
-                }
                 </tr>
-                <tr>
+@*                 <tr>
                     <td>@Localizer["Waiting Time"]</td>
                     @for (int i = 0; i < 5; i++)
                     {
                         var waitingColor = (i == currentCycle && isWaitingTimeActive) ? "current-time" : "";
 
-                    <td>
-                        <MudTextField T="string" Value="@(WaitingTimes[i] ?? "")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly Class="@waitingColor" />
-                    </td>
+                        <td>
+                            <MudTextField T="string" Value="@(WaitingTimes[i] ?? "")" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly Class="@waitingColor" />
+                        </td>
                     }
-                </tr>
+                </tr> *@
                 <tr style="background: #f5f5f5">
                     <td >
                         <MudText Typo="Typo.body1">Total Cycle Time</MudText>
                     </td>
-                    @if(jobProductIds.All(id => id!=0)){
                         @for (int i = 0; i < 5; i++)
                         {
                             double totalCycleTime;
@@ -377,22 +374,25 @@
                                 totalCycleTime = 0.0;
                             }
 
-                            double waitingTime;
+            @*                 double waitingTime;
                             if (!double.TryParse(WaitingTimes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out waitingTime))
                             {
                                 waitingTime = 0.0;
-                            }
+                            } *@
 
-                            totalCycleTime += waitingTime;
+                            @* totalCycleTime += waitingTime; *@
 
 
                             var totalCycleColor = "";
                             var totalStyle = "";
-                            
-                             var standardTime = _productAndSpecification
+
+                            var standardTime = "0.0";
+                            if (jobProductIds[i] != 0)
+                            {
+                                standardTime = _productAndSpecification
                                 .FirstOrDefault(ps => ps.ProductName == _products
                                 .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
-
+                            }
                             if (double.TryParse(standardTime, out double standardTimeValue))
                             {
                                 var lowerBound = standardTimeValue * 0.95;
@@ -423,7 +423,7 @@
                             }
 
                         <td>
-                            <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2).ToString().Replace(',', '.')</MudText>
+                            @* <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">@Math.Round(totalCycleTime, 2).ToString().Replace(',', '.')</MudText> *@
 
                             @if ((double.TryParse(standardTime, out double standardTimeValue2) && standardTimeValue2 > 0) && totalCycleTime != 0.0)
                             {
@@ -431,14 +431,13 @@
 
                                 string balanceStatus = (totalCycleTime >= standardTimeValue2 * 0.95 && totalCycleTime <= standardTimeValue2 * 1.05) ? "OK" : "NG";
 
-                                <MudText>
+                            <MudText Class="@totalCycleColor" Style="@totalStyle" Typo="Typo.body1">
                                     @($"{Math.Round(Math.Abs(balancePercentage), 0)}% {balanceStatus}")
                                 </MudText>
                             }
                         </td>
 
                         }
-                    }
                 </tr>
 
                 <tr>
@@ -595,33 +594,27 @@
     {
         if (isTimerRunning2)
         {
-            PauseTimer();
+            StopTimer();
         }
         else
         {
             StartTimer();
         }
-
     }
 
     private void StartTimer()
     {
-        // int i = currentCycle - 2 <= 0 ? 0 : currentCycle - 2;
-        // if (currentCycle == 1 || (Waiting[i] != 0 && StepsNumber[i] != 0 && DoubleManagment[i] != 0))
-        // {
+        if (!isTimerRunning2)
+        {
+            startTime2 = DateTime.Now - TimeSpan.Parse(elapsedTime2); // Restaura el tiempo de inicio en función del tiempo transcurrido
+        }
+
+        timer2 = new System.Timers.Timer(1);
         errorflag = false;
         isTimerRunning2 = true;
-        startTime2 = DateTime.Now;
-        timer2 = new System.Timers.Timer(1);
         timer2.Elapsed += OnTimerTick;
         timer2.AutoReset = true;
         timer2.Enabled = true;
-        // }
-        // else
-        // {
-        //     Snackbar.Add("primero llena los campos indicados", Severity.Warning);
-        //     errorflag = true;
-        // }
     }
 
     private void PauseTimer()
@@ -632,11 +625,14 @@
         currentOperationIndex = 0;
         PauseTime.InvokeAsync();
 
-        previousOperationTime = 0.0;
-        // foreach (var operationId in OperationTimes.Keys)
-        // {
-        //     OperationTimes[operationId][currentCycle] = 0.0;
-        // }
+        StateHasChanged();
+    }
+
+    private void StopTimer()
+    {
+        // Solo detiene el temporizador sin reiniciar el tiempo transcurrido
+        isTimerRunning2 = false;
+        timer2.Enabled = false;
         StateHasChanged();
     }
 
@@ -694,7 +690,13 @@
         }
         else if (IsContinuous)
         {
-            StartTimer();
+            startTime2 = DateTime.Now;
+            timer2 = new System.Timers.Timer(1);
+            errorflag = false;
+            isTimerRunning2 = true;
+            timer2.Elapsed += OnTimerTick;
+            timer2.AutoReset = true;
+            timer2.Enabled = true;
         }
         StateHasChanged();
     }
