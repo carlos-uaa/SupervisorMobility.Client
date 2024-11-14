@@ -5,14 +5,11 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
-using SupervisorMobility.Client.Services.BreadcrumsService;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Timers;
 using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
 
@@ -1617,6 +1614,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
+                _jobObservation.FinishedDate = DateTime.Now;
 
                 _ = await GenerateChecklistAnswers();
 
