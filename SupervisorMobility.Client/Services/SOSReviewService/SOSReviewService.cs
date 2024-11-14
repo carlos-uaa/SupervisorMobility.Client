@@ -41,10 +41,18 @@ namespace SupervisorMobility.Client.Services.SOSReviewService
 
 
 
-        public async Task DeleteSOSReview(int id)
+        public async Task<bool> DeleteSOSReview(int id)
         {
             var response = await _http.DeleteAsync($"SOSReview/{id}");
 
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task<List<SOSReviewProgram>> GetAllSOSReviews(bool includeNavigation = false, bool includeUsers = false, bool includeSuggestions = false)
