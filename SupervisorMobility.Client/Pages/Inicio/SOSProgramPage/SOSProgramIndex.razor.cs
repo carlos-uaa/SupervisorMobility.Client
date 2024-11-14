@@ -182,8 +182,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         // Delete pat
         async Task DeleteSosReview(int sosReviewId)
         {
-            _SosReviewList.RemoveAll(sos => sos.SOSid == sosReviewId);
-            await SOSReviewServices.DeleteSOSReview(sosReviewId);
+            bool res = await SOSReviewServices.DeleteSOSReview(sosReviewId);
+            if(res)
+                _SosReviewList.RemoveAll(sos => sos.SOSid == sosReviewId);
+            else 
+                Console.WriteLine($"Error Eliminar:");
 
             visibleDelete = false;
         }
