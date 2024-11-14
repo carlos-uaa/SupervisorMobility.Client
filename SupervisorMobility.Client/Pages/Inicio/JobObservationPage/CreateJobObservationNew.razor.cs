@@ -217,12 +217,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 session = true;
 
-                bool fake = false;
-
                 try
                 {
-                    _jobObservation = await LocalStorage.GetItemAsync<JobObservation>("JobObs") ?? throw new ArgumentNullException("Error Retriving Job Observation", nameof(_jobObservation)); 
-                    fake = true;
+                    _jobObservation = await LocalStorage.GetItemAsync<JobObservation>("JobObs") ?? throw new ArgumentNullException("Error Retriving Job Observation", nameof(_jobObservation));                     
                     //if (ot) { ot = false; OperationTimes = await LocalStorage.GetItemAsync<Dictionary<int, Dictionary<int, double>>>("OpTimes") ?? new(); Console.WriteLine(OperationTimes);  }
                     var _tempLupList = await LocalStorage.GetItemAsync<List<KeyValuePair<Lup, List<string>>>>("LupToAdd") ?? new(); _tempLup = _tempLupList.ToDictionary(pair => pair.Key, pair => pair.Value);
                     area_ListS = await LocalStorage.GetItemAsync<List<LupOpportunity>>("area_ListS") ?? new(); 
@@ -289,15 +286,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 catch (Exception e)
                 {
-                    if (!fake)
-                    {
-                        Snackbar.Clear();
-                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                        Snackbar.Add(e.Message, Severity.Error);
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(e.Message, Severity.Error);
 
-                        await InitializeJobObservation();
-                        fake = true;
-                    }
+                    await InitializeJobObservation();
                 }
             }
             else
