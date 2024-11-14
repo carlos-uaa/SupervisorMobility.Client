@@ -232,10 +232,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; 
                     questionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, ChecklistAnswer>>("QAns") ?? new(); 
                     taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; 
-                    StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5]; 
+                    StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5];
+                    CycleTimes = await LocalStorage.GetItemAsync<string?[]>("CycleTimes") ?? new string?[5]; 
+                    jobProductIds = await LocalStorage.GetItemAsync<int[]>("JobProductsIds") ?? new int[5]; 
                     DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; 
                     Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; 
-                    currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; 
+                    currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 0; 
                     hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; 
 
                     jobProductId = _jobObservation.ProductId ?? 0;
@@ -704,7 +706,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         CreateJobObservation.Timer Timer;
 
-        private void NextOperation()
+        private async void NextOperation()
         {
             double elapsedCentiseconds = Timer.GetElapsedCentiseconds();
 
@@ -725,13 +727,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 OperationTimes["CycleTime"][currentCycle] = cycleTime;
 
             }
-            SyncLocalStorage.SetItem("CC", currentCycle);
             currentCycle++;
 
             if (currentCycle > 4)
             {
                 currentCycle = 0;
             }
+
+            SyncLocalStorage.SetItem("CC", currentCycle);
+            await LocalStorage.SetItemAsync("CycleTimes", CycleTimes);
 
             //SetAsCurrentJobObservation();
             StateHasChanged();
@@ -921,6 +925,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
             //_jobObservation.ProductId = id;
+            await LocalStorage.SetItemAsync("JobProductsIds", jobProductIds);
+
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             StateHasChanged();
         }
@@ -2913,6 +2919,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
         }
 
+
         private async Task UpdateAreaLists(int pillar)
         {
             switch (pillar)
@@ -2964,6 +2971,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 , SyncLocalStorage.ContainKey("taktTime")
                 , SyncLocalStorage.ContainKey("HoeStandardTime")
                 , SyncLocalStorage.ContainKey("StepsNumber")
+                , SyncLocalStorage.ContainKey("JobProductsIds")
                 , SyncLocalStorage.ContainKey("DblManagement")
                 , SyncLocalStorage.ContainKey("Waiting")
             };
@@ -3031,6 +3039,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
                 _operations = _operations.OrderBy(o => o.Description).ToList();
 
+                var groupedOperations = _operations
+                    .GroupBy(op => op.ProductName)
+                    .Select(g => new ProductAndStandardTime
+                    {
+                        ProductName = g.Key,
+                        StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
+                    })
+                    .ToList();
+
+                int count = Math.Min(groupedOperations.Count, 5);
+                _productAndSpecification = new ProductAndStandardTime[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    var productName = groupedOperations[i].ProductName;
+
+                    var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
+                    if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
+                    {
+                        var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                        Console.WriteLine($"{productName}: {roundedStandardTime}");
+
+                        _productAndSpecification[i] = new ProductAndStandardTime
+                        {
+                            ProductName = productName,
+                            StandardTime = roundedStandardTime
+                        };
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{productName}: Invalid StandardTime");
+                        _productAndSpecification[i] = new ProductAndStandardTime
+                        {
+                            ProductName = productName,
+                            StandardTime = "0.00"
+                        };
+                    }
+                }
+
+
                 if (_jobObservation.PlantId != 0 && _jobObservation.AreaId != 0)
                 {
                     _assychart = await AssychartsServices.GetAssyChartJobObservation(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
@@ -3074,7 +3122,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
-                ,"DblManagement","Waiting","CC", "CJO"});
+                ,"DblManagement","Waiting","CC", "CJO","JobProductsIds", "CycleTimes"});
         }
     }
 }
