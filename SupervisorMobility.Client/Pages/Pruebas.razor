@@ -2,7 +2,12 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime JS
 
+<style>
 
+    .mud-drawer:not(.mud-drawer-temporary) .mud-popover-cascading-value {
+        z-index: calc(var(--mud-zindex-drawer) + 10000);
+    }
+</style>
 
 <MudPaper Height="85vh" Style="overflow:hidden; position:relative;">
     <MudDrawerContainer Class="mud-height-full">
@@ -23,7 +28,7 @@
                                              ToggledIcon="@Icons.Material.Filled.Edit"
                                              ToggledColor="@Color.Info"
                                              @onclick="OnToggleClick" />
-                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%")" ColorPickerView="ColorPickerView.Palette" />
+                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%;  z-index: 1050 !important;")" ColorPickerView="ColorPickerView.Palette"  />
                     </MudItem>
 
                 </MudItem>
@@ -77,7 +82,7 @@
 
         <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: column;">
             <MudItem Class="d-flex mb-4" >
-                <MudButton 
+@*                 <MudButton 
                            HtmlTag="label"
                            Variant="Variant.Filled"
                            Size="Size.Small"
@@ -85,8 +90,8 @@
                            StartIcon="@Icons.Material.Filled.Image"
                            for="selectImage">
                     Load picture
-                </MudButton>
-                <InputFile hidden id="selectImage" OnChange="OnFileSelected" />
+                </MudButton> 
+                <InputFile hidden id="selectImage" OnChange="OnFileSelected" /> *@
                 <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton>
                 <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
                 <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Generate Image</MudButton>
@@ -102,6 +107,12 @@
 <img id="generatedImage" style="display:none; margin-top: 20px;" />
 
 @code {
+
+    [Parameter]
+    public string? ImageToEdit { get; set; }
+
+    public bool IsReady { get; private set; } = false;
+
     private ElementReference canvasRef;
     private string uploadedImage;
     private bool isCanvasVisible = false;
@@ -109,8 +120,8 @@
     private string search = string.Empty;
     private ImageModel selectedImageModel;
 
-    private string pencilColor = "#000";
-    private string PencilColor
+    public string pencilColor = "#000";
+    public string PencilColor
     {
         get => pencilColor;
         set
@@ -284,6 +295,14 @@
         history.Add("addDrawing");
     }
 
+    // protected override void OnParametersSet()
+    // {
+    //     base.OnParametersSet();
+    //     if (!string.IsNullOrEmpty(ImageToEdit))
+    //     {
+    //         Console.WriteLine($"Imagen recibida: {ImageToEdit}");
+    //     }
+    // }
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -293,28 +312,72 @@
             dotNetObjectRef = DotNetObjectReference.Create(this);
             IsPencilSelected = false;
             await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
+
+            // Marca el componente como listo
+            IsReady = true;
+
+            Console.WriteLine("Is ready");
         }
     }
 
 
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    // private async Task OnFileSelected(InputFileChangeEventArgs e)
+    // {
+    //     ClearImage();
+    //     var file = e.File;
+    //     using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+    //     {
+    //         var buffer = new byte[stream.Length];
+    //         await stream.ReadAsync(buffer);
+    //         var base64String = Convert.ToBase64String(buffer);
+    //         var dataUrl = $"data:{file.ContentType};base64,{base64String}";
+    //         uploadedImage = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+    //         history.Add(uploadedImage);
+    //         await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
+    //         isUndoDisabled = false;
+    //         isUploaded = true;
+    //         isCanvasVisible = true;
+    //     }
+    // }
+
+    // private async Task OnFileSelected(InputFileChangeEventArgs e)
+    // {
+    //     var file = e.File;
+
+    //     using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+    //     {
+    //         var buffer = new byte[stream.Length];
+    //         await stream.ReadAsync(buffer);
+    //         var base64String = Convert.ToBase64String(buffer);
+
+    //         await ProcessImageAsync(base64String);
+    //     }
+    // }
+
+
+    public async Task LoadImageFromBase64Async(string base64Image)
+    {
+        Console.WriteLine("Loading Photo");
+        await ProcessImageAsync(base64Image);
+    }
+
+
+    private async Task ProcessImageAsync(string base64String)
     {
         ClearImage();
-        var file = e.File;
-        using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
-        {
-            var buffer = new byte[stream.Length];
-            await stream.ReadAsync(buffer);
-            var base64String = Convert.ToBase64String(buffer);
-            var dataUrl = $"data:{file.ContentType};base64,{base64String}";
-            uploadedImage = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
-            history.Add(uploadedImage);
-            await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
-            isUndoDisabled = false;
-            isUploaded = true;
-            isCanvasVisible = true;
-        }
+
+        uploadedImage = base64String;
+
+        history.Add(uploadedImage);
+
+        await JS.InvokeVoidAsync("addImageToCanvas", base64String, canvasRef);
+
+        isUndoDisabled = false;
+        isUploaded = true;
+        isCanvasVisible = true;
+        StateHasChanged();
     }
+
 
     private async Task OnDragStart(DragEventArgs e, string imageId)
     {
