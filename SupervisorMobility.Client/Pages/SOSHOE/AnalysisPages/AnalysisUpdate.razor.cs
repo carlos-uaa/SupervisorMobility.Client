@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
+using FuzzyString;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -333,10 +335,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         }
 
         private Pruebas pruebasComponent;
+        public int ImageIndex;
+        public bool IsPreviousPhoto;
+        public int FileUploadIndex = 0;
 
-        private async Task OpenEditImageDialog(string imageBase64)
+        private async Task OpenEditImageDialog(string imageBase64, int index, bool isPreviousPhoto, int fileUploadIndex = 0)
         {
+            ImageIndex = index;
+            IsPreviousPhoto = isPreviousPhoto;
             visibleEditImage = true;
+            FileUploadIndex = fileUploadIndex;
 
             while (pruebasComponent == null || !pruebasComponent.IsReady)
             {
@@ -354,6 +362,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             visibleEditImage = false;
             pruebasComponent = null; 
         }
+
+        public void UpdatePhoto(string updatedImage, int index, bool isPrevious)
+        {
+            if (isPrevious)
+            {
+                OldImageRemoved.Add(FileUploadIndex);
+                PreviousImages.RemoveAt(index);
+                FileUploadIndex = 0;
+            }
+            else
+            {
+                capturedImages.RemoveAt(index);
+            }
+            capturedImages.Add(updatedImage);
+            CloseEditImageDialog();
+            StateHasChanged();
+        }
+
 
         private void CloseLogbookDialog()
         {

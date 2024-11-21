@@ -66,30 +66,33 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             drawPathData = [[e.offsetX, e.offsetY]];
 
         } else {
+
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+
             redrawCanvas(ctx, canvas);
             selectedImage = movableImages.find(img => isPointInImage(x, y, img));
 
             if (selectedImage) {
+
                 selectedIndex = selectedImage.imageId;
                 offsetX = x - selectedImage.x;
                 offsetY = y - selectedImage.y;
                 canvas.style.cursor = 'move';
-                const aspectratio = selectedImage.originalWidth / selectedImage.originalHeight;
-                //if (selectedImage.width / selectedImage.height !== aspectratio) {
-                    selectedImage.height = selectedImage.width / aspectratio;
-                //}
+
                 redrawCanvas(ctx, canvas);
 
 
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
-                dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
+
+
             } else {
                 dotNetObjectRef.invokeMethodAsync('DeselectImage');
             }
+
         }
     });
 
@@ -121,7 +124,6 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             drawings.push({ path: drawPathData.slice(), color: drawColor });
             actionHistory.push({ type: "addDrawing" });
             await dotNetObjectRef.invokeMethodAsync('OnDrawingAdded');
-
             redrawCanvas(ctx, canvas);
         } else {
             selectedImage = null;
@@ -161,7 +163,6 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                     }
                     redrawCanvas(ctx, canvas);
                     dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
-                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                     dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
                 } else if (draggedImageElement) {
                     initialTouchX = touch.clientX;
@@ -252,9 +253,9 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 
 };
 
-    window.togglePencilState = function (state) {
-        isPencilSelected = state;
-    };
+window.togglePencilState = function (state) {
+    isPencilSelected = state;
+};
 
 
 window.onDragStartJs = function (imageId) {
@@ -432,6 +433,11 @@ function isPointInImage(x, y, image) {
         y >= image.y && y <= image.y + image.height;
 }
 
+function getImageSrcById(id) {
+    const imageElement = document.getElementById(id);
+    return imageElement ? imageElement.src : null;
+}
+
 window.undoLastAction = function (canvasRef) {
     if (actionHistory.length > 0) {
         const lastAction = actionHistory.pop();
@@ -561,3 +567,4 @@ function updateImagePositionAfterRotation(image) {
 window.setPencilColor = function (color) {
     drawColor = color;
 }
+
