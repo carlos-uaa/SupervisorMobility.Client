@@ -34,6 +34,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             ChecklistQuestion dbQuestion = await JobStructureCategoriesService.GetQuestionById(categoryId, questionId);
             _checklistCategory = await JobStructureCategoriesService.GetCategoryById(categoryId);
             _question = dbQuestion;
+            _question.Prompt = _question.Prompt.Replace("\\n","\n");
+            _question.PromptEN = _question.PromptEN.Replace("\\n","\n");
             _question.Pillars = _question.Pillars ?? new List<int?>();
             _pillars = await PillarsService.GetPillars();
 
@@ -59,6 +61,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 Console.WriteLine(pilar);
 
             }
+            _question.Prompt = _question.Prompt.Replace("\n", "\\n");
+            _question.PromptEN = _question.PromptEN.Replace("\n", "\\n");
+
             var result = await JobStructureCategoriesService.UpdateQuestion(categoryId, _question);
 
 

@@ -2,9 +2,14 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime JS
 
+<style>
 
+    .mud-drawer:not(.mud-drawer-temporary) .mud-popover-cascading-value {
+        z-index: calc(var(--mud-zindex-drawer) + 10000);
+    }
+</style>
 
-<MudPaper Height="85vh" Style="overflow:hidden; position:relative;">
+<MudPaper Height="75vh" Style="overflow:hidden; position:relative;">
     <MudDrawerContainer Class="mud-height-full">
         <MudDrawer Open Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" >
             <MudNavMenu>
@@ -23,7 +28,7 @@
                                              ToggledIcon="@Icons.Material.Filled.Edit"
                                              ToggledColor="@Color.Info"
                                              @onclick="OnToggleClick" />
-                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%")" ColorPickerView="ColorPickerView.Palette" />
+                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%;  z-index: 1050 !important;")" ColorPickerView="ColorPickerView.Palette"  />
                     </MudItem>
 
                 </MudItem>
@@ -77,7 +82,7 @@
 
         <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: column;">
             <MudItem Class="d-flex mb-4" >
-                <MudButton 
+@*                 <MudButton 
                            HtmlTag="label"
                            Variant="Variant.Filled"
                            Size="Size.Small"
@@ -85,11 +90,11 @@
                            StartIcon="@Icons.Material.Filled.Image"
                            for="selectImage">
                     Load picture
-                </MudButton>
-                <InputFile hidden id="selectImage" OnChange="OnFileSelected" />
-                <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton>
-                <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
-                <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Generate Image</MudButton>
+                </MudButton> 
+                <InputFile hidden id="selectImage" OnChange="OnFileSelected" /> *@
+@*                 <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton>
+ *@                <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+                <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Update Image</MudButton>
             </MudItem>
             <canvas id="canvas"
                     style="border:1px solid #000; cursor: @(IsPencilSelected ? "crosshair" : "default"); @(isCanvasVisible ? "" : "display:none;")"
@@ -102,6 +107,21 @@
 <img id="generatedImage" style="display:none; margin-top: 20px;" />
 
 @code {
+
+    [Parameter]
+    public string? ImageToEdit { get; set; }
+
+    [Parameter]
+    public int ImageIndex { get; set; }
+
+    [Parameter]
+    public bool IsPrevious { get; set; }
+
+    [Parameter]
+    public EventCallback<(string, int, bool)> UpdatePhoto { get; set; }
+
+    public bool IsReady { get; private set; } = false;
+
     private ElementReference canvasRef;
     private string uploadedImage;
     private bool isCanvasVisible = false;
@@ -109,8 +129,8 @@
     private string search = string.Empty;
     private ImageModel selectedImageModel;
 
-    private string pencilColor = "#000";
-    private string PencilColor
+    public string pencilColor = "#000";
+    public string PencilColor
     {
         get => pencilColor;
         set
@@ -139,8 +159,8 @@
         await JS.InvokeVoidAsync("togglePencilState", state);
     }
 
-    private int selectedImageSize = 55;
-    private int SelectedImageSize
+    private double selectedImageSize = 55;
+    private double SelectedImageSize
     {
         get => selectedImageSize;
         set
@@ -162,7 +182,7 @@
     }
 
 
-    private async Task UpdateSelectedImageSize(int newSize)
+    private async Task UpdateSelectedImageSize(double newSize)
     {
         if (selectedImageModel != null)
         {
@@ -238,7 +258,7 @@
     }
 
     [JSInvokable("UpdateSelectedSizeSlider")]
-    public void UpdateSizeSlider(int sliderWidth)
+    public void UpdateSizeSlider(double sliderWidth)
     {
         selectedImageSize = sliderWidth;
         StateHasChanged();
@@ -266,6 +286,9 @@
         var currentCanvasImage = await JS.InvokeAsync<string>("getCanvasImage", canvasRef);
         uploadedImage = currentCanvasImage;
         history.Add(uploadedImage);
+        isUndoDisabled = false;
+        StateHasChanged();
+
     }
 
     [JSInvokable("DeselectImage")]
@@ -282,8 +305,19 @@
     public void OnDrawingAdded()
     {
         history.Add("addDrawing");
+        isUndoDisabled = false;
+        StateHasChanged();
+
     }
 
+    // protected override void OnParametersSet()
+    // {
+    //     base.OnParametersSet();
+    //     if (!string.IsNullOrEmpty(ImageToEdit))
+    //     {
+    //         Console.WriteLine($"Imagen recibida: {ImageToEdit}");
+    //     }
+    // }
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -293,6 +327,8 @@
             dotNetObjectRef = DotNetObjectReference.Create(this);
             IsPencilSelected = false;
             await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
+
+            IsReady = true;
         }
     }
 
@@ -316,6 +352,30 @@
         }
     }
 
+
+    public async Task LoadImageFromBase64Async(string base64Image)
+    {
+        Console.WriteLine("Loading Photo");
+        await ProcessImageAsync(base64Image);
+    }
+
+
+    private async Task ProcessImageAsync(string base64String)
+    {
+        ClearImage();
+
+        uploadedImage = base64String;
+
+        history.Add(uploadedImage);
+
+        await JS.InvokeVoidAsync("addImageToCanvas", base64String, canvasRef);
+
+        isUploaded = true;
+        isCanvasVisible = true;
+        StateHasChanged();
+    }
+
+
     private async Task OnDragStart(DragEventArgs e, string imageId)
     {
         await JS.InvokeVoidAsync("onDragStartJs", imageId);
@@ -338,27 +398,31 @@
 
     private async void UndoChange()
     {
-        if (history.Count > 0)
+        if (history.Count > 1)
         {
             await JS.InvokeVoidAsync("undoLastAction", canvasRef);
 
             history.RemoveAt(history.Count - 1);
 
-            if (!(history.Count > 0))
-            {
-                uploadedImage = null;
-                isUndoDisabled = true;
-            }
+            // if (!(history.Count > 0))
+            // {
+            //     uploadedImage = null;
+            //     isUndoDisabled = true;
+            // }
 
-            isUndoDisabled = history.Count == 0;
-            isCanvasVisible = history.Count > 0;
+            isUndoDisabled = history.Count == 1;
+            // isCanvasVisible = history.Count > 0;
             StateHasChanged();
         }
+
     }
 
     private async Task GenerateImage()
     {
         await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
+        string imageSrc = await JS.InvokeAsync<string>("getImageSrcById", "generatedImage");
+
+        await UpdatePhoto.InvokeAsync((imageSrc, ImageIndex, IsPrevious));
     }
 
     private void OnToggleClick()
