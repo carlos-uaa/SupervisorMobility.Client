@@ -279,28 +279,23 @@ window.setFixedImage = function (dataUrl, canvasRef) {
     const img = new Image();
     img.src = dataUrl;
     img.onload = function () {
-        const maxWidth = window.innerWidth * 0.6;
-        const maxHeight = window.innerHeight * 0.75;
+        const maxWidth = window.innerWidth * 0.95;
+        const maxHeight = window.innerHeight * 0.68;
+
 
         let width, height;
 
-        if (img.width > maxWidth) {
-            const scale = maxWidth / img.width;
-            width = img.width * scale;
-            height = img.height * scale;
+        if (originalWidth / originalHeight > maxWidth / maxHeight) {
+            width = maxWidth;
+            height = (originalHeight / originalWidth) * maxWidth;
         } else {
-            width = img.width;
-            height = img.height;
-        }
-
-        if (height > maxHeight) {
-            const scale = maxHeight / height;
-            width = width * scale;
-            height = height * scale;
+            height = maxHeight;
+            width = (originalWidth / originalHeight) * maxHeight;
         }
 
         canvas.width = width;
         canvas.height = height;
+
 
         fixedImage = {
             element: img,
@@ -309,6 +304,7 @@ window.setFixedImage = function (dataUrl, canvasRef) {
             width: width,
             height: height
         };
+
 
         redrawCanvas(ctx, canvas);
     };
@@ -374,28 +370,25 @@ window.addImageToCanvas = function (dataUrl, canvasRef) {
     const img = new Image();
     img.src = dataUrl;
     img.onload = function () {
-        const maxWidth = window.innerWidth * 0.6;
-        const maxHeight = window.innerHeight * 0.75;
+        const originalWidth = img.width;
+        const originalHeight = img.height;
+
+        const maxWidth = window.innerWidth * 0.95;
+        const maxHeight = window.innerHeight * 0.68;
 
         let width, height;
 
-        if (img.width > maxWidth) {
-            const scale = maxWidth / img.width;
-            width = img.width * scale;
-            height = img.height * scale;
+        if (originalWidth / originalHeight > maxWidth / maxHeight) {
+            width = maxWidth;
+            height = (originalHeight / originalWidth) * maxWidth;
         } else {
-            width = img.width;
-            height = img.height;
-        }
-
-        if (height > maxHeight) {
-            const scale = maxHeight / height;
-            width = width * scale;
-            height = height * scale;
+            height = maxHeight;
+            width = (originalWidth / originalHeight) * maxHeight;
         }
 
         canvas.width = width;
         canvas.height = height;
+
 
         fixedImage = {
             element: img,
@@ -408,6 +401,7 @@ window.addImageToCanvas = function (dataUrl, canvasRef) {
         ctx.drawImage(fixedImage.element, fixedImage.x, fixedImage.y, fixedImage.width, fixedImage.height);
     };
 };
+
 
 
 window.clearCanvas = function (canvasRef) {
