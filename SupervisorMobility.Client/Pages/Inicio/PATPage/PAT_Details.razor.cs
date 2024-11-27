@@ -71,6 +71,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int operator_id { get; set; }
         private string ProgrammedStartDate { get; set; }
 
+        private int? knowledgePercentage { get; set; }
+        private double? operatorPercentage { get; set; }
+        private double? sameOperationPercentage { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
@@ -160,10 +163,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _distributions?.Clear();
             _UserOfArea?.Clear();
 
-
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
             _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
+            _UserOfArea.Insert(0,_pat.Supervisor);
             //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
@@ -346,6 +349,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
                 if (result != null)
                 {
+                    _pat = await PATsServices.getPat(patID);
                     await PrepareDataTable();
                     Snackbar.Add($"ILU Level Added", Severity.Success);
                 }
