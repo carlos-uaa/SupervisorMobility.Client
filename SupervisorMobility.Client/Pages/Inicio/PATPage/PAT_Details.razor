@@ -191,10 +191,12 @@
                         </Virtualize>
                     </tr>
                     <tr>
-                        <th colspan="2" class="d-flex" style="align-items: center;">
-                            <MudInput T="double?" @bind-Value="operatorPercentage" />
-                            % @Localizer["in"] 1 x
-                            <MudInput T="int?" Class="ml-2" @bind-Value="knowledgePercentage" />
+                        <th colspan="2">
+                            <div style="display:flex; align-items: center;">
+                                <MudInput T="double?" @bind-Value="operatorPercentage" />
+                                % @Localizer["in"] 1 x
+                                <MudInput T="int?" Class="ml-2" @bind-Value="knowledgePercentage" />
+                            </div>
                         </th>
                     </tr>
                     <tr>
@@ -203,12 +205,29 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th colspan="2" class="d-flex" style="align-items: center;">
-                            <MudInput T="double?" @bind-Value="sameOperationPercentage" />
-                            % @Localizer["in"] <MudInput T="int?" @bind-Value="knowledgePercentage" Class="ml-2" ReadOnly /> x 1
+                        <th colspan="2" style="align-items: center;">
+                            <div style="display:flex; align-items: center;">
+                                <MudInput T="double?" @bind-Value="sameOperationPercentage" />
+                                % @Localizer["in"] <MudInput T="int?" @bind-Value="knowledgePercentage" Class="ml-2" ReadOnly /> x 1
+                            </div>
 
                         </th>
-                        <th colspan="2" class="fixed-column dynamic-left">@Localizer["payroll"]</th>
+                        <th colspan="2" class="fixed-column dynamic-left">
+
+                            <div style="display:flex; align-items: center;">
+                                <MudSelect @bind-Value="leader"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Dense
+                                    Class="mr-2"
+                                    >
+                                        <MudSelectItem Value="@("S")">S</MudSelectItem>
+                                        <MudSelectItem Value="@("C")">C</MudSelectItem>
+                                </MudSelect>
+                                @Localizer["payroll"]
+                            </div>
+                            
+                        </th>
                         <Virtualize Context="usr" Items="_UserOfArea">
                             @if (User_Knolowed[usr.UserId])
                             {
@@ -370,16 +389,77 @@
 
                                 </td>
                             </Virtualize>
+                            <td>
+                                @{
+                                    var sum = _UserOfArea.Sum(usr =>
+                                    {
+                                        if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
+                                        {
+                                            var distinctRecords = context?
+                                        .GroupBy(c => new { c.DistributionId, c.OperatorId })
+                                        .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                                            return distinctRecords?.Count(r => r?.ILULevelId != 0 && r?.ILULevelId > 5) ?? 0 ;
+                                        }
+                                        return 0;
+                                    });
+                                }
+                                @if(sum != 0 && knowledgePercentage != null)
+                                {
+                                    if(sum >= knowledgePercentage)
+                                    {
+                                        <span><b>O</b></span>
+                                    }
+                                    else{
+                                        <span style="color:red"><b>X</b></span>
+                                    }
+                                }
+                            </td>
+
                         </tr>
                     }
                     <tr>
                         <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                            <b>RTO</b> @Distributions_Knolowed.Count
                         </td>
-                        <td colspan="1" class="fixed-column dynamic-left">
+                        <td colspan="2" class="fixed-column dynamic-left">
+                            <div style="display:flex;">
+                                <div style="display:flex; align-items: center" class="mr-2">
+                                    1 x <MudInput T="int?" Class="ml-2" @bind-Value="knowledgePercentage" ReadOnly />
+                                </div>
+                                <div style="display:flex; align-items: center">
+                                    <MudInput T="int?" Class="ml-2" @bind-Value="peopleCount" ReadOnly /> Personas
+                                </div>
+                            </div>
                         </td>
-                        <td colspan="1" class="fixed-column dynamic-left" style="text-align: center;">
-                            1 x _
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                            <b>
+                                Ops a Nivel L & U por Operador
+                            </b>
                         </td>
+                        <td colspan="2" class="fixed-column dynamic-left">
+                        </td>
+                        <Virtualize Context="usr" Items="_UserOfArea">
+                            <td style="text-align: center;" colspan="2">
+                                @{
+                                    var sum = _distributions.Sum(op =>
+                                    {
+                                        if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
+                                        {
+                                            var distinctRecords = context?
+                                                .GroupBy(c => new { c.DistributionId, c.OperatorId }) 
+                                                .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                                            return distinctRecords?.Count(r => r?.ILULevelId != 0 && r?.ILULevelId > 5) ?? 0;
+                                        }
+                                        return 0;
+                                    });
+                                    @sum
+                                }
+                            </td>
+                        </Virtualize>
                     </tr>
                 </tbody>
             </MudSimpleTable>

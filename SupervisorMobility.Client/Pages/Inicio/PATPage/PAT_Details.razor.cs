@@ -75,6 +75,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private double? operatorPercentage { get; set; }
         private double? sameOperationPercentage { get; set; }
 
+        private string leader { get; set; } = "S";
+        private int? peopleCount { get; set; }
+
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
