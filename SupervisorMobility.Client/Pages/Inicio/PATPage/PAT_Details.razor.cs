@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<ILULevel> _LevelsILU { get; set; } = new();
         //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
         private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
-       
+
 
         private Dictionary<int, bool> Distributions_Knolowed { get; set; } = new Dictionary<int, bool>();
         private Dictionary<int, bool> User_Knolowed { get; set; } = new Dictionary<int, bool>();
@@ -72,8 +72,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private string ProgrammedStartDate { get; set; }
 
         private int? knowledgePercentage { get; set; }
-        private double? operatorPercentage { get; set; }
-        private double? sameOperationPercentage { get; set; }
 
         private string leader { get; set; } = "S";
         private int? peopleCount { get; set; }
@@ -124,7 +122,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-           
+
             //await JS.InvokeVoidAsync("blazorUtils.truncateText");
 
         }
@@ -169,7 +167,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
             _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-            _UserOfArea.Insert(0,_pat.Supervisor);
+            _UserOfArea.Insert(0, _pat.Supervisor);
             //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
@@ -233,10 +231,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             auxILU_UseId = ID_User;
 
             AllRegistersOperationsInUser?.Clear();
-            foreach(var op in _distributions)
+            foreach (var op in _distributions)
             {
-                if(ILU_Matrix.TryGetValue((op.DistributionId, auxILU_UseId), out var context))
-            {
+                if (ILU_Matrix.TryGetValue((op.DistributionId, auxILU_UseId), out var context))
+                {
                     var latestContext = context.OrderByDescending(c => c.AcquisitionDate);
 
                     if (latestContext?.Count() > 0)
@@ -253,10 +251,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             auxILU_OpId = Op_User;
 
             AllRegistersUsersInOperation?.Clear();
-            foreach(var usr in _UserOfArea)
+            foreach (var usr in _UserOfArea)
             {
-                if(ILU_Matrix.TryGetValue((auxILU_OpId, usr.UserId), out var context))
-            {
+                if (ILU_Matrix.TryGetValue((auxILU_OpId, usr.UserId), out var context))
+                {
                     var latestContext = context.OrderByDescending(c => c.AcquisitionDate);
 
                     if (latestContext?.Count() > 0)
@@ -381,14 +379,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
                 var dateString = EnglishDate.Replace("/", "-");
                 ProgrammedStartDate = dateString;
-           
+
             }
             else
             {
                 var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
                 var dateString = date.ToShortDateString().Replace("/", "-");
                 ProgrammedStartDate = dateString;
-               
+
             }
             CreateILUJob = true;
         }
@@ -418,6 +416,134 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             visibleSign = false;
+        }
+
+
+        // Distributions
+
+        private bool HasLowLevel(IDictionary<(int DistributionId, int UserId), List<ILURegister>> iluMatrix, IEnumerable<Distribution> distributions, int userId)
+        {
+            return distributions.Any(op =>
+            {
+                if (iluMatrix.TryGetValue((op.DistributionId, userId), out var context))
+                {
+                    var distinctRecords = context?
+                        .GroupBy(c => new { c.DistributionId, c.OperatorId })
+                        .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                    return distinctRecords?.Any(r => r?.ILULevelId != 0 && r?.ILULevelId < 5) ?? false;
+                }
+                return false;
+            });
+        }
+
+        private int CountHighLevel(IDictionary<(int DistributionId, int UserId), List<ILURegister>> iluMatrix, IEnumerable<Distribution> distributions, int userId)
+        {
+            return distributions.Sum(op =>
+            {
+                if (iluMatrix.TryGetValue((op.DistributionId, userId), out var context))
+                {
+                    var distinctRecords = context?
+                        .GroupBy(c => new { c.DistributionId, c.OperatorId })
+                        .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                    return distinctRecords?.Count(r => r?.ILULevelId != 0 && r?.ILULevelId > 5) ?? 0;
+                }
+                return 0;
+            });
+        }
+
+        // Users
+
+        private bool HasLowLevelForUsers(IDictionary<(int DistributionId, int UserId), List<ILURegister>> iluMatrix, IEnumerable<User> users, int distributionId)
+        {
+            return users.Any(usr =>
+            {
+                if (iluMatrix.TryGetValue((distributionId, usr.UserId), out var context))
+                {
+                    var distinctRecords = context?
+                        .GroupBy(c => new { c.DistributionId, c.OperatorId })
+                        .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                    return distinctRecords?.Any(r => r?.ILULevelId != 0 && r?.ILULevelId < 5) ?? false;
+                }
+                return false;
+            });
+        }
+
+        private int CountHighLevelForUsers(IDictionary<(int DistributionId, int UserId), List<ILURegister>> iluMatrix, IEnumerable<User> users, int distributionId)
+        {
+            return users.Sum(usr =>
+            {
+                if (iluMatrix.TryGetValue((distributionId, usr.UserId), out var context))
+                {
+                    var distinctRecords = context?
+                        .GroupBy(c => new { c.DistributionId, c.OperatorId })
+                        .Select(g => g.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault());
+
+                    return distinctRecords?.Count(r => r?.ILULevelId != 0 && r?.ILULevelId > 5) ?? 0;
+                }
+                return 0;
+            });
+        }
+
+        public int countUserO { get; set; } = 0;
+        public int countUserX { get; set; } = 0;
+        public int countDistO { get; set; } = 0;
+        public int countDistX { get; set; } = 0;
+
+        private double? CalculateUserPercentage()
+        {
+            if (knowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
+                return null;
+
+            countUserO = 0;
+            countUserX = 0;
+
+            foreach (var op in _distributions)
+            {
+                var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                var meetsKnowledge = sum >= knowledgePercentage;
+
+                if (meetsKnowledge)
+                {
+                    countUserO++;
+                }
+                else if (hasLowLevel && !meetsKnowledge)
+                {
+                    countUserX++;
+                }
+            }
+
+            return (countUserO + countUserX) > 0 ? (double)countUserO / (countUserO + countUserX) * 100 : null;
+        }
+
+        private double? CalculateDistributionPercentage()
+        {
+            if (knowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
+                return null;
+
+            countDistO = 0;
+            countDistX = 0;
+
+            foreach (var usr in _UserOfArea)
+            {
+                var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
+                var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
+                var meetsKnowledge = sum >= knowledgePercentage;
+
+                if (meetsKnowledge)
+                {
+                    countDistO++;
+                }
+                else if (hasLowLevel && !meetsKnowledge)
+                {
+                    countDistX++;
+                }
+            }
+
+            return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
         }
 
 
