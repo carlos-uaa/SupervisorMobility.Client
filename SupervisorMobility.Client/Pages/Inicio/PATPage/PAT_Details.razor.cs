@@ -172,6 +172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
 
+
             foreach (var op in _distributions)
             {
                 foreach (var usr in _UserOfArea)
@@ -186,6 +187,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     ILU_Matrix.Add((op.DistributionId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
                     //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
+
                 }
             }
 
@@ -202,6 +204,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 }
             }
 
+            _pat.PatUserRoles = new List<PatUserRole>();
+
             foreach (var usr in _UserOfArea)
             {
                 if (AllRegistersOfPat.FindIndex(r => r.OperatorId == usr.UserId) != -1)
@@ -213,6 +217,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     User_Knolowed.Add(usr.UserId, false);
 
                 }
+
+                PatUserRole newPatUserRole = new PatUserRole
+                {
+                    UserId = usr.UserId,
+                    isActive = true,
+                    PATId = patID,
+                };
+
+                _pat.PatUserRoles.Add(newPatUserRole);
             }
 
             ShowTable = true;

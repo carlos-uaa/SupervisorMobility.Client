@@ -25,6 +25,7 @@ namespace SupervisorMobility.Client.Data.Entities
         //public Distribution? Distribution { get; set; }
 
         public ICollection<LeadershipRecord>? LeadershipRecords { get; set; }
+        public ICollection<PatUserRole>? PatUserRoles { get; set; }
 
         public DateTime? AplicationDate { get; set; }
         public int? AplicationYear { get; set; }
