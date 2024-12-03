@@ -1,5 +1,4 @@
 using BlazorCameraStreamer;
-using DocumentFormat.OpenXml.VariantTypes;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
@@ -45,6 +44,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         private string HighlightedText;
 
+        PAT _pat = new();
+        public int ssvId;
 
         public int productId = 0;
         public class Segment
@@ -176,7 +177,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
 
             //Subhub get
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeModel: true, includePeople: true, includeDocuments: true, includeCollections: true);
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includeModel: true, includePeople: true, includeDocuments: true, includeCollections: true, includePats: true);
 
 
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
@@ -258,7 +259,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             stationId = _sosHub.StationId ?? stationId;
             departmentId = _sosHub.DepartmentId ?? departmentId;
-        
+
 
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
 
@@ -705,12 +706,35 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public bool ShowGenerateDialog = false;
         public bool ShowPagesGenerate = false;
         private int selectedIndexPageGenerate = 0;
-        public void GoToPageGenerate(int indexPage)
+        public async void GoToPageGenerate(int indexPage)
         {
             selectedIndexPageGenerate = indexPage;
             dialogPagesOptions.MaxWidth = MaxWidth.Medium;
             switch (selectedIndexPageGenerate)
             {
+                case 0:
+                    if (_sosHub.PATs.Count > 0)
+                    {
+                        _pat = _sosHub.PATs.Last();
+                        //_pat.PlantId = (int)_sosHub.PlantId;
+                        //_pat.AreaId = (int)_sosHub.AreaId;
+
+                        _pat.Plant = _plants.Find(p => p.PlantId == _pat.PlantId);
+                        _pat.Area = _areas.Find(a => a.AreaId == _pat.AreaId);
+
+                    }
+                    else
+                    {
+
+                        _pat = new PAT();
+                        _pat.PlantId = (int)_sosHub.PlantId;
+                        _pat.AreaId = (int)_sosHub.AreaId;
+
+                        _pat.Plant = _plants.Find(p => p.PlantId == _sosHub.PlantId);
+                        _pat.Area = _areas.Find(a => a.AreaId == _sosHub.AreaId);
+                    }
+
+                    break;
                 case 1:
                     if (_sosHub.SOSAnalysis.Count > 0)
                     {
@@ -807,6 +831,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                             OperatorTurn3 = (int)(_sosDistribution.Turns.ElementAt(2).OperatorId ?? 0);
                             SupervisorTurn3 = (int)(_sosDistribution.Turns.ElementAt(2).SupervisorId ?? 0);
                         }
+
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        //lo redirigimos a la vista dado que ya hay datos
+                        selectedIndexPageGenerate = 33;
+                    }
+                    else
+                    {
+                        //preparamos los datos
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
                     }
                     break;
                 case 4:
@@ -1008,7 +1047,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         //generate combination
         #region generateCombination
         SOSCombination _sosCombination { get; set; } = new SOSCombination();
-        
+
         int ReviewerHYSDocCombinationId = 0;
         bool ReviewerHYSCombinationExist = false;
         SOSCombinationLogbook logCombination { get; set; } = new SOSCombinationLogbook();
@@ -1184,7 +1223,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         SOSDistributionLogbook logDistribution { get; set; } = new SOSDistributionLogbook();
         int ApproverDistributionId = 0;
         int ReviewerDistributionId = 0;
-        
+
+        List<SOSAnalysis> AvailableAnalyses = new();
+        List<SOSSequence> AvailableSequences = new();
+
+        private string searchAnalysis = "";
+        private IEnumerable<SOSAnalysis> FilteredAnalysis =>
+            AvailableAnalyses.Where(op =>
+                string.IsNullOrEmpty(searchAnalysis) ||
+                (op.InternalControlNumber?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false));
+
+        private string searchSequence = "";
+        private IEnumerable<SOSSequence> FilteredSequences =>
+            AvailableSequences.Where(op =>
+                string.IsNullOrEmpty(searchSequence) ||
+                (op.InternalControlNumber?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OperationName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false));
+
+
 
         public async void GenerateDistribution()
         {
@@ -1202,6 +1261,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     StateHasChanged();
                     return;
                 }
+
+                var copySequences = _sosDistribution.Sequences;
+                var copyAnalyses = _sosDistribution.Analyses;
 
                 _sosDistribution = _sosHub.SOSDistribution.First();
 
@@ -1459,7 +1521,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                       yesText: "Ok!");
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
-                } 
+                }
                 else if (string.IsNullOrEmpty(_sosFlow.TargetTime))
                 {
                     bool? result = await DialogService.ShowMessageBox(
@@ -1469,7 +1531,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
                 }
-                else if (_sosFlow.CreatedAt == null )
+                else if (_sosFlow.CreatedAt == null)
                 {
                     bool? result = await DialogService.ShowMessageBox(
                       "Warning",
@@ -1697,6 +1759,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{id}");
             }
+            else if (typeof(T) == typeof(PAT))
+            {
+                NavigationManager.NavigateTo($"/PAT/{id}");
+            }
             // Añadir más casos según sea necesario
         }
 
@@ -1742,7 +1808,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 if (confirm == "Deleted!")
                 {
                     bool res = await SOSAnalysisServices.DeleteSOSAnalysis(id);
-                    if (res){
+                    if (res)
+                    {
 
                         _sosHub.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
                         Documents.RemoveAll(doc => doc is SOSAnalysis analysis && analysis.SOSAnalysisId == id);
@@ -1785,7 +1852,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 if (confirm == "Deleted!")
                 {
-                   
+
                     bool res = await SOSDistributionServices.DeleteSOSDistribution(id);
                     if (res)
                     {
@@ -2023,6 +2090,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
 
 
+        #endregion
+
+        #region PAT
+
+        async void CreatePatAsync()
+        {
+            _pat.Status = 1;
+
+            var result = await SOSHubServices.GeneratePat(_sosHub.SOSHubId, _pat);
+            if (result != null)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"New PAT Created", Severity.Info);
+                NavigationManager.NavigateTo($"/PAT/{result}");
+
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error in Pat", Severity.Error);
+            }
+
+        }
         #endregion
     }
 }

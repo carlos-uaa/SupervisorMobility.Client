@@ -29,5 +29,11 @@
         public bool? IsActive { get; set; }
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
+
+        public IEnumerable<SOSAnalysis>? Analyses { get; set; } = new List<SOSAnalysis>();
+        public IEnumerable<SOSSequence>? Sequences { get; set; } = new List<SOSSequence>();
+
+
+
     }
 }

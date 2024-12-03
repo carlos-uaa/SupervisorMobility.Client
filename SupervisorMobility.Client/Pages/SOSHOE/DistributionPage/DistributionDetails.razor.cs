@@ -1,13 +1,9 @@
 using MudBlazor;
 using System.Text.RegularExpressions;
 using System.Text;
-using System.Globalization;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
-using Blazorise;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Wordprocessing;
-using SupervisorMobility.Client.Data.Entities.IS;
+using System.Globalization;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 {
@@ -58,10 +54,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private string[] stepsQuantity = new string[] { "0", "0", "0", "0", "0" };
         private string[] stepsTime = new string[] { "0", "0", "0", "0", "0", "0" };
 
+        private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
 
         protected async override Task OnInitializedAsync()
         {
-
+            _links = new List<BreadcrumbItem>
+             {
+                  new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                 new BreadcrumbItem(text: Localizer["HOESOSDistributionTitle"], href: "/soshoe/Distribution"),
+                 new BreadcrumbItem(text: Localizer["Details"], href: "/soshoe/Distribution/Details", disabled: true)
+                        };
+            BreadcrumbService.UpdateBreadcrumbs(_links);
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -137,7 +140,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     }
                 }
             }
-            var sosDistributionAdditionalTime  = _sosDistribution.SOSDistributionAdditionalTime;
+            var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
 
             var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
@@ -278,5 +281,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         {
             await Exportation.ExportDistributionToExcel(DistributionId.Value);
         }
+
+        
+
     }
 }

@@ -38,9 +38,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubCreated;
         }
-        public async Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false)
+        public async Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false, bool includePats = false)
         {
-            var response = await _http.GetAsync($"SOS/DataPool/{HubId}?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}&includeModel={includeModel}&includeCollections={includeCollections}&includePeopleCollections={includePeopleCollections}");
+            var response = await _http.GetAsync($"SOS/DataPool/{HubId}?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}&includeModel={includeModel}&includeCollections={includeCollections}&includePeopleCollections={includePeopleCollections}&includePats={includePats}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -238,6 +238,24 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return true;
         }
+
+
+        public async Task<int> GeneratePat(int SOS_DataPool_id, PAT pat)
+        {
+            var response = await _http.PostAsJsonAsync($"PAT/sosHub?SOSHubCollection_Id={SOS_DataPool_id}", pat);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var patCreated = JsonSerializer.Deserialize<PAT>(content, _options);
+
+                return patCreated.PATid;
+            }
+
+            return 0;
+        }
+
 
         public async Task<int> GenerateAnalysis(int SOS_DataPool_id, SOSAnalysis analysis)
         {

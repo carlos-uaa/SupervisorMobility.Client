@@ -35,5 +35,8 @@ namespace SupervisorMobility.Client.Data.Entities
         public DateTime? EditionDate { get; set; }
 
         public DateTime? ApprovalDate { get; set; }
+        public int? SOSHubId { get; set; }
+        public SOSHub? SOSHub { get; set; }
+        public bool IsActive { get; set; }
     }
 }
