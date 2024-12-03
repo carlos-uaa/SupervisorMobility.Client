@@ -685,7 +685,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
             StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true);
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true, includeModel: true);
 
             if(_sosHub.StationId != 0)
                 _sosHub.Station = _stations.Find(s => s.StationId == _sosHub.StationId);
@@ -1691,7 +1691,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public List<AnalysisBkup> RawAnalisis { get; set; } = new List<AnalysisBkup>();
         public List<AnalysisBkup> RawAnalisisBk { get; set; } = new List<AnalysisBkup>();
 
-        private IEnumerable<string> _selectedValues = new List<string>();
+        private IEnumerable<AnalysisBkup> _selectedValues = new List<AnalysisBkup>();
 
 
         public string stepName { get; set; } = "";
@@ -1789,7 +1789,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (state == "Deleted!")
             {
                 RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
+                RawAnalisisBk.Clear();
                 _sosHub.Sections.Clear();
+                StateHasChanged();
             }
 
 
@@ -1878,19 +1880,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 Section sectionToAdd = new Section { Step = stepName };
 
-                foreach (string item in _selectedValues)
+                foreach (AnalysisBkup item in _selectedValues)
                 {
-                    Analysis analysisToAdd = ProcessText(item);
+                    Analysis analysisToAdd = ProcessText(item.Text);
 
                     sectionToAdd.Analyses.Add(analysisToAdd);
-                    RawAnalisis.Remove(RawAnalisis.First(a => a.Text == item));
+                    RawAnalisis.Remove(RawAnalisis.First(a => a.Text == item.Text));
                 }
 
                 _sosHub.Sections.Add(sectionToAdd);
 
                 // Reset variables
                 stepName = string.Empty;
-                _selectedValues = new List<string>();
+                _selectedValues = new List<AnalysisBkup>();
                 CloseStepDialog();
             }
             else

@@ -6,7 +6,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
     public interface ISOSHubService
     {
         Task<SOSHub> CreateSOScollection(SOSHub SOS_EntityToCreate);
-        Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false);
+        Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false, bool includePats = false);
         Task<List<SOSHub>> GetAllSOSHub( bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
         Task<SOSHub> UpdateSOSHub(SOSHub SosEntity);
         Task<SOSHub> DeleteSOSHub(int SosEntity_id);
@@ -27,7 +27,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<int> GenerateFlow(int SOS_DataPool_id, SOSFlow flow);
         Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution);
         Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence);
-    
+        Task<int> GeneratePat(int SOS_DataPool_id, PAT pat);
         //Histoy
         Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
     }

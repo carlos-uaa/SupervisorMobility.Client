@@ -3,7 +3,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
 {
     public interface ISOSDistributionService
     {
-        Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false, bool includeTurns = false, bool includeTimes = false);
+        Task<SOSDistribution> GetSOSDistribution(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false, bool includeTurns = false, bool includeTimes = false, bool includeCollections =false);
         Task<List<SOSDistribution>> GetAllSOSDistribution(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSDistribution> UpdateSOSDistribution(SOSDistribution SosEntity);
         Task<bool> DeleteSOSDistribution(int SosEntity_id);

@@ -37,6 +37,19 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
 
             return SOSSequencesRetorned;
         }
+          public async Task<List<SOSSequence>> GetAllSOSSequenceByDistribution(int Distribution_Id, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
+        {
+            var response = await _http.GetAsync($"SOS/Sequence/byDistribution?Distribution_Id={Distribution_Id}&includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+            var SOSSequencesRetorned = JsonSerializer.Deserialize<List<SOSSequence>>(content, _options);
+
+            return SOSSequencesRetorned;
+        }
 
         public async Task<SOSSequence> GetSOSSequence(int SOSSequenceId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false)
         {
