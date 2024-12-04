@@ -14,10 +14,12 @@ namespace SupervisorMobility.Client.Data.Entities
 
     public class PatUserRole
     {
+        public int PatUserRoleId { get; set; }
         public int PATId { get; set; }
         public int UserId { get; set; }
         public OperatorRole? Role { get; set; }
-        public bool isActive { get; set; }
+        public string? Comment { get; set; }
+        public bool IsActive { get; set; }
 
     }
 }
