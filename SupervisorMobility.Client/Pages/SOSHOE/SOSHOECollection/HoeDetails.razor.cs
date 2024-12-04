@@ -713,7 +713,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             switch (selectedIndexPageGenerate)
             {
                 case 0:
-                    if (_sosHub.PATs.Count > 0)
+                    if (_sosHub.PATs.Count > 0 && _sosHub.PATs?.Last().Status != 2)
                     {
                         _pat = _sosHub.PATs.Last();
                         //_pat.PlantId = (int)_sosHub.PlantId;
@@ -2096,7 +2096,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         async void CreatePatAsync()
         {
+            _pat.SSVresponsibleID = ssvId;
+
             _pat.Status = 1;
+            _pat.AplicationYear = _pat.AplicationDate.Value.Year;
 
             var result = await SOSHubServices.GeneratePat(_sosHub.SOSHubId, _pat);
             if (result != null)
