@@ -34,7 +34,6 @@
 @inject ISOSFlowService SOSFlowServices
 @inject ISOSSequenceService SOSSequenceServices
 
-
 <style>
 
     .custom-table td:first-child {
@@ -45,9 +44,6 @@
         background-color: white;
     }
 
-</style>
-
-<style>
     .vertical {
         writing-mode: tb-rl;
         -webkit-transform: rotate(180deg);
@@ -88,8 +84,19 @@
         border-top: 3px dashed var(--mud-palette-table-lines);
     }
 
-</style>
 
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px);
+        margin: 5px;
+    }
+</style>
 
 <PageTitle>Supervisor Mobility | @Localizer["configuration"]</PageTitle>
 
@@ -344,7 +351,9 @@ else
                                                     <MudChip T="string" Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Secondary">@item.Description</MudChip>
                                                 }
                                             </MudItem>
-                                        }else{
+                                        }
+                                        else
+                                        {
                                             <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Currently, there is no apply models.</MudAlert>
                                         }
                                     </td>
@@ -941,6 +950,27 @@ else
                                     <i></i>
                                 </MudButton>
                             </MudItem>
+                            <MudItem xs="4">
+                                <MudButton Class="custom-button-card" Style="--clr:#c4c4c4" OnClick="@(() => GoToPageGenerate(0))">
+                                    <MudCard>
+                                        <MudCardHeader>
+                                            <CardHeaderAvatar>
+                                                <MudAvatar>
+                                                    <MudImage Src="Images/prueba.png" />
+                                                </MudAvatar>
+                                            </CardHeaderAvatar>
+                                            <CardHeaderContent>
+                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                <MudText Typo="Typo.body2">@Localizer["patDescription"]</MudText>
+                                            </CardHeaderContent>
+                                            <CardHeaderActions>
+                                                <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                            </CardHeaderActions>
+                                        </MudCardHeader>
+                                    </MudCard>
+                                    <i></i>
+                                </MudButton>
+                            </MudItem>
                         </MudGrid>
 
                     </ChildContent>
@@ -1429,6 +1459,38 @@ else
         <MudItem>
             @switch (selectedIndexPageGenerate)
             {
+                case 0:
+                    <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudAvatar>
+                                    <MudImage Src="Images/prueba.png" />
+                                </MudAvatar>
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Style="text-align:left">
+                                    @if (_sosHub.SOSAnalysis.Count == 0)
+                                    {
+                                        <b> Generate </b>
+                                    }
+                                    else
+                                    {
+                                        <b> Revision</b>
+                                    }
+                                    <b> PAT</b>
+                                </MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudItem style="padding-top: 5px; padding-left:10px;">
+                                    @if (_sosHub.PATs?.Count > 0 && _sosHub.PATs?.Last().Status != 2 && _pat.PATid != 0)
+                                    {
+                                        <SupervisorMobility.Client.Pages.Components.ButtonQuickView ButtonText="@Localizer["details"]" OnClick="() => Details<PAT>(_pat.PATid)"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
+                                    }
+                                </MudItem>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                    </MudCard>
+                    break;
                 case 1:
                     <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
                         <MudCardHeader>
@@ -1560,6 +1622,136 @@ else
     <DialogContent>
         @switch (selectedIndexPageGenerate)
         {
+            case 0:
+                <div class="d-flex" style="max-height: auto">
+                    <MudItem Class="ma-5" Style="width: 100%;">
+                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2)
+                        {
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6"> @Localizer["createPAT"]</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudChip Variant="Variant.Text" Color="Color.Success"> @Localizer["new"] PAT</MudChip>
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent>
+
+                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" ReadOnly>
+
+                                        <MudSelectItem Value="_pat.Plant.PlantId">@($"{_pat.Plant.Code} - {_pat.Plant.Description}")</MudSelectItem>
+                                    </MudSelect>
+
+
+
+
+                                    @*Mud select for Areas for Admin *@
+                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" ReadOnly>
+                                        <MudSelectItem Value="_pat.Area.AreaId">@($"{_pat.Area.Code} - {_pat.Area.Description}")</MudSelectItem>
+                                    </MudSelect>
+
+
+
+                                    <MudDatePicker @bind-Date="_pat.AplicationDate" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
+
+
+                                    @*Mud select for SSV for Admin *@
+                                    <MudSelect T="int" Label="SSV" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId">
+                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
+                                        @foreach (var ssv in _sosHub.ApproverOwners)
+                                        {
+                                            <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    @if (ssvId != 0)
+                                    {
+                                        @if (_sosHub.ReviewerEditors.Count > 0)
+                                        {
+                                            <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.SupervisorId" For="@(() => _pat.SupervisorId)">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
+                                                @foreach (var sv in _sosHub.ReviewerEditors)
+                                                {
+                                                    <MudSelectItem Value="sv.UserId">
+                                                        @($"{sv.Name}")
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info" Class="mt-5">
+                                                @Localizer["thisSSVDoesNotHaveSubordinates"]
+                                            </MudAlert>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.SupervisorId" For="@(() => _pat.SupervisorId)">
+                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnSSV"]</MudSelectItem>
+                                        </MudSelect>
+                                    }
+
+
+
+                                </MudCardContent>
+                              
+                            </MudCard>
+                        }
+                        else
+                        {
+                            <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <MudItem Class="d-flex">
+                                                <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
+                                                <MudText Class="ml-2">@Localizer["area"]</MudText>
+                                            </MudItem>
+                                        </th>
+                                        <th>@Localizer["applicationYear"]</th>
+                                        <th>Supervisor</th>
+                                        <th>SSV</th>
+                                        <th>@Localizer["status"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            @_pat?.Area?.Code - @_pat?.Area?.Description
+                                        </td>
+                                        <td>@_pat?.CreationDate?.Year</td>
+                                        <td>@_pat?.Supervisor?.Name</td>
+                                        <td>@_pat?.SSVresponsible?.Name</td>
+                                        <td>
+                                            <MudItem Style="justify-content: end" Class="ml-auto">
+                                                <MudItem Class="d-flex">
+                                                    @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status == 1)
+                                                    {
+                                                        <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                                            @Localizer["new"]
+                                                        </MudChip>
+                                                    }
+
+                                                    @if (_pat?.Status == 2)
+                                                    {
+                                                        <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                                            @Localizer["approved"]!
+                                                        </MudChip>
+                                                    }
+                                                </MudItem>
+                                            </MudItem>
+                                        </td>
+                                    </tr>
+                                  
+                                </tbody>
+                            </MudSimpleTable>
+
+                        }
+
+                    </MudItem>
+                </div>
+                break;
             case 1:
                 <div class="d-flex" style="min-height:40vh; max-height: auto">
                     <MudItem Class="ma-5">
@@ -2382,6 +2574,107 @@ else
                 </div>
                 break;
             case 3:
+                <div class="d-flex" style="height:100%; max-height: auto">
+                    <MudItem Style="margin-top: -15px; width: 100%">
+                        @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
+                        {
+                            <MudContainer>
+                                <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                                <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                    @foreach (SOSSequence sequence in FilteredSequences)
+                                    {
+                                        <div class="toggle-column">
+                                            <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                                <div class="mud-width-full mud-height-full">
+                                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                                        <MudText Class="ellipsis">@sequence.InternalControlNumber</MudText>
+                                                    </div>
+                                                    <MudText Typo="Typo.subtitle2">@sequence.OperationName</MudText>
+                                                </div>
+                                            </MudToggleItem>
+                                        </div>
+                                    }
+                                </MudToggleGroup>
+                            </MudContainer>
+                            <MudContainer>
+                                <MudTextField @bind-Value="searchAnalysis" Placeholder="Buscar analisis..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                                <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Analyses" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                    @foreach (SOSAnalysis analisis in FilteredAnalysis)
+                                    {
+                                        <div class="toggle-column">
+                                            <MudToggleItem Value="@(analisis)">
+                                                <div class="mud-width-full mud-height-full">
+                                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                                        <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
+                                                        <MudChip Color="@(context ? Color.Success : Color.Primary)" Icon="@(context ? Icons.Material.Filled.Check : @Icons.Material.Filled.CheckBoxOutlineBlank)"></MudChip>
+                                                    </div>
+                                                    <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
+                                                </div>
+                                            </MudToggleItem>
+                                        </div>
+                                    }
+                                </MudToggleGroup>
+                            </MudContainer>
+                        }
+                        else
+                        {
+                            <MudSimpleTable Style="width:100%">
+                                <MudTHeadRow>
+                                    <MudTh>
+                                        Sequence Name
+                                    </MudTh>
+                                    <MudTh>
+                                        InternalControlNumber
+                                    </MudTh>
+
+                                </MudTHeadRow>
+
+
+                                @foreach (var (sequence, index) in _sosDistribution.Sequences.Select((sequence, index) => (sequence, index)))
+                                {
+
+                                    <MudTr>
+                                        <MudTd>
+                                            <MudChip Color="Color.Primary" Icon="@Icons.Material.Filled.Work" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                @(sequence.OperationName)
+                                            </MudChip>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText>@sequence.InternalControlNumber</MudText>
+                                        </MudTd>
+                                    </MudTr>
+                                }
+                            </MudSimpleTable>
+
+                            <MudSimpleTable Style="width:100%">
+                                <MudTHeadRow>
+                                    <MudTh>
+                                        Analysis Name
+                                    </MudTh>
+                                    <MudTh>
+                                        InternalControlNumber
+                                    </MudTh>
+                                </MudTHeadRow>
+
+                                @foreach (var (analisis, index) in _sosDistribution.Analyses.Select((analisis, index) => (analisis, index)))
+                                {
+                                    <MudTr>
+                                        <MudTd>
+                                            <MudChip Color="Color.Primary" Icon="@Icons.Material.Filled.Work" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                @(analisis.OperationName)
+                                            </MudChip>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText>@analisis.InternalControlNumber</MudText>
+                                        </MudTd>
+                                    </MudTr>
+                                }
+                            </MudSimpleTable>
+                        }
+                    </MudItem>
+                </div>
+                break;
+            case 33:
                 <div class="d-flex" style="height:100%; max-height: auto">
                     <MudItem Style="margin-top: -15px">
                         <MudSimpleTable Dense Style="width:100%; height:100%; margin:0px; padding:0px; overflow: hidden;" Square="true">
@@ -3470,6 +3763,15 @@ else
     <DialogActions>
         @switch (selectedIndexPageGenerate)
         {
+            case 0:
+            @if(_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2){
+                <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
+                        <MudText>@Localizer["create"] PAT</MudText>
+                    </MudButton>
+            }else{
+
+            }
+                break;
             case 1:
                 @if (_sosHub.SOSAnalysis.Count == 0)
                 {
@@ -3489,8 +3791,12 @@ else
                 }
                 break;
             case 2:
+
+
                 @if (_sosHub.SOSCombination.Count == 0)
                 {
+
+
                     <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateCombination())" Color="Color.Primary">
                         <MudText>Generate</MudText>
                     </MudButton>
@@ -3499,6 +3805,7 @@ else
                 {
                     @if (_sosCombination.CombinationLogbooks?.Last().Status == 2)
                     {
+
                         <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateCombination())" Color="Color.Primary">
                             <MudText>Revision</MudText>
                         </MudButton>
@@ -3506,10 +3813,28 @@ else
 
                 }
                 break;
-
             case 3:
+
+                @if (_sosHub.SOSDistribution.Count != 0)
+                {
+                    <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowRight" OnClick="@(() =>  selectedIndexPageGenerate = 33)" Color="Color.Primary">
+                        <MudText>View Card</MudText>
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowRight" OnClick="@(() =>  selectedIndexPageGenerate = 33)" Color="Color.Primary">
+                        <MudText>Next Step</MudText>
+                    </MudButton>
+                }
+
+                break;
+            case 33:
                 @if (_sosHub.SOSDistribution.Count == 0)
                 {
+                    <MudButton Style="float: left" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowLeft" OnClick="@(() =>  selectedIndexPageGenerate = 3)" Color="Color.Primary">
+                        <MudText>Return Step</MudText>
+                    </MudButton>
                     <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateDistribution())" Color="Color.Primary">
                         <MudText>Generate</MudText>
                     </MudButton>
@@ -3518,13 +3843,22 @@ else
                 {
                     @if (_sosDistribution.DistributionLogbooks?.Last().Status == 2)
                     {
+                        <MudButton Style="float: left" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowLeft" OnClick="@(() =>  selectedIndexPageGenerate = 3)" Color="Color.Primary">
+                            <MudText>Edit First Step</MudText>
+                        </MudButton>
                         <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  GenerateDistribution())" Color="Color.Primary">
                             <MudText>Revision</MudText>
                         </MudButton>
                     }
-
+                    else
+                    {
+                        <MudButton Style="float: left" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowLeft" OnClick="@(() =>  selectedIndexPageGenerate = 3)" Color="Color.Primary">
+                            <MudText>View First Step</MudText>
+                        </MudButton>
+                    }
                 }
                 break;
+
             case 4:
                 @if (_sosHub.SOSFlow.Count == 0)
                 {

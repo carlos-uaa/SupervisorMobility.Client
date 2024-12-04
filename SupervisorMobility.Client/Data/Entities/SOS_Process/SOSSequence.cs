@@ -22,5 +22,19 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SOSSequence other)
+            {
+                return this.SOSSequenceId == other.SOSSequenceId;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return SOSSequenceId.GetHashCode();
+        }
     }
 }
