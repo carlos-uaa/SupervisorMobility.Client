@@ -1482,7 +1482,7 @@ else
                             </CardHeaderContent>
                             <CardHeaderActions>
                                 <MudItem style="padding-top: 5px; padding-left:10px;">
-                                    @if (_sosHub.PATs?.Count > 0 && _sosHub.PATs?.Last().Status != 2 || _pat.PATid != 0)
+                                    @if (_sosHub.PATs?.Count > 0 && _sosHub.PATs?.Last().Status != 2 && _pat.PATid != 0)
                                     {
                                         <SupervisorMobility.Client.Pages.Components.ButtonQuickView ButtonText="@Localizer["details"]" OnClick="() => Details<PAT>(_pat.PATid)"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
                                     }
@@ -1625,7 +1625,7 @@ else
             case 0:
                 <div class="d-flex" style="max-height: auto">
                     <MudItem Class="ma-5" Style="width: 100%;">
-                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 3)
+                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2)
                         {
                             <MudCard>
                                 <MudCardHeader>
@@ -1695,9 +1695,7 @@ else
 
 
                                 </MudCardContent>
-                                <MudCardActions>
-                                    @* <MudButton Href="/PAT" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton> *@
-                                </MudCardActions>
+                              
                             </MudCard>
                         }
                         else
@@ -1714,9 +1712,7 @@ else
                                         <th>@Localizer["applicationYear"]</th>
                                         <th>Supervisor</th>
                                         <th>SSV</th>
-                                        <th>@Localizer["date"]</th>
-                                        <th rowspan="2">
-                                        </th>
+                                        <th>@Localizer["status"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1724,11 +1720,9 @@ else
                                         <td>
                                             @_pat?.Area?.Code - @_pat?.Area?.Description
                                         </td>
-                                        <td>@_pat?.AplicationYear</td>
+                                        <td>@_pat?.CreationDate?.Year</td>
                                         <td>@_pat?.Supervisor?.Name</td>
-                                    </tr>
-                                    <tr>
-
+                                        <td>@_pat?.SSVresponsible?.Name</td>
                                         <td>
                                             <MudItem Style="justify-content: end" Class="ml-auto">
                                                 <MudItem Class="d-flex">
@@ -1748,9 +1742,8 @@ else
                                                 </MudItem>
                                             </MudItem>
                                         </td>
-                                        <td>@_pat?.CreationDate?.ToShortDateString()</td>
-                                        <td>@_pat?.SSVresponsible?.Name</td>
                                     </tr>
+                                  
                                 </tbody>
                             </MudSimpleTable>
 
@@ -3771,9 +3764,13 @@ else
         @switch (selectedIndexPageGenerate)
         {
             case 0:
+            @if(_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2){
                 <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
                         <MudText>@Localizer["create"] PAT</MudText>
                     </MudButton>
+            }else{
+
+            }
                 break;
             case 1:
                 @if (_sosHub.SOSAnalysis.Count == 0)

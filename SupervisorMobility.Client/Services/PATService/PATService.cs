@@ -162,6 +162,19 @@ namespace SupervisorMobility.Client.Services.PATService
 
         }
 
+        public async Task<bool> DeletePat(int patId)
+        {
+            var response = await _http.DeleteAsync($"PAT/{patId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         // Update pat
         public async Task<bool> UpdatePat(PAT pat)
         {
