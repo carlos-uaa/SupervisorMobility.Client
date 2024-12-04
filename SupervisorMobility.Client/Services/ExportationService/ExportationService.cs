@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Services.ExportationService
 {
@@ -53,6 +54,23 @@ namespace SupervisorMobility.Client.Services.ExportationService
         public async Task ExportDistributionToExcel(int idDistribution)
         {
             var response = await _http.GetAsync($"Exportation/Excel/Distribution/{idDistribution}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+        }
+
+        public async Task ExportYearlyPATToExcel(int idPAT)
+        {
+            var response = await _http.GetAsync($"Exportation/Excel/PATYearly/{idPAT}");
 
             if (!response.IsSuccessStatusCode)
             {

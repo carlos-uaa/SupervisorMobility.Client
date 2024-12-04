@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.EMMA;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -557,6 +558,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
+        }
+
+        private async void DownloadExcel()
+        {
+            if (knowledgePercentage != null || knowledgePercentage != 0) 
+            {
+                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+            }
+            else
+            {
+                Snackbar.Add($"First fill the rotation target", Severity.Warning);
+            }
         }
 
 
