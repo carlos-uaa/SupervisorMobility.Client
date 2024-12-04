@@ -26,10 +26,13 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public ICollection<LeadershipRecord>? LeadershipRecords { get; set; }
         public ICollection<PatUserRole>? PatUserRoles { get; set; }
+        public ICollection<PatDistributionComment>? PatDistributionComments { get; set; }
+
+        public int? KnowledgePercentage { get; set; }
 
         public DateTime? AplicationDate { get; set; }
         public int? AplicationYear { get; set; }
-    
+ 
 
         public DateTime? CreationDate { get; set; }
 

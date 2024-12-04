@@ -71,10 +71,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int operator_id { get; set; }
         private string ProgrammedStartDate { get; set; }
 
-        private int? knowledgePercentage { get; set; }
 
         private string leader { get; set; } = "S";
         private int? peopleCount { get; set; }
+
+        private List<string> monthsNames = new List<string>
+        {
+            "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
+            "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
+        };
+        private string[] monthsDistributionPercentage = new string[12];
+        private string[] monthsUsersPercentage = new string[12];
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -190,6 +198,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
             }
+            _pat.PatDistributionComments = new List<PatDistributionComment>();
 
             foreach (var op in _distributions)
             {
@@ -202,6 +211,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     Distributions_Knolowed.Add(op.DistributionId, false);
 
                 }
+
+                PatDistributionComment newPatDistributionComment = new PatDistributionComment
+                {
+                    DistributionId = op.DistributionId,
+                    IsActive = true,
+                    PATId = patID,
+                };
+                _pat.PatDistributionComments.Add(newPatDistributionComment);
             }
 
             _pat.PatUserRoles = new List<PatUserRole>();
@@ -221,7 +238,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 PatUserRole newPatUserRole = new PatUserRole
                 {
                     UserId = usr.UserId,
-                    isActive = true,
+                    IsActive = true,
                     PATId = patID,
                 };
 
@@ -507,7 +524,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private double? CalculateUserPercentage()
         {
-            if (knowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
+            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
                 return null;
 
             countUserO = 0;
@@ -517,13 +534,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
                 var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                var meetsKnowledge = sum >= knowledgePercentage;
+                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
 
                 if (meetsKnowledge)
                 {
                     countUserO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                 {
                     countUserX++;
                 }
@@ -534,7 +551,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private double? CalculateDistributionPercentage()
         {
-            if (knowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
+            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
                 return null;
 
             countDistO = 0;
@@ -544,13 +561,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                 var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
-                var meetsKnowledge = sum >= knowledgePercentage;
+                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
 
                 if (meetsKnowledge)
                 {
                     countDistO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                 {
                     countDistX++;
                 }
