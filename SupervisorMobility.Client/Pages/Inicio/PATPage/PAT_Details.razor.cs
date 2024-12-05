@@ -1,8 +1,11 @@
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -80,8 +83,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
             "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
         };
-        private string[] monthsDistributionPercentage = new string[12];
-        private string[] monthsUsersPercentage = new string[12];
+        private double?[] monthsDistributionPercentage = new double?[12];
+        private double?[] monthsUsersPercentage = new double?[12];
 
 
         protected async override Task OnInitializedAsync()
@@ -179,7 +182,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_pat.HistoricalAbility))
+                {
+                    var parsedData = JsonSerializer.Deserialize<List<Dictionary<string, Dictionary<string, double>>>>(_pat.HistoricalAbility);
 
+                    if (parsedData == null || parsedData.Count != 12)
+                        throw new InvalidOperationException("El JSON debe contener datos para exactamente 12 meses.");
+
+                    for (int i = 0; i < parsedData.Count; i++)
+                    {
+                        var monthKey = parsedData[i].Keys.First();
+                        var monthData = parsedData[i][monthKey];
+
+                        monthsDistributionPercentage[i] = monthData.ContainsKey("OR_O") && monthData["OR_O"] != 0.0 ? monthData["OR_O"] : null;
+                        monthsUsersPercentage[i] = monthData.ContainsKey("OR_P") && monthData["OR_P"] != 0.0 ? monthData["OR_P"] : null;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error preparando los datos: {ex.Message}");
+            }
 
             foreach (var op in _distributions)
             {
@@ -574,6 +600,62 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
+        }
+
+
+        //In progress
+        private async Task SaveProgressPat()
+        {
+
+            _pat.Status = 2;
+
+            SetHistoricalAbility();
+            Console.WriteLine(_pat.HistoricalAbility);
+
+            var result = await PATsServices.UpdatePat(_pat);
+
+
+            if (result)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"PAT {_pat.PATid} Updated", Severity.Info);
+                NavigationManager.NavigateTo("/Pat");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
+
+
+        public void SetHistoricalAbility()
+        {
+            try
+            {
+                var result = new List<Dictionary<string, Dictionary<string, double>>>();
+
+                for (int i = 0; i < monthsNames.Count; i++)
+                {
+                    double or_o = monthsDistributionPercentage[i] ?? 0.0;
+                    double or_p = monthsUsersPercentage[i] ?? 0.0;
+
+                    var monthData = new Dictionary<string, double>
+                    {
+                        { "OR_O", or_o },
+                        { "OR_P", or_p }
+                    };
+
+                    result.Add(new Dictionary<string, Dictionary<string, double>>
+                    {
+                        { monthsNames[i], monthData }
+                    });
+                }
+
+                _pat.HistoricalAbility = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generando el JSON: {ex.Message}");
+            }
         }
 
 
