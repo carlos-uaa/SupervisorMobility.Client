@@ -1,4 +1,5 @@
 using BlazorCameraStreamer;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Globalization;
@@ -10,6 +11,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 {
     public partial class HoeDetails
     {
+        bool Dev_env { get; set; }
+
         #region Variables
         [Parameter]
         public int SOSHubId { get; set; }
@@ -124,6 +127,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public bool ShowLoading = true;
         protected async override Task OnInitializedAsync()
         {
+            Dev_env = Environment.IsDevelopment();
+
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -713,7 +718,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             switch (selectedIndexPageGenerate)
             {
                 case 0:
-                    if (_sosHub.PATs.Count > 0 && _sosHub.PATs?.Last().Status != 2)
+                    if (_sosHub.PATs.Count > 0 && _sosHub.PATs?.Last().Status != 6)
                     {
                         _pat = _sosHub.PATs.Last();
                         //_pat.PlantId = (int)_sosHub.PlantId;
@@ -2096,10 +2101,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         async void CreatePatAsync()
         {
-            _pat.SSVresponsibleID = ssvId;
+            if (ssvId != 0)
+            {
+                _pat.SSVresponsibleID = ssvId;
+            }
+
+            if(_pat.PATid == 0)
+            {
 
             _pat.Status = 1;
             _pat.AplicationYear = _pat.AplicationDate.Value.Year;
+            }
 
             var result = await SOSHubServices.GeneratePat(_sosHub.SOSHubId, _pat);
             if (result != null)
