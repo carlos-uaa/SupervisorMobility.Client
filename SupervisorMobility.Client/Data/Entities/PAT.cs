@@ -25,10 +25,14 @@ namespace SupervisorMobility.Client.Data.Entities
         //public Distribution? Distribution { get; set; }
 
         public ICollection<LeadershipRecord>? LeadershipRecords { get; set; }
+        public ICollection<PatUserRole>? PatUserRoles { get; set; }
+        public ICollection<PatDistributionComment>? PatDistributionComments { get; set; }
+
+        public int? KnowledgePercentage { get; set; }
 
         public DateTime? AplicationDate { get; set; }
         public int? AplicationYear { get; set; }
-    
+ 
 
         public DateTime? CreationDate { get; set; }
 
@@ -37,6 +41,9 @@ namespace SupervisorMobility.Client.Data.Entities
         public DateTime? ApprovalDate { get; set; }
         public int? SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
+
+        public string? HistoricalAbility { get; set; }
+
         public bool IsActive { get; set; }
     }
 }

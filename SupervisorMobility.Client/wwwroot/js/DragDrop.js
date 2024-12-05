@@ -66,30 +66,33 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             drawPathData = [[e.offsetX, e.offsetY]];
 
         } else {
+
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+
             redrawCanvas(ctx, canvas);
             selectedImage = movableImages.find(img => isPointInImage(x, y, img));
 
             if (selectedImage) {
+
                 selectedIndex = selectedImage.imageId;
                 offsetX = x - selectedImage.x;
                 offsetY = y - selectedImage.y;
                 canvas.style.cursor = 'move';
-                const aspectratio = selectedImage.originalWidth / selectedImage.originalHeight;
-                //if (selectedImage.width / selectedImage.height !== aspectratio) {
-                    selectedImage.height = selectedImage.width / aspectratio;
-                //}
+
                 redrawCanvas(ctx, canvas);
 
 
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
-                dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
+
+
             } else {
                 dotNetObjectRef.invokeMethodAsync('DeselectImage');
             }
+
         }
     });
 
@@ -121,7 +124,6 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             drawings.push({ path: drawPathData.slice(), color: drawColor });
             actionHistory.push({ type: "addDrawing" });
             await dotNetObjectRef.invokeMethodAsync('OnDrawingAdded');
-
             redrawCanvas(ctx, canvas);
         } else {
             selectedImage = null;
@@ -161,7 +163,6 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                     }
                     redrawCanvas(ctx, canvas);
                     dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
-                    dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                     dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
                 } else if (draggedImageElement) {
                     initialTouchX = touch.clientX;
@@ -252,9 +253,9 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 
 };
 
-    window.togglePencilState = function (state) {
-        isPencilSelected = state;
-    };
+window.togglePencilState = function (state) {
+    isPencilSelected = state;
+};
 
 
 window.onDragStartJs = function (imageId) {
@@ -278,28 +279,23 @@ window.setFixedImage = function (dataUrl, canvasRef) {
     const img = new Image();
     img.src = dataUrl;
     img.onload = function () {
-        const maxWidth = window.innerWidth * 0.6;
-        const maxHeight = window.innerHeight * 0.75;
+        const maxWidth = window.innerWidth * 0.95;
+        const maxHeight = window.innerHeight * 0.68;
+
 
         let width, height;
 
-        if (img.width > maxWidth) {
-            const scale = maxWidth / img.width;
-            width = img.width * scale;
-            height = img.height * scale;
+        if (originalWidth / originalHeight > maxWidth / maxHeight) {
+            width = maxWidth;
+            height = (originalHeight / originalWidth) * maxWidth;
         } else {
-            width = img.width;
-            height = img.height;
-        }
-
-        if (height > maxHeight) {
-            const scale = maxHeight / height;
-            width = width * scale;
-            height = height * scale;
+            height = maxHeight;
+            width = (originalWidth / originalHeight) * maxHeight;
         }
 
         canvas.width = width;
         canvas.height = height;
+
 
         fixedImage = {
             element: img,
@@ -308,6 +304,7 @@ window.setFixedImage = function (dataUrl, canvasRef) {
             width: width,
             height: height
         };
+
 
         redrawCanvas(ctx, canvas);
     };
@@ -373,28 +370,25 @@ window.addImageToCanvas = function (dataUrl, canvasRef) {
     const img = new Image();
     img.src = dataUrl;
     img.onload = function () {
-        const maxWidth = window.innerWidth * 0.6;
-        const maxHeight = window.innerHeight * 0.75;
+        const originalWidth = img.width;
+        const originalHeight = img.height;
+
+        const maxWidth = window.innerWidth * 0.95;
+        const maxHeight = window.innerHeight * 0.68;
 
         let width, height;
 
-        if (img.width > maxWidth) {
-            const scale = maxWidth / img.width;
-            width = img.width * scale;
-            height = img.height * scale;
+        if (originalWidth / originalHeight > maxWidth / maxHeight) {
+            width = maxWidth;
+            height = (originalHeight / originalWidth) * maxWidth;
         } else {
-            width = img.width;
-            height = img.height;
-        }
-
-        if (height > maxHeight) {
-            const scale = maxHeight / height;
-            width = width * scale;
-            height = height * scale;
+            height = maxHeight;
+            width = (originalWidth / originalHeight) * maxHeight;
         }
 
         canvas.width = width;
         canvas.height = height;
+
 
         fixedImage = {
             element: img,
@@ -407,6 +401,7 @@ window.addImageToCanvas = function (dataUrl, canvasRef) {
         ctx.drawImage(fixedImage.element, fixedImage.x, fixedImage.y, fixedImage.width, fixedImage.height);
     };
 };
+
 
 
 window.clearCanvas = function (canvasRef) {
@@ -430,6 +425,11 @@ function resizeCanvas(canvasRef, width, height) {
 function isPointInImage(x, y, image) {
     return x >= image.x && x <= image.x + image.width &&
         y >= image.y && y <= image.y + image.height;
+}
+
+function getImageSrcById(id) {
+    const imageElement = document.getElementById(id);
+    return imageElement ? imageElement.src : null;
 }
 
 window.undoLastAction = function (canvasRef) {
@@ -561,3 +561,4 @@ function updateImagePositionAfterRotation(image) {
 window.setPencilColor = function (color) {
     drawColor = color;
 }
+

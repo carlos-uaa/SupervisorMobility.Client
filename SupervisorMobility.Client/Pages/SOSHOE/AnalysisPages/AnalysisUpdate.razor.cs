@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
+using FuzzyString;
+using SupervisorMobility.Client.Pages.Configuration.ProductPage;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -43,10 +45,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         private DialogOptions dialogCommentariesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private DialogOptions dialogLogbookOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private DialogOptions dialogImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogEditImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, DisableBackdropClick = true };
 
         private bool visibleImagesDialog = false;
         private bool visibleCommentaries = false;
         private bool visibleLogbook = false;
+        private bool visibleEditImage = false;
 
         //User
         private string json = string.Empty;
@@ -329,6 +333,53 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             visibleLogbook = true;
 
         }
+
+        private UpdateImage updateImageComponent;
+        public int ImageIndex;
+        public bool IsPreviousPhoto;
+        public int FileUploadIndex = 0;
+
+        private async Task OpenEditImageDialog(string imageBase64, int index, bool isPreviousPhoto, int fileUploadIndex = 0)
+        {
+            ImageIndex = index;
+            IsPreviousPhoto = isPreviousPhoto;
+            visibleEditImage = true;
+            FileUploadIndex = fileUploadIndex;
+
+            while (updateImageComponent == null || !updateImageComponent.IsReady)
+            {
+                await Task.Delay(50);
+            }
+
+            if (updateImageComponent != null)
+            {
+                await updateImageComponent.LoadImageFromBase64Async(imageBase64);
+            }
+        }
+
+        private void CloseEditImageDialog()
+        {
+            visibleEditImage = false;
+            updateImageComponent = null; 
+        }
+
+        public void UpdatePhoto(string updatedImage, int index, bool isPrevious)
+        {
+            if (isPrevious)
+            {
+                OldImageRemoved.Add(FileUploadIndex);
+                PreviousImages.RemoveAt(index);
+                FileUploadIndex = 0;
+            }
+            else
+            {
+                capturedImages.RemoveAt(index);
+            }
+            capturedImages.Add(updatedImage);
+            CloseEditImageDialog();
+            StateHasChanged();
+        }
+
 
         private void CloseLogbookDialog()
         {

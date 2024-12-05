@@ -44,6 +44,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
         async void CreateQuestionAsync()
         {
+            _question.Prompt = _question.Prompt.Replace("\n","\\n");
+            _question.PromptEN = _question.PromptEN.Replace("\n","\\n");
             _checked = true;
             _question.IsActive = true;
             _question.Pillars = SelectedPillarIds;
