@@ -399,7 +399,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         public async Task ApprovePat()
         {
 
-            _pat!.Status = 2;
+            _pat!.Status = 6;
             var result = await PATsServices.UpdatePat(_pat);
 
             if (result)
