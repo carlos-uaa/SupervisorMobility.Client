@@ -5,6 +5,7 @@
 @inject IUserService UsersService
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
 
 @*Title*@
 <PageTitle>Supervisor Mobility | PAT</PageTitle>
@@ -15,11 +16,19 @@
     </ItemTemplate>
 </MudBreadcrumbs>*@
 
-@if (_Pats == null)
+@if (showLoading)
 {
-    <text>
-        @Localizer["loading"] ...
-    </text>
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
 }
 else if (_Pats.Count == 0)
 {
@@ -111,9 +120,22 @@ else
                             <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
                             break;
                         case 2:
-                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Size="Size.Small" Style="cursor:pointer">@Localizer["approved"]</MudChip>
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                            break;
+                        case 3:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                            break;
+                        case 4:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                            break;
+                        case 5:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                            break;
+                        case 6:
+                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                             break;
                     }
+
                 </MudText>
             </MudTd>
             <MudTd DataLabel=@Localizer["actions"]>
@@ -166,10 +188,27 @@ else
     public bool logged = false;
 
     private string searchString1 = "";
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    private bool showLoading = true;
 
     // Initialization
     protected async override Task OnInitializedAsync()
     {
+
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
         _links = new List<BreadcrumbItem>
         {
             new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -204,6 +243,7 @@ else
                 }
             }
         }
+        showLoading = false;
         StateHasChanged();
     }
 
@@ -303,22 +343,27 @@ else
 
     private void RowClickEvent(TableRowClickEventArgs<PAT> tableRowClickEventArgs)
     {
+
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(tableRowClickEventArgs.Item))
+        {
+            NavigationManager.NavigateTo($"PAT/{tableRowClickEventArgs.Item.PATid}");
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = tableRowClickEventArgs.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(tableRowClickEventArgs.Item);
+        }
     }
 
     private string SelectedRowClassFunc(PAT element, int rowNumber)
     {
         if (selectedRowNumber == rowNumber)
         {
-            selectedRowNumber = -1;
-            if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
-            {
-                NavigationManager.NavigateTo($"PAT/{element.PATid}");
-
-            }
-            return string.Empty;
+            return "selected"; 
         }
         else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
         {
+
             selectedRowNumber = rowNumber;
             return "selected";
         }

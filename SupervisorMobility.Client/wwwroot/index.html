@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>SupervisorMobility.Client</title>
     <base href="/" />
-    <link href="css/AppLoading.css" rel="stylesheet">
-    <link href="css/calendar.css" rel="stylesheet">
+    <link href="css/AppLoading.css" rel="stylesheet" />
+    <link href="css/calendar.css" rel="stylesheet" />
     <link href="css/notificationStyle.css" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <!-- Estilos modificados para evitar que suba las areas al cargar usuarios -->
     <link href="css/UploadUsers.css" rel="stylesheet" />
-    <link href="css/custom.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet" />
     <link href="css/CustomButton.css" rel="stylesheet" />
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app">
-        <div class="loader-init"></div>
-        <h3 class="text-init">Loading... </h3>
-    </div>
+      <div class="loader-init"></div>
+      <h3 class="text-init">Loading... </h3>
+          
+    </div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+      An unhandled error has occurred.
+      <a href="" class="reload">Reload</a>
+      <a class="dismiss">🗙</a>
     </div>
     <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
@@ -39,212 +42,222 @@
     <script src="Blazor.Canvas.js"></script>
     <script src="js/DragDrop.js"></script>
     <script>
+      window.blazorUtils = {
+        truncateText: function () {
+          var marqueeText = document.getElementById("marqueeText");
+          if (marqueeText) {
+            var textLength = marqueeText.textContent.length;
 
+            if (textLength > 15) {
+              setTimeout(function () {
+                marqueeText.textContent =
+                  marqueeText.textContent.substr(0, 15) + "...";
+                marqueeText.style.animation = "none"; // Detiene la animación inicial
+              }, 3000); // Espera 3 segundos antes de truncar el texto
 
-        window.blazorUtils = {
-            truncateText: function () {
-                var marqueeText = document.getElementById("marqueeText");
-                if (marqueeText) {
-                    var textLength = marqueeText.textContent.length;
+              marqueeText.style.animation = "marquee 5s linear infinite"; // Reanuda la animación con el texto truncado
+            }
+          }
+        },
+      };
 
-                    if (textLength > 15) {
-                        setTimeout(function () {
-                            marqueeText.textContent = marqueeText.textContent.substr(0, 15) + "...";
-                            marqueeText.style.animation = "none"; // Detiene la animación inicial
-                        }, 3000); // Espera 3 segundos antes de truncar el texto
+      window.blazorUtils = {
+        setDynamicLeft: function () {
+          var fixedColumns = document.querySelectorAll(".fixed-column");
+          var dynamicLeftElements = document.querySelectorAll(".dynamic-left");
+          var mergedCellWidth = 0;
+          var leftPValues = 0;
 
-                        marqueeText.style.animation = "marquee 5s linear infinite"; // Reanuda la animación con el texto truncado
-                    }
+          dynamicLeftElements.forEach(function (element, idx) {
+            var index = element.cellIndex;
+            var left = 0;
+
+            // Verificar si la celda actual está en el encabezado o en el cuerpo de la tabla
+            var isInHeader = element.closest("thead") !== null;
+
+            if (
+              !isInHeader &&
+              element.classList.contains("merged-cell") &&
+              idx > 0
+            ) {
+              // Si está en el cuerpo y es una celda combinada, guardar su ancho como valor inicial
+              mergedCellWidth = element.offsetWidth;
+              //console.log("Celda combinada tamaño:");
+              //console.log(mergedCellWidth);
+              //continue;
+            }
+
+            if (isInHeader) {
+              // Si está en el encabezado, iterar sobre las celdas del encabezado
+              for (var i = 0; i < index; i++) {
+                var previousCell = element.parentNode.cells[i];
+                if (
+                  previousCell.classList.contains("fixed-column") &&
+                  !previousCell.classList.contains("merged-cell")
+                ) {
+                  var previousCellWidth = previousCell.offsetWidth;
+                  left += previousCellWidth;
                 }
-            }
-        };
-
-
-        window.blazorUtils = {
-            setDynamicLeft: function () {
-                var fixedColumns = document.querySelectorAll('.fixed-column');
-                var dynamicLeftElements = document.querySelectorAll('.dynamic-left');
-                var mergedCellWidth = 0;
-                var leftPValues = 0;
-
-                dynamicLeftElements.forEach(function (element, idx) {
-                    var index = element.cellIndex;
-                    var left = 0;
-
-                    // Verificar si la celda actual está en el encabezado o en el cuerpo de la tabla
-                    var isInHeader = element.closest('thead') !== null;
-
-                    if (!isInHeader && element.classList.contains('merged-cell') && idx > 0) {
-                        // Si está en el cuerpo y es una celda combinada, guardar su ancho como valor inicial
-                        mergedCellWidth = element.offsetWidth;
-                        //console.log("Celda combinada tamaño:");
-                        //console.log(mergedCellWidth);
-                        //continue;
-                    }
-
-                    if (isInHeader) {
-                        // Si está en el encabezado, iterar sobre las celdas del encabezado
-                        for (var i = 0; i < index; i++) {
-                            var previousCell = element.parentNode.cells[i];
-                            if (previousCell.classList.contains('fixed-column') && !previousCell.classList.contains('merged-cell')) {
-                                var previousCellWidth = previousCell.offsetWidth;
-                                left += previousCellWidth;
-                            }
-                        }
-                        element.style.zIndex = 3;
-
-                    } else {
-                        // Si está en el cuerpo, iterar sobre las celdas visibles en el encabezado
-                        var headerCells = document.querySelectorAll('thead tr:first-child th');
-                        for (var i = 0; i < index; i++) {
-                            if (i < headerCells.length && headerCells[i].classList.contains('fixed-column') && !headerCells[i].classList.contains('merged-cell')) {
-                                var previousCellWidth = headerCells[i].offsetWidth;
-                                left += previousCellWidth;
-
-                            }
-                        }
-                        if (left == 0 && idx > 0) {
-                            left = mergedCellWidth;
-                        }
-
-                        element.style.zIndex = 1;
-
-                    }
-                    if (!element.classList.contains('merged-cell'))
-                        element.style.left = left + 'px';
-
-                    if (element.classList.contains('program')) {
-                        leftPValues = left; // Store left value for elements with class "p"
-                    } else if (element.classList.contains('real')) {
-                        element.style.left = leftPValues + 'px'; // Assign stored left value
-                    }
-
-                });
-
-                // Selector de las filas
-                var rows = document.querySelectorAll('.fixed-row');
-
-                // Iterar sobre cada fila
-                rows.forEach(function (row) {
-                    var cells = row.querySelectorAll('.fixed-cell'); // Selector de las celdas en la fila
-                    var rowTop = 0; // Inicializar la posición inicial de la fila
-
-                    // Iterar sobre cada celda en la fila
-                    cells.forEach(function (cell) {
-                        if (cell.previousElementSibling && cell.previousElementSibling.classList.contains('fixed-cell')) {
-                            // Si la celda anterior tiene la clase .fixed-cell, acumular la altura de la celda anterior
-                            rowTop += cell.previousElementSibling.offsetHeight;
-                        }
-
-                        // Establecer la posición superior de la fila
-                        cell.style.top = rowTop + 'px';
-                    });
-                });
-            }
-        };
-
-
-
-
-        window.blazorUtilsTOPSOS = {
-            setDynamicTOP: function () {
-                var header = document.querySelector('.thead');
-
-                // Verificar si la tabla y el encabezado están presentes
-                if (header) {
-                    //console.log("Entro a table header");
-                    // Obtener la altura del encabezado
-                    var headerHeight = header.offsetHeight;
-
-                    //console.log("Height = " + headerHeight);
-                    // Obtener los elementos que están debajo del encabezado
-                    var elementosDebajoDelEncabezado = document.querySelectorAll('.fixed-row');
-
-                    // Aplicar la altura del encabezado como margen superior a los elementos debajo del encabezado
-                    elementosDebajoDelEncabezado.forEach(function (elemento) {
-                        elemento.style.top = headerHeight + 'px';
-
-                    });
+              }
+              element.style.zIndex = 3;
+            } else {
+              // Si está en el cuerpo, iterar sobre las celdas visibles en el encabezado
+              var headerCells = document.querySelectorAll(
+                "thead tr:first-child th"
+              );
+              for (var i = 0; i < index; i++) {
+                if (
+                  i < headerCells.length &&
+                  headerCells[i].classList.contains("fixed-column") &&
+                  !headerCells[i].classList.contains("merged-cell")
+                ) {
+                  var previousCellWidth = headerCells[i].offsetWidth;
+                  left += previousCellWidth;
                 }
+              }
+              if (left == 0 && idx > 0) {
+                left = mergedCellWidth;
+              }
+
+              element.style.zIndex = 1;
             }
-        };
+            if (!element.classList.contains("merged-cell"))
+              element.style.left = left + "px";
 
-        window.blazorUtilsSOS = {
-            setDynamicLeftSOS: function () {
-                var fixedColumns = document.querySelectorAll('.fixed-column');
-                var dynamicLeftElements = document.querySelectorAll('.dynamic-left');
-                var mergedCellWidth = 0;
-                var leftPValues = 0;
-
-                dynamicLeftElements.forEach(function (element, idx) {
-                    var index = element.cellIndex;
-                    var left = 0;
-
-                    // Verificar si la celda actual está en el encabezado o en el cuerpo de la tabla
-                    var isInHeader = element.closest('thead') !== null;
-
-                    if (!isInHeader && element.classList.contains('merged-cell') && idx > 0) {
-                        // Si está en el cuerpo y es una celda combinada, guardar su ancho como valor inicial
-                        mergedCellWidth = element.offsetWidth;
-                        //console.log("Celda combinada tamaño:");
-                        //console.log(mergedCellWidth);
-                        //continue;
-                    }
-
-                    if (isInHeader) {
-                        // Si está en el encabezado, iterar sobre las celdas del encabezado
-                        for (var i = 0; i < index; i++) {
-                            var previousCell = element.parentNode.cells[i];
-                            if (previousCell.classList.contains('fixed-column') && !previousCell.classList.contains('merged-cell')) {
-                                var previousCellWidth = previousCell.offsetWidth;
-                                left += previousCellWidth;
-                            }
-                        }
-                        element.style.zIndex = 3;
-
-                    } else {
-                        // Si está en el cuerpo, iterar sobre las celdas visibles en el encabezado
-                        var headerCells = document.querySelectorAll('thead tr:first-child th');
-                        for (var i = 0; i < index; i++) {
-                            if (i < headerCells.length && headerCells[i].classList.contains('fixed-column') && !headerCells[i].classList.contains('merged-cell')) {
-                                var previousCellWidth = headerCells[i].offsetWidth;
-                                left += previousCellWidth;
-
-                            }
-                        }
-                        if (left == 0 && idx > 0) {
-                            left = mergedCellWidth;
-                        }
-
-                        element.style.zIndex = 1;
-
-                    }
-                    if (!element.classList.contains('merged-cell'))
-                        element.style.left = left + 'px';
-
-                    if (element.classList.contains('program')) {
-                        leftPValues = left; // Store left value for elements with class "p"
-                    } else if (element.classList.contains('real')) {
-                        element.style.left = leftPValues + 'px'; // Assign stored left value
-                    }
-
-                });
+            if (element.classList.contains("program")) {
+              leftPValues = left; // Store left value for elements with class "p"
+            } else if (element.classList.contains("real")) {
+              element.style.left = leftPValues + "px"; // Assign stored left value
             }
-        };
+          });
 
-        function changeCulture(culture) {
-            // Establece el valor del cookie 'culture' con el idioma seleccionado
-            document.cookie = `culture=${culture};path=/`;
+          // Selector de las filas
+          var rows = document.querySelectorAll(".fixed-row");
 
-            // Recarga la página para aplicar los cambios
-            location.reload();
-        }
+          // Iterar sobre cada fila
+          rows.forEach(function (row) {
+            var cells = row.querySelectorAll(".fixed-cell"); // Selector de las celdas en la fila
+            var rowTop = 0; // Inicializar la posición inicial de la fila
+
+            // Iterar sobre cada celda en la fila
+            cells.forEach(function (cell) {
+              if (
+                cell.previousElementSibling &&
+                cell.previousElementSibling.classList.contains("fixed-cell")
+              ) {
+                // Si la celda anterior tiene la clase .fixed-cell, acumular la altura de la celda anterior
+                rowTop += cell.previousElementSibling.offsetHeight;
+              }
+
+              // Establecer la posición superior de la fila
+              cell.style.top = rowTop + "px";
+            });
+          });
+        },
+      };
+
+      window.blazorUtilsTOPSOS = {
+        setDynamicTOP: function () {
+          var header = document.querySelector(".thead");
+
+          // Verificar si la tabla y el encabezado están presentes
+          if (header) {
+            //console.log("Entro a table header");
+            // Obtener la altura del encabezado
+            var headerHeight = header.offsetHeight;
+
+            //console.log("Height = " + headerHeight);
+            // Obtener los elementos que están debajo del encabezado
+            var elementosDebajoDelEncabezado =
+              document.querySelectorAll(".fixed-row");
+
+            // Aplicar la altura del encabezado como margen superior a los elementos debajo del encabezado
+            elementosDebajoDelEncabezado.forEach(function (elemento) {
+              elemento.style.top = headerHeight + "px";
+            });
+          }
+        },
+      };
+
+      window.blazorUtilsSOS = {
+        setDynamicLeftSOS: function () {
+          var fixedColumns = document.querySelectorAll(".fixed-column");
+          var dynamicLeftElements = document.querySelectorAll(".dynamic-left");
+          var mergedCellWidth = 0;
+          var leftPValues = 0;
+
+          dynamicLeftElements.forEach(function (element, idx) {
+            var index = element.cellIndex;
+            var left = 0;
+
+            // Verificar si la celda actual está en el encabezado o en el cuerpo de la tabla
+            var isInHeader = element.closest("thead") !== null;
+
+            if (
+              !isInHeader &&
+              element.classList.contains("merged-cell") &&
+              idx > 0
+            ) {
+              // Si está en el cuerpo y es una celda combinada, guardar su ancho como valor inicial
+              mergedCellWidth = element.offsetWidth;
+              //console.log("Celda combinada tamaño:");
+              //console.log(mergedCellWidth);
+              //continue;
+            }
+
+            if (isInHeader) {
+              // Si está en el encabezado, iterar sobre las celdas del encabezado
+              for (var i = 0; i < index; i++) {
+                var previousCell = element.parentNode.cells[i];
+                if (
+                  previousCell.classList.contains("fixed-column") &&
+                  !previousCell.classList.contains("merged-cell")
+                ) {
+                  var previousCellWidth = previousCell.offsetWidth;
+                  left += previousCellWidth;
+                }
+              }
+              element.style.zIndex = 3;
+            } else {
+              // Si está en el cuerpo, iterar sobre las celdas visibles en el encabezado
+              var headerCells = document.querySelectorAll(
+                "thead tr:first-child th"
+              );
+              for (var i = 0; i < index; i++) {
+                if (
+                  i < headerCells.length &&
+                  headerCells[i].classList.contains("fixed-column") &&
+                  !headerCells[i].classList.contains("merged-cell")
+                ) {
+                  var previousCellWidth = headerCells[i].offsetWidth;
+                  left += previousCellWidth;
+                }
+              }
+              if (left == 0 && idx > 0) {
+                left = mergedCellWidth;
+              }
+
+              element.style.zIndex = 1;
+            }
+            if (!element.classList.contains("merged-cell"))
+              element.style.left = left + "px";
+
+            if (element.classList.contains("program")) {
+              leftPValues = left; // Store left value for elements with class "p"
+            } else if (element.classList.contains("real")) {
+              element.style.left = leftPValues + "px"; // Assign stored left value
+            }
+          });
+        },
+      };
+
+      function changeCulture(culture) {
+        // Establece el valor del cookie 'culture' con el idioma seleccionado
+        document.cookie = `culture=${culture};path=/`;
+
+        // Recarga la página para aplicar los cambios
+        location.reload();
+      }
     </script>
-
-
-
-</body>
-
-
-
+  </body>
 </html>

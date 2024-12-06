@@ -1,4 +1,4 @@
-﻿@page "/PAT/{patID:int}"
+﻿@page "/PAT/Update/{patID:int}"
 
 @using System.Net.Http.Json
 @using MudBlazor
@@ -10,13 +10,12 @@
 @inject IOperationService OperationsServices
 @inject IDistributionService DistributionsServices
 @inject IPATService PATsServices
-@inject IJSRuntime JSRuntime  
+@inject IJSRuntime JSRuntime
 @inject IILUService ILUServices
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IBreadcrumbService BreadcrumbService
-@inject IExportationService Exportation
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["PATDetails"]</PageTitle>
 @*Breadcrumb links*@
@@ -256,7 +255,7 @@
                         <th colspan="2" class="fixed-column dynamic-left">
 
                             <div style="display:flex; align-items: center;">
-                                <MudSelect @bind-Value="_pat.SaveLeader"
+                                <MudSelect @bind-Value="leader"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
                                     Dense
@@ -397,7 +396,7 @@
                                                             </td>
                                                         }
                                                         <td style="border: none">
-                                                            @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
+                                                            @latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")
                                                             @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                             {
                                                                 <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
@@ -444,7 +443,7 @@
 
                                 @if (_pat.KnowledgePercentage != null)
                                 {
-                                    @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                    @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                                     {
                                         <span style="color:red"><b>X</b></span>
                                     }
@@ -482,9 +481,6 @@
                                 </div>
                             </div>
                         </td>
-                        @{
-                            int index = 0;
-                        }
                         <Virtualize Context="usr" Items="_UserOfArea">
                             <td style="text-align: center;" colspan="2">
 
@@ -497,25 +493,16 @@
 
                                 @if(_pat.KnowledgePercentage != null){
 
-                                    @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
-                                            (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
-                                            && _pat.SaveLeader == "C")
+                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                                     {
-                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                        {
-                                            <span style="color:red"><b>X</b></span>
-                                        }
-                                        else if (meetsKnowledge)
-                                        {
-                                            <span><b>O</b></span>
-                                        }
-
+                                        <span style="color:red"><b>X</b></span>
+                                    }
+                                    else if (meetsKnowledge)
+                                    {
+                                        <span><b>O</b></span>
                                     }
                                 }
                             </td>
-                            @{
-                                index++;
-                            }
                         </Virtualize>
                         <td style="text-align: center;" ></td>
                         <td  style="text-align: center;">Nivel de habilidad Tecnica</td>
@@ -567,11 +554,7 @@
                                             {
                                                 @role
                                             }
-                                            else
-                                            {
-                                                <span>Clear</span>
-                                            }
-                                        </MudSelectItem>
+                                    </MudSelectItem>
                                         }
                                 </MudSelect>
                             </td>
@@ -657,7 +640,6 @@
                         <MudButton StartIcon="@Icons.Material.Filled.StopCircle" @onclick="() => SaveProgressPat()" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
                     }
                 }
-                <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
             </MudItem>
         </MudCardActions>
     </MudItem>

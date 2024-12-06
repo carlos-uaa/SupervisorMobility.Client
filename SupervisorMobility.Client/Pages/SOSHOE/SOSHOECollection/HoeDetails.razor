@@ -1,5 +1,7 @@
 ﻿@page "/soshoe/Hub/Details/{SOSHubId:int}"
-@using System.Text.RegularExpressions
+
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Environment
+
 
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -33,6 +35,9 @@
 @inject ISOSDistributionService SOSDistributionServices
 @inject ISOSFlowService SOSFlowServices
 @inject ISOSSequenceService SOSSequenceServices
+
+@using System.Text.RegularExpressions
+
 
 <style>
 
@@ -950,27 +955,31 @@ else
                                     <i></i>
                                 </MudButton>
                             </MudItem>
-                            <MudItem xs="4">
-                                <MudButton Class="custom-button-card" Style="--clr:#c4c4c4" OnClick="@(() => GoToPageGenerate(0))">
-                                    <MudCard>
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/prueba.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
-                                                <MudText Typo="Typo.body2">@Localizer["patDescription"]</MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                    <i></i>
-                                </MudButton>
-                            </MudItem>
+                            @if (_sosHub.SOSDistribution.Count() > 0)
+                            {
+
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#c4c4c4" OnClick="@(() => GoToPageGenerate(0))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/prueba.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                    <MudText Typo="Typo.body2">@Localizer["patDescription"]</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                            }
                         </MudGrid>
 
                     </ChildContent>
@@ -1469,7 +1478,7 @@ else
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6" Style="text-align:left">
-                                    @if (_sosHub.SOSAnalysis.Count == 0)
+                                    @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6 && _pat.PATid != 0)
                                     {
                                         <b> Generate </b>
                                     }
@@ -1482,7 +1491,7 @@ else
                             </CardHeaderContent>
                             <CardHeaderActions>
                                 <MudItem style="padding-top: 5px; padding-left:10px;">
-                                    @if (_sosHub.PATs?.Count > 0 && _sosHub.PATs?.Last().Status != 2 && _pat.PATid != 0)
+                                    @if (_sosHub.PATs?.Count > 0 && _sosHub.PATs?.Last().Status != 6 && _pat.PATid != 0)
                                     {
                                         <SupervisorMobility.Client.Pages.Components.ButtonQuickView ButtonText="@Localizer["details"]" OnClick="() => Details<PAT>(_pat.PATid)"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
                                     }
@@ -1625,7 +1634,7 @@ else
             case 0:
                 <div class="d-flex" style="max-height: auto">
                     <MudItem Class="ma-5" Style="width: 100%;">
-                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2)
+                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
                         {
                             <MudCard>
                                 <MudCardHeader>
@@ -1695,7 +1704,7 @@ else
 
 
                                 </MudCardContent>
-                              
+
                             </MudCard>
                         }
                         else
@@ -1726,24 +1735,32 @@ else
                                         <td>
                                             <MudItem Style="justify-content: end" Class="ml-auto">
                                                 <MudItem Class="d-flex">
-                                                    @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status == 1)
+                                                    @switch (_pat.Status)
                                                     {
-                                                        <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
-                                                            @Localizer["new"]
-                                                        </MudChip>
-                                                    }
-
-                                                    @if (_pat?.Status == 2)
-                                                    {
-                                                        <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
-                                                            @Localizer["approved"]!
-                                                        </MudChip>
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                                            break;
+                                                        case 5:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                                            break;
+                                                        case 6:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                                            break;
                                                     }
                                                 </MudItem>
                                             </MudItem>
                                         </td>
                                     </tr>
-                                  
+
                                 </tbody>
                             </MudSimpleTable>
 
@@ -2602,11 +2619,10 @@ else
                                     @foreach (SOSAnalysis analisis in FilteredAnalysis)
                                     {
                                         <div class="toggle-column">
-                                            <MudToggleItem Value="@(analisis)">
+                                            <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
                                                 <div class="mud-width-full mud-height-full">
                                                     <div class="d-flex align-center justify-space-between flex-wrap">
                                                         <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
-                                                        <MudChip Color="@(context ? Color.Success : Color.Primary)" Icon="@(context ? Icons.Material.Filled.Check : @Icons.Material.Filled.CheckBoxOutlineBlank)"></MudChip>
                                                     </div>
                                                     <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
                                                 </div>
@@ -3764,13 +3780,49 @@ else
         @switch (selectedIndexPageGenerate)
         {
             case 0:
-            @if(_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 2){
-                <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
+                @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
+                {
+                    <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
                         <MudText>@Localizer["create"] PAT</MudText>
                     </MudButton>
-            }else{
+                }
+                else
+                {
 
-            }
+
+                    @if (Dev_env)
+                    {
+
+                        <MudSelect Style="float: left; margin-bottom: 10px;" T="int" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_sosHub.PATs.Last().Status">
+                            <MudSelectItem Value="1">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                            </MudSelectItem>
+                            <MudSelectItem Value="2">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                            </MudSelectItem>
+                            <MudSelectItem Value="3">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                            </MudSelectItem>
+                            <MudSelectItem Value="4">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                            </MudSelectItem>
+                            <MudSelectItem Value="5">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                            </MudSelectItem>
+                            <MudSelectItem Value="6">
+                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+                    }
+                    @if (_sosHub.PATs?.Last().Status != 6)
+                    {
+                        <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
+                            <MudText>Revision</MudText>
+                        </MudButton>
+                    }
+                }
                 break;
             case 1:
                 @if (_sosHub.SOSAnalysis.Count == 0)
