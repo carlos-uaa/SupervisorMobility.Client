@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
@@ -211,7 +212,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 foreach (var usr in _UserOfArea)
                 {
-                    // Obtener los registros correspondientes a la operación y usuario actual
+                    // Obtener los registros correspondientes a la operaciï¿½n y usuario actual
                     var matchingRegisters = usr.ILURegisers?
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
@@ -379,7 +380,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                             ILULevelNumber = _LevelsILU
                                 .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
                         })
-                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
+                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "ï¿½" && x.User.UserId != _newIlu.OperatorId)
                         .ToList();
 
                     var firstLeader = leaders.FirstOrDefault(x =>
@@ -600,6 +601,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
+        }
+
+        private async void DownloadExcel()
+        {
+            if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
+            {
+                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+            }
+            else
+            {
+                Snackbar.Add($"First fill the rotation target", Severity.Warning);
+            }
         }
 
 
