@@ -22,7 +22,6 @@ namespace SupervisorMobility.Client.Services.PATService
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                 PropertyNameCaseInsensitive = true,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
-                
             };
             _options.Converters.Add(new IntToStringConverter());
         }

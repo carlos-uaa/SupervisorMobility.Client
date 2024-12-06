@@ -889,7 +889,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             ShowGenerateDialog = false;
             ShowPagesGenerate = true;
-
+            StateHasChanged();
         }
 
 
