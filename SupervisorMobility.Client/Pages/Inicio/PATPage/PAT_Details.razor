@@ -386,7 +386,7 @@
                                                             </td>
                                                         }
                                                         <td style="border: none">
-                                                            @latestContext.AcquisitionDate?.ToString("dd/MM/yyyy")
+                                                            @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
                                                             @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                             {
                                                                 <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
@@ -433,7 +433,7 @@
 
                                 @if (_pat.KnowledgePercentage != null)
                                 {
-                                    @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                                    @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                     {
                                         <span style="color:red"><b>X</b></span>
                                     }
@@ -471,6 +471,9 @@
                                 </div>
                             </div>
                         </td>
+                        @{
+                            int index = 0;
+                        }
                         <Virtualize Context="usr" Items="_UserOfArea">
                             <td style="text-align: center;" colspan="2">
 
@@ -483,16 +486,25 @@
 
                                 @if(_pat.KnowledgePercentage != null){
 
-                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                                    @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
+                                            (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
+                                            && _pat.SaveLeader == "C")
                                     {
-                                        <span style="color:red"><b>X</b></span>
-                                    }
-                                    else if (meetsKnowledge)
-                                    {
-                                        <span><b>O</b></span>
+                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                        {
+                                            <span style="color:red"><b>X</b></span>
+                                        }
+                                        else if (meetsKnowledge)
+                                        {
+                                            <span><b>O</b></span>
+                                        }
+
                                     }
                                 }
                             </td>
+                            @{
+                                index++;
+                            }
                         </Virtualize>
                         <td style="text-align: center;" ></td>
                         <td  style="text-align: center;">Nivel de habilidad Tecnica</td>
@@ -544,7 +556,11 @@
                                             {
                                                 @role
                                             }
-                                    </MudSelectItem>
+                                            else
+                                            {
+                                                <span>Clear</span>
+                                            }
+                                        </MudSelectItem>
                                         }
                                 </MudSelect>
                             </td>
