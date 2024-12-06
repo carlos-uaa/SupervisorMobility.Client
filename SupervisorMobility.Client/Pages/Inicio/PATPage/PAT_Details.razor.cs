@@ -605,7 +605,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void DownloadExcel()
         {
-            if (knowledgePercentage != null || knowledgePercentage != 0) 
+            if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
             {
                 await Exportation.ExportYearlyPATToExcel(_pat.PATid);
             }
