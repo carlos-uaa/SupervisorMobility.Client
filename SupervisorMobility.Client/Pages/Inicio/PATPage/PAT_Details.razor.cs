@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
@@ -211,7 +212,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 foreach (var usr in _UserOfArea)
                 {
-                    // Obtener los registros correspondientes a la operación y usuario actual
+                    // Obtener los registros correspondientes a la operaciï¿½n y usuario actual
                     var matchingRegisters = usr.ILURegisers?
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
@@ -224,8 +225,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
             }
-            _pat.PatDistributionComments = new List<PatDistributionComment>();
 
+            if (_pat.PatDistributionComments is null)
+            {
+                _pat.PatDistributionComments = new List<PatDistributionComment>();
+            }
             foreach (var op in _distributions)
             {
                 if (AllRegistersOfPat.FindIndex(r => r.DistributionId == op.DistributionId) != -1)
@@ -238,16 +242,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
 
-                PatDistributionComment newPatDistributionComment = new PatDistributionComment
+                if (!_pat.PatDistributionComments.Any(dc => dc.DistributionId == op.DistributionId))
                 {
-                    DistributionId = op.DistributionId,
-                    IsActive = true,
-                    PATId = patID,
-                };
-                _pat.PatDistributionComments.Add(newPatDistributionComment);
+                    PatDistributionComment newPatDistributionComment = new PatDistributionComment
+                    {
+                        DistributionId = op.DistributionId,
+                        IsActive = true,
+                        PATId = patID,
+                    };
+                    _pat.PatDistributionComments.Add(newPatDistributionComment);
+                }
             }
 
-            _pat.PatUserRoles = new List<PatUserRole>();
+            if (_pat.PatUserRoles is null)
+            {
+                _pat.PatUserRoles = new List<PatUserRole>();
+            }
 
             foreach (var usr in _UserOfArea)
             {
@@ -261,14 +271,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
 
-                PatUserRole newPatUserRole = new PatUserRole
-                {
-                    UserId = usr.UserId,
-                    IsActive = true,
-                    PATId = patID,
-                };
 
-                _pat.PatUserRoles.Add(newPatUserRole);
+                if (!_pat.PatUserRoles.Any(ur => ur.UserId == usr.UserId))
+                {
+                    PatUserRole newPatUserRole = new PatUserRole
+                    {
+                        UserId = usr.UserId,
+                        IsActive = true,
+                        PATId = patID,
+                    };
+
+                    _pat.PatUserRoles.Add(newPatUserRole);
+                }
             }
 
             ShowTable = true;
@@ -379,7 +393,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                             ILULevelNumber = _LevelsILU
                                 .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
                         })
-                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
+                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "ï¿½" && x.User.UserId != _newIlu.OperatorId)
                         .ToList();
 
                     var firstLeader = leaders.FirstOrDefault(x =>
@@ -600,6 +614,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
+        }
+
+        private async void DownloadExcel()
+        {
+            if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
+            {
+                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+            }
+            else
+            {
+                Snackbar.Add($"First fill the rotation target", Severity.Warning);
+            }
         }
 
 
