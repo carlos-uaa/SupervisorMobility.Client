@@ -153,10 +153,6 @@
                                     <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                                     break;
                             }
-                            @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
-                            {
-                                <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
-                            }
                             
                             <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
                                 <ActivatorContent>
@@ -171,16 +167,26 @@
                                     <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
                                 </ChildContent>
                             </MudMenu>
+                            <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5">Export</MudButton>
+                            <MudToggleIconButton Toggled="IsZoomed" 
+                                                 Class="ml-5"
+                                                 Icon="@Icons.Material.Filled.ZoomIn"
+                                                 Color="@Color.Info"
+                                                 ToggledIcon="@Icons.Material.Filled.ZoomOut"
+                                                 ToggledColor="@Color.Primary"
+                                                 ToggledChanged="@(async (_) => await ToggleZoom())" />
+                                                 
                         </MudItem>
                     </MudItem>
                 </td>
+
             </tr>
         </tbody>
     </MudSimpleTable>
 
     <div class="table-container mb-10">
         <div class="scrollable-columns">
-            <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh" Elevation="0">
+            <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="@dynamicStyle" Elevation="0">
                 <thead>
                     <tr class="fixed-row">
                         <th colspan="2">@Localizer["operatorsByOperation"]</th>
@@ -226,7 +232,7 @@
                                     <MudInput T="double?" ReadOnly /> <span>%</span>
                                 }
                                  @Localizer["in"] 1 x
-                                <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" />
+                                <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly/>
                             </div>
                         </th>
                     </tr>
@@ -256,7 +262,7 @@
                         <th colspan="2" class="fixed-column dynamic-left">
 
                             <div style="display:flex; align-items: center;">
-                                <MudSelect @bind-Value="_pat.SaveLeader"
+                                <MudSelect @bind-Value="_pat.SaveLeader" ReadOnly
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
                                     Dense
@@ -398,19 +404,7 @@
                                                         }
                                                         <td style="border: none">
                                                             @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
-                                                            @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
-                                                            {
-                                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                        @Localizer["createJobObservation"]
-                                                                    </MudMenuItem>
-                                                                    <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                                        <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                                                    </MudMenuItem>
-                                                                </MudMenu>
-
-                                                            }
-                                                        
+                                                            
                                                         </td>
                                                     </tr>
                                                 }
@@ -418,14 +412,7 @@
                                                 {
                                                     
                                                     <td colspan="2">
-                                                    <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                            @Localizer["createJobObservation"]
-                                                        </MudMenuItem>
-                                                        <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                            <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                                        </MudMenuItem>
-                                                    </MudMenu>
+                                                    
                                                     </td>
 
                                                 }
@@ -459,6 +446,7 @@
                                 {
                                     var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
                                     <MudTextField @bind-Value="currentComment.Comment"
+                                                  ReadOnly
                                                   Variant="Variant.Outlined"
                                                   Margin="Margin.Dense"
                                                   Lines="2"
@@ -552,8 +540,9 @@
                     @if(_pat?.PatUserRoles != null){
                         <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
                             <td style="text-align: center;" colspan="2" rowspan="2">
-                                <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
+                                <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2" ReadOnly></MudTextField>
                                 <MudSelect @bind-Value="patUserRole.Role"
+                                           ReadOnly
                                            Variant="Variant.Outlined"
                                            Margin="Margin.Dense"
                                            Dense
@@ -591,21 +580,21 @@
                                 <tbody>
                                     <tr class="gray-color">
                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[0]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[1]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[2]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[3]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[4]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[0]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[1]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[2]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[3]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[4]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
                                     </tr>
                                     <tr class="gray-color">
                                         <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[0]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[1]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[2]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[3]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[4]" ></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[0]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[1]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[2]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[3]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[4]" ></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
                                     </tr>
                                 </tbody>
                                 <thead>
@@ -620,21 +609,21 @@
                                 <tbody>
                                     <tr class="gray-color">
                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
                                     </tr>
                                     <tr class="gray-color">
                                         <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
-                                        <td><MudInput @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
+                                        <td><MudInput ReadOnly @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -646,21 +635,7 @@
             </MudSimpleTable>
         </div>
     </div>
-    <MudItem>
-        <MudCardActions>
-            <MudItem Class="ml-auto mt-4">
 
-                @if (_pat.Status != 6)
-                {
-                    if (user.UserType == 1 || user.UserType == 3)
-                    {
-                        <MudButton StartIcon="@Icons.Material.Filled.StopCircle" @onclick="() => SaveProgressPat()" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
-                    }
-                }
-                <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" OnClick="DownloadExcel" Class="mb-2">Export</MudButton>
-            </MudItem>
-        </MudCardActions>
-    </MudItem>
 }
 else
 {
@@ -676,101 +651,6 @@ else
         </ItemTemplate>
     </MudCarousel>
 }
-
-<MudDialog DisableSidePadding="false" @bind-IsVisible="AddILUVisibleDialog" Options="dialogOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:column" Class="gap-4">
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
-                <MudText Typo="Typo.h5">
-                    @Localizer["addNewILULevel"]
-                </MudText>
-            </MudItem>
-
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
-                <MudItem xs="12" sm="12" lg="12" md="12">
-                    <MudText Typo="Typo.h6">
-                        @Localizer["operatorInfo"]
-                    </MudText>
-                </MudItem>
-                <MudTextField ReadOnly Style="max-width: 100px;" Label=@Localizer["payroll"] Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Payroll"></MudTextField>
-                <MudTextField ReadOnly Label=@Localizer["operatorName"] Value="_UserOfArea.Find(u => u.UserId == _newIlu.OperatorId).Name"></MudTextField>
-            </MudItem>
-
-            <MudItem xs="12" sm="12" lg="12" md="12" Style="display: flex; flex-wrap: wrap; flex-direction:row">
-                <MudItem xs="12" sm="12" lg="12" md="12">
-                    <MudText Typo="Typo.h6">
-                        @Localizer["distributionInfo"]
-                    </MudText>
-                </MudItem>
-
-                <MudTextField ReadOnly Label=@Localizer["distributionName"] Value="_distributions.Find(u => u.DistributionId == _newIlu.DistributionId).Description"></MudTextField>
-            </MudItem>
-
-
-            <MudItem Class="d-flex flex-column justify-center ma-1">
-                <MudSelect T="int" Label="ILU" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxILU_Level" For="@(() => auxILU_Level)" SelectedValuesChanged="updateILULevel">
-                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectALevel"]</MudSelectItem>
-                    @foreach (var type in _LevelsILU)
-                    {
-                        <MudSelectItem Value="type.ILULevelId">
-                            @{
-                                string imageSrc = "";
-                                switch (type.ILULevelCode)
-                                {
-                                    case "ITrainee":
-                                        imageSrc = "Images/ITrainee.png";
-                                        break;
-                                    case "I":
-                                        imageSrc = "Images/I.png";
-                                        break;
-                                    case "ILeader":
-                                        imageSrc = "Images/ILeader.png";
-                                        break;
-                                    case "LTrainee":
-                                        imageSrc = "Images/LTrainee.png";
-                                        break;
-                                    case "LTraineeLeader":
-                                        imageSrc = "Images/LTraineeLeader.png";
-                                        break;
-                                    case "L":
-                                        imageSrc = "Images/L.png";
-                                        break;
-                                    case "LLeader":
-                                        imageSrc = "Images/LLeader.png";
-                                        break;
-                                    case "UTrainee":
-                                        imageSrc = "Images/UTrainee.png";
-                                        break;
-                                    case "ULeaderTrainee":
-                                        imageSrc = "Images/ULeaderTrainee.png";
-                                        break;
-                                    case "ULeader":
-                                        imageSrc = "Images/ULeader.png";
-                                        break;
-                                    case "U":
-                                        imageSrc = "Images/U.png";
-                                        break;
-                                    default:
-                                        imageSrc = "Images/default.png";
-                                        break;
-                                }
-                            }
-                            <div class="d-flex align-items-center">
-                                <MudImage Src="@imageSrc" Alt="ILU Image" Height="40" Class="rounded-lg" Style="margin-top: -5px" />
-                                <span class="ml-3">@type.ILULevelDescription</span>
-                            </div>
-                        </MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
-
-
-        </MudContainer>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Color="Color.Info" Disabled="@(auxILU_Level != 0 ? false : true)" OnClick="AddILUClose">@Localizer["addILULevel"]</MudButton>
-    </DialogActions>
-</MudDialog>
 
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="ILUHistoryDialog" Options="dialogOptions">
@@ -912,35 +792,9 @@ else
     </DialogActions>
 </MudDialog>
 
-@*Sign PAT modal*@
-<MudDialog @bind-IsVisible="visibleSign" Options="dialogSignOptions">
-    <DialogContent>
-        <MudText Typo="Typo.h6">Confirm</MudText>
-        <MudText Class="mt-4 mb-4">
-            <span style="color: #2196f3; text-align:justify">@user.Name</span>,
-            @Localizer["areYouSureYouWantToApproveThisPAT"]
-        </MudText>
-        <MudText Class="mt-4 mb-4">
-            @Localizer["onceApprovedItCannotBeModified"]
-        </MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="CloseSign" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
-        <MudButton @onclick="(() => ApprovePat())" Color="Color.Info" StartIcon="@Icons.Material.Filled.PlaylistAddCheck" Variant="Variant.Filled">@Localizer["approvePAT"]</MudButton>
-    </DialogActions>
-</MudDialog>
 
-<MudDialog DisableSidePadding="false" @bind-IsVisible="CreateILUJob" Options="dialogOptions">
-    <DialogContent>
-        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
-            @*          <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ProgrammedJobObservationDetails JobObservationId="jobId2" LoggedUser="user" ProgrammedStartDate="@programmedStartDate"
-            IsVisible="@visible2" IsVisibleChanged="HandleVisibleChanged"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ProgrammedJobObservationDetails>
-            *@
-            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation plant_id="_pat.PlantId" area_id="_pat.AreaId" LoggedUser="user" distribution_id="distribution_id" operator_id="operator_id" supervisor_id="_pat.SupervisorId" ProgrammedStartDate="ProgrammedStartDate"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation>
-        </MudContainer>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Color="Color.Info" OnClick="CloseILUJob">@Localizer["close"]</MudButton>
-    </DialogActions>
-</MudDialog>
-
+<script>
+    window.setZoom = (zoomLevel) => {
+        document.body.style.zoom = zoomLevel;
+    };
+</script>

@@ -348,145 +348,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             StateHasChanged();
         }
 
-        private async void OpenDialogAddILU(int ID_Operation, int ID_User)
-        {
-            _newIlu.DistributionId = ID_Operation;
-            _newIlu.OperatorId = ID_User;
-            _newIlu.isActive = true;
-            auxILU_Level = 0;
-            AddILUVisibleDialog = true;
-            StateHasChanged();
-        }
-
-        private async void AddILUClose()
-        {
-            Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-
-
-
-            _newIlu.AcquisitionDate = DateTime.Now;
-            var filteredDistributions = _distributions.Where(dist => dist.DistributionId == _newIlu.DistributionId);
-
-            bool hasLeadersInDistribution = false;
-            var validLevelIds = new HashSet<int> { 3, 5, 7, 9, 10 };
-            string leaderName = "";
-
-            if (_newIlu?.ILULevelId is int iluLevelId && validLevelIds.Contains(iluLevelId))
-            {
-
-                foreach (var op in filteredDistributions)
-                {
-                    var leaders = _UserOfArea
-                        .Where(usr => ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context.Any())
-                        .Select(usr => new
-                        {
-                            User = usr,
-                            LatestContext = ILU_Matrix[(op.DistributionId, usr.UserId)]
-                                .OrderByDescending(c => c.AcquisitionDate)
-                                .FirstOrDefault()
-                        })
-                        .Where(x => x.LatestContext != null)
-                        .Select(x => new
-                        {
-                            x.User,
-                            ILULevelNumber = _LevelsILU
-                                .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
-                        })
-                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "�" && x.User.UserId != _newIlu.OperatorId)
-                        .ToList();
-
-                    var firstLeader = leaders.FirstOrDefault(x =>
-                                x.ILULevelNumber == "ILeader" ||
-                                x.ILULevelNumber == "LTraineeLeader" ||
-                                x.ILULevelNumber == "LLeader" ||
-                                x.ILULevelNumber == "ULeaderTrainee" ||
-                                x.ILULevelNumber == "ULeader");
-
-                    if (firstLeader != null)
-                    {
-                        leaderName = firstLeader.User.Name;
-                        hasLeadersInDistribution = true;
-                        break;
-                    }
-                }
-            }
-
-
-            if (!hasLeadersInDistribution)
-            {
-                ShowTable = false;
-                AddILUVisibleDialog = false;
-                var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
-                if (result != null)
-                {
-                    _pat = await PATsServices.getPat(patID);
-                    await PrepareDataTable();
-                    Snackbar.Add($"ILU Level Added", Severity.Success);
-                }
-
-            }
-            else
-            {
-                Snackbar.Add($"{leaderName} is already a Leader in this distribution!", Severity.Warning);
-            }
-
-        }
-
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-
-        bool CreateILUJob = false;
-        void CreateJobObservation(int distributionId, int operatorId)
-        {
-            distribution_id = distributionId;
-            operator_id = operatorId;
-
-            if (CultureInfo.CurrentCulture.Name == "en-US")
-            {
-                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
-                var formatedDate = date;
-
-                var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
-                var dateString = EnglishDate.Replace("/", "-");
-                ProgrammedStartDate = dateString;
-
-            }
-            else
-            {
-                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
-                var dateString = date.ToShortDateString().Replace("/", "-");
-                ProgrammedStartDate = dateString;
-
-            }
-            CreateILUJob = true;
-        }
-        void CloseILUJob() => CreateILUJob = false;
-
-        //Finished Job observation
-        private bool visibleSign = false;
-        private void OpenSignComment()
-        {
-            visibleSign = true;
-        }
-        void CloseSign() => visibleSign = false;
-        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
-
-        public async Task ApprovePat()
-        {
-
-            _pat!.Status = 6;
-            var result = await PATsServices.UpdatePat(_pat);
-
-            if (result)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"PAT Approved succesfully!", Severity.Info);
-                NavigationManager.NavigateTo($"PAT");
-            }
-
-            visibleSign = false;
-        }
 
 
         // Distributions
@@ -629,59 +491,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
 
 
-        //In progress
-        private async Task SaveProgressPat()
+        // Zoom
+        private bool IsZoomed = false;
+        private string dynamicStyle => $"overflow-x: auto; height: {viewHeigh}vh;";
+
+        public int viewHeigh = 82;
+        private async Task ToggleZoom()
         {
-
-            _pat.Status = 2;
-
-            SetHistoricalAbility();
-            Console.WriteLine(_pat.HistoricalAbility);
-
-            var result = await PATsServices.UpdatePat(_pat);
-
-
-            if (result)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"PAT {_pat.PATid} Updated", Severity.Info);
-                NavigationManager.NavigateTo("/Pat");
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
-        }
-
-
-        public void SetHistoricalAbility()
-        {
-            try
-            {
-                var result = new List<Dictionary<string, Dictionary<string, double>>>();
-
-                for (int i = 0; i < monthsNames.Count; i++)
-                {
-                    double or_o = monthsDistributionPercentage[i] ?? 0.0;
-                    double or_p = monthsUsersPercentage[i] ?? 0.0;
-
-                    var monthData = new Dictionary<string, double>
-                    {
-                        { "OR_O", or_o },
-                        { "OR_P", or_p }
-                    };
-
-                    result.Add(new Dictionary<string, Dictionary<string, double>>
-                    {
-                        { monthsNames[i], monthData }
-                    });
-                }
-
-                _pat.HistoricalAbility = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error generando el JSON: {ex.Message}");
-            }
+            IsZoomed = !IsZoomed;
+            viewHeigh = IsZoomed ? 100 : 82;
+            var zoomLevel = IsZoomed ? "0.75" : "1.0";
+            await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
         }
 
 
