@@ -481,6 +481,9 @@
                                 </div>
                             </div>
                         </td>
+                        @{
+                            int index = 0;
+                        }
                         <Virtualize Context="usr" Items="_UserOfArea">
                             <td style="text-align: center;" colspan="2">
 
@@ -491,18 +494,28 @@
                                 }
 
 
-                                @if(_pat.KnowledgePercentage != null){
+                                @if (_pat.KnowledgePercentage != null)
+                                {
 
-                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                                    @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
+                                       (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
+                                       && _pat.SaveLeader == "C")
                                     {
+                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                        {
                                         <span style="color:red"><b>X</b></span>
-                                    }
-                                    else if (meetsKnowledge)
-                                    {
+                                        }
+                                        else if (meetsKnowledge)
+                                        {
                                         <span><b>O</b></span>
+                                        }
+
                                     }
                                 }
                             </td>
+                            @{
+                                index++;
+                            }
                         </Virtualize>
                         <td style="text-align: center;" ></td>
                         <td  style="text-align: center;">Nivel de habilidad Tecnica</td>

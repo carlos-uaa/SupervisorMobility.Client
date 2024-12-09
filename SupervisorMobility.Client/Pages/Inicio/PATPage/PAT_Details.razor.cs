@@ -225,8 +225,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
             }
-            _pat.PatDistributionComments = new List<PatDistributionComment>();
 
+            if (_pat.PatDistributionComments is null)
+            {
+                _pat.PatDistributionComments = new List<PatDistributionComment>();
+            }
             foreach (var op in _distributions)
             {
                 if (AllRegistersOfPat.FindIndex(r => r.DistributionId == op.DistributionId) != -1)
@@ -239,16 +242,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
 
-                PatDistributionComment newPatDistributionComment = new PatDistributionComment
+                if (!_pat.PatDistributionComments.Any(dc => dc.DistributionId == op.DistributionId))
                 {
-                    DistributionId = op.DistributionId,
-                    IsActive = true,
-                    PATId = patID,
-                };
-                _pat.PatDistributionComments.Add(newPatDistributionComment);
+                    PatDistributionComment newPatDistributionComment = new PatDistributionComment
+                    {
+                        DistributionId = op.DistributionId,
+                        IsActive = true,
+                        PATId = patID,
+                    };
+                    _pat.PatDistributionComments.Add(newPatDistributionComment);
+                }
             }
 
-            _pat.PatUserRoles = new List<PatUserRole>();
+            if (_pat.PatUserRoles is null)
+            {
+                _pat.PatUserRoles = new List<PatUserRole>();
+            }
 
             foreach (var usr in _UserOfArea)
             {
@@ -262,14 +271,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 }
 
-                PatUserRole newPatUserRole = new PatUserRole
-                {
-                    UserId = usr.UserId,
-                    IsActive = true,
-                    PATId = patID,
-                };
 
-                _pat.PatUserRoles.Add(newPatUserRole);
+                if (!_pat.PatUserRoles.Any(ur => ur.UserId == usr.UserId))
+                {
+                    PatUserRole newPatUserRole = new PatUserRole
+                    {
+                        UserId = usr.UserId,
+                        IsActive = true,
+                        PATId = patID,
+                    };
+
+                    _pat.PatUserRoles.Add(newPatUserRole);
+                }
             }
 
             ShowTable = true;
