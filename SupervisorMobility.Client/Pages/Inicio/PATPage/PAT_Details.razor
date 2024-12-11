@@ -470,11 +470,13 @@
                                 </div>
                             </div>
                         </td>
-                        @{
-                            int index = 0;
-                        }
+
                         <Virtualize Context="usr" Items="_UserOfArea">
-                            <td style="text-align: center;" colspan="2">
+                            @{
+                                int index = _UserOfArea.IndexOf(usr);
+                            }
+
+                            <td colspan="2" style="text-align: center;">
 
                                 @{
                                     var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -485,27 +487,28 @@
 
                                 @if(_pat.KnowledgePercentage != null){
 
-                                    @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
-                                            (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
-                                            && _pat.SaveLeader == "C")
+                                    var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                                    var isSaveLeaderS = _pat.SaveLeader == "S";
+                                    var isSaveLeaderC = _pat.SaveLeader == "C";
+                                    var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                                    @if ((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC))
                                     {
                                         @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                         {
-                                            <span style="color:red"><b>X</b></span>
+                                        <span style="color:red; text-align: center;"><b>X</b></span>
                                         }
                                         else if (meetsKnowledge)
                                         {
-                                            <span><b>O</b></span>
+                                        <span style="text-align: center;"><b>O</b></span>
                                         }
 
                                     }
                                 }
                             </td>
-                            @{
-                                index++;
-                            }
-                        </Virtualize>
-                        <td style="text-align: center;" ></td>
+                    </Virtualize>
+
+                    <td style="text-align: center;"></td>
                         <td  style="text-align: center;">Nivel de habilidad Tecnica</td>
                     </tr>
                     <tr>

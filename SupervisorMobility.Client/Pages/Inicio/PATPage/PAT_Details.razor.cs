@@ -442,7 +442,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 {
                     countUserO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                 {
                     countUserX++;
                 }
@@ -459,8 +459,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             countDistO = 0;
             countDistX = 0;
 
+            int index = 0;
+
             foreach (var usr in _UserOfArea)
             {
+                var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                var isSaveLeaderS = _pat.SaveLeader == "S";
+                var isSaveLeaderC = _pat.SaveLeader == "C";
+                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                if(!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                {
+                    index++;
+                    continue;
+                }
+
                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                 var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
                 var meetsKnowledge = sum >= _pat.KnowledgePercentage;
@@ -469,10 +482,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 {
                     countDistO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                 {
                     countDistX++;
                 }
+                index++;
+
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
