@@ -499,7 +499,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private async Task ToggleZoom()
         {
             IsZoomed = !IsZoomed;
-            viewHeigh = IsZoomed ? 100 : 82;
+            viewHeigh = IsZoomed ? 105 : 82;
             var zoomLevel = IsZoomed ? "0.75" : "1.0";
             await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
         }
