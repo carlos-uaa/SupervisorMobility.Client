@@ -623,6 +623,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
 
             _pat.Status = 2;
+            _pat.SaveLeader = leader;
 
             SetHistoricalAbility();
             Console.WriteLine(_pat.HistoricalAbility);
