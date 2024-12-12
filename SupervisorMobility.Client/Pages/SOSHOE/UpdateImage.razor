@@ -1,0 +1,440 @@
+﻿@page "/update-image"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+
+<style>
+
+    .mud-drawer:not(.mud-drawer-temporary) .mud-popover-cascading-value {
+        z-index: calc(var(--mud-zindex-drawer) + 10000);
+    }
+</style>
+
+<MudPaper Height="75vh" Style="overflow:hidden; position:relative;">
+    <MudDrawerContainer Class="mud-height-full">
+        <MudDrawer Open Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" >
+            <MudNavMenu>
+                <MudItem Class="pa-2">
+                    <MudInput T="string" Placeholder="Buscar" @bind-Value="search" Immediate Clearable Style="width:100%;"/>
+                </MudItem>
+                <MudItem Class="pa-2">
+                    <MudText Typo="Typo.subtitle1">Size</MudText>
+                    <MudSlider @bind-Value="sliderSize" Min="10" Max="100" Step="1" Color="Color.Primary" />
+                </MudItem>
+                <MudItem Class="pa-2">
+                    <MudText Typo="Typo.subtitle1">Draw</MudText>
+                    <MudItem Class="d-flex" Style="align-items: flex-end;">
+                        <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
+                                             Icon="@Icons.Material.Filled.EditOff"
+                                             ToggledIcon="@Icons.Material.Filled.Edit"
+                                             ToggledColor="@Color.Info"
+                                             @onclick="OnToggleClick" />
+                        <MudColorPicker Label="Color" @bind-Text="PencilColor" Style="@($"color: {pencilColor}; width: 90%;  z-index: 1050 !important;")" ColorPickerView="ColorPickerView.Palette"  />
+                    </MudItem>
+
+                </MudItem>
+                <MudItem>
+
+                    @foreach (var image in FilteredImagesWithSelection)
+                    {
+                        <MudNavLink Match="NavLinkMatch.All">
+                            <MudItem Style="display: flex; align-items: center;">
+                                <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info"/>
+                                <MudImage src="@image.Src" Class="rounded-lg" id="@image.Src" Width="@(image.IsSelected ? sliderSize : 55)" draggable="true" @ondragstart="@(e => OnDragStart(e, image.Src))" @ontouchstart="@(e => OnTouchStart(e, image.Src))" />
+                            </MudItem>
+                        </MudNavLink>
+                    }
+                </MudItem>
+            </MudNavMenu>
+        </MudDrawer>
+
+            <MudDrawer Open="@(selectedImageModel != null)"
+                       Anchor="Anchor.End"
+                       Elevation="0"
+                       DisableOverlay
+                       Variant="@DrawerVariant.Temporary">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">Settings</MudText>
+                </MudDrawerHeader>
+                <MudNavMenu>
+                    @if (selectedImageModel != null)
+                    {
+                        <MudItem Class="pa-2">
+                            <MudText Typo="Typo.subtitle1">Selected Image Size</MudText>
+                            <MudSlider @bind-Value="SelectedImageSize"
+                                       Min="10"
+                                       Max="100"
+                                       Step="1"
+                                       Color="Color.Primary"
+                                        />
+                        </MudItem>
+                    <MudItem Class="pa-2">
+                        <MudText Typo="Typo.subtitle1">RotateImage</MudText>
+                        <MudSlider @bind-Value="RotateImage"
+                                   Min="0"
+                                   Max="360"
+                                   Step="1"
+                                   Color="Color.Primary" />
+                    </MudItem>
+                    }
+                </MudNavMenu>
+            </MudDrawer>
+
+
+        <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: column;">
+            <MudItem Class="d-flex mb-4" >
+@*                 <MudButton 
+                           HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Size="Size.Small"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.Image"
+                           for="selectImage">
+                    Load picture
+                </MudButton> 
+                <InputFile hidden id="selectImage" OnChange="OnFileSelected" /> *@
+@*                 <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton>
+ *@                <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+                <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Update Image</MudButton>
+            </MudItem>
+            <canvas id="canvas"
+                    style="border:1px solid #000; cursor: @(IsPencilSelected ? "crosshair" : "default"); @(isCanvasVisible ? "" : "display:none;")"
+                    @ref="canvasRef">
+            </canvas>
+        </div>
+
+    </MudDrawerContainer>
+</MudPaper>
+<img id="generatedImage" style="display:none; margin-top: 20px;" />
+
+@code {
+
+    [Parameter]
+    public string? ImageToEdit { get; set; }
+
+    [Parameter]
+    public int ImageIndex { get; set; }
+
+    [Parameter]
+    public bool IsPrevious { get; set; }
+
+    [Parameter]
+    public EventCallback<(string, int, bool)> UpdatePhoto { get; set; }
+
+    public bool IsReady { get; private set; } = false;
+
+    private ElementReference canvasRef;
+    private string uploadedImage;
+    private bool isCanvasVisible = false;
+    private int sliderSize = 55;
+    private string search = string.Empty;
+    private ImageModel selectedImageModel;
+
+    public string pencilColor = "#000";
+    public string PencilColor
+    {
+        get => pencilColor;
+        set
+        {
+            pencilColor = value;
+            UpdateSelectedColor(value).GetAwaiter().GetResult();
+        }
+    }
+
+    private bool isPencilSelected;
+    public bool IsPencilSelected
+    {
+        get => isPencilSelected;
+        set
+        {
+            if (isPencilSelected != value)
+            {
+                isPencilSelected = value;
+                _ = UpdatePencilStateAsync(value);
+            }
+        }
+    }
+
+    private async Task UpdatePencilStateAsync(bool state)
+    {
+        await JS.InvokeVoidAsync("togglePencilState", state);
+    }
+
+    private double selectedImageSize = 55;
+    private double SelectedImageSize
+    {
+        get => selectedImageSize;
+        set
+        {
+            selectedImageSize = value;
+            UpdateSelectedImageSize(value).GetAwaiter().GetResult(); 
+        }
+    }
+
+    private int rotateImage = 180;
+    private int RotateImage
+    {
+        get => rotateImage;
+        set
+        {
+            rotateImage = value;
+            UpdateRotateImage(value).GetAwaiter().GetResult();
+        }
+    }
+
+
+    private async Task UpdateSelectedImageSize(double newSize)
+    {
+        if (selectedImageModel != null)
+        {
+            await JS.InvokeVoidAsync("updateImageSize", canvasRef, newSize);
+        }
+    }
+
+    private async Task UpdateRotateImage(int newRotation)
+    {
+        if (selectedImageModel != null)
+        {
+            await JS.InvokeVoidAsync("rotateImage", canvasRef, newRotation);
+        }
+    }
+
+    private async Task UpdateSelectedColor(string newColor)
+    {
+        IsPencilSelected = true;
+        await JS.InvokeVoidAsync("setPencilColor", newColor);
+    }
+
+    public class ImageModel
+    {
+        public string Src { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    private List<ImageModel> imageUrls = new List<ImageModel>
+    {
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag A.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag B.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag C.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Green Cross.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/HV.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/OBD Triangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/OBD.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Dashed Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Red Rounded Rectangle.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Regulation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Air Bag.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small HV.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small OBD.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Regulation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Small Water leak.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak A.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak B.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak C.png", IsSelected = true },
+        new ImageModel { Src = "/Images/Hoe Symbols/Water leak.png", IsSelected = true },
+    };
+
+
+    private IEnumerable<ImageModel> FilteredImagesWithSelection => imageUrls
+        .Where(image => string.IsNullOrEmpty(search) || GetFileNameWithoutExtension(image.Src).Contains(search, StringComparison.OrdinalIgnoreCase));
+
+    private string GetFileNameWithoutExtension(string filePath)
+    {
+        var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+        return fileName;
+    }
+
+    private List<string> history = new List<string>();
+    private bool isUndoDisabled = true;
+    private bool isUploaded = false;
+    private DotNetObjectReference<UpdateImage>? dotNetObjectRef;
+
+    [JSInvokable("UpdateSelectedImage")]
+    public void UpdateSelectedImage(string imageId)
+    {
+        selectedImageModel = imageUrls.FirstOrDefault(img => img.Src == imageId);
+        StateHasChanged();
+    }
+
+    [JSInvokable("UpdateSelectedSizeSlider")]
+    public void UpdateSizeSlider(double sliderWidth)
+    {
+        selectedImageSize = sliderWidth;
+        StateHasChanged();
+    }
+
+    [JSInvokable("UpdateSelectedRotateSlider")]
+    public void UpdateRotateSlider(int rotateSlider)
+    {
+        rotateImage = rotateSlider;
+        StateHasChanged();
+    }
+
+    [JSInvokable("SetPencilState")]
+    public void UpdatePencilState(bool penState)
+    {
+        isPencilSelected = penState;
+        StateHasChanged();
+    }
+
+
+
+    [JSInvokable("OnImageDropped")]
+    public async Task OnImageDropped()
+    {
+        var currentCanvasImage = await JS.InvokeAsync<string>("getCanvasImage", canvasRef);
+        uploadedImage = currentCanvasImage;
+        history.Add(uploadedImage);
+        isUndoDisabled = false;
+        StateHasChanged();
+
+    }
+
+    [JSInvokable("DeselectImage")]
+    public void DeselectImage()
+    {
+        if (selectedImageModel != null)
+        {
+            selectedImageModel = null;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable("OnDrawingAdded")]
+    public void OnDrawingAdded()
+    {
+        history.Add("addDrawing");
+        isUndoDisabled = false;
+        StateHasChanged();
+
+    }
+
+    // protected override void OnParametersSet()
+    // {
+    //     base.OnParametersSet();
+    //     if (!string.IsNullOrEmpty(ImageToEdit))
+    //     {
+    //         Console.WriteLine($"Imagen recibida: {ImageToEdit}");
+    //     }
+    // }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetObjectRef = DotNetObjectReference.Create(this);
+            IsPencilSelected = false;
+            await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
+
+            IsReady = true;
+        }
+    }
+
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        ClearImage();
+        var file = e.File;
+        using (var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+        {
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer);
+            var base64String = Convert.ToBase64String(buffer);
+            var dataUrl = $"data:{file.ContentType};base64,{base64String}";
+            uploadedImage = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+            history.Add(uploadedImage);
+            await JS.InvokeVoidAsync("addImageToCanvas", dataUrl, canvasRef);
+            isUndoDisabled = false;
+            isUploaded = true;
+            isCanvasVisible = true;
+        }
+    }
+
+
+    public async Task LoadImageFromBase64Async(string base64Image)
+    {
+        Console.WriteLine("Loading Photo");
+        await ProcessImageAsync(base64Image);
+    }
+
+
+    private async Task ProcessImageAsync(string base64String)
+    {
+        ClearImage();
+
+        uploadedImage = base64String;
+
+        history.Add(uploadedImage);
+
+        await JS.InvokeVoidAsync("addImageToCanvas", base64String, canvasRef);
+
+        isUploaded = true;
+        isCanvasVisible = true;
+        StateHasChanged();
+    }
+
+
+    private async Task OnDragStart(DragEventArgs e, string imageId)
+    {
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
+    }
+
+    private async Task OnTouchStart(TouchEventArgs e, string imageId)
+    {
+        await JS.InvokeVoidAsync("onDragStartJs", imageId);
+    }
+
+    private void ClearImage()
+    {
+        uploadedImage = null;
+        history = new();
+        JS.InvokeVoidAsync("clearCanvas", canvasRef);
+        isUndoDisabled = true;
+        isUploaded = false;
+        isCanvasVisible = false;
+    }
+
+    private async void UndoChange()
+    {
+        if (history.Count > 1)
+        {
+            await JS.InvokeVoidAsync("undoLastAction", canvasRef);
+
+            history.RemoveAt(history.Count - 1);
+
+            // if (!(history.Count > 0))
+            // {
+            //     uploadedImage = null;
+            //     isUndoDisabled = true;
+            // }
+
+            isUndoDisabled = history.Count == 1;
+            // isCanvasVisible = history.Count > 0;
+            StateHasChanged();
+        }
+
+    }
+
+    private async Task GenerateImage()
+    {
+        await JS.InvokeVoidAsync("generateImageFromCanvas", canvasRef);
+        string imageSrc = await JS.InvokeAsync<string>("getImageSrcById", "generatedImage");
+
+        await UpdatePhoto.InvokeAsync((imageSrc, ImageIndex, IsPrevious));
+    }
+
+    private void OnToggleClick()
+    {
+        IsPencilSelected = !IsPencilSelected;
+    }
+
+}
+
+<style>
+    img {
+        position: relative;
+        z-index: 1;
+    }
+</style>

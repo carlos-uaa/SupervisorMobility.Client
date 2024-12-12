@@ -1254,6 +1254,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 4 => Color.Info,     // Under Review
                 5 => Color.Error,    // Rejected
                 6 => Color.Success,  // Finalized
+                7 => Color.Warning,  // Programmed
                 _ => Color.Default
             };
         }
@@ -1268,11 +1269,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 4 => Icons.Material.Filled.IncompleteCircle, // Under Review
                 5 => Icons.Material.Filled.Cancel,        // Rejected
                 6 => Icons.Material.Filled.Circle,        // Finalized
+                7 => Icons.Material.Filled.Info,        // Programmed
                 _ => Icons.Material.Filled.Help // Default icon
             };
         }
 
+
+        private bool ShouldRenderChip(JobObservation jobobs, int selectedStatus)
+        {
+            if (selectedStatus >= 21)
+            {
+                selectedStatus -= 20;
+                return jobobs.Status == selectedStatus && jobobs.Type == 4;
+            }
+            else if (selectedStatus >= 11)
+            {
+                selectedStatus -= 10;
+                return jobobs.Status == selectedStatus && jobobs.Type == 2;
+            }
+            else
+            {
+                return (jobobs.Status == selectedStatus && jobobs.Type != 2) || selectedStatus == 0;
+            }
+        }
+
+
+
+
     }
-
-
 }

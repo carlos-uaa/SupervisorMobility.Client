@@ -7,6 +7,8 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject ISOSHubService SOSHubServices
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSSequenceService SOSSequenceServices
 
 <style>
     .vertical {
@@ -48,6 +50,7 @@
     .section_divider {
         border-top: 3px dashed var(--mud-palette-table-lines);
     }
+
     .mud-input .mud-input-slot {
         font-size: 0.6rem;
         scrollbar-width: none;
@@ -65,6 +68,42 @@
         margin-bottom: 5px;
     }
 
+
+    .drop-container {
+        display: flex;
+        max-height: 85vh;
+        overflow-y: hidden;
+    }
+
+    .drop-item {
+        flex-basis: calc(33% - 10px);
+        margin: 5px;
+    }
+
+    .drop-scroll {
+        height: 85vh;
+        overflow-y: scroll;
+    }
+
+    .sticky-table {
+        position: sticky;
+        top: 0; /* Mantener fija la tabla al inicio */
+        background-color: white; /* Fondo para evitar transparencias */
+        z-index: 10; /* Asegura que esté encima de otros elementos */
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px);
+        margin: 5px;
+    }
 </style>
 
 @if (ShowLoading)
@@ -83,6 +122,19 @@
 }
 else
 {
+      <MudPaper Square="true" Elevation="3">
+    <MudButton @onclick=" () => EditAnalysesSequences()" Variant="Variant.Filled" Color="Color.Primary">
+        Edit Analyses Sequences
+    </MudButton>
+
+    <MudButton @onclick="() => EditDistributionStructure()" Variant="Variant.Filled" Color="Color.Primary">
+        Edit Distribution Structure
+    </MudButton>
+    </MudPaper>
+
+  
+
+
     <MudText Typo="Typo.h6"><b>HOJA DE OPERACION ESTANDAR (DISTRIBUCIÓN)</b></MudText>
     <MudPaper Square="true" Elevation="3">
         <MudSimpleTable>
@@ -165,7 +217,8 @@ else
                     <MudTd>
                         <b>MES DE APLICACIÓN</b><br />@_sosDistribution.ApplicationMonth?.ToString("MM/yyyy")
                     </MudTd>
-                    <MudTd><b>MODELO</b><br />
+                    <MudTd>
+                        <b>MODELO</b><br />
                         @foreach (Product model in _sosDistribution.SOSHub.AppliedModels)
                         {
                             @($"{model?.Description} -")
@@ -182,7 +235,7 @@ else
                 </MudTr>
             </tbody>
         </MudSimpleTable>
-        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true" >
+        <MudSimpleTable Dense Style="width:100%; margin:0px; padding:0px;" Square="true">
             <tbody class="table-header-gray">
                 <tr>
                     <th rowspan="2">No.</th>
@@ -220,7 +273,15 @@ else
                             {
                                 int TotalRowSpan = sect.Analyses.Count();
                                 int indexTime = _sosDistribution.Times.ToList().FindIndex(t => t.SectionId == sect.SectionId);
-                                <td rowspan="@TotalRowSpan">@(indexSection + 1)</td>
+                               <td rowspan="@TotalRowSpan">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(indexSection == 0)" 
+                                                           OnClick="() => MoveSection(indexSection, -1)" />
+                                            <span>@(indexSection + 1)</span>
+                                            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(indexSection == _sosDistribution.SOSHub.Sections.Count - 1)" 
+                                                           OnClick="() => MoveSection(indexSection, 1)" />
+                                        </div>
+                                    </td>
                                 <td rowspan="@TotalRowSpan" colspan="3" style="font-size: 12px">@sect.Step</td>
                             }
                             <td colspan="2">
@@ -228,9 +289,9 @@ else
                                 {
                                     <MudItem>
                                         <MudText Style="font-size: 12px">@cp</MudText>
-  @*                                       <MudText>
-                                            @ReasonFormat(analysis.Reasons[cpIndex])
-                                        </MudText> *@
+                                        @*                                       <MudText>
+                        @ReasonFormat(analysis.Reasons[cpIndex])
+                        </MudText> *@
                                     </MudItem>
                                 }
                             </td>
@@ -331,7 +392,7 @@ else
                                                 </MudAlert>
                                             }
 
-                                            </MudItem>
+                                        </MudItem>
                                         <MudSimpleTable Style="width:100%">
                                             <tr>
                                                 @foreach (var rev in mostRecentLogs)
@@ -349,7 +410,7 @@ else
                                                 <th style="font-size: 12px;">REV</th>
                                             </tr>
                                         </MudSimpleTable>
-                                        </div>
+                                    </div>
                                 </td>
                             }
                         </tr>
@@ -358,7 +419,7 @@ else
                 <tr>
                     <MudTd colspan="2" rowspan="2">
                         <b style="font-size: 12px;">No Control</b><br />
-                        <MudInput @bind-Value="_sosDistribution.ControlNumber" Variant="Variant.Outlined" Margin="Margin.Dense" Style="font-size: 0.6rem;"  />
+                        <MudInput @bind-Value="_sosDistribution.ControlNumber" Variant="Variant.Outlined" Margin="Margin.Dense" Style="font-size: 0.6rem;" />
                     </MudTd>
                     <td colspan="3"></td>
                     <td style="font-size: 12px;">Tiempo Adicional total</td>
@@ -366,13 +427,13 @@ else
                         <MudInput Value="@additionalTimes[0]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(0)" Validation="ValidateTime" Class="small-font" />
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(1)" Validation="ValidateTime" Class="small-font"/>
+                        <MudInput Value="@additionalTimes[1]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(1)" Validation="ValidateTime" Class="small-font" />
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(2)" Validation="ValidateTime" Class="small-font"/>
+                        <MudInput Value="@additionalTimes[2]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(2)" Validation="ValidateTime" Class="small-font" />
                     </td>
                     <td>
-                        <MudInput Value="@additionalTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(3)" Validation="ValidateTime" Class="small-font"/>
+                        <MudInput Value="@additionalTimes[3]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(3)" Validation="ValidateTime" Class="small-font" />
                     </td>
                     <td>
                         <MudInput Value="@additionalTimes[4]" Variant="Variant.Outlined" Margin="Margin.Dense" ValueChanged="CreateAdditionalTimeChangedCallback(4)" Validation="ValidateTime" Class="small-font" />
@@ -463,7 +524,7 @@ else
             </tr>
             <tr>
                 <td colspan="7"></td>
-                @for (int i = 1; i <= 5; i++) 
+                @for (int i = 1; i <= 5; i++)
                 {
                     double takeTimeValue = 0.0;
                     double leaveTimeValue = 0.0;
@@ -744,5 +805,205 @@ else
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudDialog @bind-IsVisible="_visibleAnalysesSequences" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> Edit Analyses Sequences
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer>
+            <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+            <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                @foreach (SOSSequence sequence in FilteredSequences)
+                {
+                    <div class="toggle-column">
+                        <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            <div class="mud-width-full mud-height-full">
+                                <div class="d-flex align-center justify-space-between flex-wrap">
+                                    <MudText Class="ellipsis">@sequence.InternalControlNumber</MudText>
+                                </div>
+                                <MudText Typo="Typo.subtitle2">@sequence.OperationName</MudText>
+                            </div>
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+        <MudContainer>
+            <MudTextField @bind-Value="searchAnalysis" Placeholder="Buscar analisis..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+            <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Analyses" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                @foreach (SOSAnalysis analisis in FilteredAnalysis)
+                {
+                    <div class="toggle-column">
+                        <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            <div class="mud-width-full mud-height-full">
+                                <div class="d-flex align-center justify-space-between flex-wrap">
+                                    <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
+                                </div>
+                                <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
+                            </div>
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CloseAnalysesSequences" Class="px-10">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="_visibleDistributionStructure" Options="_dialogOptionsDistribution">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> Edit Structure
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+
+        <MudDropContainer T="DropItem" Items="_combinedItems" ItemsSelector="@((item, dropzone) => item.Zone == dropzone)" ItemDropped="ItemUpdated" Class="drop-container">
+            <ChildContent>
+                <MudDropZone T="DropItem" Identifier="SOSAnalysis" Class="drop-item drop-scroll rounded-lg mud-alert-text-success" CanDrop="@((item) => item.Type == "SOSSequence" && item.Type == "SOSAnalysis")">
+                    <MudText Typo="Typo.h6" Class="mb-4">Analyses </MudText>
+
+                    <MudSimpleTable Style="width:100%;" Class="sticky-table styled-table table-striped sticky-header" Striped="true">
+                        <thead>
+                            <MudTr>
+                                <MudTh Style="width: 45%">Análisis</MudTh>
+                                <MudTh Style="width: 20%">Paso</MudTh>
+                                <MudTh Style="width: 10%">Tiempo</MudTh>
+                                <MudTh>Puntos Crítico</MudTh>
+                            </MudTr>
+                        </thead>
+
+                    </MudSimpleTable>
+
+                    @foreach (var analysis in _sosDistribution.Analyses)
+                    {
+                        @if (analysis.SOSHub != null)
+                        {
+                            <MudListSubheader Class="mt-4 pb-2">@analysis.OperationName</MudListSubheader>
+                            <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Analysis_{analysis.SOSAnalysisId}")" Class="rounded mud-background-gray"
+                                         CanDrop="@((item) => item.Type == "SOSAnalysis")" Style="min-height:30px">
+
+                            </MudDropZone>
+                        }
+                    }
+                </MudDropZone>
+
+                <MudDropZone T="DropItem" Identifier="SOSSequence" Class="drop-item drop-scroll rounded-lg mud-alert-text-info flex-grow-1" CanDrop="@((item) => item.Type == "SOSSequence" && item.Type == "SOSAnalysis")">
+                    <MudText Typo="Typo.h6" Class="mb-4">Sequences </MudText>
+                    <MudSimpleTable Style="width:100%;" Class="sticky-table styled-table table-striped" Striped="true">
+                        <thead>
+                            <MudTr>
+                                <MudTh Style="width: 20%">Paso</MudTh>
+                                <MudTh Style="width: 10%">Tiempo</MudTh>
+                                <MudTh>Puntos Crítico</MudTh>
+                            </MudTr>
+                        </thead>
+
+                    </MudSimpleTable>
+                    @foreach (var sequence in _sosDistribution.Sequences)
+                    {
+                        @if (sequence.SOSHub != null)
+                        {
+                            <MudListSubheader Class="mt-4 pb-2">@sequence.OperationName</MudListSubheader>
+                            <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Sequence_{sequence.SOSSequenceId}")" Class="rounded mud-background-gray"
+                                         CanDrop="@((item) => item.Type == "SOSSequence")" Style="min-height:30px">
+
+                            </MudDropZone>
+                        }
+                    }
+                </MudDropZone>
+
+                <MudDropZone T="DropItem" Identifier="CombinedZone" AllowReorder  Class="rounded mud-background-gray drop-item drop-scroll" Style="min-height:30px">
+                    <MudText Typo="Typo.h6" Class="mb-4">Distribution </MudText>
+                    
+                </MudDropZone>
+            </ChildContent>
+            <ItemRenderer>
+                <MudPaper Elevation="4" Class="pa-2 my-1 d-flex align-items-center">
+                    <MudSimpleTable Style="width:100%;" Class="styled-table table-striped" Striped="true">
+                        <MudTr>
+                            @if (context.Type == "SOSAnalysis")
+                            {
+                                <MudTd Style="width:45%; background-color: white;">
+                                    @foreach (var (analisis, indexAnalisis) in context.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                    {
+                                        @if (analisis.CriticalPoints.Any())
+                                        {
+                                            <MudText T="MarkupString" ReadOnly="true" Variant="Variant.Text">
+                                                @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(context.section, indexAnalisis), analisis.CriticalPoints))
+                                            </MudText>
+                                            @if (analisis != context.section.Analyses.Last())
+                                            {
+                                                <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.subtitle1">
+                                                @context.section.Analyses[indexAnalisis].Text
+                                            </MudText>
+                                            @if (analisis != context.section.Analyses.Last())
+                                            {
+                                                <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                            }
+                                        }
+                                    }
+                                </MudTd>
+                            }
+                            <MudTd Style="width:20%">
+                                <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                    @context.section.Step
+                                </MudText>
+                            </MudTd>
+                            <MudTh Style="width: 10%"></MudTh>
+
+                            <MudTd>
+                                @if (!string.IsNullOrEmpty(context.section.Step))
+                                {
+                                    @foreach (var (analisis, indexAnalisis) in context.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                    {
+                                        <MudItem>
+                                            @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                            {
+                                                <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                    @context.section.Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                </MudText>
+                                                <MudText>
+                                                    @ReasonFormat(context.section.Analyses[indexAnalisis].Reasons[indexPoints])
+                                                </MudText>
+                                                @if (criticalPoint != context.section.Analyses[indexAnalisis].CriticalPoints.Last())
+                                                {
+                                                    <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                }
+                                            }
+                                        </MudItem>
+                                        @if (analisis != context.section.Analyses.Last())
+                                        {
+                                            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                        }
+                                    }
+                                }
+                            </MudTd>
+
+                        </MudTr>
+
+                    </MudSimpleTable>
+                </MudPaper>
+            </ItemRenderer>
+        </MudDropContainer>
+
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CloseStructure" Class="px-10">Close</MudButton>
     </DialogActions>
 </MudDialog>

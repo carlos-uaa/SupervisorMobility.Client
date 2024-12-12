@@ -22,7 +22,6 @@ namespace SupervisorMobility.Client.Services.PATService
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                 PropertyNameCaseInsensitive = true,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
-                
             };
             _options.Converters.Add(new IntToStringConverter());
         }
@@ -160,6 +159,19 @@ namespace SupervisorMobility.Client.Services.PATService
 
             return null;
 
+        }
+
+        public async Task<bool> DeletePat(int patId)
+        {
+            var response = await _http.DeleteAsync($"PAT/{patId}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         // Update pat

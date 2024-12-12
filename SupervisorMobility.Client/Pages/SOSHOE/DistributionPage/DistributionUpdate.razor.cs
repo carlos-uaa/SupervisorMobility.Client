@@ -1,17 +1,13 @@
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
 using Microsoft.JSInterop;
-using static MudBlazor.Icons;
-using SupervisorMobility.Client.Data.Entities;
-using Microsoft.AspNetCore.Components.Web;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
-using Blazorise.Extensions;
+using MudBlazor.Utilities;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 {
@@ -166,7 +162,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeCollections: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks
@@ -287,6 +283,97 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
                 cycleTimes[i] = (cycleTime).ToString();
             }
+
+            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosDistribution.SOSHub.DistributionId, includeSOS: true);
+            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosDistribution.SOSHub.DistributionId, includeSOS: true);
+
+            int secuenceInt = 0;
+
+            foreach (var analysis in _sosDistribution.Analyses)
+            {
+                Console.WriteLine($"Analysis: {analysis.SOSAnalysisId}");
+                foreach (Section sect in analysis.SOSHub.Sections)
+                {
+                    Console.WriteLine($"{analysis.SOSAnalysisId} Sec: {sect.Step}");
+                    if (_sosDistribution.SOSHub.Sections.Any(s => s.SectionId == sect.SectionId))
+                    {
+                        _combinedItems.Add(
+                            new DropItem
+                            {
+                                Name = sect.Step,
+                                Type = $"SOSAnalysis",
+                                Zone = $"CombinedZone",
+                                //Identifier = $"CombinedZone",
+                                Identifier = $"Analysis_{analysis.SOSAnalysisId}",
+                                section = sect,
+                                Sequence = secuenceInt
+                            }
+                        );
+                    }
+                    else
+                    {
+                        _combinedItems.Add(
+                            new DropItem
+                            {
+                                Name = sect.Step,
+                                Type = $"SOSAnalysis",
+                                Zone = $"Analysis_{analysis.SOSAnalysisId}",
+                                Identifier = $"Analysis_{analysis.SOSAnalysisId}",
+                                section = sect,
+                                Sequence = secuenceInt
+                            }
+                            );
+
+                    }
+                    secuenceInt++;
+                }
+            }
+
+            foreach (var sequence in _sosDistribution.Sequences)
+            {
+                //Console.WriteLine(JsonSerializer.Serialize(sequence));
+
+                //int temp = AvailableSequences.FindIndex(a => a.SOSSequenceId == sequence.SOSSequenceId);
+                //AvailableSequences[temp].SOSHub = sequence.SOSHub;
+
+                foreach (Section sect in sequence.SOSHub.Sections)
+                {
+                    if (_sosDistribution.SOSHub.Sections.Any(s => s.SectionId == sect.SectionId))
+                    {
+                        _combinedItems.Add(
+                            new DropItem
+                            {
+                                Name = sect.Step,
+                                Type = $"SOSSequence",
+                                Zone = $"CombinedZone",
+                                //Identifier = $"CombinedZone",
+                                Identifier = $"Sequence_{sequence.SOSSequenceId}",
+                                section = sect,
+                                Sequence = secuenceInt
+                            }
+                        );
+                    }
+                    else
+                    {
+                        _combinedItems.Add(
+                            new DropItem
+                            {
+                                Name = sect.Step,
+                                Type = $"SOSSequence",
+                                Zone = $"Sequence_{sequence.SOSSequenceId}",
+                                Identifier = $"Sequence_{sequence.SOSSequenceId}",
+                                section = sect,
+                                Sequence = secuenceInt
+                            }
+                        );
+                    }
+                    secuenceInt++;
+                }
+
+            }
+
+            _sosDistribution.SOSHub.Sections = _sosDistribution.SOSHub.Sections.OrderBy(d => d.SecuenceDist).ToList();
+
 
             return new AsyncVoidMethodBuilder();
         }
@@ -422,7 +509,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 cycleTimes[index] = "0";
 
                 double totalSectTimes = _sosDistribution.Times
-                    .Select(t => {
+                    .Select(t =>
+                    {
                         var times = t.Time?.Split("§");
                         // Verifica que el índice esté dentro del rango
                         return (times != null && index < times.Length) ? times[index] : null;
@@ -450,7 +538,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             additionalTimes[index] = newValue;
 
             double totalSectTimes = _sosDistribution.Times
-                .Select(t => {
+                .Select(t =>
+                {
                     var times = t.Time?.Split("§");
                     return (times != null && index < times.Length) ? times[index] : null;
                 })
@@ -565,7 +654,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("§", leaveTime);
             _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("§", stepsQuantity);
             _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("§", stepsTime);
-            
+
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
             if (result != null)
@@ -761,5 +850,329 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
         }
 
+        int ApproverDistributionId = 0;
+        int ReviewerDistributionId = 0;
+
+        List<SOSAnalysis> AvailableAnalyses = new();
+        List<SOSSequence> AvailableSequences = new();
+
+        private string searchAnalysis = "";
+        private IEnumerable<SOSAnalysis> FilteredAnalysis =>
+            AvailableAnalyses.Where(op =>
+                string.IsNullOrEmpty(searchAnalysis) ||
+                (op.InternalControlNumber?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false));
+
+        private string searchSequence = "";
+        private IEnumerable<SOSSequence> FilteredSequences =>
+            AvailableSequences.Where(op =>
+                string.IsNullOrEmpty(searchSequence) ||
+                (op.InternalControlNumber?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OperationName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false));
+
+
+        private void VerifyItemsSequence()
+        {
+
+        }
+
+        private void ItemUpdated(MudItemDropInfo<DropItem> dropItem)
+        {
+            dropItem.Item.Zone = dropItem.DropzoneIdentifier;
+
+
+            int newIndex = dropItem.IndexInZone;
+
+            ///
+            _combinedItems.UpdateOrder(dropItem, item => item.Sequence, newIndex);
+            Console.WriteLine("Combined: " + JsonSerializer.Serialize(_combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(s => s.Sequence)));
+
+            _sosDistribution.SOSHub.Sections = _combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(i => i.Sequence).Select(i => i.section).ToList();
+            Console.WriteLine("Section: " + JsonSerializer.Serialize(_sosDistribution.SOSHub.Sections.Select(t => t.Step)));
+            ///
+
+            if (_sosDistribution.Times == null)
+            {
+                _sosDistribution.Times = new List<SOSTime>();
+                //crearlos artificialmente
+                foreach (Section section in _sosDistribution.SOSHub.Sections)
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = "";
+
+                    _sosDistribution.Times.Add(newitem);
+                }
+            }
+            else
+            {
+                //iterar sobre ellos para añadir casos faltantes de haber
+                foreach (Section section in _sosDistribution.SOSHub.Sections)
+                {
+                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "0";
+
+                        _sosDistribution.Times.Add(newitem);
+                    }
+                }
+            }
+
+        }
+
+
+
+        private List<DropItem> _combinedItems = new();
+
+        public class DropItem
+        {
+            public string Name { get; init; }
+            public string Type { get; init; } // SOSAnalysis or SOSSequence
+            public string Zone { get; set; } // SOSAnalysis, SOSSequence, or Combined
+            public string Identifier { get; set; }
+            public int Sequence { get; set; }
+
+            public Section section { get; set; }
+        }
+
+
+        private string GetFormatedAnalisisText(Section section, int analisisIndex)
+        {
+            string BaseText = Regex.Replace(section.Analyses[analisisIndex].Text, @"\*", "").ToString();
+
+            return BaseText;
+        }
+
+        private MarkupString GenerateHighlightedText(string text, List<string> criticalPoints)
+        {
+            if (string.IsNullOrEmpty(text) || criticalPoints == null || criticalPoints.Count == 0)
+            {
+                return new MarkupString(text);
+            }
+
+            var normalizedText = Normalize(text);
+            var builder = new StringBuilder();
+            var currentIndex = 0;
+
+            foreach (var criticalPoint in criticalPoints)
+            {
+                var normalizedCriticalPoint = Normalize(criticalPoint);
+                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+                if (match.Success)
+                {
+                    var startIndex = match.Index;
+                    var endIndex = startIndex + criticalPoint.Length;
+
+                    // Agregar el texto normal antes del punto crítico
+                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
+
+                    // Agregar el punto crítico resaltado
+                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
+
+                    currentIndex = endIndex;
+                }
+            }
+
+            // Agregar el texto normal después del último punto crítico
+            builder.Append(text.Substring(currentIndex));
+
+            return new MarkupString(builder.ToString());
+        }
+
+        private static string Normalize(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            return input.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString().ToLowerInvariant();
+        }
+
+        private bool _visibleDistributionStructure = false;
+        private bool _visibleAnalysesSequences = false;
+
+        private readonly DialogOptions _dialogOptions = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, CloseButton = true };
+        private readonly DialogOptions _dialogOptionsDistribution = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, CloseButton = true };
+
+        private void EditAnalysesSequences()
+        {
+            _visibleAnalysesSequences = true;
+            StateHasChanged();
+        }
+
+        private void CloseAnalysesSequences()
+        {
+
+            _visibleAnalysesSequences = false;
+            StateHasChanged();
+
+            int secuenceint = 0;
+
+            foreach (var analysis in _sosDistribution.Analyses)
+            {
+                foreach (Section sect in analysis.SOSHub.Sections)
+                {
+
+                    if (!_combinedItems.Any(i => i.Identifier == $"Analysis_{analysis.SOSAnalysisId}" && i.section == sect))
+                    {
+                        _combinedItems.Add(
+                            new DropItem
+                            {
+                                Name = sect.Step,
+                                Type = $"SOSAnalysis",
+                                Zone = $"Analysis_{analysis.SOSAnalysisId}",
+                                Identifier = $"Analysis_{analysis.SOSAnalysisId}",
+                                section = sect,
+                                Sequence = secuenceint
+                            }
+                            );
+                        secuenceint++;
+                    }
+                }
+            }
+
+            foreach (var sequence in _sosDistribution.Sequences)
+            {
+
+                foreach (Section sect in sequence.SOSHub.Sections)
+                {
+                    if (!_combinedItems.Any(i => i.Identifier == $"Sequence_{sequence.SOSSequenceId}" && i.section == sect))
+                    {
+                        _combinedItems.Add(
+                        new DropItem
+                        {
+                            Name = sect.Step,
+                            Type = $"SOSSequence",
+                            Zone = $"Sequence_{sequence.SOSSequenceId}",
+                            Identifier = $"Sequence_{sequence.SOSSequenceId}",
+                            section = sect,
+                            Sequence = secuenceint
+                        }
+                        );
+                        secuenceint++;
+
+                    }
+                }
+            }
+
+
+
+
+            List<DropItem> ForRemove = new List<DropItem>();
+            foreach (DropItem item in _combinedItems)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+
+                if (item.Identifier.Split('_').First() == "Analysis_" && item.Zone == "CombinedZone")
+                {
+                    //Analysis_
+                    int id_item = int.Parse(item.Identifier.Split('_').Last());
+
+                    if (!_sosDistribution.Analyses.Any(a => a.SOSAnalysisId == id_item))
+                    {
+                        ForRemove.Add(item);
+                    }
+                }
+                else if (item.Zone == "CombinedZone")
+                {
+                    int id_item = int.Parse(item.Identifier.Split('_').Last());
+
+                    if (!_sosDistribution.Sequences.Any(a => a.SOSSequenceId == id_item))
+                    {
+                        ForRemove.Add(item);
+                    }
+                }
+            }
+
+            foreach (var toRemove in ForRemove)
+            {
+                _combinedItems.Remove(toRemove);
+            }
+
+
+            _sosDistribution.SOSHub.Sections = _combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(i => i.Sequence).Select(i => i.section).ToList();
+            if (_sosDistribution.Times == null)
+            {
+                _sosDistribution.Times = new List<SOSTime>();
+                //crearlos artificialmente
+                foreach (Section section in _sosDistribution.SOSHub.Sections)
+                {
+                    SOSTime newitem = new SOSTime();
+
+                    newitem.SectionId = section.SectionId;
+                    newitem.IsActive = true;
+                    newitem.Time = "";
+
+                    _sosDistribution.Times.Add(newitem);
+                }
+            }
+            else
+            {
+                //iterar sobre ellos para añadir casos faltantes de haber
+                foreach (Section section in _sosDistribution.SOSHub.Sections)
+                {
+                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
+                    {
+                        SOSTime newitem = new SOSTime();
+
+                        newitem.SectionId = section.SectionId;
+                        newitem.IsActive = true;
+                        newitem.Time = "0";
+
+                        _sosDistribution.Times.Add(newitem);
+                    }
+                }
+            }
+
+
+
+
+        }
+
+        private void EditDistributionStructure()
+        {
+            _visibleDistributionStructure = true;
+            StateHasChanged();
+        }
+
+        private void CloseStructure()
+        {
+            _visibleDistributionStructure = false;
+            StateHasChanged();
+        }
+
+        private async Task MoveSection(int index, int direction)
+        {
+          
+            int newIndex = index + direction;
+
+            if (newIndex < 0 || newIndex >= _sosDistribution.SOSHub.Sections.Count)
+            {
+                return; 
+            }
+
+            var sections = _sosDistribution.SOSHub.Sections.ToList();
+            var temp = sections[index];
+            sections[index] = sections[newIndex];
+            sections[newIndex] = temp;
+
+            for (int i = 0; i < sections.Count; i++)
+            {
+                sections[i].SecuenceDist = i + 1; 
+            }
+
+            _sosDistribution.SOSHub.Sections = sections;
+
+        }
     }
 }

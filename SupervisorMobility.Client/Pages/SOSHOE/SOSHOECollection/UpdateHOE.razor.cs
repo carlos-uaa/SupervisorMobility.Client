@@ -493,15 +493,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             resourceType = "";
         }
 
-        //Create SOS HUB and validations
-        #region Create SOSHUB
+        //Update SOS HUB and validations
+        #region Update SOSHUB
         private string ValidateSosHubForm()
         {
 
-            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
+
+            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0 && _sosHub.SOSDistribution.Count == 0)
             {
                 return "Write down at least one analysis first";
             }
+
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {
                 return "Write down the Process Sheet plan first";
@@ -684,8 +686,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
 
+            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true, includeModel: true);
             StateHasChanged();
-            _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true);
 
             if(_sosHub.StationId != 0)
                 _sosHub.Station = _stations.Find(s => s.StationId == _sosHub.StationId);
@@ -722,6 +724,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                     RawAnalisisBk.Add(backup);
                 }
+            }
+
+            if(_sosHub.SOSDistribution.Count > 0)
+            {
+                _sosHub.Sections = _sosHub.Sections.OrderBy(s => s.SecuenceDist).ToList();
             }
 
             if (_sosHub.Images != null && _sosHub.Images.Count > 0)
@@ -895,20 +902,54 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             distributionId = 0;
             _distributions.Clear();
+
+            _Seniorsupervisors.Clear();
             _supervisors.Clear();
+          
+
             if (user.UserType == 1)
             {
-                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, false, false);
+             
+                _Seniorsupervisors = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
+                _Seniorsupervisors = _Seniorsupervisors
+                     .Where(s => s.Areas != null && s.Areas.Any(a => a.AreaId == areaId))
+                     .OrderBy(s => s.Name)
+                     .ToList();
+
+               
+                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, true, false);
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
             }
             else if (user.UserType == 2)
             {
-                _supervisors = new();
-                _supervisors = await UsersService.GetSubordinates(user.UserId, false);
+                //_Seniorsupervisors = new List<User>();
+                _Seniorsupervisors = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
+                _Seniorsupervisors = _Seniorsupervisors
+                     .Where(s => s.Areas != null && s.Areas.Any(a => a.AreaId == areaId))
+                     .OrderBy(s => s.Name)
+                     .ToList();
+
+                //_supervisors = new();
+                _supervisors = await UsersService.GetSubordinates(user.UserId, true);
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
             }
+            else if (user.UserType == 3)
+            {
+                //_Seniorsupervisors = new List<User>();
+                _Seniorsupervisors = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
+                _Seniorsupervisors = _Seniorsupervisors
+                     .Where(s => s.Areas != null && s.Areas.Any(a => a.AreaId == areaId))
+                     .OrderBy(s => s.Name)
+                     .ToList();
+
+
+                //_supervisors = new();
+                _supervisors = await UsersService.GetSubordinates(user.Superior.UserId, true);
+                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+            }
+
 
             _distributions = await DistributionServices.GetDistributionsWithCollections(plantId, areaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
@@ -1691,7 +1732,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public List<AnalysisBkup> RawAnalisis { get; set; } = new List<AnalysisBkup>();
         public List<AnalysisBkup> RawAnalisisBk { get; set; } = new List<AnalysisBkup>();
 
-        private IEnumerable<string> _selectedValues = new List<string>();
+        private IEnumerable<AnalysisBkup> _selectedValues = new List<AnalysisBkup>();
 
 
         public string stepName { get; set; } = "";
@@ -1789,7 +1830,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (state == "Deleted!")
             {
                 RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
+                RawAnalisisBk.Clear();
                 _sosHub.Sections.Clear();
+                StateHasChanged();
             }
 
 
@@ -1878,19 +1921,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 Section sectionToAdd = new Section { Step = stepName };
 
-                foreach (string item in _selectedValues)
+                foreach (AnalysisBkup item in _selectedValues)
                 {
-                    Analysis analysisToAdd = ProcessText(item);
+                    Analysis analysisToAdd = ProcessText(item.Text);
 
                     sectionToAdd.Analyses.Add(analysisToAdd);
-                    RawAnalisis.Remove(RawAnalisis.First(a => a.Text == item));
+                    RawAnalisis.Remove(RawAnalisis.First(a => a.Text == item.Text));
                 }
 
                 _sosHub.Sections.Add(sectionToAdd);
 
                 // Reset variables
                 stepName = string.Empty;
-                _selectedValues = new List<string>();
+                _selectedValues = new List<AnalysisBkup>();
                 CloseStepDialog();
             }
             else

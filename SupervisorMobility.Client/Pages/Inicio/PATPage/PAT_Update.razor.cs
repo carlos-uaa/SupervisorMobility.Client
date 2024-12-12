@@ -1,16 +1,11 @@
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
-    public partial class PAT_Details
+    public partial class PAT_Update
     {
         [Parameter]
         public int patID { get; set; }
@@ -87,9 +82,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private double?[] monthsDistributionPercentage = new double?[12];
         private double?[] monthsUsersPercentage = new double?[12];
 
+        bool Dev_env { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
+            Dev_env = Environment.IsDevelopment();
+
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -106,7 +105,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem("PAT", href: "/PAT"),
-                new BreadcrumbItem(text: Localizer["PATDetails"], href: "", disabled: true),
+                new BreadcrumbItem(text: Localizer["PATUpdate"], href: "", disabled: true),
             };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
@@ -129,6 +128,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 StateHasChanged();
             }
 
+          
+
+            if ((int)_pat.AplicationYear > DateTime.Now.Year)
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, 1, 1);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, 1, 1);
+                date = new DateTime((int)_pat.AplicationYear, 1, 1);
+            }
+            else
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                date = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
+            }
 
         }
 
@@ -212,7 +227,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             {
                 foreach (var usr in _UserOfArea)
                 {
-                    // Obtener los registros correspondientes a la operaciï¿½n y usuario actual
+                    // Obtener los registros correspondientes a la operación y usuario actual
                     var matchingRegisters = usr.ILURegisers?
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
@@ -226,10 +241,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 }
             }
 
-            if (_pat.PatDistributionComments is null)
+            if(_pat.PatDistributionComments is null)
             {
                 _pat.PatDistributionComments = new List<PatDistributionComment>();
             }
+
             foreach (var op in _distributions)
             {
                 if (AllRegistersOfPat.FindIndex(r => r.DistributionId == op.DistributionId) != -1)
@@ -252,7 +268,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     };
                     _pat.PatDistributionComments.Add(newPatDistributionComment);
                 }
+
             }
+
 
             if (_pat.PatUserRoles is null)
             {
@@ -270,7 +288,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     User_Knolowed.Add(usr.UserId, false);
 
                 }
-
 
                 if (!_pat.PatUserRoles.Any(ur => ur.UserId == usr.UserId))
                 {
@@ -348,7 +365,145 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             StateHasChanged();
         }
 
+        private async void OpenDialogAddILU(int ID_Operation, int ID_User)
+        {
+            _newIlu.DistributionId = ID_Operation;
+            _newIlu.OperatorId = ID_User;
+            _newIlu.isActive = true;
+            auxILU_Level = 0;
+            AddILUVisibleDialog = true;
+            StateHasChanged();
+        }
+
+        private async void AddILUClose()
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+
+
+            _newIlu.AcquisitionDate = DateTime.Now;
+            var filteredDistributions = _distributions.Where(dist => dist.DistributionId == _newIlu.DistributionId);
+
+            bool hasLeadersInDistribution = false;
+            var validLevelIds = new HashSet<int> { 3, 5, 7, 9, 10 };
+            string leaderName = "";
+
+            if (_newIlu?.ILULevelId is int iluLevelId && validLevelIds.Contains(iluLevelId))
+            {
+
+                foreach (var op in filteredDistributions)
+                {
+                    var leaders = _UserOfArea
+                        .Where(usr => ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context.Any())
+                        .Select(usr => new
+                        {
+                            User = usr,
+                            LatestContext = ILU_Matrix[(op.DistributionId, usr.UserId)]
+                                .OrderByDescending(c => c.AcquisitionDate)
+                                .FirstOrDefault()
+                        })
+                        .Where(x => x.LatestContext != null)
+                        .Select(x => new
+                        {
+                            x.User,
+                            ILULevelNumber = _LevelsILU
+                                .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
+                        })
+                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
+                        .ToList();
+
+                    var firstLeader = leaders.FirstOrDefault(x =>
+                                x.ILULevelNumber == "ILeader" ||
+                                x.ILULevelNumber == "LTraineeLeader" ||
+                                x.ILULevelNumber == "LLeader" ||
+                                x.ILULevelNumber == "ULeaderTrainee" ||
+                                x.ILULevelNumber == "ULeader");
+
+                    if (firstLeader != null)
+                    {
+                        leaderName = firstLeader.User.Name;
+                        hasLeadersInDistribution = true;
+                        break;
+                    }
+                }
+            }
+
+
+            if (!hasLeadersInDistribution)
+            {
+                ShowTable = false;
+                AddILUVisibleDialog = false;
+                var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
+                if (result != null)
+                {
+                    _pat = await PATsServices.getPat(patID);
+                    await PrepareDataTable();
+                    Snackbar.Add($"ILU Level Added", Severity.Success);
+                }
+
+            }
+            else
+            {
+                Snackbar.Add($"{leaderName} is already a Leader in this distribution!", Severity.Warning);
+            }
+
+        }
+
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+        bool CreateILUJob = false;
+        void CreateJobObservation(int distributionId, int operatorId)
+        {
+            distribution_id = distributionId;
+            operator_id = operatorId;
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "M/d/yyyy", CultureInfo.InvariantCulture);
+                var formatedDate = date;
+
+                var EnglishDate = formatedDate.Day.ToString() + "/" + formatedDate.Month.ToString() + "/" + formatedDate.Year.ToString();
+                var dateString = EnglishDate.Replace("/", "-");
+                ProgrammedStartDate = dateString;
+
+            }
+            else
+            {
+                var date = DateTime.ParseExact(DateTime.Now.ToShortDateString(), "d/M/yyyy", CultureInfo.InvariantCulture);
+                var dateString = date.ToShortDateString().Replace("/", "-");
+                ProgrammedStartDate = dateString;
+
+            }
+            CreateILUJob = true;
+        }
+        void CloseILUJob() => CreateILUJob = false;
+
+        //Finished Job observation
+        private bool visibleSign = false;
+        private void OpenSignComment()
+        {
+            visibleSign = true;
+        }
+        void CloseSign() => visibleSign = false;
+        private DialogOptions dialogSignOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+        public async Task ApprovePat()
+        {
+
+            _pat!.Status = 6;
+            var result = await PATsServices.UpdatePat(_pat);
+
+            if (result)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"PAT Approved succesfully!", Severity.Info);
+                NavigationManager.NavigateTo($"PAT");
+            }
+
+            visibleSign = false;
+        }
 
 
         // Distributions
@@ -493,32 +648,317 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
         }
 
-        private async void DownloadExcel()
+
+
+        //In progress
+        private async Task SaveProgressPat()
         {
-            if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
+
+            _pat.Status = 2;
+            _pat.SaveLeader = leader;
+
+            SetHistoricalAbility();
+            Console.WriteLine(_pat.HistoricalAbility);
+
+            var result = await PATsServices.UpdatePat(_pat);
+
+
+            if (result)
             {
-                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"PAT {_pat.PATid} Updated", Severity.Info);
+                NavigationManager.NavigateTo("/Pat");
             }
             else
+                await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+        }
+
+
+        public void SetHistoricalAbility()
+        {
+            try
             {
-                Snackbar.Add($"First fill the rotation target", Severity.Warning);
+                var result = new List<Dictionary<string, Dictionary<string, double>>>();
+
+                for (int i = 0; i < monthsNames.Count; i++)
+                {
+                    double or_o = monthsDistributionPercentage[i] ?? 0.0;
+                    double or_p = monthsUsersPercentage[i] ?? 0.0;
+
+                    var monthData = new Dictionary<string, double>
+                    {
+                        { "OR_O", or_o },
+                        { "OR_P", or_p }
+                    };
+
+                    result.Add(new Dictionary<string, Dictionary<string, double>>
+                    {
+                        { monthsNames[i], monthData }
+                    });
+                }
+
+                _pat.HistoricalAbility = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generando el JSON: {ex.Message}");
             }
         }
 
-
-        // Zoom
-        private bool IsZoomed = false;
-        private string dynamicStyle => $"overflow-x: auto; height: {viewHeigh}vh;";
-
-        public int viewHeigh = 82;
-        private async Task ToggleZoom()
+        #region Calendario
+        //Montly
+        bool MonthlyView = false;
+        DateTime? _yearMonth;
+        public DateTime? date;
+        DateTime FirstdayYear = DateTime.Now;
+        DateTime LastdayYear = DateTime.Now;
+        private string month;
+        private string year;
+        private async void MontlyTab()
         {
-            IsZoomed = !IsZoomed;
-            viewHeigh = IsZoomed ? 105 : 82;
-            var zoomLevel = IsZoomed ? "0.75" : "1.0";
-            await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            //}
+            //else
+            //{
+            //    _distributions.ForEach(d => d.ShowDetails = false);
+            //}
+            StateHasChanged();
+
+            MonthlyView = true;
+            //SuggestionMode = false;
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            StateHasChanged();
+        }
+        private async void OnDateChanged(DateTime? value)
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+            //ShowLoading = true;
+            //loadingData = true;
+            //StateHasChanged();
+
+            _yearMonth = value;
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //    if (SuggestionMode)
+            //    {
+            //        await PrepareSuggestDataTable();
+            //    }
+            //    else
+            //    {
+            //        await PrepareDataTable();
+            //    }
+            //}
+
+
+
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
         }
 
+        public async Task LastMonth()
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+            //ShowLoading = true;
+            //loadingData = true;
+            //StateHasChanged();
+
+            _yearMonth = _yearMonth?.AddMonths(-1);
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //}
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
+        }
+
+        public async Task NextMonth()
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+
+            //loadingData = true;
+            //ShowLoading = true;
+
+            //StateHasChanged();
+            _yearMonth = _yearMonth?.AddMonths(1);
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //}
+
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
+        }
+        #endregion
 
     }//end class pat details
 

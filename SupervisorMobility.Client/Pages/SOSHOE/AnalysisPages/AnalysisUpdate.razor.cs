@@ -334,7 +334,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 
         }
 
-        private Pruebas pruebasComponent;
+        private UpdateImage updateImageComponent;
         public int ImageIndex;
         public bool IsPreviousPhoto;
         public int FileUploadIndex = 0;
@@ -346,21 +346,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             visibleEditImage = true;
             FileUploadIndex = fileUploadIndex;
 
-            while (pruebasComponent == null || !pruebasComponent.IsReady)
+            while (updateImageComponent == null || !updateImageComponent.IsReady)
             {
                 await Task.Delay(50);
             }
 
-            if (pruebasComponent != null)
+            if (updateImageComponent != null)
             {
-                await pruebasComponent.LoadImageFromBase64Async(imageBase64);
+                await updateImageComponent.LoadImageFromBase64Async(imageBase64);
             }
         }
 
         private void CloseEditImageDialog()
         {
             visibleEditImage = false;
-            pruebasComponent = null; 
+            updateImageComponent = null; 
         }
 
         public void UpdatePhoto(string updatedImage, int index, bool isPrevious)

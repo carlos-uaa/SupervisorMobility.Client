@@ -7,6 +7,7 @@
         Task<List<PAT>> GetAllPATs();
         Task<List<PAT>> GetAllPATSforSSV(int SSVid);
         Task<List<PAT>> GetAllPATSforSV(int SVid);
+        Task<bool> DeletePat(int patId);
         Task<bool> UpdatePat(PAT pat);
 
     }
